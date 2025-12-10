@@ -23,7 +23,7 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
   ```r
   devtools::install_github("paulYRP/dnapipeR@package")
   ```
-- Each pipeline step now has its own function. List all **functions** with:
+- Each pipeline step now has its own function. List all the **functions** with:
   ```r
   library(dnapipeR)
   ls("package:dnapipeR")
