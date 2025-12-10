@@ -18,8 +18,12 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
 ## News
 
 ### **10/12/2025**
-A first functional version of **dnapipeR** has been created in the `package` branch.
-* **GitHub installation support** enabled via:
+- A first functional version of **dnapipeR** has been created in the [`package`](https://github.com/paulYRP/dnapipeR/tree/package) branch.
+- Each pipeline step now has its own function. List all **functions** with:
+  ```r
+  ls("package:dnapipeR")
+  ```
+- **Installation**:
   ```r
   devtools::install_github("paulYRP/dnapipeR@package")
   ```
