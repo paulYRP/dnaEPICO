@@ -148,17 +148,17 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  tiffRes = $(TIFF_RES), \
 	  qcCutoff = $(QC_CUTOFF), \
 	  detPtype = '$(DET_PTYPE)', \
-	  detPThreshold = $(DET_P_THRESHOLD), \
+	  detPThreshold = $(DET_THRESHOLD), \
 	  funnormSeed = $(FUNNORM_SEED), \
 	  sexColumn = '$(SEX_COLUMN)', \
 	  pvalThreshold = $(PVAL_THRESHOLD), \
 	  chrToRemove = '$(CHR_TO_REMOVE)', \
 	  snpsToRemove = '$(SNPS_TO_REMOVE)', \
-	  crossReactivePath = '$(CROSS_REACTIVE_PATH)', \
-	  mafThreshold = '$(MAF_THRESHOLD)', \
+	  crossReactivePath = '$(CROSS_REACTIVE_FILE)', \
+	  mafThreshold = $(MAF_THRESHOLD), \
 	  plotGroupVar = '$(PLOT_GROUP_VAR)', \
 	  lcRef = '$(LC_REF)', \
-	  phenoOrder = '$(PHENO_ORDER)', \
+	  phenoOrder = '$(SAMPLE_ID);$(TIME_VAR);$(SEX_COLUMN);PredSex;$(BASENAME_COLUMN);$(SENTRIX_ID_COLUMN);$(SENTRIX_POSITION_COLUMN)', \
 	  lcPhenoDir = '$(DATA_DIR)/$(MODEL)/$(STEP1)' )"
 
 # =================================================================================================================================
