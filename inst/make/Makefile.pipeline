@@ -224,7 +224,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 	  plotWidth = $(TIFF_WIDTH), \
 	  plotHeight = $(TIFF_HEIGHT), \
 	  plotDPI = $(TIFF_RES), \
-	  interactionTerm = '$(INTERACTION)', \
+	  interactionTerm = $(INTERACTION_GLM_ARG), \
 	  libPath = $(R_DIR_ARG), \
 	  glmLibs = '$(GLM_LIBS)', \
 	  prsMap = $(PRS_MAP_ARG), \
@@ -273,7 +273,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
 	  plotWidth = $(TIFF_WIDTH), \
 	  plotHeight = $(TIFF_HEIGHT), \
 	  plotDPI = $(TIFF_RES), \
-	  interactionTerm = '$(INTERACTION)', \
+	  interactionTerm = $(INTERACTION_LME_ARG), \
 	  saveSignificantInteractions = $(SAVE_SIGNIFICANT_INTERACTIONS), \
 	  significantInteractionDir = '$(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP5)', \
 	  significantInteractionPval = $(SIGNIFICANT_INTERACTION_PVAL), \
