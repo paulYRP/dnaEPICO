@@ -65,7 +65,7 @@ include_graphics(imgs)
 
 # Pre-processing and Filtering
 
-```{r, echo=F, include=T, out.width="100%", dpi=250}
+```{r, echo=F, include=T, out.width="100%", dpi=300}
 # Folder with TIFFs
 dir <- params$preprocessingDir
 
@@ -85,7 +85,7 @@ if (dir.exists(dir)) {
 
 # Post-processing and Filtering 
 
-```{r, echo=F, include=T, out.width="100%", dpi=250}
+```{r, echo=F, include=T, out.width="100%", dpi=300}
 dir <- params$postprocessingDir
 
 if (dir.exists(dir)) {
@@ -105,7 +105,7 @@ if (dir.exists(dir)) {
 
 # Surrogate Variable Analysis
 
-```{r, echo=F, include=T, out.width="100%", dpi=250}
+```{r, echo=F, include=T, out.width="100%", dpi=300}
 dir <- params$svaDir
 
 if (dir.exists(dir)) {
@@ -125,7 +125,7 @@ if (dir.exists(dir)) {
 
 # General Linear Model
 
-```{r, echo=F, include=T, out.width="50%", dpi=250}
+```{r, echo=F, include=T, out.width="50%", dpi=300}
 
 dir <- params$glmDir
 
@@ -160,7 +160,7 @@ if (dir.exists(dir)) {
 
 # Linear Mixed-Effects Model
 
-```{r, echo=F, include=T, out.width="50%", dpi=250}
+```{r, echo=F, include=T, out.width="50%", dpi=300}
 dir <- params$glmmDir
 
 if (dir.exists(dir)) {

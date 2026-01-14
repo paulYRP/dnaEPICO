@@ -209,76 +209,82 @@ $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv:
 # =================================================================================================================================
 # Step 4: GLM for T1
 # =================================================================================================================================
-$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv: methylationGLM_T1.R $(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData
-	Rscript methylationGLM_T1.R \
-	  inputPheno $(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData \
-	  outputLogs $(LOGS_DIR)/$(MODEL) \
-	  outputRData $(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR) \
-	  outputPlots $(FIGURES_DIR)/$(MODEL)/$(STEP4)/ \
-	  phenotypes $(PHENOTYPES) \
-	  covariates $(COVARIATES) \
-	  factorVars $(FACTORVARS) \
-	  cpgPrefix cg \
-	  cpgLimit NA \
-	  nCores 64 \
-	  plotWidth 2000 \
-	  plotHeight 1000 \
-	  plotDPI 150 \
-	  interactionTerm $(INTERACTION) \
-	  plotWidth 2000 plotHeight 1000 plotDPI 150 \
-	  libPath ~/R/x86_64-pc-linux-gnu-library/4.4 \
-	  glmLibs glm2 \
-	  prsMap NULL \
-	  summaryPval NA \
-	  summaryResidualSD \
-	  saveSignificantCpGs \
-	  significantCpGDir $(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP4) \
-	  significantCpGPval 0.00001 \
-	  saveTxtSummaries \
-	  chunkSize 10000 \
-	  summaryTxtDir $(RESULTS_DIR)/$(MODEL)/$(SUMMARY_DIR)/$(STEP4) \
-	  fdrThreshold  0.05 \
-	  padjmethod fdr \
-	  annotationPackage IlluminaHumanMethylationEPICv2anno.20a1.hg38 \
-	  annotationCols Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group \
-	  annotatedGLMOut $(DATA_DIR)/$(MODEL)/$(STEP4)
+$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
+	Rscript -e "library(dnapipeR); methylationGLM_T1( \
+	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData', \
+	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
+	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)/', \
+	  phenotypes = '$(PHENOTYPES)', \
+	  covariates = '$(COVARIATES)', \
+	  factorVars = '$(FACTOR_VARS)', \
+	  cpgPrefix = '$(CPG_PREFIX)', \
+	  cpgLimit = $(CPG_LIMIT), \
+	  nCores = $(N_CORES), \
+	  plotWidth = $(TIFF_WIDTH), \
+	  plotHeight = $(TIFF_HEIGHT), \
+	  plotDPI = $(TIFF_RES), \
+	  interactionTerm = '$(INTERACTION)', \
+	  libPath = '$(R_DIR)' \
+	  glmLibs = '$(GLM_LIBS)', \
+	  prsMap = $(PRS_MAP_ARG), \
+	  summaryPval = $(SUMMARY_PVAL), \
+	  summaryResidualSD = $(SUMMARY_RESIDUAL_SD), \
+	  saveSignificantCpGs = $(SAVE_SIGNIFICANT_CPGS), \
+	  significantCpGDir = '$(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP4)', \
+	  significantCpGPval = $(SIGNIFICANT_CPG_PVAL), \
+	  saveTxtSummaries = $(SAVE_TXT_SUMMARIES), \
+	  chunkSize = $(CHUNK_SIZE), \
+	  summaryTxtDir = '$(RESULTS_DIR)/$(MODEL)/$(SUMMARY_DIR)/$(STEP4)', \
+	  fdrThreshold = $(FDR_THRESHOLD), \
+	  padjmethod = '$(PADJ_METHOD)', \
+	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
+	  annotationCols = '$(ANNOTATION_COLS)', \
+	  annotatedGLMOut = '$(DATA_DIR)/$(MODEL)/$(STEP4)' ) "
 
 # =================================================================================================================================
 # Step 5: LME for T1 vs T2 (Longitudinal Analysis)
 # =================================================================================================================================
-$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv: methylationGLMM_T1T2.R $(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData
-	Rscript methylationGLMM_T1T2.R \
-	  inputPheno $(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData \
-	  outputLogs $(LOGS_DIR)/$(MODEL) \
-	  outputRData $(RDATA_DIR)/$(MODEL)/$(STEP5)/$(MODEL_DIR) \
-	  outputPlots $(FIGURES_DIR)/$(MODEL)/$(STEP5) \
-	  personVar person \
-	  timeVar $(timeVar) \
-	  phenotypes $(PHENOTYPES) \
-	  covariates $(COVARIATES) \
-	  factorVars $(FACTORVARS) \
-	  lmeLibs lme4,lmerTest \
-	  prsMap NULL \
-	  libPath $(R_DIR) \
-	  cpgPrefix cg \
-	  cpgLimit NA \
-	  nCores 64 \
-	  summaryPval NA \
-	  plotWidth 2000 \
-	  plotHeight 1000 \
-	  plotDPI 150 \
-	  interactionTerm $(INTERACTION) \
-	  saveSignificantInteractions \
-	  significantInteractionDir $(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP5) \
-	  significantInteractionPval 0.00001 \
-	  saveTxtSummaries \
-	  chunkSize 10000 \
-	  summaryTxtDir $(RESULTS_DIR)/$(MODEL)/$(SUMMARY_DIR)/$(STEP5) \
-	  fdrThreshold  0.05 \
-	  padjmethod fdr \
-	  annotationPackage IlluminaHumanMethylationEPICv2anno.20a1.hg38 \
-	  annotationCols Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group \
-	  annotatedLMEOut $(DATA_DIR)/$(MODEL)/$(STEP5)
+
+PERSON_VAR = person
+LME_LIBS = lme4,lmerTest
+SAVE_SIGNIFICANT_INTERACTIONS = TRUE
+SIGNIFICANT_INTERACTION_PVAL = 0.00001
+
+
+$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
+	Rscript -e "library(dnapipeR); methylationGLMM_T1T2( \
+	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData', \
+	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP5)/$(MODEL_DIR)', \
+	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
+	  personVar = '$(PERSON_VAR)', \
+	  timeVar = '$(TIME_VAR)', \
+	  phenotypes = '$(PHENOTYPES)', \
+	  covariates = '$(COVARIATES)', \
+	  factorVars = '$(FACTOR_VARS)', \
+	  lmeLibs = '$(LME_LIBS)', \
+	  prsMap = '$(PRS_MAP_ARG)', \
+	  libPath = '$(R_DIR)', \
+	  cpgPrefix = '$(CPG_PREFIX)', \
+	  cpgLimit = $(CPG_LIMIT), \
+	  nCores = $(N_CORES), \
+	  summaryPval = $(SUMMARY_PVAL), \
+	  plotWidth = $(TIFF_WIDTH), \
+	  plotHeight = $(TIFF_HEIGHT), \
+	  plotDPI = $(TIFF_RES), \
+	  interactionTerm = '$(INTERACTION)', \
+	  saveSignificantInteractions = $(SAVE_SIGNIFICANT_INTERACTIONS), \
+	  significantInteractionDir = '$(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP5)', \
+	  significantInteractionPval = $(SIGNIFICANT_INTERACTION_PVAL), \
+	  saveTxtSummaries = $(SAVE_TXT_SUMMARIES), \
+	  chunkSize = $(CHUNK_SIZE), \
+	  summaryTxtDir = '$(RESULTS_DIR)/$(MODEL)/$(SUMMARY_DIR)/$(STEP5)', \
+	  fdrThreshold = $(FDR_THRESHOLD), \
+	  padjmethod = '$(PADJ_METHOD)', \
+	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
+	  annotationCols = '$(ANNOTATION_COLS)', \
+	  annotatedLMEOut = '$(DATA_DIR)/$(MODEL)/$(STEP5)' )"
 
 # =================================================================================================================================
 # Step 6: Final Report
