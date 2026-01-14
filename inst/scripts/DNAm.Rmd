@@ -9,6 +9,7 @@ output:
   pdf_document: 
     toc: true
     number_sections: true
+    dpi: 150
 documentclass: article
 header-includes:
   - \usepackage[a4paper, margin=2cm]{geometry}
@@ -34,6 +35,7 @@ knitr::opts_chunk$set(cache = F)
 knitr::opts_chunk$set(verbose = F)
 
 library(knitr)
+library(magick)
 library(gridExtra)
 library(grid)
 library(tiff)
