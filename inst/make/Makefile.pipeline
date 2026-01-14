@@ -137,21 +137,21 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  sepType = '$(SEP_TYPE)', \
 	  idatFolder = '$(DATA_DIR)/$(STEP1)/$(IDAT_DIR)/', \
 	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
-	  nSamples = '$(N_SAMPLES)', \
+	  nSamples = $(N_SAMPLES), \
 	  SampleID = '$(SAMPLE_ID)', \
 	  arrayType = '$(ARRAY_TYPE)', \
 	  annotationVersion = '$(ANNOTATION_VERSION)', \
 	  scriptLabel = '$(MODEL)/$(STEP1)', \
 	  baseDataFolder = '$(RDATA_DIR)', \
-	  tiffWidth = '$(TIFF_WIDTH)', \
-	  tiffHeight = '$(TIFF_HEIGHT)', \
-	  tiffRes = '$(TIFF_RES)', \
-	  qcCutoff = '$(QC_CUTOFF)', \
+	  tiffWidth = $(TIFF_WIDTH), \
+	  tiffHeight = $(TIFF_HEIGHT), \
+	  tiffRes = $(TIFF_RES), \
+	  qcCutoff = $(QC_CUTOFF), \
 	  detPtype = '$(DET_PTYPE)', \
-	  detPThreshold = '$(DET_P_THRESHOLD)', \
-	  funnormSeed = '$(FUNNORM_SEED)', \
+	  detPThreshold = $(DET_P_THRESHOLD), \
+	  funnormSeed = $(FUNNORM_SEED), \
 	  sexColumn = '$(SEX_COLUMN)', \
-	  pvalThreshold = '$(PVAL_THRESHOLD)', \
+	  pvalThreshold = $(PVAL_THRESHOLD), \
 	  chrToRemove = '$(CHR_TO_REMOVE)', \
 	  snpsToRemove = '$(SNPS_TO_REMOVE)', \
 	  crossReactivePath = '$(CROSS_REACTIVE_PATH)', \
@@ -170,18 +170,18 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 	  rgsetData = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData', \
 	  sepType = '$(SEP_TYPE)', \
 	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
-	  nSamples = '$(N_SAMPLES)', \
+	  nSamples = $(N_SAMPLES), \
 	  SampleID = '$(SAMPLE_ID)', \
 	  arrayType = '$(ARRAY_TYPE)', \
   	  annotationVersion = '$(ANNOTATION_VERSION)', \
   	  SentrixIDColumn = '$(SENTRIX_ID_COLUMN)', \
 	  SentrixPositionColumn = '$(SENTRIX_POSITION_COLUMN)', \
-	  ctrlSvaPercVar = '$(CTRL_SVA_PERC_VAR)', \
-  	  ctrlSvaFlag = '$(CTRL_SVA_FLAG)', \
+	  ctrlSvaPercVar = $(CTRL_SVA_PERC_VAR), \
+  	  ctrlSvaFlag = $(CTRL_SVA_FLAG), \
 	  scriptLabel = '$(MODEL)/$(STEP2)', \
-	  tiffWidth = '$(TIFF_WIDTH)', \
-	  tiffHeight = '$(TIFF_HEIGHT)', \
-	  tiffRes = '$(TIFF_RES)' )"
+	  tiffWidth = $(TIFF_WIDTH), \
+	  tiffHeight = $(TIFF_HEIGHT), \
+	  tiffRes = $(TIFF_RES) )"
 
 # =================================================================================================================================
 # Step 3: Merge Phenotype
