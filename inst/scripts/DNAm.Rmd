@@ -49,22 +49,6 @@ knitr::opts_chunk$set(
 
 ```
 
-```{r, include=F}
-convertAndInclude <- function(files) {
-  pngFiles <- sub("\\.tiff$", ".png", files)
-
-  for (i in seq_along(files)) {
-    if (!file.exists(pngFiles[i])) {
-      image_read(files[i]) |>
-        image_write(pngFiles[i], format = "png", density = 300)
-    }
-  }
-
-  knitr::include_graphics(pngFiles)
-}
-```
-
-
 # Quality Control Plots
 
 ```{r, echo=F, include=T, out.width="100%"}
@@ -81,28 +65,19 @@ include_graphics(imgs)
 
 # Pre-processing and Filtering
 
-```{r, echo=F, include=T, out.width="100%"}
+```{r, echo=F, include=T, out.width="100%", dpi=150}
 # Folder with TIFFs
-# dir <- params$preprocessingDir
-# 
-# if (dir.exists(dir)) {
-#   
-#   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
-#   if (length(files) > 0) {
-#     for (f in files) {
-#       img <- readTIFF(f)
-#       plot(as.raster(img))
-#       title(main = basename(f))
-#     }
-#   }
-# }
-
 dir <- params$preprocessingDir
 
 if (dir.exists(dir)) {
+  
   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
   if (length(files) > 0) {
-    convertAndInclude(files)
+    for (f in files) {
+      img <- readTIFF(f)
+      plot(as.raster(img))
+      title(main = basename(f))
+    }
   }
 }
 
@@ -110,28 +85,19 @@ if (dir.exists(dir)) {
 
 # Post-processing and Filtering 
 
-```{r, echo=F, include=T, out.width="100%"}
-# dir <- params$postprocessingDir
-# 
-# if (dir.exists(dir)) {
-#   
-#   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
-# 
-#   if (length(files) > 0) {
-#     for (f in files) {
-#       img <- readTIFF(f)
-#       plot(as.raster(img))
-#       title(main = basename(f))
-#     }
-#   }
-# }
-
+```{r, echo=F, include=T, out.width="100%", dpi=150}
 dir <- params$postprocessingDir
 
 if (dir.exists(dir)) {
+  
   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
+
   if (length(files) > 0) {
-    convertAndInclude(files)
+    for (f in files) {
+      img <- readTIFF(f)
+      plot(as.raster(img))
+      title(main = basename(f))
+    }
   }
 }
 
@@ -139,28 +105,19 @@ if (dir.exists(dir)) {
 
 # Surrogate Variable Analysis
 
-```{r, echo=F, include=T, out.width="100%"}
-# dir <- params$svaDir
-# 
-# if (dir.exists(dir)) {
-#   
-#   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
-# 
-#   if (length(files) > 0) {
-#     for (f in files) {
-#       img <- readTIFF(f)
-#       plot(as.raster(img))
-#       title(main = basename(f))
-#     }
-#   }
-# }
-
+```{r, echo=F, include=T, out.width="100%", dpi=150}
 dir <- params$svaDir
 
 if (dir.exists(dir)) {
+  
   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
+
   if (length(files) > 0) {
-    convertAndInclude(files)
+    for (f in files) {
+      img <- readTIFF(f)
+      plot(as.raster(img))
+      title(main = basename(f))
+    }
   }
 }
 
@@ -168,50 +125,32 @@ if (dir.exists(dir)) {
 
 # General Linear Model
 
-```{r, echo=F, include=T, out.width="50%"}
-
-# dir <- params$glmDir
-# 
-# if (dir.exists(dir)) {
-#   
-#   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
-# 
-#   if (length(files) > 0) {
-#     for (f in files) {
-#       img <- readTIFF(f)
-#       plot(as.raster(img))
-#       title(main = basename(f))
-#     }
-#   }
-#   
-#   subdirs <- list.dirs(dir, recursive = FALSE)
-#   for (sub in subdirs) {
-#     sub_files <- list.files(sub, pattern = "\\.tiff$", full.names = TRUE)
-#     if (length(sub_files) > 0) {
-#       sub_name <- basename(sub)  
-#       for (f in sub_files) {
-#         img <- readTIFF(f)
-#         plot(as.raster(img))
-#         title(main = paste(sub_name, basename(f), sep = " - "))
-#       }
-#     }
-#   }
-# }
+```{r, echo=F, include=T, out.width="50%", dpi=150}
 
 dir <- params$glmDir
 
 if (dir.exists(dir)) {
-
+  
   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
-  if (length(files) > 0) {
-    convertAndInclude(files)
-  }
 
+  if (length(files) > 0) {
+    for (f in files) {
+      img <- readTIFF(f)
+      plot(as.raster(img))
+      title(main = basename(f))
+    }
+  }
+  
   subdirs <- list.dirs(dir, recursive = FALSE)
   for (sub in subdirs) {
-    subFiles <- list.files(sub, pattern = "\\.tiff$", full.names = TRUE)
-    if (length(subFiles) > 0) {
-      convertAndInclude(subFiles)
+    sub_files <- list.files(sub, pattern = "\\.tiff$", full.names = TRUE)
+    if (length(sub_files) > 0) {
+      sub_name <- basename(sub)  
+      for (f in sub_files) {
+        img <- readTIFF(f)
+        plot(as.raster(img))
+        title(main = paste(sub_name, basename(f), sep = " - "))
+      }
     }
   }
 }
@@ -221,48 +160,30 @@ if (dir.exists(dir)) {
 
 # Linear Mixed-Effects Model
 
-```{r, echo=F, include=T, out.width="50%"}
-# dir <- params$glmmDir
-# 
-# if (dir.exists(dir)) {
-#   
-#   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
-#   if (length(files) > 0) {
-#     for (f in files) {
-#       img <- readTIFF(f)
-#       plot(as.raster(img))
-#       title(main = basename(f))
-#     }
-#   }
-#   
-#   subdirs <- list.dirs(dir, recursive = FALSE)
-#   for (sub in subdirs) {
-#     sub_files <- list.files(sub, pattern = "\\.tiff$", full.names = TRUE)
-#     if (length(sub_files) > 0) {
-#       sub_name <- basename(sub)  
-#       for (f in sub_files) {
-#         img <- readTIFF(f)
-#         plot(as.raster(img))
-#         title(main = paste(sub_name, basename(f), sep = " - "))
-#       }
-#     }
-#   }
-# }
-
+```{r, echo=F, include=T, out.width="50%", dpi=150}
 dir <- params$glmmDir
 
 if (dir.exists(dir)) {
-
+  
   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
   if (length(files) > 0) {
-    convertAndInclude(files)
+    for (f in files) {
+      img <- readTIFF(f)
+      plot(as.raster(img))
+      title(main = basename(f))
+    }
   }
-
+  
   subdirs <- list.dirs(dir, recursive = FALSE)
   for (sub in subdirs) {
-    subFiles <- list.files(sub, pattern = "\\.tiff$", full.names = TRUE)
-    if (length(subFiles) > 0) {
-      convertAndInclude(subFiles)
+    sub_files <- list.files(sub, pattern = "\\.tiff$", full.names = TRUE)
+    if (length(sub_files) > 0) {
+      sub_name <- basename(sub)  
+      for (f in sub_files) {
+        img <- readTIFF(f)
+        plot(as.raster(img))
+        title(main = paste(sub_name, basename(f), sep = " - "))
+      }
     }
   }
 }
