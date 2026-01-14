@@ -225,7 +225,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 	  plotHeight = $(TIFF_HEIGHT), \
 	  plotDPI = $(TIFF_RES), \
 	  interactionTerm = '$(INTERACTION)', \
-	  libPath = '$(R_DIR)', \
+	  libPath = $(R_DIR_ARG), \
 	  glmLibs = '$(GLM_LIBS)', \
 	  prsMap = $(PRS_MAP_ARG), \
 	  summaryPval = $(SUMMARY_PVAL), \
@@ -264,8 +264,8 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
 	  covariates = '$(COVARIATES)', \
 	  factorVars = '$(FACTOR_VARS)', \
 	  lmeLibs = '$(LME_LIBS)', \
-	  prsMap = '$(PRS_MAP_ARG)', \
-	  libPath = '$(R_DIR)', \
+	  prsMap = $(PRS_MAP_ARG), \
+	  libPath = $(R_DIR_ARG), \
 	  cpgPrefix = '$(CPG_PREFIX)', \
 	  cpgLimit = $(CPG_LIMIT), \
 	  nCores = $(N_CORES), \
