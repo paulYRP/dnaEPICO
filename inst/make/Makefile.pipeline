@@ -225,7 +225,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 	  plotHeight = $(TIFF_HEIGHT), \
 	  plotDPI = $(TIFF_RES), \
 	  interactionTerm = '$(INTERACTION)', \
-	  libPath = '$(R_DIR)' \
+	  libPath = '$(R_DIR)', \
 	  glmLibs = '$(GLM_LIBS)', \
 	  prsMap = $(PRS_MAP_ARG), \
 	  summaryPval = $(SUMMARY_PVAL), \
