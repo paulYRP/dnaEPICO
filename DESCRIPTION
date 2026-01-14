@@ -39,7 +39,14 @@ Imports:
     optparse,
     ggplot2,
     ggpubr,
-    MASS
+    MASS,
+    tidyverse,
+    glm2,
+    lme4,
+    lmerTest,
+    dplyr,
+    parallel,
+    ggrepel
 URL: https://github.com/paulYRP/dnapipeR
 BugReports: https://github.com/paulYRP/dnapipeR/issues
 Suggests: 
