@@ -17,6 +17,18 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
 --------------
 ## News
 
+### **10/12/2025**
+- A first functional version of **dnapipeR** has been created in the [`package`](https://github.com/paulYRP/dnapipeR/tree/package) branch.
+- **Installation**:
+  ```r
+  devtools::install_github("paulYRP/dnapipeR@package")
+  ```
+- Each pipeline step now has its own function. List all the **functions** with:
+  ```r
+  library(dnapipeR)
+  ls("package:dnapipeR")
+  ```
+  
 ### 28/10/2025
 - Added support for **multiple models** using the `MODEL` and `MODELS` variables inside the Makefile.
   - `MODEL ?= model1`, sets the default model if none is specified.
@@ -29,7 +41,8 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
   - `make f3lme_models`, runs **Steps 1–3 + LME** in parallel for all models.    
 - Individual model runs remain supported:
   - `make all MODEL=model1`, runs the full pipeline for a single model.
-  - `make f3 MODEL=model1`, runs the first 3 steps for that model only.    
+  - `make f3 MODEL=model1`, runs the first 3 steps for that model only.
+
 ### 21/08/2025
 - It is compatible with all types of tissues using [ewastools](https://hhhh5.github.io/ewastools/articles/exemplary_ewas.html) 
 - `ctrlsva` added from [ENmix](https://www.bioconductor.org/packages/devel/bioc/vignettes/ENmix/inst/doc/ENmix.html) 
