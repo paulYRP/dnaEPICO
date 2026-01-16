@@ -28,7 +28,7 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
   - Preprocessing, QC, phenotype merging, GLM, LME, and report generation
   - Support for single-model and multi-model execution
   - HPC-compatible parallel execution via GNU Make
-  - Inspect internal pipeline via:
+  - Inspect internal pipeline in R via:
   
   ```r
   system.file("make", "Makefile.pipeline", package = "dnapipeR")
