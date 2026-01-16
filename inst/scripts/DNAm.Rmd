@@ -43,7 +43,9 @@ library(tiff)
 ```{r, include=F}
 knitr::opts_chunk$set(
   fig.path = paste0(normalizePath(params$figDir, winslash="/"), "/"),
-  dev = "png"
+  dev = "png",
+  dev.args = list(type = "cairo")
+
 )
 
 ```
