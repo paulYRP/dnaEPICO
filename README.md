@@ -17,6 +17,28 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
 --------------
 ## News
 
+### **16/01/2026**
+- **Makefile-based pipeline has now been fully integrated into the dnapipeR package**.
+- **Installation**
+  ```r
+  devtools::install_github("paulYRP/dnapipeR")
+  ```
+- A **`Makefile.pipeline`** is now shipped within the package and provides:
+
+  - Preprocessing, QC, phenotype merging, GLM, LME, and report generation
+  - Support for single-model and multi-model execution
+  - HPC-compatible parallel execution via GNU Make
+  - Inspect internal pipeline via:
+  
+  ```r
+  system.file("make", "Makefile.pipeline", package = "dnapipeR")
+  ```
+* Users can control **all analysis parameters** through a **user-defined** [`Makefile`](https://github.com/paulYRP/dnapipeR/blob/main/Makefile), which:
+
+  * Defines global and per-step parameters
+  * Optionally overrides parameters per model
+  * Includes the internal pipeline via:
+
 ### **10/12/2025**
 - A first functional version of **dnapipeR** has been created in the [`package`](https://github.com/paulYRP/dnapipeR/tree/package) branch.
 - **Installation**:
