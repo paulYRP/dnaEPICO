@@ -37,7 +37,6 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
 
   * Defines global and per-step parameters
   * Optionally overrides parameters per model
-  * Includes the internal pipeline via:
 
 ### **10/12/2025**
 - A first functional version of **dnapipeR** has been created in the [`package`](https://github.com/paulYRP/dnapipeR/tree/package) branch.
