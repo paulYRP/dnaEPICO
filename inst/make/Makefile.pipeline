@@ -291,8 +291,6 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
 # =================================================================================================================================
 REPORT_INPUTS = \
 	$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData \
-	$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData \
-	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv
 
 $(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
