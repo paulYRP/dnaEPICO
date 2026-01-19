@@ -29,7 +29,7 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
   - Inspect internal pipeline in R via:
   
   ```r
-  system.file("make", "Makefile.pipeline", package = "dnapipeR")
+  system.file("make", "Makefile.pipeline", package = "dnaEPICO")
   ```
 * Users can control **all analysis parameters** through a **user-defined** [`Makefile`](https://github.com/paulYRP/dnaEPICO/blob/main/Makefile), which:
 
