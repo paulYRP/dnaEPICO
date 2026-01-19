@@ -10,7 +10,7 @@ methylationGLM_T1(
   outputRData = "rData/methylationGLM_T1/models",
   outputPlots = "figures/methylationGLM_T1",
   phenotypes =
-    "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,MHCSF_TotalScore,BRS_TotalScore",
+    "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,\\n                  MHCSF_TotalScore,BRS_TotalScore",
   covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
   factorVars = "Sex,Ethnicity,TraumaDefinition",
   cpgPrefix = "cg",
@@ -35,7 +35,7 @@ methylationGLM_T1(
   padjmethod = "fdr",
   annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
   annotationCols =
-    "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group",
+    "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,\\n                      Relation_to_Island,GencodeV41_Group",
   annotatedGLMOut = "data/methylationGLM_T1"
 )
 }

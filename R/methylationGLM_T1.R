@@ -7,7 +7,8 @@ methylationGLM_T1 <- function(
     outputLogs = "logs",
     outputRData = "rData/methylationGLM_T1/models",
     outputPlots = "figures/methylationGLM_T1",
-    phenotypes = "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,MHCSF_TotalScore,BRS_TotalScore",
+    phenotypes = "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,
+                  MHCSF_TotalScore,BRS_TotalScore",
     covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
     factorVars = "Sex,Ethnicity,TraumaDefinition",
     cpgPrefix = "cg",
@@ -31,12 +32,13 @@ methylationGLM_T1 <- function(
     fdrThreshold = 0.05,
     padjmethod = "fdr",
     annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
-    annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group",
+    annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,
+                      Relation_to_Island,GencodeV41_Group",
     annotatedGLMOut = "data/methylationGLM_T1"
 ) {
 
   # Locate script inside the installed package
-  script <- system.file("scripts", "methylationGLM_T1.R", package = "dnapipeR")
+  script <- system.file("scripts", "methylationGLM_T1.R", package = "dnaEPICO")
   if (script == "")
     stop("Script methylationGLM_T1.R not found in package.")
 

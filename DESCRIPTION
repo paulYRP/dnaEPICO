@@ -1,4 +1,4 @@
-Package: dnapipeR
+Package: dnaEPICO
 Type: Package
 Title: DNA Methylation Preprocessing and Statistical Modelling Pipeline
 Version: 0.0.1
@@ -11,7 +11,6 @@ Authors@R:
         role = c("aut", "cre")
       )
     )
-
 Description: 
     A modular, reproducible R-based pipeline for Illumina EPIC and EPICv2 
     DNA methylation array preprocessing, quality control, cell-type deconvolution, 
@@ -47,8 +46,8 @@ Imports:
     dplyr,
     parallel,
     ggrepel
-URL: https://github.com/paulYRP/dnapipeR
-BugReports: https://github.com/paulYRP/dnapipeR/issues
+URL: https://github.com/paulYRP/dnaEPICO
+BugReports: https://github.com/paulYRP/dnaEPICO/issues
 Suggests: 
     knitr,
     rmarkdown

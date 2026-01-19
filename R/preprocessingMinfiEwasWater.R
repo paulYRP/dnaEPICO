@@ -26,7 +26,8 @@ preprocessingMinfiEwasWater <- function(
     chrToRemove = "chrX,chrY",
     snpsToRemove = "SBE,CpG",
     mafThreshold = 0.1,
-    crossReactivePath = "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
+    crossReactivePath =
+      "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
     plotGroupVar = "Sex",
     lcRef = "salivaEPIC",
     phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
@@ -34,7 +35,7 @@ preprocessingMinfiEwasWater <- function(
 ) {
 
   # Resolve script inside the package
-  script <- system.file("scripts", "preprocessingMinfiEwasWater.R", package = "dnapipeR")
+  script <- system.file("scripts", "preprocessingMinfiEwasWater.R", package = "dnaEPICO")
 
   if (script == "") stop("Script preprocessingMinfiEwasWater.R not found in package.")
 

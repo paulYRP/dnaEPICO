@@ -22,7 +22,7 @@ svaEnmix <- function(
 ) {
   
   # Locate script inside installed package
-  script <- system.file("scripts", "svaEnmix.R", package = "dnapipeR")
+  script <- system.file("scripts", "svaEnmix.R", package = "dnaEPICO")
   if (script == "")
     stop("Script svaEnmix.R not found in package.")
   

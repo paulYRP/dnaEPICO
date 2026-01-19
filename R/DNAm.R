@@ -23,8 +23,8 @@ dnamReport <- function(
   }
 
   # Locate Rmd + Runner Script
-  rmd <- system.file("scripts", "DNAm.Rmd", package = "dnapipeR")
-  script <- system.file("scripts", "DNAm.R", package = "dnapipeR")
+  rmd <- system.file("scripts", "DNAm.Rmd", package = "dnaEPICO")
+  script <- system.file("scripts", "DNAm.R", package = "dnaEPICO")
 
   if (rmd == "" || script == "")
     stop("DNAm.Rmd or DNAm.R not found in package.")

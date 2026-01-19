@@ -8,7 +8,8 @@ methylationGLMM_T1T2 <- function(
     outputPlots = "figures/methylationGLMM_T1T2",
     personVar = "person",
     timeVar = "Timepoint",
-    phenotypes = "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,MHCSF_TotalScore,BRS_TotalScore",
+    phenotypes = "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,
+                  MHCSF_TotalScore,BRS_TotalScore",
     covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
     factorVars = "Sex,Ethnicity,TraumaDefinition,Timepoint",
     lmeLibs = "lme4,lmerTest",
@@ -31,15 +32,16 @@ methylationGLMM_T1T2 <- function(
     fdrThreshold = 0.05,
     padjmethod = "fdr",
     annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
-    annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group",
+    annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,
+                      Relation_to_Island,GencodeV41_Group",
     annotatedLMEOut = "data/methylationGLMM_T1T2"
 ) {
-  
+
   # Locate script inside installed package
-  script <- system.file("scripts", "methylationGLMM_T1T2.R", package = "dnapipeR")
+  script <- system.file("scripts", "methylationGLMM_T1T2.R", package = "dnaEPICO")
   if (script == "")
     stop("Script methylationGLMM_T1T2.R not found in package.")
-  
+
   # BUILD ARGUMENT LIST
   arg_list <- c(
     "--inputPheno",               shQuote(inputPheno),
@@ -71,22 +73,22 @@ methylationGLMM_T1T2 <- function(
     "--annotationCols",          shQuote(annotationCols),
     "--annotatedLMEOut",         shQuote(annotatedLMEOut)
   )
-  
+
   # CONDITIONAL FLAGS
   if (!is.null(interactionTerm))
     arg_list <- c(arg_list, "--interactionTerm", shQuote(interactionTerm))
-  
+
   if (!is.null(libPath))
     arg_list <- c(arg_list, "--libPath", shQuote(libPath))
-  
+
   if (!is.null(prsMap))
     arg_list <- c(arg_list, "--prsMap", shQuote(prsMap))
-  
+
   cmd <- paste("Rscript", shQuote(script), paste(arg_list, collapse = " "))
-  
+
   message("Running methylationGLMM_T1T2:")
   message(cmd)
-  
+
   # Run depending on OS
   if (.Platform$OS.type == "windows") {
     shell(cmd)

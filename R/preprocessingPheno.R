@@ -5,9 +5,12 @@
 preprocessingPheno <- function(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     sepType = "",
-    betaPath = "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
-    mPath = "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
-    cnPath = "rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+    betaPath =
+      "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+    mPath =
+      "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+    cnPath =
+      "rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
     SampleID = "Sample_Name",
     timeVar = "Timepoint",
     timepoints = "1,2",
@@ -19,12 +22,12 @@ preprocessingPheno <- function(
     outputLogs = "logs",
     outputDir = "data/preprocessingPheno"
 ) {
-  
+
   # Locate script inside installed package
-  script <- system.file("scripts", "preprocessingPheno.R", package = "dnapipeR")
+  script <- system.file("scripts", "preprocessingPheno.R", package = "dnaEPICO")
   if (script == "")
     stop("Script preprocessingPheno.R not found in package.")
-  
+
   # Build argument list (shQuote for safety)
   arg_list <- c(
     "--phenoFile", shQuote(phenoFile),
@@ -43,14 +46,14 @@ preprocessingPheno <- function(
     "--outputLogs", shQuote(outputLogs),
     "--outputDir", shQuote(outputDir)
   )
-  
+
   # Build full command for printing
   cmd <- paste("Rscript", shQuote(script), paste(arg_list, collapse = " "))
-  
+
   # User-visible messages
   message("Running preprocessingPheno:")
   message(cmd)
-  
+
   # Silent execution (Windows + Linux/HPC)
   invisible(
     if (.Platform$OS.type == "windows") {
