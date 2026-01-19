@@ -11,8 +11,8 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
 --------------
 ## Tutorials:
 - [**DNA Methylation Tutorial**](https://paulYRP.github.io/2025-cpgpneurogenomics-workshop/tutorial.html)
-- [**Getting Started**](https://github.com/paulYRP/DNAm_ArrayWorkflow/wiki/Getting-Started)
-- [**Requirements**](https://github.com/paulYRP/DNAm_ArrayWorkflow/wiki/Requirements)
+- [**Getting Started**](https://github.com/paulYRP/dnaEPICO/wiki/Getting-Started)
+- [**Requirements**](https://github.com/paulYRP/dnaEPICO/wiki/Requirements)
 
 --------------
 ## News
@@ -31,21 +31,21 @@ This repository contains a reproducible pipeline for DNA methylation (DNAm) anal
   ```r
   system.file("make", "Makefile.pipeline", package = "dnapipeR")
   ```
-* Users can control **all analysis parameters** through a **user-defined** [`Makefile`](https://github.com/paulYRP/dnapipeR/blob/main/Makefile), which:
+* Users can control **all analysis parameters** through a **user-defined** [`Makefile`](https://github.com/paulYRP/dnaEPICO/blob/main/Makefile), which:
 
   * Defines global and per-step parameters
   * Optionally overrides parameters per model
 
 ### **10/12/2025**
-- A first functional version of **dnapipeR** has been created in the [`package`](https://github.com/paulYRP/dnapipeR/tree/package) branch.
+- A first functional version of **dnaEPICO** has been created in the [`package`](https://github.com/paulYRP/dnaEPICO/tree/package) branch.
 - **Installation**:
   ```r
-  devtools::install_github("paulYRP/dnapipeR@package")
+  devtools::install_github("paulYRP/dnaEPICO@package")
   ```
 - Each pipeline step now has its own function. List all the **functions** with:
   ```r
-  library(dnapipeR)
-  ls("package:dnapipeR")
+  library(dnaEPICO)
+  ls("package:dnaEPICO")
   ```
   
 ### 28/10/2025
