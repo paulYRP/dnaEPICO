@@ -1,0 +1,78 @@
+Package: dnaEPICO
+Title: dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data
+Version: 0.99.0
+Date: 2026-01-18
+Authors@R:
+    c(
+        person(
+            "Paul", "Ruiz",
+            role = c("aut", "cre"),
+            email = "ruizpint@qut.edu.au",
+            comment = c(ORCID = "0009-0007-6714-3566")
+        ),
+        person(
+            "Divya", "Metha",
+            role = "aut",
+            comment = c(ORCID = "0000-0001-7971-7255")
+        )
+    )
+Description:
+    This package provides a modular and reproducible framework for the
+    preprocessing and analysis of Illumina EPICv2 DNA methylation array 
+    data. It supports quality control, probe filtering, cell-type 
+    deconvolution, phenotype integration, and downstream statistical 
+    modelling using generalised linear and linear mixed-effects models. 
+    The package builds on established Bioconductor infrastructure and 
+    wraps widely used tools such as 'minfi', 'ENmix', 'wateRmelon', and 
+    'ewastools', with support for execution on local workstations and 
+    high-performance computing environments.
+License: AGPL-3 + file LICENSE
+URL: https://github.com/paulYRP/dnaEPICO
+BugReports: https://github.com/paulYRP/dnaEPICO/issues
+Depends: R (>= 4.4)
+Imports:
+    BeadSorted.Saliva.EPIC,
+    dplyr,
+    GenomicRanges,
+    ggplot2,
+    ggrepel,
+    ggpubr,
+    tidyr,
+    glm2,
+    Gviz,
+    IlluminaHumanMethylationEPICv2anno.20a1.hg38,
+    IlluminaHumanMethylationEPICv2manifest,
+    lme4,
+    lmerTest,
+    MASS,
+    minfi,
+    optparse,
+    S4Vectors,
+    SummarizedExperiment,
+    wateRmelon,
+    markdown,
+    rmarkdown,
+    remotes
+Suggests:
+    BiocManager,
+    RefManageR,
+    sessioninfo,
+    devtools,
+    data.table,
+    testthat,
+    knitr,    
+    covr
+Remotes:
+    github::hhhh5/ewastools@master
+VignetteBuilder: knitr
+biocViews: 
+  Software, 
+  MethylationArray, 
+  QualityControl,
+  Epigenetics,
+  Microarray,
+  StatisticalMethod
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3
