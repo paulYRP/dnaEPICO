@@ -7,5 +7,5 @@ inst/doc
 .DS_Store
 .quarto
 dev/
-check/
 tests/
+check/
