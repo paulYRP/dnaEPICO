@@ -16,7 +16,7 @@ output:
     toc_float: true
     toc_depth: 2
     code_folding: show
-date: "`r doc_date()`"
+date: "`r Sys.Date()`"
 package: "`r pkg_ver('dnaEPICO')`"
 vignette: >
   %\VignetteIndexEntry{Introduction to dnaEPICO}

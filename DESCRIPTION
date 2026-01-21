@@ -55,6 +55,7 @@ Imports:
     remotes
 Suggests:
     BiocManager,
+    BiocStyle, 
     RefManageR,
     sessioninfo,
     devtools,
