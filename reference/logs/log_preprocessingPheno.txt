@@ -1,0 +1,26 @@
+==== Starting Phenotype Preprocessing ====
+Start Time:                2026-01-23 12:08:28 
+Log file path:             logs/log_preprocessingPheno.txt 
+
+Phenotype file:            data\preprocessingMinfiEwasWater\phenoLC.csv 
+Beta path:                 rData\preprocessingMinfiEwasWater\metrics\beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData 
+M-values path:             rData\preprocessingMinfiEwasWater\metrics\m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData 
+CN path:                   rData\preprocessingMinfiEwasWater\metrics\cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData 
+
+Identifier column:         Sample_Name 
+Timepoint column:         Timepoint 
+Timepoints (if present):   1,2 
+Combine timepoints:        1,2 
+
+Sex column:                Sex 
+Output phenotype dir:      data\preprocessingPheno 
+RData metrics dir:         rData\preprocessingPheno\metrics 
+RData merge dir:           rData\preprocessingPheno\mergeData 
+
+=======================================================================
+Error in readChar(con, 5L, useBytes = TRUE) : cannot open the connection
+Calls: load -> readChar
+In addition: Warning message:
+In readChar(con, 5L, useBytes = TRUE) :
+  cannot open compressed file 'rData\preprocessingMinfiEwasWater\metrics\beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', probable reason 'No such file or directory'
+Execution halted

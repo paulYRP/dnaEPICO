@@ -1,0 +1,24 @@
+==== Starting SVA Estimation with Enmix ====
+Start time:  2026-01-23 12:08:42 
+
+Log file path:  logs/log_svaEnmix.txt 
+
+Pheno file:  data/preprocessingMinfiEwasWater/phenoLC.csv 
+Separator type:   
+IDAT folder:  
+Log directory:  logs 
+Sample limit:  5 
+SampleID column:  Sample_Name 
+Sentrix ID column:  Sentrix_ID 
+Sentrix Position column:  Sentrix_Position 
+Script label:  svaEnmix 
+ctrlSva percvar:  0.9 
+ctrlSva flag:  1 
+TIFF dimensions (WxH):  2000 x 1000  at 150 dpi
+=======================================================================
+Error in file(file, "rt") : cannot open the connection
+Calls: read.csv -> read.table -> file
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'data/preprocessingMinfiEwasWater/phenoLC.csv': No such file or directory
+Execution halted

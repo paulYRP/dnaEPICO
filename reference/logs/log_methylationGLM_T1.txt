@@ -1,0 +1,36 @@
+==== Starting DNAm GLM Analysis (Timepoint 1) ====
+Start time:  2026-01-23 12:07:14 
+Input phenotype + beta file:  rData/preprocessingPheno/mergeData/phenoBetaT1.RData 
+Output RData folder:  rData/methylationGLM_T1/models 
+Output logs folder:  logs 
+Output plots folder:  figures/methylationGLM_T1 
+Phenotypes:  DASS_Depression,DASS_Anxiety,DASS_Stress, 
+Covariates:  Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells 
+Factor variables:  Sex,Ethnicity,TraumaDefinition 
+CpG column prefix:  cg 
+CpG limit:  All 
+Number of cores:  32 
+Interaction term:  
+Library path:  
+GLM libraries:  glm2 
+PRS mapping:   
+Include Residual SD in summary:  TRUE 
+Summary p-value filter:  None 
+Save TXT summaries:  TRUE 
+Save summary tables:  TRUE 
+Summary output folder:  preliminaryResults/summary/methylationGLM_T1/glm 
+FDR threshold:  0.05 
+P-value adjustment method:  fdr 
+Save significant CpGs:  FALSE 
+Significant CpG output folder:  preliminaryResults/cpgs/methylationGLM_T1 
+Significance p-value cutoff:  0.05 
+Annotation package:  IlluminaHumanMethylationEPICv2anno.20a1.hg38 
+Annotation columns:  Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group 
+Annotated output CSV:  data/methylationGLM_T1 
+=======================================================================
+Error in readChar(con, 5L, useBytes = TRUE) : cannot open the connection
+Calls: load -> readChar
+In addition: Warning message:
+In readChar(con, 5L, useBytes = TRUE) :
+  cannot open compressed file 'rData/preprocessingPheno/mergeData/phenoBetaT1.RData', probable reason 'No such file or directory'
+Execution halted

@@ -1,0 +1,41 @@
+==== Starting DNAm LME Analysis (Timepoint 1 vs 3) ====
+Start time:  2026-01-23 12:07:04 
+Input phenotype + beta file:  rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData 
+Person ID variable:  person 
+Timepoint variable:  Timepoint 
+Phenotypes:  DASS_Depression,DASS_Anxiety,DASS_Stress, 
+Covariates:  Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells 
+PRS mapping:   
+Factor variables:  Sex,Ethnicity,TraumaDefinition,Timepoint 
+LME libraries:  lme4,lmerTest 
+Library path:  Default (R system) 
+CpG prefix pattern:  cg 
+CpG limit:  All CpGs 
+Number of cores:  32 
+Interaction term:  
+Save significant interactions:  TRUE 
+Significant interaction p-value cutoff:  0.05 
+Directory to save significant interactions:  preliminaryResults/cpgs/methylationGLMM_T1T2 
+Save summary TXT files:  TRUE 
+Summary p-value threshold:  NA 
+Padjmethod:  fdr 
+FDR threshold for significance:  0.05 
+Multiple testing correction method:  fdr 
+Save significant interaction CpGs:  TRUE 
+Significant interaction p-value cutoff:  0.05 
+Directory to save significant interaction CpGs:  preliminaryResults/cpgs/methylationGLMM_T1T2 
+Summary TXT output directory:  preliminaryResults/summary/methylationGLMM_T1T2/lmer 
+Annotation package:  IlluminaHumanMethylationEPICv2anno.20a1.hg38 
+Annotation columns:  Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group 
+FDR threshold for significance:  0.05 
+Output logs directory:  logs 
+Directory to save annotated LME results:  data/methylationGLMM_T1T2 
+=======================================================================
+
+Loading input phenotype + beta file...
+Error in readChar(con, 5L, useBytes = TRUE) : cannot open the connection
+Calls: load -> readChar
+In addition: Warning message:
+In readChar(con, 5L, useBytes = TRUE) :
+  cannot open compressed file 'rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData', probable reason 'No such file or directory'
+Execution halted

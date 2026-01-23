@@ -1,0 +1,39 @@
+==== Starting preprocessingMinfiEwasWater ====
+Start Time:                2026-01-23 12:08:26 
+Log file path:             logs/log_preprocessingMinfiEwasWater.txt 
+
+Phenotype file:            data/preprocessingMinfiEwasWater/pheno.csv 
+Separator type:   
+IDAT folder:               data/preprocessingMinfiEwasWater/idats 
+nSamples limit:            NA 
+SampleID column:           Sample_Name 
+Array type:                IlluminaHumanMethylationEPICv2 
+Annotation version:        20a1.hg38 
+Base RData folder:         rData 
+TIFF size (w x h @ dpi):   2000  x  1000  @  150 
+QC cutoff (median):        10.5 
+Detection P-value type:    m+u 
+
+Detection p-value threshold: 0.05 
+Normalization methods:     adjustedfunnorm 
+Funnorm seed:              123 
+Sex column:                Sex 
+Plot grouping variable:    Sex 
+
+Probe filtering:
+  P-value threshold:       0.01 
+  Chromosomes to remove:   chrX,chrY 
+  SNP positions filter:    SBE,CpG 
+  MAF threshold:           0.1 
+  Cross-reactive file:     data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv 
+
+Cell composition (estimateLC):
+  Reference:               salivaEPIC 
+  Leading pheno order:     Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position 
+=======================================================================
+Error in file(file, "rt") : cannot open the connection
+Calls: read.csv -> read.table -> file
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'data/preprocessingMinfiEwasWater/pheno.csv': No such file or directory
+Execution halted
