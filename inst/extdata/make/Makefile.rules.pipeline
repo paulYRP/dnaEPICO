@@ -132,7 +132,7 @@ $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RDat
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
-	Rscript -e "library(dnapipeR); preprocessingMinfiEwasWater( \
+	Rscript -e "library(dnaEPICO); preprocessingMinfiEwasWater( \
 	  phenoFile = '$(PHENO_FILE)', \
 	  sepType = '$(SEP_TYPE)', \
 	  idatFolder = '$(DATA_DIR)/$(STEP1)/$(IDAT_DIR)/', \
@@ -165,7 +165,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 # Step 2: Surrogate Variable Analysis
 # =================================================================================================================================
 $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
-	Rscript -e "library(dnapipeR); svaEnmix( \
+	Rscript -e "library(dnaEPICO); svaEnmix( \
 	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
 	  rgsetData = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData', \
 	  sepType = '$(SEP_TYPE)', \
@@ -189,7 +189,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
 $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
 $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv: 
-	Rscript -e "library(dnapipeR); preprocessingPheno( \
+	Rscript -e "library(dnaEPICO); preprocessingPheno( \
 	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
 	  sepType = '$(SEP_TYPE)', \
 	  betaPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
@@ -210,7 +210,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv:
 # Step 4: GLM for T1
 # =================================================================================================================================
 $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
-	Rscript -e "library(dnapipeR); methylationGLM_T1( \
+	Rscript -e "library(dnaEPICO); methylationGLM_T1( \
 	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData', \
 	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
@@ -253,7 +253,7 @@ SIGNIFICANT_INTERACTION_PVAL = 0.00001
 
 
 $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
-	Rscript -e "library(dnapipeR); methylationGLMM_T1T2( \
+	Rscript -e "library(dnaEPICO); methylationGLMM_T1T2( \
 	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData', \
 	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP5)/$(MODEL_DIR)', \
@@ -295,7 +295,7 @@ REPORT_INPUTS = \
 
 $(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
 	mkdir -p $(STEP6)/$(MODEL) $(LOGS_DIR)/$(MODEL)
-	Rscript -e "library(dnapipeR); dnamReport( \
+	Rscript -e "library(dnaEPICO); dnamReport( \
 	  output = 'DNAm.pdf', \
 	  outputDir = '$(STEP6)/$(MODEL)', \
 	  qcDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
