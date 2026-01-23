@@ -75,7 +75,7 @@ devtools::install_github("hhhh5/ewastools")
 
 ```
 
-```{r "start", message=FALSE}
+```{r "start", message=FALSE, eval = FALSE}
 library("dnaEPICO")
 library("ewastools")
 
