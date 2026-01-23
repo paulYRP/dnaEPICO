@@ -19,6 +19,36 @@
 #' @param outputLogs Character. Directory for log files.
 #' @param outputDir Character. Base output directory.
 #'
+#' @return
+#' Invisibly returns \code{NULL}. This function is called for its side effects,
+#' preparing analysis-ready phenotype–methylation datasets by subsetting,
+#' merging timepoints, aligning samples with beta, M, and CN matrices, and
+#' writing processed phenotype tables and RData objects to disk.
+#'
+#' @examples
+#' tmp <- tempdir()
+#' stopifnot(dir.exists(tmp))
+#'
+#' \donttest{
+#' preprocessingPheno(
+#'   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
+#'   sepType = "",
+#'   betaPath = "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+#'   mPath = "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+#'   cnPath = "rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+#'   SampleID = "Sample_Name",
+#'   timeVar = "Timepoint",
+#'   timepoints = "1,2",
+#'   combineTimepoints = "1,2",
+#'   outputPheno = "data/preprocessingPheno",
+#'   outputRData = "rData/preprocessingPheno/metrics",
+#'   outputRDataMerge = "rData/preprocessingPheno/mergeData",
+#'   sexColumn = "Sex",
+#'   outputLogs = "logs",
+#'   outputDir = "data/preprocessingPheno"
+#' )
+#' }
+#'
 #' @export
 preprocessingPheno <- function(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",

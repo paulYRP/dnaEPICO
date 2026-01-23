@@ -14,9 +14,23 @@ will be copied.}
 Default is FALSE.}
 }
 \value{
-Invisibly returns the path to the copied Makefile.
+Invisibly returns \code{NULL}. The function is called for its side effect
+of generating a PDF report and associated logs.
 }
 \description{
 Copies the example Makefile pipeline shipped with dnaEPICO to a
 user-specified directory for local execution or modification.
+}
+\examples{
+tmp <- tempdir()
+stopifnot(dir.exists(tmp))
+
+\donttest{
+## Copy the dnaEPICO Makefile pipeline into a project directory
+extractMake(
+  destDir = getwd(),
+  overwrite = FALSE
+)
+}
+
 }

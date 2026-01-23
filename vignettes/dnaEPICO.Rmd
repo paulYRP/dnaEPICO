@@ -1,5 +1,6 @@
 ---
-title: "Introduction to dnaEPICO"
+title: "The dnaEPICO User's Guide"
+shorttitle: "dnaEPICO guide"
 author: 
   - name: Paul Ruiz
     affiliation:
@@ -8,7 +9,8 @@ author:
   - name: Divya Metha
     affiliation:
     - Queensland University of Technology
-    email: divya.mehta@qut.edu.au
+abstract: >
+  A comprehensive guide to using the dnaEPICO package. The package supports preprocessing and analysis of Illumina EPICv2 DNA methylation array data, including QC, filtering, SVA, cell-type deconvolution, phenotype integration, modelling, and export-ready files for the DNAmAge Clock Foundation platform.
 output: 
   BiocStyle::html_document:
     self_contained: yes
@@ -17,7 +19,8 @@ output:
     toc_depth: 2
     code_folding: show
 date: "`r Sys.Date()`"
-package: "`r pkg_ver('dnaEPICO')`"
+package: dnaEPICO
+bibliography: dnaEPICO.bib
 vignette: >
   %\VignetteIndexEntry{Introduction to dnaEPICO}
   %\VignetteEngine{knitr::rmarkdown}
@@ -25,6 +28,7 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
+startTime <- Sys.time()
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>",
@@ -32,32 +36,28 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction
 
-```{r vignetteSetup, echo=FALSE, message=FALSE, warning = FALSE}
-## Track time spent on making the vignette
-startTime <- Sys.time()
+The **dnaEPICO** package supports preprocessing and analysis of Illumina EPICv2 DNA methylation array data. It covers data import, quality control, surrogate variable analysis, probe and sample filtering, cell-type deconvolution, phenotype integration, and downstream modelling using generalised linear and linear mixed-effects models. The package integrates with Bioconductor workflows and tools including `minfi`, `ENmix`, and `wateRmelon`. Additional functionality is provided via the `ewastools` package, which is installed from GitHub using `devtools::install_github("hhhh5/ewastools")`. 
 
-## Bib setup
-library("RefManageR")
+dnaEPICO also prepares standardised DNA methylation files for direct export to the [DNAmAge Clock Foundation platform](https://dnamage.clockfoundation.org/user).
 
-## Write bibliography information
-bib <- c(
-    R = citation(),
-    BiocStyle = citation("BiocStyle")[1],
-    knitr = citation("knitr")[1],
-    RefManageR = citation("RefManageR")[1],
-    rmarkdown = citation("rmarkdown")[1],
-    sessioninfo = citation("sessioninfo")[1],
-    testthat = citation("testthat")[1],
-    dnaEPICO = citation("dnaEPICO")[1]
-)
-```
+## Citing `dnaEPICO`
 
-# Basics
+The `r Biocpkg("dnaEPICO")` package implements methods described across multiple independent publications by different authors. As a result, no single manuscript fully describes all components of the package. This section provides guidance on how to cite dnaEPICO appropriately.
 
-## Install `dnaEPICO`
+The citation guidance below is adapted from the user guides and vignettes of the packages on which dnaEPICO builds, [minfi](https://github.com/hansenlab/minfi/blob/devel/vignettes/minfi.Rmd), [ENmix](https://github.com/xuz1/ENmix/blob/master/vignettes/ENmix.Rmd), [wateRmelon](https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/references.bib), and [ewastools](https://hhhh5.github.io/ewastools/articles/exemplary_ewas.html).
 
-`R` is an open-source statistical environment which can be easily modified to enhance its functionality via packages. `r Biocpkg("dnaEPICO")` is a `R` package available via the [Bioconductor](http://bioconductor.org) repository for packages. `R` can be installed on any operating system from [CRAN](https://cran.r-project.org/) after which you can install `r Biocpkg("dnaEPICO")` by using the following commands in your `R` session:
+- If you use `preprocessingMinfiEwasWater()`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@SWAN], [@funnorm], [@noob] and [@quantile].
+- If you use `svaEnmix()`, please cite [@minfi], [@ENmix], and [@ewastools].
+- If you use `make f3 MODEL=model1`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@SWAN], [@funnorm], [@noob], [@quantile] and [@ewastools].
+- If you use `make f4 MODEL=model1`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@SWAN], [@funnorm], [@noob], [@quantile], [@ewastools] and [@glm2].
+- If you use `make f3lme MODEL=model1`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@SWAN], [@funnorm], [@noob], [@quantile], [@ewastools] and [@lme4].
+- If you use `make all MODEL=model1`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@SWAN], [@funnorm], [@noob], [@quantile], [@ewastools], [@glm2] and [@lme4]. 
+
+# Installation
+
+`r Biocpkg("dnaEPICO")` implements methods in `r Biocpkg("minfi")`, `r Biocpkg("ENmix")` and `r Biocpkg("wateRmelon")` packages so there is quite the number of dependencies which need to be installed. Additional functionality is provided via the `ewastools` package. This can be handled by simply running:
 
 ```{r "install", eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
@@ -66,86 +66,1155 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) {
 
 BiocManager::install("dnaEPICO")
 
-## Check that you have a valid Bioconductor installation
 BiocManager::valid()
+
 ```
 
-## Required knowledge
+```{r "github", eval = FALSE}
+devtools::install_github("hhhh5/ewastools")
 
-`r Biocpkg("dnaEPICO")` is built on core **Bioconductor infrastructure for high-dimensional genomic data**, with a focus on Illumina EPICv2 DNA methylation arrays. 
-
-Preprocessing and quality control are performed using established Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`. Additional functionality is provided via the `ewastools` package, which is installed from GitHub using `devtools::install_github("hhhh5/ewastools")`. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures.
-
-If you are asking yourself the question "Where do I start using Bioconductor?" you might be interested in [this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
-
-===========================================
-
-
-
-
-
-
-
-
-
-
-
-
-
-===========================================
-
-
-## Asking for help
-
-As package developers, we try to explain clearly how to use our packages and in which order to use the functions. But `R` and `Bioconductor` have a steep learning curve so it is critical to learn where to ask for help. The blog post quoted above mentions some but we would like to highlight the [Bioconductor support site](https://support.bioconductor.org/) as the main resource for getting help: remember to use the `dnaEPICO` tag and check [the older posts](https://support.bioconductor.org/tag/dnaEPICO/). Other alternatives are available such as creating GitHub issues and tweeting. However, please note that if you want to receive help you should adhere to the [posting guidelines](http://www.bioconductor.org/help/support/posting-guide/). It is particularly critical that you provide a small reproducible example and your session information so package developers can track down the source of the error.
-
-## Citing `dnaEPICO`
-
-We hope that `r Biocpkg("dnaEPICO")` will be useful for your research. Please use the following information to cite the package and the overall approach. Thank you!
-
-```{r "citation"}
-## Citation info
-citation("dnaEPICO")
 ```
-
-# Quick start to using `dnaEPICO`
 
 ```{r "start", message=FALSE}
 library("dnaEPICO")
+library("ewastools")
+
 ```
 
-Edit this as you see fit =)
+Alternatively, `r Biocpkg("dnaEPICO")` can be installed directly from our
+[github](https://github.com/paulYRP/dnaEPICO)
 
-Here is an example of you can cite your package inside the vignette:
+```{r, eval= FALSE, echo= TRUE}
+install.packages('devtools')
+devtools::install_github('paulYRP/dnaEPICO')
 
-* `r Biocpkg("dnaEPICO")` `r Citep(bib[["dnaEPICO"]])`
-
-# Reproducibility
-
-The `r Biocpkg("dnaEPICO")` package `r Citep(bib[["dnaEPICO"]])` was made possible thanks to:
-
-* R `r Citep(bib[["R"]])`
-* `r Biocpkg("BiocStyle")` `r Citep(bib[["BiocStyle"]])`
-* `r CRANpkg("knitr")` `r Citep(bib[["knitr"]])`
-* `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`
-* `r CRANpkg("rmarkdown")` `r Citep(bib[["rmarkdown"]])`
-* `r CRANpkg("sessioninfo")` `r Citep(bib[["sessioninfo"]])`
-* `r CRANpkg("testthat")` `r Citep(bib[["testthat"]])`
-
-This package was developed using `r BiocStyle::Biocpkg("biocthis")`.
-
-
-Code for creating the vignette
-
-```{r createVignette, eval=FALSE}
-## Create the vignette
-library("rmarkdown")
-system.time(render("dnaEPICO.Rmd", "BiocStyle::html_document"))
-
-## Extract the R code
-library("knitr")
-knit("dnaEPICO.Rmd", tangle = TRUE)
 ```
+
+# Overview
+
+`r Biocpkg("dnaEPICO")` is a DNA methylation preprocessing and modelling pipeline designed for Illumina **EPICv2** arrays. It wraps reproducible analysis steps into a consistent structure that:
+
+* reads **IDATs** and phenotype metadata,
+* performs **QC**, filtering and normalisation,
+* computes surrogate variables (**SVA**),
+* **merges phenotype** with methylation matrices,
+* runs **GLM** (cross-sectional) and **GLMM/LME** (longitudinal) models,
+* writes **logs**, **figures**, **RData objects**, and a **PDF report**.
+
+A core design principle is that each step creates its own folders and outputs, so you can run steps independently or chain them through the Makefile pipeline.
+
+## Local/Cluster use
+
+**Local use** is recommended for:
+
+* testing the pipeline end-to-end on a small subset,
+* preparing clean merged data objects,
+* generating QC plots and logs,
+* validating input formatting and parameter choices.
+
+**Cluster/HPC use** is recommended for:
+
+* genome-wide modelling (hundreds of thousands of CpGs),
+* parallel chunk processing,
+* large memory operations and multi-core execution,
+* reproducible batch execution with Make targets (`f3`, `f4`, `f3lme` and `all`).
+
+# Data expectations and folder conventions
+
+`r Biocpkg("dnaEPICO")` expects:
+
+```bash
+├── data/                                   # Processed data outputs (per model)
+│   ├── preprocessingMinfiEwasWater/
+│   │   ├── idats/                          # Folder containing raw IDAT files
+│   │   ├── pheno.csv                       # Phenotype file with sample metadata
+│   │   └── 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
+│   ├── Makefile                            # Arguments 
+
+```
+
+* **Phenotype file**: a CSV with sample identifiers and covariates.
+* **IDAT folder**: contains Illumina `*_Red.idat` and `*_Grn.idat` pairs.
+* **Output folders**: created by each step (logs, rData, figures, reports).
+
+You can download the list of off-target cross-hybridisation sites for EPICv2 probes from [`12864_2024_10027_MOESM8_ESM.csv`](https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323).
+
+You can extract the `Makefile` using:
+
+```{r, eval=FALSE}
+extractMake(
+  destDir = getwd(),
+  overwrite = FALSE
+  )
+
+```
+
+`r Biocpkg("dnaEPICO")` generates:
+
+```bash
+├── data/                                   # Processed data outputs (per model)
+│   ├── preprocessingMinfiEwasWater/
+│   │   ├── idats/                          # Folder containing raw IDAT files
+│   │   ├── pheno.csv                       # Phenotype file with sample metadata
+│   │   └── 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
+│   ├── model1/                             # Outputs specific to the first model
+│   │   ├── preprocessingMinfiEwasWater/    # Preprocessed phenotype + QC from Minfi
+│   │   ├── svaEnmix/                       # Surrogate variable analysis 
+│   │   ├── preprocessingPheno/             # Cleaned and merged phenotype files 
+│   │   ├── methylationGLM_T1/              # CpG-level GLM results (single timepoint)
+│   │   ├── methylationGLMM_T1T2/           # Longitudinal LME results (T1 vs T2)
+│   │   └── ...                             # Additional subfolders by model
+│   ├── model2/
+│   └── model3/
+├── rData/                                  # Processed R objects (MSet, Beta, CN matrices, etc.)
+├── logs/                                   # Logging output from script runs
+├── figures/                                # QC plots and visualization output
+├── results/                                # Output tables and summary statistics
+├── reports/                                # Optional rendered reports (PDF)
+
+```
+Each step writes:
+
+* `logs/`: logs
+* `rData/`: intermediate and final R objects
+* `figures/`: plots organised by step name
+* `data/`: exported tables (annotated results, phenotype exports)
+* `reports/`: final PDF report
+
+This *“each function writes to its own folder”* approach is intentional: it improves reproducibility, debugging, and HPC resuming.
+
+# Local use
+
+Local use focuses on the first three steps that are commonly run interactively:
+
+1. `preprocessingMinfiEwasWater()`: import + QC + normalise + filter + cell composition
+2. `svaEnmix()`: surrogate variable analysis using ENmix control probes
+3. `preprocessingPheno()`: merge phenotype metadata with methylation matrices
+
+## Step 1: `preprocessingMinfiEwasWater()`
+
+```{r sig_step1, eval=FALSE}
+preprocessingMinfiEwasWater(
+    phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
+    idatFolder = "data/preprocessingMinfiEwasWater/idats",
+    outputLogs = "logs",
+    nSamples = NA,
+    SampleID = "Sample_Name",
+    arrayType = "IlluminaHumanMethylationEPICv2",
+    annotationVersion = "20a1.hg38",
+    scriptLabel = "preprocessingMinfiEwasWater",
+    baseDataFolder = "rData",
+    sepType = "",
+    tiffWidth = 2000,
+    tiffHeight = 1000,
+    tiffRes = 150,
+    qcCutoff = 10.5,
+    detPtype = "m+u",
+    detPThreshold = 0.05,
+    funnormSeed = 123,
+    normMethods = "adjustedfunnorm",
+    sexColumn = "Sex",
+    pvalThreshold = 0.01,
+    chrToRemove = "chrX,chrY",
+    snpsToRemove = "SBE,CpG",
+    mafThreshold = 0.1,
+    crossReactivePath =
+      "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
+    plotGroupVar = "Sex",
+    lcRef = "salivaEPIC",
+    phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
+    lcPhenoDir = "data/preprocessingMinfiEwasWater"
+)
+```
+
+### What it does:
+
+This wrapper executes the pipeline script in `inst/scripts/preprocessingMinfiEwasWater.R` using `Rscript`. Conceptually, it:
+
+1. Reads phenotype CSV (`phenoFile`) and IDATs (`idatFolder`).
+2. Loads an `RGChannelSet` (minfi) and runs basic QC.
+3. Creates `MSet`/`RatioSet`/`GenomicRatioSet` objects.
+4. Computes detection p-values and filters failed probes/samples.
+5. Applies normalisation (`normMethods`).
+6. Performs probe filtering (p-value, chrX/Y removal, SNP filters, cross-reactive probes).
+7. Exports final matrices (Beta/M/CN) to `rData/`.
+8. Produces plots in `figures/` and logs in `logs/`.
+9. Optionally estimates cell composition (via `lcRef`) and writes `phenoLC.csv` into `lcPhenoDir`.
+
+### Parameter guide:
+
+* `phenoFile`: where your sample metadata lives (CSV).
+* `idatFolder`: directory with IDAT pairs.
+* `nSamples`: subset for testing locally (e.g. `5`).
+* `SampleID`: name of the sample ID column in your phenotype file.
+* `arrayType`, `annotationVersion`: ensures the correct EPICv2 manifest/annotation is used.
+* `qcCutoff`, `detPtype`, `detPThreshold`: QC rules; detection p-value is used to flag failed probes/samples.
+* `normMethods`: normalisation method(s) you want to apply.
+* `pvalThreshold`, `chrToRemove`, `snpsToRemove`, `mafThreshold`: probe-level filters.
+* `crossReactivePath`: CSV containing cross-reactive probes to remove.
+* `phenoOrder`: a semicolon-delimited string that defines how the final phenotype table is ordered.
+* `lcRef`, `lcPhenoDir`: cell composition reference + output for pheno with cell fractions.
+
+## Step 2: `svaEnmix()`
+
+```{r sig_step2, eval=FALSE}
+svaEnmix(
+    phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
+    rgsetData = "rData/preprocessingMinfiEwasWater/objects/RGSet.RData",
+    sepType = "",
+    outputLogs = "logs",
+    nSamples = NA,
+    SampleID = "Sample_Name",
+    arrayType = "IlluminaHumanMethylationEPICv2",
+    annotationVersion = "20a1.hg38",
+    SentrixIDColumn = "Sentrix_ID",
+    SentrixPositionColumn = "Sentrix_Position",
+    ctrlSvaPercVar = 0.90,
+    ctrlSvaFlag = 1,
+    scriptLabel = "svaEnmix",
+    tiffWidth = 2000,
+    tiffHeight = 1000,
+    tiffRes = 150
+)
+```
+
+### What it does:
+
+This wrapper executes `inst/scripts/svaEnmix.R`. Conceptually, it:
+
+1. Loads `RGSet` from `rgsetData` and phenotype from `phenoFile`.
+2. Uses ENmix control probes to derive control-based components.
+3. Chooses how many components to keep based on `ctrlSvaPercVar`.
+4. Writes summary outputs, figures, and updated objects/logs.
+
+### Parameter guide:
+
+* `rgsetData`: the saved object from Step 1 (input to SVA).
+* `phenoFile`: `phenoLC.csv` from Step 1 (includes cell fractions).
+* `ctrlSvaPercVar`: proportion of variance to capture using control-derived SVs.
+* `SentrixIDColumn`, `SentrixPositionColumn`: needed to match the array sample structure.
+
+## Step 3: `preprocessingPheno()`
+
+```{r sig_step3, eval=FALSE}
+preprocessingPheno(
+    phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
+    sepType = "",
+    betaPath =
+      "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+    mPath =
+      "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+    cnPath =
+      "rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+    SampleID = "Sample_Name",
+    timeVar = "Timepoint",
+    timepoints = "1,2",
+    combineTimepoints = "1,2",
+    outputPheno = "data/preprocessingPheno",
+    outputRData = "rData/preprocessingPheno/metrics",
+    outputRDataMerge = "rData/preprocessingPheno/mergeData",
+    sexColumn = "Sex",
+    outputLogs = "logs",
+    outputDir = "data/preprocessingPheno"
+)
+```
+
+### What it does:
+
+This wrapper executes `inst/scripts/preprocessingPheno.R`. Conceptually, it:
+
+1. Loads phenotype and methylation matrices (Beta/M/CN).
+2. Aligns samples by `SampleID`.
+3. Creates timepoint-specific subsets (`timepoints`).
+4. Optionally combines timepoints (`combineTimepoints`) for longitudinal sets.
+5. Writes:
+
+   * exported phenotype tables into `outputPheno`,
+   * methylation metric objects into `outputRData`,
+   * merged objects (e.g., `phenoBetaT1.RData`) into `outputRDataMerge`.
+   
+### Parameter guide:
+
+* `phenoFile`: `phenoLC.csv` generated in Step 1.
+* `betaPath`, `mPath`, `cnPath`: paths to saved methylation metric objects (Beta, M, and CN matrices) produced during preprocessing.
+* `SampleID`: column name in the phenotype file used to match samples to methylation matrices.
+* `timeVar`: phenotype column that defines the time variable (e.g. baseline, follow-up).
+* `timepoints`: comma-separated list of timepoints to subset and export individually.
+* `combineTimepoints`: comma-separated list of timepoints to merge into a single longitudinal dataset.
+* `outputPheno`: directory where cleaned and subsetted phenotype tables are written.
+* `outputRData`: directory where timepoint-specific methylation metric objects are saved.
+* `outputRDataMerge`: directory where merged phenotype–methylation objects are written.
+* `sexColumn`: column used to store biological sex.
+* `outputLogs`: directory where execution logs are written.
+* `outputDir`: base directory for exported data products generated by this step.
+
+This step prepares analysis-ready phenotype–methylation objects for downstream GLM and LME modelling and generates files compatible with the DNAmAge Clock Foundation platform (see your `log_preprocessingPheno.txt` for details).
+
+# Cluster / HPC use
+
+On full datasets, model fitting across hundreds of thousands of CpGs typically requires:
+
+* large memory,
+* parallel chunking,
+* long runtimes.
+
+`dnaEPICO` supports this with a Makefile-driven pipeline that can run the pipeline end-to-end or by grouped targets.
+
+## Step 4: `methylationGLM_T1()`
+
+This step is typically executed on **HPC systems** due to memory and CPU requirements.
+
+```{r sig_step4, eval=FALSE}
+methylationGLM_T1(
+    inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1.RData",
+    outputLogs = "logs",
+    outputRData = "rData/methylationGLM_T1/models",
+    outputPlots = "figures/methylationGLM_T1",
+    phenotypes = "Pheno1,Pheno2,Pheno3,Pheno4",
+    covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
+    factorVars = "Sex,Ethnicity,TraumaDefinition",
+    cpgPrefix = "cg",
+    cpgLimit = NA,
+    nCores = 32,
+    plotWidth = 2000,
+    plotHeight = 1000,
+    plotDPI = 150,
+    interactionTerm = NULL,
+    libPath = NULL,
+    glmLibs = "glm2",
+    prsMap = "Pheno1:PRS_1,Pheno2:PRS_2,Pheno3:PRS_3,Pheno4:PRS_4",
+    summaryPval = NA,
+    summaryResidualSD = TRUE,
+    saveSignificantCpGs = FALSE,
+    significantCpGDir = "preliminaryResults/cpgs/methylationGLM_T1",
+    significantCpGPval = 0.05,
+    saveTxtSummaries = TRUE,
+    chunkSize = 10000,
+    summaryTxtDir = "preliminaryResults/summary/methylationGLM_T1/glm",
+    fdrThreshold = 0.05,
+    padjmethod = "fdr",
+    annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
+    annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,
+                      Relation_to_Island,GencodeV41_Group",
+    annotatedGLMOut = "data/methylationGLM_T1"
+) 
+
+```
+
+### What it does:
+
+This wrapper executes the external script `inst/scripts/methylationGLM_T1.R` using a system call. Conceptually, it:
+
+1. Loads a merged phenotype–beta-value object (`inputPheno`) produced by `preprocessingPheno()`.
+2. Iterates over CpGs in chunks and fits a generalised linear model [(glm2)](https://cran.r-project.org/web/packages/glm2/index.html) for each CpG.
+3. Models each specified phenotype separately, adjusting for covariates and factor variables.
+4. Optionally includes interaction terms and polygenic risk score (PRS) mappings.
+5. Applies multiple-testing correction (FDR).
+6. Writes:
+
+   * fitted model objects to `outputRData`,
+   * diagnostic and summary plots to `outputPlots`,
+   * log files to `outputLogs`,
+   * text summaries and significant CpG tables,
+   * annotated result tables using the specified annotation package.
+
+### Parameter guide:
+
+* `inputPheno`: path to the merged phenotype–beta-value `.RData` file (e.g. `phenoBetaT1.RData`).
+* `outputLogs`: directory where model execution logs are written.
+* `outputRData`: directory where fitted GLM model objects are saved.
+* `outputPlots`: directory where plots (e.g. p-value distributions, diagnostics) are written.
+* `phenotypes`: comma-separated list of phenotype variables to model independently.
+* `covariates`: comma-separated list of covariates included in each GLM.
+* `factorVars`: subset of covariates treated as categorical variables.
+* `cpgPrefix`: prefix used to identify CpG probes (usually `"cg"`).
+* `cpgLimit`: maximum number of CpGs to analyse (useful for testing); `NA` runs all CpGs.
+* `nCores`: number of CPU cores used for parallel processing.
+* `plotWidth`, `plotHeight`, `plotDPI`: dimensions and resolution of generated plots.
+* `interactionTerm`: optional interaction term (e.g. `phenotype:timepoint`); `NULL` disables interactions.
+* `libPath`: optional library path for HPC environments.
+* `glmLibs`: GLM backend library to use (e.g. `glm2`).
+* `prsMap`: optional PRS mapping file to include genetic predictors.
+* `summaryPval`: p-value threshold for generating summary outputs; `NA` disables filtering.
+* `summaryResidualSD`: logical flag to summarise residual standard deviations.
+* `saveSignificantCpGs`: whether to save CpGs passing `significantCpGPval`.
+* `significantCpGDir`: directory where significant CpG tables are written.
+* `significantCpGPval`: p-value threshold for defining significant CpGs.
+* `saveTxtSummaries`: whether to save per-model text summaries.
+* `chunkSize`: number of CpGs processed per chunk to control memory usage.
+* `summaryTxtDir`: directory for text-based model summaries.
+* `fdrThreshold`: FDR threshold used for adjusted p-values.
+* `padjmethod`: multiple-testing correction method (e.g. `"fdr"`).
+* `annotationPackage`: annotation package used to annotate CpGs.
+* `annotationCols`: comma-separated annotation fields to extract.
+* `annotatedGLMOut`: directory where annotated GLM result tables are written.
+
+
+### GLM structure used in dnaEPICO (`glm2`):
+
+For each CpG site ( cg_i ), dnaEPICO fits a generalised linear model of the form:
+
+$$
+\text{Methylation}*{cg_i} =
+\beta_0 +
+\beta_1 \cdot \text{Phenotype} +
+\sum*{k=1}^{K} \beta_{k+1} \cdot \text{Covariate}*k +
+\varepsilon
+$$
+
+where methylation is typically represented as **M-values** (or Beta-values, depending on configuration).
+
+
+### GLM without PRS (default):
+
+$$
+\begin{aligned}
+\text{Methylation}_{cg_i} = \;&
+\beta_0 +
+\beta_1 \cdot \text{Phenotype} +
+\beta_2 \cdot \text{Age} +
+\beta_3 \cdot \text{Sex} +
+\beta_4 \cdot \text{Ethnicity} + \\
+&+
+\beta_5 \cdot \text{TraumaDefinition} +
+\beta_6 \cdot \text{Leukocytes} +
+\beta_7 \cdot \text{Epithelial.cells} +
+\varepsilon
+\end{aligned}
+$$
+
+**Mapping to dnaEPICO parameters**
+
+* **Phenotype**:`phenotypes`
+* **Age, Sex, Ethnicity, TraumaDefinition, Leukocytes, Epithelial.cells**: `covariates`
+* **Sex, Ethnicity, TraumaDefinition**: converted to `factorVars`
+* (\varepsilon): residual error term
+
+### GLM with PRS:
+
+When a PRS is supplied via `prsMap`, the model is **extended only for the matching phenotype**.
+
+From the example above:
+
+```
+prsMap = "Pheno1:PRS_1,Pheno2:PRS_2,Pheno3:PRS_3,Pheno4:PRS_4"
+
+```
+
+This defines a **one-to-one mapping** between phenotype and PRS. For example:
+
+* Pheno1 with PRS_1 
+
+$$
+\text{Methylation}*{cg_i} =
+\beta_0 +
+\beta_1 \cdot \text{Pheno1} +
+\sum*{k=1}^{K} \beta_{k+1} \cdot \text{Covariate}*k +
+\beta*{\text{PRS}} \cdot \text{PRS_1} +
+\varepsilon
+$$
+
+* Pheno2 with PRS_2
+
+$$
+\text{Methylation}*{cg_i} =
+\beta_0 +
+\beta_1 \cdot \text{Pheno2} +
+\sum*{k=1}^{K} \beta_{k+1} \cdot \text{Covariate}*k +
+\beta*{\text{PRS}} \cdot \text{PRS_2} +
+\varepsilon
+$$
+
+
+### Interaction term
+
+If an interaction is specified (e.g. phenotype × timepoint):
+
+$$
+\text{Methylation}*{cg_i} =
+\ldots +
+\beta*{int} \cdot (\text{Phenotype} \times \text{Timepoint}) +
+\varepsilon
+$$
+
+**Mapping**
+
+* Interaction definition: `interactionTerm`
+
+## Step 5: `methylationGLMM_T1T2()`
+
+This step is typically executed on **HPC systems** due to memory and CPU requirements.
+
+```{r sig_step5, eval=FALSE}
+methylationGLMM_T1T2(
+    inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
+    outputLogs = "logs/",
+    outputRData = "rData/methylationGLMM_T1T2/models",
+    outputPlots = "figures/methylationGLMM_T1T2",
+    personVar = "person",
+    timeVar = "Timepoint",
+    phenotypes = "Pheno1,Pheno2,Pheno3,Pheno4",
+    covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
+    factorVars = "Sex,Ethnicity,TraumaDefinition,Timepoint",
+    lmeLibs = "lme4,lmerTest",
+    prsMap = "Pheno1:PRS_1,Pheno2:PRS_2,Pheno3:PRS_3,Pheno4:PRS_4",
+    libPath = NULL,
+    cpgPrefix = "cg",
+    cpgLimit = NA,
+    nCores = 32,
+    summaryPval = NA,
+    plotWidth = 2000,
+    plotHeight = 1000,
+    plotDPI = 150,
+    interactionTerm = NULL,
+    saveSignificantInteractions = TRUE,
+    significantInteractionDir = "preliminaryResults/cpgs/methylationGLMM_T1T2",
+    significantInteractionPval = 0.05,
+    saveTxtSummaries = TRUE,
+    chunkSize = 10000,
+    summaryTxtDir = "preliminaryResults/summary/methylationGLMM_T1T2/lmer",
+    fdrThreshold = 0.05,
+    padjmethod = "fdr",
+    annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
+    annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,
+                      Relation_to_Island,GencodeV41_Group",
+    annotatedLMEOut = "data/methylationGLMM_T1T2"
+)
+
+```
+
+### What it does:
+
+This wrapper executes the external script `inst/scripts/methylationGLMM_T1T2.R` using a system call. Conceptually, it:
+
+1. Loads a merged **longitudinal phenotype–methylation** object (`inputPheno`) created by `preprocessingPheno()`.
+2. Iterates over CpGs in chunks and fits a linear mixed-effects model [(lme4)](https://cran.r-project.org/web/packages/lme4/index.html).
+3. Fits **one model per phenotype**, accounting for repeated measures using a subject-level random effect.
+4. Models fixed effects for phenotype, time, covariates, and optional interactions.
+5. Optionally includes **phenotype-specific PRS terms** based on `prsMap`.
+6. Tests interaction terms (e.g. phenotype × timepoint).
+7. Applies multiple-testing correction across CpGs.
+8. Writes:
+
+   * fitted model objects to `outputRData`,
+   * plots to `outputPlots`,
+   * log files to `outputLogs`,
+   * text summaries,
+   * tables of significant interaction CpGs,
+   * annotated result tables using the specified annotation package.
+
+### Parameter guide:
+
+* `inputPheno`: path to the merged longitudinal phenotype–methylation `.RData` file (e.g. `phenoBetaT1T2.RData`).
+* `outputLogs`: directory where execution logs are written.
+* `outputRData`: directory where fitted mixed-effects model objects are saved.
+* `outputPlots`: directory where model diagnostics and summary plots are written.
+* `personVar`: subject identifier used as a random effect (e.g. participant ID).
+* `timeVar`: variable defining the longitudinal time dimension.
+* `phenotypes`: comma-separated list of phenotype variables.
+* `covariates`: comma-separated list of covariates included as fixed effects.
+* `factorVars`: subset of variables treated as categorical (typically includes `timeVar`).
+* `lmeLibs`: mixed-effects modelling libraries used (e.g. `lme4`, `lmerTest`).
+* `prsMap`: optional phenotype-to-PRS mapping; PRS terms are included **only for mapped phenotypes**.
+* `libPath`: optional library path for HPC environments.
+* `cpgPrefix`: prefix used to identify CpG probes (usually `"cg"`).
+* `cpgLimit`: maximum number of CpGs to analyse; `NA` analyses all CpGs.
+* `nCores`: number of CPU cores used for parallel processing.
+* `summaryPval`: p-value threshold for generating summaries; `NA` disables filtering.
+* `plotWidth`, `plotHeight`, `plotDPI`: dimensions and resolution of generated plots.
+* `interactionTerm`: interaction term to test (commonly `timeVar`); `NULL` disables interaction testing.
+* `saveSignificantInteractions`: logical flag indicating whether significant interaction CpGs are saved.
+* `significantInteractionDir`: directory where significant interaction results are written.
+* `significantInteractionPval`: p-value threshold defining significant interactions.
+* `saveTxtSummaries`: whether to save per-model text summaries.
+* `chunkSize`: number of CpGs processed per chunk to manage memory usage.
+* `summaryTxtDir`: directory for text-based model summaries.
+* `fdrThreshold`: FDR threshold applied to interaction p-values.
+* `padjmethod`: multiple-testing correction method (e.g. `"fdr"`).
+* `annotationPackage`: annotation package used to annotate CpGs.
+* `annotationCols`: comma-separated annotation fields to extract.
+* `annotatedLMEOut`: directory where annotated mixed-model result tables are written.
+
+
+### LMEM structure used in dnaEPICO (`lme4`):
+
+For longitudinal analyses, the phenotype-specific structure remains, with additional random and interaction terms:
+
+$$
+\begin{aligned}
+\text{Methylation}*{cg_i} = \;&
+\beta_0^{(p)} +
+\beta_1^{(p)} \cdot p +
+\beta_2^{(p)} \cdot \text{Timepoint} +
+\beta_3^{(p)} \cdot (p \times \text{Timepoint}) + \\
+&+
+\beta*{\text{PRS}}^{(p)} \cdot \text{PRS}*p +
+b*{\text{person}} +
+\varepsilon^{(p)}
+\end{aligned}
+$$
+
+where (\text{PRS}_p) is included **only if it is defined for phenotype (p)**. The logic follows that of `methylationGLM_T1()`.
+
+
+# Makefile pipeline concepts
+
+* `Makefile.model.pipeline`: user configuration (models, variables, paths)
+* `Makefile.rules.pipeline`: pipeline targets and rules
+
+## Extracting `Makefile.model.pipeline` into a working directory
+
+```{r extract_make, eval=FALSE}
+## Copies the example Makefile into the current directory
+extractMake(destDir = getwd(), overwrite = FALSE)
+
+```
+
+The internal template `Makefile.model.pipeline` is copied and renamed to `Makefile` in the destination directory.
+
+## Make targets: f3, f4, f3lme and all
+
+Common grouped targets:
+
+* `f3`: Steps 1–3 (preprocessing + SVA + merge)
+* `f4`: Steps 1–4 (adds GLM)
+* `f3lme`: Steps 1-3 and 5 (adds LME4)
+* `all`: Steps 1–5 
+
+### Commands
+
+```{r make_targets, eval=FALSE}
+## Show status of pipeline outputs
+make status MODEL=model1
+
+## Run steps 1–3 for one model
+make f3 MODEL=model1
+
+## Run steps 1–4 for one model
+make f4 MODEL=model1
+
+## Run steps 1–3 and 5 for one model
+make f3lme MODEL=model1
+
+## Run full pipeline
+make all MODEL=model1
+
+## Run multiple models
+make models # run the entire pipeline for all models in parallel.
+make f3_models # run Steps 1–3 in parallel for all models.
+make f4_models # run Steps 1–4 in parallel for all models.
+make f3lme_models # run Steps 1–3 + LME in parallel for all models
+
+```
+
+## Makefile Modelling steps (HPC)
+
+This Makefile defines **how dnaEPICO models are executed at scale**, controlling:
+
+* which phenotype files are used,
+* which statistical models are run,
+* how GLM (`glm2`) and GLMM (`lme4`) are parameterised,
+* how results are organised and reproduced across models.
+
+Rather than hard-coding parameters in R scripts, dnaEPICO uses a **declarative Makefile layer** so the same pipeline can be re-run with different configurations.
+
+```make
+# ===============================================
+# USER CONFIGURATION
+# ===============================================
+MAKEFLAGS += --output-sync
+
+# ===============================================
+# Run all models 
+# ===============================================
+models:
+	@echo "Running models in parallel: $(MODELS)"
+	@$(MAKE) -j $(words $(MODELS)) $(addprefix run-, $(MODELS))
+
+$(foreach m,$(MODELS),$(eval run-$(m):; \
+	@echo ">>> Starting full pipeline for: $(m)"; \
+	$(MAKE) -j1 all MODEL=$(m); \
+	@echo "<<< Finished full pipeline for: $(m)" \
+))
+
+default: all
+
+all: \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
+	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv \
+	$(STEP6)/$(MODEL)/DNAm.pdf
+	
+# ===============================================
+# Group target: first3 (Steps 1 to 3)
+# ===============================================
+.PHONY: f3
+FIRST3 = \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
+	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv
+
+f3: $(FIRST3) $(STEP6)/$(MODEL)/DNAm.pdf
+
+# ===============================================
+# Run f3 (Steps 1 to 3) for all models in parallel
+# ===============================================
+f3_models:
+	@echo "Running f3 (Steps 1–3) in parallel: $(MODELS)"
+	@$(MAKE) -j $(words $(MODELS)) $(addprefix runf3-, $(MODELS))
+
+$(foreach m,$(MODELS),$(eval runf3-$(m):;  \
+	@echo ">>> Starting f3 for: $(m)"; \
+	$(MAKE) -j1 f3 MODEL=$(m); \
+	@echo "<<< Finished f3 for: $(m)" \
+))
+
+# ===============================================
+# Group target: f4 (Steps 1 to 4)
+# ===============================================
+.PHONY: f4
+FIRST4 = \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
+	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv
+
+f4: $(FIRST4) $(STEP6)/$(MODEL)/DNAm.pdf
+
+# ===============================================
+# Run f4 (Steps 1 to 4 only) for all models in parallel
+# ===============================================
+f4_models:
+	@echo "Running f4 (Steps 1–4) in parallel: $(MODELS)"
+	@$(MAKE) -j $(words $(MODELS)) $(addprefix runf4-, $(MODELS))
+
+$(foreach m,$(MODELS),$(eval runf4-$(m):; \
+	@echo ">>> Starting f4 for: $(m)"; \
+	$(MAKE) -j1 f4 MODEL=$(m); \
+	@echo "<<< Finished f4 for: $(m)" \
+))
+
+# ===============================================
+# Group target: f3lme (Steps 1 to 3 + LME)
+# ===============================================
+.PHONY: f3lme
+F3LME = \
+  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
+	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv
+
+f3lme: $(F3LME) $(STEP6)/$(MODEL)/DNAm.pdf
+
+# ===============================================
+# Run f3lme (Steps 1 to 3 + LME) for all models in parallel
+# ===============================================
+
+f3lme_models:
+	@echo "Running f3lme (Steps 1–3 + LME) in parallel: $(MODELS)"
+	@$(MAKE) -j $(words $(MODELS)) $(addprefix runf3lme-, $(MODELS))
+
+$(foreach m,$(MODELS),$(eval runf3lme-$(m):; \
+	@echo ">>> Starting f3lme for: $(m)"; \
+	$(MAKE) -j1 f3lme MODEL=$(m); \
+	@echo "<<< Finished f3lme for: $(m)" \
+))
+
+# =================================================================================================================================
+# Step 1: Minfi Preprocessing
+# =================================================================================================================================
+step1:
+	@echo "Running Step 1 for $(MODEL)"
+	$(MAKE) preprocessingMinfiEwasWater MODEL=$(MODEL)
+
+$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
+	Rscript -e "library(dnapipeR); preprocessingMinfiEwasWater( \
+	  phenoFile = '$(PHENO_FILE)', \
+	  sepType = '$(SEP_TYPE)', \
+	  idatFolder = '$(DATA_DIR)/$(STEP1)/$(IDAT_DIR)/', \
+	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  nSamples = $(N_SAMPLES), \
+	  SampleID = '$(SAMPLE_ID)', \
+	  arrayType = '$(ARRAY_TYPE)', \
+	  annotationVersion = '$(ANNOTATION_VERSION)', \
+	  scriptLabel = '$(MODEL)/$(STEP1)', \
+	  baseDataFolder = '$(RDATA_DIR)', \
+	  tiffWidth = $(TIFF_WIDTH), \
+	  tiffHeight = $(TIFF_HEIGHT), \
+	  tiffRes = $(TIFF_RES), \
+	  qcCutoff = $(QC_CUTOFF), \
+	  detPtype = '$(DET_PTYPE)', \
+	  detPThreshold = $(DET_PTHRESHOLD), \
+	  funnormSeed = $(FUNNORM_SEED), \
+	  sexColumn = '$(SEX_COLUMN)', \
+	  pvalThreshold = $(PVAL_THRESHOLD), \
+	  chrToRemove = '$(CHR_TO_REMOVE)', \
+	  snpsToRemove = '$(SNPS_TO_REMOVE)', \
+	  crossReactivePath = '$(CROSS_REACTIVE_FILE)', \
+	  mafThreshold = $(MAF_THRESHOLD), \
+	  plotGroupVar = '$(PLOT_GROUP_VAR)', \
+	  lcRef = '$(LC_REF)', \
+	  phenoOrder = '$(PHENO_ORDER)', \
+	  lcPhenoDir = '$(DATA_DIR)/$(MODEL)/$(STEP1)' )"
+
+# =================================================================================================================================
+# Step 2: Surrogate Variable Analysis
+# =================================================================================================================================
+$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
+	Rscript -e "library(dnapipeR); svaEnmix( \
+	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
+	  rgsetData = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData', \
+	  sepType = '$(SEP_TYPE)', \
+	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  nSamples = $(N_SAMPLES), \
+	  SampleID = '$(SAMPLE_ID)', \
+	  arrayType = '$(ARRAY_TYPE)', \
+  	  annotationVersion = '$(ANNOTATION_VERSION)', \
+  	  SentrixIDColumn = '$(SENTRIX_ID_COLUMN)', \
+	  SentrixPositionColumn = '$(SENTRIX_POSITION_COLUMN)', \
+	  ctrlSvaPercVar = $(CTRL_SVA_PERC_VAR), \
+  	  ctrlSvaFlag = $(CTRL_SVA_FLAG), \
+	  scriptLabel = '$(MODEL)/$(STEP2)', \
+	  tiffWidth = $(TIFF_WIDTH), \
+	  tiffHeight = $(TIFF_HEIGHT), \
+	  tiffRes = $(TIFF_RES) )"
+
+# =================================================================================================================================
+# Step 3: Merge Phenotype
+# =================================================================================================================================
+$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
+$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
+$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv: 
+	Rscript -e "library(dnapipeR); preprocessingPheno( \
+	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
+	  sepType = '$(SEP_TYPE)', \
+	  betaPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
+	  mPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
+	  cnPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
+	  SampleID = '$(SAMPLE_ID)', \
+	  timeVar = '$(TIME_VAR)', \
+	  timepoints = '$(TIMEPOINTS)', \
+	  combineTimepoints = '$(COMBINE_TIMEPOINTS)', \
+	  outputPheno = '$(DATA_DIR)/$(MODEL)/$(STEP3)', \
+	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(METRICS_DIR)', \
+	  outputRDataMerge = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)', \
+	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  sexColumn = '$(SEX_COLUMN)', \
+	  outputDir = '$(DATA_DIR)/$(MODEL)/$(STEP3)' )"  
+	  
+# =================================================================================================================================
+# Step 4: GLM for T1
+# =================================================================================================================================
+$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
+	Rscript -e "library(dnapipeR); methylationGLM_T1( \
+	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData', \
+	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
+	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)/', \
+	  phenotypes = '$(PHENOTYPES)', \
+	  covariates = '$(COVARIATES)', \
+	  factorVars = '$(FACTOR_VARS)', \
+	  cpgPrefix = '$(CPG_PREFIX)', \
+	  cpgLimit = $(CPG_LIMIT), \
+	  nCores = $(N_CORES), \
+	  plotWidth = $(TIFF_WIDTH), \
+	  plotHeight = $(TIFF_HEIGHT), \
+	  plotDPI = $(TIFF_RES), \
+	  interactionTerm = $(INTERACTION_GLM_ARG), \
+	  libPath = $(R_DIR_ARG), \
+	  glmLibs = '$(GLM_LIBS)', \
+	  prsMap = $(PRS_MAP_ARG), \
+	  summaryPval = $(SUMMARY_PVAL), \
+	  summaryResidualSD = $(SUMMARY_RESIDUAL_SD), \
+	  saveSignificantCpGs = $(SAVE_SIGNIFICANT_CPGS), \
+	  significantCpGDir = '$(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP4)', \
+	  significantCpGPval = $(SIGNIFICANT_CPG_PVAL), \
+	  saveTxtSummaries = $(SAVE_TXT_SUMMARIES), \
+	  chunkSize = $(CHUNK_SIZE), \
+	  summaryTxtDir = '$(RESULTS_DIR)/$(MODEL)/$(SUMMARY_DIR)/$(STEP4)', \
+	  fdrThreshold = $(FDR_THRESHOLD), \
+	  padjmethod = '$(PADJ_METHOD)', \
+	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
+	  annotationCols = '$(ANNOTATION_COLS)', \
+	  annotatedGLMOut = '$(DATA_DIR)/$(MODEL)/$(STEP4)' ) "
+
+# =================================================================================================================================
+# Step 5: LME for T1 vs T2 (Longitudinal Analysis)
+# =================================================================================================================================
+
+PERSON_VAR = person
+LME_LIBS = lme4,lmerTest
+SAVE_SIGNIFICANT_INTERACTIONS = TRUE
+SIGNIFICANT_INTERACTION_PVAL = 0.00001
+
+
+$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
+	Rscript -e "library(dnapipeR); methylationGLMM_T1T2( \
+	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData', \
+	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP5)/$(MODEL_DIR)', \
+	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
+	  personVar = '$(PERSON_VAR)', \
+	  timeVar = '$(TIME_VAR)', \
+	  phenotypes = '$(PHENOTYPES)', \
+	  covariates = '$(COVARIATES)', \
+	  factorVars = '$(FACTOR_VARS)', \
+	  lmeLibs = '$(LME_LIBS)', \
+	  prsMap = $(PRS_MAP_ARG), \
+	  libPath = $(R_DIR_ARG), \
+	  cpgPrefix = '$(CPG_PREFIX)', \
+	  cpgLimit = $(CPG_LIMIT), \
+	  nCores = $(N_CORES), \
+	  summaryPval = $(SUMMARY_PVAL), \
+	  plotWidth = $(TIFF_WIDTH), \
+	  plotHeight = $(TIFF_HEIGHT), \
+	  plotDPI = $(TIFF_RES), \
+	  interactionTerm = $(INTERACTION_LME_ARG), \
+	  saveSignificantInteractions = $(SAVE_SIGNIFICANT_INTERACTIONS), \
+	  significantInteractionDir = '$(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP5)', \
+	  significantInteractionPval = $(SIGNIFICANT_INTERACTION_PVAL), \
+	  saveTxtSummaries = $(SAVE_TXT_SUMMARIES), \
+	  chunkSize = $(CHUNK_SIZE), \
+	  summaryTxtDir = '$(RESULTS_DIR)/$(MODEL)/$(SUMMARY_DIR)/$(STEP5)', \
+	  fdrThreshold = $(FDR_THRESHOLD), \
+	  padjmethod = '$(PADJ_METHOD)', \
+	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
+	  annotationCols = '$(ANNOTATION_COLS)', \
+	  annotatedLMEOut = '$(DATA_DIR)/$(MODEL)/$(STEP5)' )"
+
+# =================================================================================================================================
+# Step 6: Final Report
+# =================================================================================================================================
+REPORT_INPUTS = \
+	$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData \
+	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv
+
+$(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
+	mkdir -p $(STEP6)/$(MODEL) $(LOGS_DIR)/$(MODEL)
+	Rscript -e "library(dnapipeR); dnamReport( \
+	  output = 'DNAm.pdf', \
+	  outputDir = '$(STEP6)/$(MODEL)', \
+	  qcDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
+	  preprocessingDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)', \
+	  postprocessingDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)', \
+	  svaDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP2)/$(SVA_DIR)', \
+	  glmDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)', \
+	  glmmDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
+	  reportTitle = 'DNA methylation – $(MODEL)', \
+	  author = 'School of Biomedical Sciences' )" \
+	  > $(LOGS_DIR)/$(MODEL)/report.log 2>&1
+	@echo "Report built: $(STEP6)/$(MODEL)/DNAm.pdf"
+
+# =================================================================================================================================
+# Clean up outputs
+# =================================================================================================================================
+clean:
+ifeq ($(MODEL),all)
+	@echo "===== Cleaning all models ====="
+	@for m in $(MODELS); do \
+	  echo "Cleaning model $$m ..."; \
+	  rm -rf \
+	    $(DATA_DIR)/$$m \
+	    $(RDATA_DIR)/$$m \
+	    $(STEP6)/$$m \
+	    $(LOGS_DIR)/$$m \
+		$(FIGURES_DIR)/$$m \
+	    $(RESULTS_DIR)/$$m; \
+	done
+	@echo "Clean completed for all models. Kept $(DATA_DIR)/$(STEP1)/."
+else
+	@echo "Cleaning outputs for: $(MODEL)"
+	rm -rf \
+		$(DATA_DIR)/$(MODEL) \
+		$(RDATA_DIR)/$(MODEL) \
+		$(STEP6)/$(MODEL) \
+		$(LOGS_DIR)/$(MODEL) \
+		$(FIGURES_DIR)/$(MODEL) \
+		$(RESULTS_DIR)/$(MODEL)
+	@echo "Clean completed for: $(MODEL)"
+endif
+
+# =================================================================================================================================
+# Status Check Target
+# =================================================================================================================================
+status:
+	@echo "===== Pipeline Status ====="
+	@test -e $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData && echo "? Step 1: preprocessingMinfiEwasWater done" || echo "? Step 1: preprocessingMinfiEwasWater outcome file missing"
+	@test -e $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt && echo "? Step 2: SVA done" || echo "? Step 2: SVA outcome file missing"
+	@test -e $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv && echo "? Step 3: preprocessingPheno done" || echo "? Step 3: preprocessingPheno outcome file missing"
+	@test -e $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv && echo "? Step 4: methylationGLM_T1 done" || echo "? Step 4: methylationGLM_T1 outcome file missing"
+	@test -e $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv && echo "? Step 5: methylationGLMM_T1T2 done" || echo "? Step 5: methylationGLMM_T1T2 outcome file missing"
+	@test -e $(STEP6)/$(MODEL)/DNAm.pdf && echo "? Step 6: Report generated" || echo "? Step 6: Report missing"
+	@echo "============================"
+
+.PHONY: all clean status models f3 f4 f3lme f3_models f4_models f3lme_models
+
+```
+### Model selection
+
+```make
+MODEL ?= model1
+MODELS = modelA modelB modelC
+```
+
+* `MODEL` defines **a single pipeline configuration**
+* `MODELS` defines **multiple independent configurations**
+
+The same pipeline can therefore be run in two modes:
+
+**Single-model execution**
+
+```bash
+make f4 MODEL=modelA
+```
+
+**Parallel multi-model execution**
+
+```bash
+make f4_models
+```
+
+In parallel mode, **each model runs as a fully independent pipeline**, with its own inputs, logs, figures, and outputs. No files are shared between models except the raw inputs (IDATs), unless explicitly specified.
+
+
+## Per-model overrides
+
+```make
+ifeq ($(MODEL), modelA)
+  PHENO_FILE = data/preprocessingMinfiEwasWater/phenoA.csv
+...
+else
+  PHENO_FILE = data/preprocessingMinfiEwasWater/pheno.csv
+endif
+```
+
+This block **dynamically replaces variables** based on the selected model.
+
+* The Makefile is evaluated **at runtime**
+* When `MODEL=modelA`, `PHENO_FILE` is replaced before any step runs
+* The rest of the pipeline remains unchanged
+
+This allows users to:
+
+* compare cohorts or subgroup definitions,
+* test alternative phenotype encodings,
+* run sensitivity analyses,
+
+without duplicating code or Makefiles.
+
+### Directory and step conventions
+
+```make
+STEP1 = preprocessingMinfiEwasWater
+STEP2 = svaEnmix
+STEP3 = preprocessingPheno
+STEP4 = methylationGLM_T1
+STEP5 = methylationGLMM_T1T2
+```
+
+Each step writes outputs into **step-specific directories**. When running in parallel, directory paths are automatically namespaced by model, ensuring isolation between runs.
+
+This design allows:
+
+* restarting individual steps,
+* debugging failed models independently,
+* mixing local and HPC execution safely.
+
+## Global parameters
+
+```make
+PHENO_FILE = ...
+SAMPLE_ID = ...
+TIME_VAR = ...
+```
+
+These parameters are **shared across preprocessing and modelling**.
+
+Their definitions and expected formats are explained in the *Local use* section and are not repeated here.
+
+### Specific parameters
+
+```make
+PHENOTYPES = TreatmentGroup
+COVARIATES = Sex
+FACTOR_VARS = Sex,TreatmentGroup
+N_CORES = 64
+CHUNK_SIZE = 10000
+```
+
+These parameters control **how each model is fit**. In parallel execution:
+
+* `N_CORES` controls **intra-model parallelism** (within R)
+* `MODELS` controls **inter-model parallelism** (within Make)
+
+Their definitions and expected formats are explained in the *Local use* section and are not repeated here.
+
+### Argument normalisation
+
+```make
+ifeq ($(PRS_MAP),NULL)
+  PRS_MAP_ARG = NULL
+else
+  PRS_MAP_ARG = '$(PRS_MAP)'
+endif
+if ...
+
+```
+
+This section ensures that optional arguments are passed correctly to R scripts. It prevents accidental interpretation of the string `"NULL"` as a real value and guarantees consistent behaviour across local and cluster environments.
+
+# Reporting
+
+`dnamReport()` generates a PDF report by rendering `DNAm.Rmd` through a runner script (`DNAm.R`) shipped in `inst/scripts`.
+
+```{r report_example, eval=FALSE}
+dnamReport(
+  output = "DNAm_Report.pdf",
+  outputDir = "reports",
+  qcDir = "figures/preprocessingMinfiEwasWater/enMix",
+  preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
+  postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
+  svaDir = "figures/svaEnmix/sva",
+  glmDir = "figures/methylationGLM_T1",
+  glmmDir = "figures/methylationGLMM_T1T2",
+  reportTitle = "DNA methylation",
+  author = "School of Biomedical Sciences",
+  date = format(Sys.Date(), "%B %d, %Y")
+)
+```
+
+# Troubleshooting
+
+* If a step “fails”, check logs in `logs/`.
+* If Make targets are missing, confirm:
+  * correct `include Makefile.rules.pipeline`
+
+# Basics
 
 Date the vignette was generated.
 
@@ -164,22 +1233,26 @@ round(totalTime, digits = 3)
 
 `R` session information.
 
-```{r reproduce3, echo=FALSE}
-## Session info
-library("sessioninfo")
-options(width = 120)
-session_info()
+```{r echo=FALSE}
+sessionInfo()
 ```
 
+# References
 
-# Bibliography
+## Acknowledgement
 
-This vignette was generated using `r Biocpkg("BiocStyle")` `r Citep(bib[["BiocStyle"]])`
-with `r CRANpkg("knitr")` `r Citep(bib[["knitr"]])` and `r CRANpkg("rmarkdown")` `r Citep(bib[["rmarkdown"]])` running behind the scenes.
+This package was developed using `r BiocStyle::Biocpkg("biocthis")`.
 
-Citations made with `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`.
+This vignette was generated using `r Biocpkg("BiocStyle")`, with `r CRANpkg("knitr")` and `r CRANpkg("rmarkdown")` running behind the scenes.
 
-```{r vignetteBiblio, results = "asis", echo = FALSE, warning = FALSE, message = FALSE}
-## Print bibliography
-PrintBibliography(bib, .opts = list(hyperlink = "to.doc", style = "html"))
-```
+## Required knowledge
+
+`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for high-dimensional genomic data, with a focus on Illumina EPICv2 DNA methylation arrays. 
+
+Preprocessing and quality control are performed using established Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`. Additional functionality is provided via the `ewastools` package, which is installed from GitHub using `devtools::install_github("hhhh5/ewastools")`. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures.
+
+If you are asking yourself the question "Where do I start using Bioconductor?" you might be interested in [this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
+
+## Asking for help
+
+As package developers, we try to explain clearly how to use our packages and in which order to use the functions. But `R` and `Bioconductor` have a steep learning curve so it is critical to learn where to ask for help. The blog post quoted above mentions some but we would like to highlight the [Bioconductor support site](https://support.bioconductor.org/) as the main resource for getting help: remember to use the `dnaEPICO` tag and check [the older posts](https://support.bioconductor.org/tag/dnaEPICO/). Other alternatives are available such as creating GitHub issues and tweeting. However, please note that if you want to receive help you should adhere to the [posting guidelines](http://www.bioconductor.org/help/support/posting-guide/). It is particularly critical that you provide a small reproducible example and your session information so package developers can track down the source of the error.

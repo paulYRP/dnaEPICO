@@ -56,7 +56,38 @@ svaEnmix(
 
 \item{tiffRes}{Integer. Resolution (DPI) for TIFF plots.}
 }
+\value{
+Invisibly returns \code{NULL}. This function is called for its side effects,
+executing the external \code{svaEnmix.R} script and writing results, figures,
+and logs to disk.
+}
 \description{
 Wrapper function that executes the svaEnmix.R script located in
 inst/scripts using a system call.
+}
+\examples{
+tmp <- tempdir()
+stopifnot(dir.exists(tmp))
+
+\donttest{
+svaEnmix(
+  phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
+  rgsetData = "rData/preprocessingMinfiEwasWater/objects/RGSet.RData",
+  sepType = "",
+  outputLogs = "logs",
+  nSamples = 5,
+  SampleID = "Sample_Name",
+  arrayType = "IlluminaHumanMethylationEPICv2",
+  annotationVersion = "20a1.hg38",
+  SentrixIDColumn = "Sentrix_ID",
+  SentrixPositionColumn = "Sentrix_Position",
+  ctrlSvaPercVar = 0.90,
+  ctrlSvaFlag = 1,
+  scriptLabel = "svaEnmix",
+  tiffWidth = 2000,
+  tiffHeight = 1000,
+  tiffRes = 150
+)
+}
+
 }

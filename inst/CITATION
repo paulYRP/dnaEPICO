@@ -1,23 +1,29 @@
-pkgAuthors <- function(pkg) {
-    desc <- packageDescription(pkg)
-    eval(parse(text = desc$`Authors@R`))
-}
+citHeader("dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data")
 
-
-pkgVer <- function(pkg) {
-    if (!exists("meta") || is.null(meta)) meta <- packageDescription(pkg)
-    ver <- meta$Version
-    paste0('https://github.com/paulYRP/dnaEPICO/', pkg, ' - R package version ', ver)
-}
-
-c(
-
-    bibentry(
-        bibtype = "Manual",
-        title   = "dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data",
-        author  = pkgAuthors("dnaEPICO"),
-        year    = format(Sys.Date(), "%Y"),
-        url     = "https://bioconductor.org/packages/dnaEPICO",
-        note    = pkgVer("dnaEPICO")
+citEntry(
+  entry = "Manual",
+  title = "dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data",
+  author = c(
+    person(
+      given = "Paul",
+      family = "Ruiz",
+      role = c("aut", "cre"),
+      email = "ruizpint@qut.edu.au",
+      comment = c(ORCID = "0009-0007-6714-3566")
+    ),
+    person(
+      given = "Divya",
+      family = "Metha",
+      role = "aut",
+      comment = c(ORCID = "0000-0001-7971-7255")
+    )
+  ),
+  year = format(Sys.Date(), "%Y"),
+  url = "https://bioconductor.org/packages/dnaEPICO",
+  textVersion =
+    paste(
+      "Ruiz P., Metha D.",
+      "dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data.",
+      "Bioconductor package."
     )
 )

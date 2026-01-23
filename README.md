@@ -11,19 +11,13 @@ issues](https://img.shields.io/github/issues/paulYRP/dnaEPICO)](https://github.c
 pulls](https://img.shields.io/github/issues-pr/paulYRP/dnaEPICO)](https://github.com/paulYRP/dnaEPICO/pulls)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![Bioc release
-status](http://www.bioconductor.org/shields/build/release/bioc/dnaEPICO.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/dnaEPICO)
-[![Bioc devel
-status](http://www.bioconductor.org/shields/build/devel/bioc/dnaEPICO.svg)](https://bioconductor.org/checkResults/devel/bioc-LATEST/dnaEPICO)
+<!-- [![Bioc release status](http://www.bioconductor.org/shields/build/release/bioc/dnaEPICO.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/dnaEPICO) -->
+<!-- [![Bioc devel status](http://www.bioconductor.org/shields/build/devel/bioc/dnaEPICO.svg)](https://bioconductor.org/checkResults/devel/bioc-LATEST/dnaEPICO) -->
 <!-- [![Bioc downloads rank](https://bioconductor.org/shields/downloads/release/dnaEPICO.svg)](http://bioconductor.org/packages/stats/bioc/dnaEPICO/) -->
-[![Bioc
-support](https://bioconductor.org/shields/posts/dnaEPICO.svg)](https://support.bioconductor.org/tag/dnaEPICO)
-[![Bioc
-history](https://bioconductor.org/shields/years-in-bioc/dnaEPICO.svg)](https://bioconductor.org/packages/release/bioc/html/dnaEPICO.html#since)
-[![Bioc last
-commit](https://bioconductor.org/shields/lastcommit/devel/bioc/dnaEPICO.svg)](http://bioconductor.org/checkResults/devel/bioc-LATEST/dnaEPICO/)
-[![Bioc
-dependencies](https://bioconductor.org/shields/dependencies/release/dnaEPICO.svg)](https://bioconductor.org/packages/release/bioc/html/dnaEPICO.html#since)
+<!-- [![Bioc support](https://bioconductor.org/shields/posts/dnaEPICO.svg)](https://support.bioconductor.org/tag/dnaEPICO) -->
+<!-- [![Bioc history](https://bioconductor.org/shields/years-in-bioc/dnaEPICO.svg)](https://bioconductor.org/packages/release/bioc/html/dnaEPICO.html#since) -->
+<!-- [![Bioc last commit](https://bioconductor.org/shields/lastcommit/devel/bioc/dnaEPICO.svg)](http://bioconductor.org/checkResults/devel/bioc-LATEST/dnaEPICO/) -->
+<!-- [![Bioc dependencies](https://bioconductor.org/shields/dependencies/release/dnaEPICO.svg)](https://bioconductor.org/packages/release/bioc/html/dnaEPICO.html#since) -->
 [![Codecov test
 coverage](https://codecov.io/gh/paulYRP/dnapipeR/graph/badge.svg)](https://app.codecov.io/gh/paulYRP/dnapipeR)
 <!-- badges: end -->
@@ -81,12 +75,11 @@ Please run this yourself to check for any updates on how to cite
 
 ``` r
 print(citation('dnaEPICO'), bibtex = TRUE)
-#> To cite package 'dnaEPICO' in publications use:
+#> dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array
+#> Data
 #> 
-#>   Ruiz P, Metha D (2026). _dnaEPICO: Analysis Pipeline for Illumina
-#>   EPICv2 DNA Methylation Array Data_.
-#>   https://github.com/paulYRP/dnaEPICO/dnaEPICO - R package version
-#>   0.99.0, <https://bioconductor.org/packages/dnaEPICO>.
+#>   Ruiz P., Metha D. dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA
+#>   Methylation Array Data. Bioconductor package.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
@@ -95,7 +88,6 @@ print(citation('dnaEPICO'), bibtex = TRUE)
 #>     author = {Paul Ruiz and Divya Metha},
 #>     year = {2026},
 #>     url = {https://bioconductor.org/packages/dnaEPICO},
-#>     note = {https://github.com/paulYRP/dnaEPICO/dnaEPICO - R package version 0.99.0},
 #>   }
 ```
 

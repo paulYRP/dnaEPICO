@@ -2,20 +2,10 @@ Package: dnaEPICO
 Title: dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data
 Version: 0.99.0
 Date: 2026-01-18
-Authors@R:
-    c(
-        person(
-            "Paul", "Ruiz",
-            role = c("aut", "cre"),
-            email = "ruizpint@qut.edu.au",
-            comment = c(ORCID = "0009-0007-6714-3566")
-        ),
-        person(
-            "Divya", "Metha",
-            role = "aut",
-            comment = c(ORCID = "0000-0001-7971-7255")
-        )
-    )
+Authors@R: c(person("Paul", "Ruiz", role = c("aut", "cre"),
+            email = "ruizpint@qut.edu.au", comment = c(ORCID = "0009-0007-6714-3566")),
+            person("Divya", "Metha", role = "aut",
+            comment = c(ORCID = "0000-0001-7971-7255")))
 Description:
     This package provides a modular and reproducible framework for the
     preprocessing and analysis of Illumina EPICv2 DNA methylation array 
@@ -63,10 +53,8 @@ Suggests:
     testthat,
     knitr,    
     covr
-Remotes:
-    github::hhhh5/ewastools@master
 VignetteBuilder: knitr
-biocViews: 
+biocViews:
   Software, 
   MethylationArray, 
   QualityControl,

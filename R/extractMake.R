@@ -8,7 +8,22 @@
 #' @param overwrite Logical. Whether to overwrite an existing file.
 #'   Default is FALSE.
 #'
-#' @return Invisibly returns the path to the copied Makefile.
+#' @return
+#' Invisibly returns \code{NULL}. The function is called for its side effect
+#' of generating a PDF report and associated logs.
+#'
+#' @examples
+#' tmp <- tempdir()
+#' stopifnot(dir.exists(tmp))
+#'
+#' \donttest{
+#' ## Copy the dnaEPICO Makefile pipeline into a project directory
+#' extractMake(
+#'   destDir = getwd(),
+#'   overwrite = FALSE
+#' )
+#' }
+#'
 #' @export
 extractMake <- function(destDir, overwrite = FALSE) {
 

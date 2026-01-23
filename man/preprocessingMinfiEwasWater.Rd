@@ -93,7 +93,51 @@ preprocessingMinfiEwasWater(
 
 \item{lcPhenoDir}{Character. Output directory for cell composition phenotype.}
 }
+\value{
+Invisibly returns \code{NULL}. This function is called for its side effects,
+performing Illumina EPICv2 preprocessing, quality control, normalisation,
+probe filtering, cell composition estimation, and writing plots, logs,
+and RData objects to disk.
+}
 \description{
 Wrapper function that executes the preprocessingMinfiEwasWater.R script
 shipped in inst/scripts using system calls.
+}
+\examples{
+tmp <- tempdir()
+stopifnot(dir.exists(tmp))
+
+\donttest{
+preprocessingMinfiEwasWater(
+  phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
+  idatFolder = "data/preprocessingMinfiEwasWater/idats",
+  outputLogs = "logs",
+  nSamples = NA,
+  SampleID = "Sample_Name",
+  arrayType = "IlluminaHumanMethylationEPICv2",
+  annotationVersion = "20a1.hg38",
+  scriptLabel = "preprocessingMinfiEwasWater",
+  baseDataFolder = "rData",
+  sepType = "",
+  tiffWidth = 2000,
+  tiffHeight = 1000,
+  tiffRes = 150,
+  qcCutoff = 10.5,
+  detPtype = "m+u",
+  detPThreshold = 0.05,
+  funnormSeed = 123,
+  normMethods = "adjustedfunnorm",
+  sexColumn = "Sex",
+  pvalThreshold = 0.01,
+  chrToRemove = "chrX,chrY",
+  snpsToRemove = "SBE,CpG",
+  mafThreshold = 0.1,
+  crossReactivePath = "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
+  plotGroupVar = "Sex",
+  lcRef = "salivaEPIC",
+  phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
+  lcPhenoDir = "data/preprocessingMinfiEwasWater"
+)
+}
+
 }

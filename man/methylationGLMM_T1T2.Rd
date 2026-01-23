@@ -103,7 +103,61 @@ methylationGLMM_T1T2(
 
 \item{annotatedLMEOut}{Character. Output directory for annotated results.}
 }
+\value{
+Invisibly returns \code{NULL}. This function is called for its side effects,
+running CpG-level longitudinal mixed-effects models and writing model
+results, interaction summaries, plots, and annotated tables to disk.
+}
 \description{
 Wrapper function that executes the methylationGLMM_T1T2.R script located
 in inst/scripts using a system call.
+}
+\examples{
+tmp <- tempdir()
+stopifnot(dir.exists(tmp))
+
+\donttest{
+methylationGLMM_T1T2(
+  inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
+  outputLogs = "logs",
+  outputRData = "rData/methylationGLMM_T1T2/models",
+  outputPlots = "figures/methylationGLMM_T1T2",
+  personVar = "person",
+  timeVar = "Timepoint",
+  phenotypes = "DASS_Depression,DASS_Anxiety,DASS_Stress,
+                PCL5_TotalScore,MHCSF_TotalScore,BRS_TotalScore",
+  covariates = "Sex,Age,Ethnicity,TraumaDefinition,
+                Leukocytes,Epithelial.cells",
+  factorVars = "Sex,Ethnicity,TraumaDefinition,Timepoint",
+  lmeLibs = "lme4,lmerTest",
+  prsMap = NULL,
+  libPath = NULL,
+  cpgPrefix = "cg",
+  cpgLimit = NA,
+  nCores = 4,
+  summaryPval = NA,
+  plotWidth = 2000,
+  plotHeight = 1000,
+  plotDPI = 150,
+  interactionTerm = "TreatvControl_Time1_vs_Time2",
+  saveSignificantInteractions = TRUE,
+  significantInteractionDir =
+    "preliminaryResults/cpgs/methylationGLMM_T1T2",
+  significantInteractionPval = 0.05,
+  saveTxtSummaries = TRUE,
+  chunkSize = 10000,
+  summaryTxtDir =
+    "preliminaryResults/summary/methylationGLMM_T1T2/lmer",
+  fdrThreshold = 0.05,
+  padjmethod = "fdr",
+  annotationPackage =
+    "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
+  annotationCols =
+    "Name,chr,pos,UCSC_RefGene_Group,
+     UCSC_RefGene_Name,Relation_to_Island,
+     GencodeV41_Group",
+  annotatedLMEOut = "data/methylationGLMM_T1T2"
+)
+}
+
 }

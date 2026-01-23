@@ -16,6 +16,30 @@
 #' @param author Character. Author name displayed in the report.
 #' @param date Character. Report date.
 #'
+#' @return
+#' Invisibly returns \code{NULL}. This function is called for its side effect
+#' of generating a PDF report and associated output files.
+#'
+#' @examples
+#' tmp <- tempdir()
+#' stopifnot(dir.exists(tmp))
+#'
+#' \donttest{
+#' dnamReport(
+#'   output = "DNAm_Report.pdf",
+#'   outputDir = "reports",
+#'   qcDir = "figures/preprocessingMinfiEwasWater/enMix",
+#'   preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
+#'   postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
+#'   svaDir = "figures/svaEnmix/sva",
+#'   glmDir = "figures/methylationGLM_T1",
+#'   glmmDir = "figures/methylationGLMM_T1T2",
+#'   reportTitle = "DNA methylation analysis",
+#'   author = "School of Biomedical Sciences",
+#'   date = format(Sys.Date(), "%B %d, %Y")
+#' )
+#' }
+#'
 #' @export
 dnamReport <- function(
     output = "DNAm_Report.pdf",
