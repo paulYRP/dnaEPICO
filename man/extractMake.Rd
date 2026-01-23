@@ -14,8 +14,7 @@ will be copied.}
 Default is FALSE.}
 }
 \value{
-Invisibly returns \code{NULL}. The function is called for its side effect
-of generating a PDF report and associated logs.
+Invisibly returns \code{NULL}.
 }
 \description{
 Copies the example Makefile pipeline shipped with dnaEPICO to a

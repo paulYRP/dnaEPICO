@@ -117,6 +117,7 @@ opt <- parse_args(OptionParser(option_list = list(
         make_option("--annotationVersion", default = "20a1.hg38", help = "Annotation version"),
         make_option("--scriptLabel", default = "preprocessingMinfiEwasWater", help = "Label for output folders/logs"),
         make_option("--baseDataFolder", default = "rData", help = "Base folder for RData output"),
+        make_option("--figureBaseDir", default = "figures", help = "Base directory for all figures"),
         make_option("--tiffWidth", type = "integer", default = 2000),
         make_option("--tiffHeight", type = "integer", default = 1000),
         make_option("--tiffRes", type = "integer", default = 150),
@@ -167,6 +168,7 @@ cat("SampleID column:          ", opt$SampleID, "\n")
 cat("Array type:               ", opt$arrayType, "\n")
 cat("Annotation version:       ", opt$annotationVersion, "\n")
 cat("Base RData folder:        ", opt$baseDataFolder, "\n")
+cat("Base Figure folder:        ", opt$figureBaseDir, "\n")
 cat("TIFF size (w x h @ dpi):  ", opt$tiffWidth, " x ", opt$tiffHeight, " @ ", opt$tiffRes, "\n")
 cat("QC cutoff (median):       ", opt$qcCutoff, "\n")
 cat("Detection P-value type:   ", opt$detPtype, "\n\n")
@@ -201,7 +203,7 @@ dir.create(filterDir, recursive = TRUE, showWarnings = FALSE)
 
 # ----------- Prepare Subfolders for rData/qc -----------
 
-qcDir <- file.path("rData", opt$scriptLabel, "qc")
+qcDir <- file.path(opt$baseDataFolder, opt$scriptLabel, "qc")
 
 if (!dir.exists(qcDir)) {
   dir.create(qcDir, recursive = TRUE, showWarnings = FALSE)
@@ -209,21 +211,21 @@ if (!dir.exists(qcDir)) {
 
 # ----------- Prepare Subfolders for figures/metrics -----------
 
-metricsFigDir <- file.path("figures", opt$scriptLabel, "metrics")
+metricsFigDir <- file.path(opt$figureBaseDir, opt$scriptLabel, "metrics")
 
 if (!dir.exists(metricsFigDir)) {
   dir.create(metricsFigDir, recursive = TRUE, showWarnings = FALSE)
 }
 # ----------- Prepare Subfolders for figures/qc -----------
 
-qcFigDir <- file.path("figures", opt$scriptLabel, "qc")
+qcFigDir <- file.path(opt$figureBaseDir, opt$scriptLabel, "qc")
 
 if (!dir.exists(qcFigDir)) {
   dir.create(qcFigDir, recursive = TRUE, showWarnings = FALSE)
 }
 # ----------- Prepare Subfolders for figures/enmix -----------
 # Target folder
-enmixDir <- file.path("figures", opt$scriptLabel, "enMix")
+enmixDir <- file.path(opt$figureBaseDir, opt$scriptLabel, "enMix")
 
 # Create directory if missing
 if (!dir.exists(enmixDir)) {
@@ -367,7 +369,7 @@ cat("=======================================================================\n")
 cat("Running QC plotting from MSet object...\n")
 qc <- getQC(MSet)
 
-qcPath <- file.path("figures", opt$scriptLabel, "qc", "quality_control(MSet).tiff")
+qcPath <- file.path(opt$figureBaseDir, opt$scriptLabel, "qc", "quality_control(MSet).tiff")
 tiff(file = qcPath,
      width = opt$tiffWidth,
      height = opt$tiffHeight,
@@ -392,7 +394,7 @@ detPpath <- file.path(qcDir, "detP_RGSet.RData")
 save(detP, file = detPpath)
 cat("Detection RData p-values saved to: ", detPpath, "\n")
 
-detPlotPath <- file.path("figures", opt$scriptLabel, "qc", "detection_pvalues(RGSet).tiff")
+detPlotPath <- file.path(opt$figureBaseDir, opt$scriptLabel, "qc", "detection_pvalues(RGSet).tiff")
 
 tiff(file = detPlotPath,
      width = opt$tiffWidth,
@@ -442,7 +444,7 @@ cat("Generating density plot of Beta values...\n")
 phenoData <- pData(MSet)
 
 # Ensure output directory exists
-denBetaPath <- file.path("figures",
+denBetaPath <- file.path(opt$figureBaseDir,
                          opt$scriptLabel, "qc", "densityBeta(MSet).tiff")
 
 tiff(filename = denBetaPath,
@@ -467,7 +469,7 @@ pSex <- getSex(GSet)
 head(pSex)
 
 # -------------- Plot Sex predictions --------------
-pSexPath <- file.path("figures",
+pSexPath <- file.path(opt$figureBaseDir,
                          opt$scriptLabel, "qc", "sexPrediction(GSet).tiff")
 
 tiff(filename = pSexPath,
@@ -498,7 +500,7 @@ if (is.character(targets$Sex) || is.factor(targets$Sex)) {
 }
 
 # -------------- Plot Sex predictions --------------
-pSexClPath <- file.path("figures",
+pSexClPath <- file.path(opt$figureBaseDir,
                       opt$scriptLabel, "qc", "sexClinical(GSet).tiff")
 
 tiff(filename = pSexClPath,
@@ -572,7 +574,7 @@ for (method in opt$normMethodList) {
 }
 
 # -------------- Plot Row vs Normalise data --------------
-rawNormlPath <- file.path("figures",
+rawNormlPath <- file.path(opt$figureBaseDir,
                         opt$scriptLabel, "qc", "sexComparison_RawNorm(MSetF).tiff")
 
 tiff(filename = rawNormlPath,
@@ -702,7 +704,7 @@ cat("=======================================================================\n")
 groupFactor <- factor(targets[[opt$plotGroupVar]])
 groupSex <- factor(targets[[opt$sexColumn]])
 
-mdsPath <- file.path("figures",
+mdsPath <- file.path(opt$figureBaseDir,
                           opt$scriptLabel,
                           "metrics",
                           "examineMDS_PostFilteringCrossRect(MSetF_Flt_Rxy_Ds_Rc).tiff")
@@ -738,7 +740,7 @@ cat("=======================================================================\n")
 cat("Plotting final density plots for grouping variable: ",
     opt$plotGroupVar, "\n")
 
-betaMPlotPath <- file.path("figures",
+betaMPlotPath <- file.path(opt$figureBaseDir,
                      opt$scriptLabel,
                      "metrics",
                      "densityBeta&M(MSetF_Flt_Rxy_Ds_Rc).tiff")

@@ -15,6 +15,7 @@ preprocessingMinfiEwasWater(
   annotationVersion = "20a1.hg38",
   scriptLabel = "preprocessingMinfiEwasWater",
   baseDataFolder = "rData",
+  figureBaseDir = "figures",
   sepType = "",
   tiffWidth = 2000,
   tiffHeight = 1000,
@@ -54,6 +55,8 @@ preprocessingMinfiEwasWater(
 \item{scriptLabel}{Character. Label used in output naming.}
 
 \item{baseDataFolder}{Character. Base directory for RData outputs.}
+
+\item{figureBaseDir}{Character. Base directory for Figures outputs.}
 
 \item{sepType}{Character. Field separator for phenotype file.}
 
@@ -118,6 +121,7 @@ preprocessingMinfiEwasWater(
   annotationVersion = "20a1.hg38",
   scriptLabel = "preprocessingMinfiEwasWater",
   baseDataFolder = "rData",
+  figureBaseDir = "figures",
   sepType = "",
   tiffWidth = 2000,
   tiffHeight = 1000,

@@ -20,7 +20,9 @@ svaEnmix(
   scriptLabel = "svaEnmix",
   tiffWidth = 2000,
   tiffHeight = 1000,
-  tiffRes = 150
+  tiffRes = 150,
+  figureBaseDir = "figures",
+  dataBaseDir = "data"
 )
 }
 \arguments{
@@ -55,6 +57,10 @@ svaEnmix(
 \item{tiffHeight}{Integer. Height of TIFF plots in pixels.}
 
 \item{tiffRes}{Integer. Resolution (DPI) for TIFF plots.}
+
+\item{figureBaseDir}{Character. Base directory for Figures outputs.}
+
+\item{dataBaseDir}{Character. Base directory for Data outputs.}
 }
 \value{
 Invisibly returns \code{NULL}. This function is called for its side effects,
@@ -86,7 +92,9 @@ svaEnmix(
   scriptLabel = "svaEnmix",
   tiffWidth = 2000,
   tiffHeight = 1000,
-  tiffRes = 150
+  tiffRes = 150,
+  figureBaseDir = "figures",
+  dataBaseDir = "data"
 )
 }
 

@@ -9,8 +9,7 @@
 #'   Default is FALSE.
 #'
 #' @return
-#' Invisibly returns \code{NULL}. The function is called for its side effect
-#' of generating a PDF report and associated logs.
+#' Invisibly returns \code{NULL}.
 #'
 #' @examples
 #' tmp <- tempdir()

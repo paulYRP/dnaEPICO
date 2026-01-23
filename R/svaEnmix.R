@@ -19,6 +19,8 @@
 #' @param tiffWidth Integer. Width of TIFF plots in pixels.
 #' @param tiffHeight Integer. Height of TIFF plots in pixels.
 #' @param tiffRes Integer. Resolution (DPI) for TIFF plots.
+#' @param figureBaseDir Character. Base directory for Figures outputs.
+#' @param dataBaseDir Character. Base directory for Data outputs.
 #'
 #' @return
 #' Invisibly returns \code{NULL}. This function is called for its side effects,
@@ -46,7 +48,9 @@
 #'   scriptLabel = "svaEnmix",
 #'   tiffWidth = 2000,
 #'   tiffHeight = 1000,
-#'   tiffRes = 150
+#'   tiffRes = 150,
+#'   figureBaseDir = "figures",
+#'   dataBaseDir = "data"
 #' )
 #' }
 #'
@@ -67,7 +71,9 @@ svaEnmix <- function(
     scriptLabel = "svaEnmix",
     tiffWidth = 2000,
     tiffHeight = 1000,
-    tiffRes = 150
+    tiffRes = 150,
+    figureBaseDir = "figures",
+    dataBaseDir = "data"
 ) {
 
   # Locate script inside installed package
@@ -92,7 +98,9 @@ svaEnmix <- function(
     "--scriptLabel", shQuote(scriptLabel),
     "--tiffWidth", tiffWidth,
     "--tiffHeight", tiffHeight,
-    "--tiffRes", tiffRes
+    "--tiffRes", tiffRes,
+    "--figureBaseDir", shQuote(figureBaseDir),
+    "--dataBaseDir", shQuote(dataBaseDir)
   )
 
   # Build system command

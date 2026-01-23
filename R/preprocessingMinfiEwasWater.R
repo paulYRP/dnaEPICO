@@ -13,6 +13,7 @@
 #' @param annotationVersion Character. Annotation version.
 #' @param scriptLabel Character. Label used in output naming.
 #' @param baseDataFolder Character. Base directory for RData outputs.
+#' @param figureBaseDir Character. Base directory for Figures outputs.
 #' @param sepType Character. Field separator for phenotype file.
 #' @param tiffWidth Integer. Width of TIFF plots in pixels.
 #' @param tiffHeight Integer. Height of TIFF plots in pixels.
@@ -54,6 +55,7 @@
 #'   annotationVersion = "20a1.hg38",
 #'   scriptLabel = "preprocessingMinfiEwasWater",
 #'   baseDataFolder = "rData",
+#'   figureBaseDir = "figures",
 #'   sepType = "",
 #'   tiffWidth = 2000,
 #'   tiffHeight = 1000,
@@ -87,6 +89,7 @@ preprocessingMinfiEwasWater <- function(
     annotationVersion = "20a1.hg38",
     scriptLabel = "preprocessingMinfiEwasWater",
     baseDataFolder = "rData",
+    figureBaseDir = "figures",
     sepType = "",
     tiffWidth = 2000,
     tiffHeight = 1000,
@@ -126,6 +129,7 @@ preprocessingMinfiEwasWater <- function(
     "--annotationVersion", shQuote(annotationVersion),
     "--scriptLabel", shQuote(scriptLabel),
     "--baseDataFolder", shQuote(baseDataFolder),
+    "--figureBaseDir", shQuote(figureBaseDir),
     "--tiffWidth", tiffWidth,
     "--tiffHeight", tiffHeight,
     "--tiffRes", tiffRes,

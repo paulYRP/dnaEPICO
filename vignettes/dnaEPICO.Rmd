@@ -1213,6 +1213,59 @@ dnamReport(
 * If a step “fails”, check logs in `logs/`.
 * If Make targets are missing, confirm:
   * correct `include Makefile.rules.pipeline`
+  
+# Example Analysis
+
+The following examples are brief demonstrations on how to perform DNA methylation analysis using `dnaEPICO` functions and arguments.
+
+## Dependencies
+
+This example has the following dependencies
+
+```{r dependencies, warning=FALSE, message=FALSE}
+library(dnaEPICO)
+library(ewastools)
+library(minfiData)
+library(minfi)
+
+```
+
+## Example 1: using pipeline
+  
+The following analysis is based on **DNA methylation** data obtained from the [GEO Series GSE285813](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE285813). The dataset includes genome-wide methylation profiles generated using the **Illumina Infinium MethylationEPIC v2.0 array**, derived from blood samples.
+
+All the samples were selected for this analysis. Sample-level metadata was extracted and cleaned from the provided [Series Matrix](https://ftp.ncbi.nlm.nih.gov/geo/series/GSE285nnn/GSE285813/matrix/) text file.
+
+*Dataset Summary*
+
+- **Organism:** *Homo sapiens*  
+- **Sample size:** 32 individuals  
+- **Access:** [NCBI GEO - GSE285813](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE285813)  
+- **Article:** [frontier (2025)](https://www.frontiersin.org/journals/cellular-and-infection-microbiology/articles/10.3389/fcimb.2024.1532417/full) 
+
+## Aim
+
+
+
+## 
+
+
+```{r}
+ls("package:dnaEPICO")
+
+```
+
+```{r}
+?extractMake
+```
+
+
+
+  
+  
+  
+  
+  
 
 # Basics
 

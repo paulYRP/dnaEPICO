@@ -85,7 +85,9 @@ opt <- parse_args(OptionParser(option_list = list(
   make_option("--scriptLabel", default = "svaEnmix", help = "Label for output folders/logs"),
   make_option("--tiffWidth", type = "integer", default = 2000),
   make_option("--tiffHeight", type = "integer", default = 1000),
-  make_option("--tiffRes", type = "integer", default = 150)
+  make_option("--tiffRes", type = "integer", default = 150),
+  make_option("--figureBaseDir", default = "figures", help = "Base directory for all figures"),
+  make_option("--dataBaseDir", default = "data", help = "Base directory for data")
 
 )))
 
@@ -119,10 +121,10 @@ cat("ctrlSva flag: ", opt$ctrlSvaFlag, "\n")
 cat("TIFF dimensions (WxH): ", opt$tiffWidth, "x", opt$tiffHeight, " at", opt$tiffRes, "dpi\n")
 # =============================================================================
 
-# ----------- Directory Setup for Figures -----------
-dir.create(file.path("figures", opt$scriptLabel), showWarnings = FALSE,
+# ----------- Directory Setup for Figures and Data -----------
+dir.create(file.path(opt$figureBaseDir, opt$scriptLabel), showWarnings = FALSE,
            recursive = TRUE)
-dir.create(file.path("data", opt$scriptLabel), showWarnings = FALSE,
+dir.create(file.path(opt$dataBaseDir, opt$scriptLabel), showWarnings = FALSE,
            recursive = TRUE)
 cat("=======================================================================\n")
 
