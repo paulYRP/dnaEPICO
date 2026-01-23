@@ -2,7 +2,7 @@
 # ==============================================================================
 # DNAm Preprocessing Script (Minfi-based)
 # Script Name: preprocessingMinfiEwasWater.R
-# Description: Preprocesses DNAm data using Minfi package. 
+# Description: Preprocesses DNAm data using Minfi package.
 # ==============================================================================
 
 # Usage Example (Full version):
@@ -53,6 +53,10 @@ suppressPackageStartupMessages({
         library(data.table)
         library(wateRmelon)
         library(minfi)
+        library(IlluminaHumanMethylation450kmanifest)
+        library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+        library(IlluminaHumanMethylationEPICmanifest)
+        library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
         library(IlluminaHumanMethylationEPICv2manifest)
         library(IlluminaHumanMethylationEPICv2anno.20a1.hg38)
         library(Gviz)
@@ -131,8 +135,8 @@ opt <- parse_args(OptionParser(option_list = list(
         make_option("--lcRef", default = "salivaEPIC", help = "Reference for estimateLC (e.g., salivaEPIC, saliva, Reinius+Lin ...)"),
         make_option("--phenoOrder", default = "SampleName;Timepoint;Sex;PredSex;Basename;SentrixID;SentrixPosition", help = "Semicolon-separated leading column order; others appended"),
         make_option("--lcPhenoDir", default = "data/preprocessingMinfiEwasWater", help = "Output directory for the phenoLC.csv file [default: %default]")
-        
-        
+
+
 )))
 
 # Split comma/semicolon lists
@@ -145,10 +149,10 @@ opt$normMethodList  <- strsplit(opt$normMethods, ";")[[1]]
 logFilePath <- file.path(opt$outputLogs, "log_preprocessingMinfiEwasWater.txt")
 dir.create(opt$outputLogs, recursive = TRUE, showWarnings = FALSE)
 
-logCon <- file(logFilePath, open = "wt")  
+logCon <- file(logFilePath, open = "wt")
 
-sink(logCon, split = TRUE)                     
-sink(logCon, type = "message")                
+sink(logCon, split = TRUE)
+sink(logCon, type = "message")
 # ==============================================================================
 
 # ----------- Logging Start Info -----------
@@ -176,8 +180,8 @@ cat("  P-value threshold:      ", opt$pvalThreshold, "\n")
 cat("  Chromosomes to remove:  ", opt$chrToRemove, "\n")
 cat("  SNP positions filter:   ", opt$snpsToRemove, "\n")
 cat("  MAF threshold:          ", opt$mafThreshold, "\n")
-cat("  Cross-reactive file:    ", ifelse(is.null(opt$crossReactivePath), 
-                                         "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv", 
+cat("  Cross-reactive file:    ", ifelse(is.null(opt$crossReactivePath),
+                                         "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
                                          opt$crossReactivePath), "\n\n")
 cat("Cell composition (estimateLC):\n")
 cat("  Reference:              ", opt$lcRef, "\n")
@@ -250,10 +254,10 @@ if (!is.na(opt$nSamples) && opt$nSamples < nrow(targets)) {
   cat("Using all", nrow(targets), "samples.\n")
 }
 
-cat("Phenotype file loaded with", 
+cat("Phenotype file loaded with",
     nrow(targets), "samples and", ncol(targets), "columns.\n")
 cat("Preview of targets:\n")
-print(head(targets[, 1:5])) 
+print(head(targets[, 1:5]))
 cat("=======================================================================\n")
 
 # ----------- Load IDAT Files into RGSet -----------
@@ -390,15 +394,15 @@ cat("Detection RData p-values saved to: ", detPpath, "\n")
 
 detPlotPath <- file.path("figures", opt$scriptLabel, "qc", "detection_pvalues(RGSet).tiff")
 
-tiff(file = detPlotPath, 
+tiff(file = detPlotPath,
      width = opt$tiffWidth,
      height = opt$tiffHeight,
      res = opt$tiffRes, type = "cairo")
-barplot(colMeans(detP), 
-        las=3, 
-        cex.names=0.8, 
+barplot(colMeans(detP),
+        las=3,
+        cex.names=0.8,
         ylab="Mean detection p-values")
-abline(h=0.05,col="red", lwd = 2, lty = 2) 
+abline(h=0.05,col="red", lwd = 2, lty = 2)
 dev.off()
 
 cat("Detection plot p-values saved to: ", detPlotPath, "\n")
@@ -438,7 +442,7 @@ cat("Generating density plot of Beta values...\n")
 phenoData <- pData(MSet)
 
 # Ensure output directory exists
-denBetaPath <- file.path("figures", 
+denBetaPath <- file.path("figures",
                          opt$scriptLabel, "qc", "densityBeta(MSet).tiff")
 
 tiff(filename = denBetaPath,
@@ -459,11 +463,11 @@ cat("Density plot saved to: ", denBetaPath, "\n")
 cat("=======================================================================\n")
 
 cat("Predicting sex based on Beta values...\n")
-pSex <- getSex(GSet) 
+pSex <- getSex(GSet)
 head(pSex)
 
 # -------------- Plot Sex predictions --------------
-pSexPath <- file.path("figures", 
+pSexPath <- file.path("figures",
                          opt$scriptLabel, "qc", "sexPrediction(GSet).tiff")
 
 tiff(filename = pSexPath,
@@ -471,12 +475,12 @@ tiff(filename = pSexPath,
      height = opt$tiffHeight,
      res = 70, type = "cairo")
 
-plot(x = pSex$xMed, 
+plot(x = pSex$xMed,
      y = pSex$yMed,
-     type = "n", 
-     xlab = "X chr, median total intensity (log2)", 
+     type = "n",
+     xlab = "X chr, median total intensity (log2)",
      ylab = "Y chr, median total intensity (log2)")
-text(x = pSex$xMed, y = pSex$yMed, labels = targets[[opt$SampleID]], 
+text(x = pSex$xMed, y = pSex$yMed, labels = targets[[opt$SampleID]],
      col = ifelse(pSex$predictedSex == "M", "deepskyblue", "deeppink3"))
 legend("bottomleft", c("M", "F"), col = c("deepskyblue", "deeppink3"), pch = 16)
 dev.off()
@@ -485,7 +489,7 @@ cat("Predicted Sex plot saved to: ", pSexPath, "\n")
 cat("=======================================================================\n")
 
 # Create clinical sex plot
-pSexD <- as.data.frame(pSex) 
+pSexD <- as.data.frame(pSex)
 pSexD <- merge(pSexD, targets, by.x="row.names", by.y = opt$SampleID)
 head(pSexD[, 1:4])
 
@@ -494,7 +498,7 @@ if (is.character(targets$Sex) || is.factor(targets$Sex)) {
 }
 
 # -------------- Plot Sex predictions --------------
-pSexClPath <- file.path("figures", 
+pSexClPath <- file.path("figures",
                       opt$scriptLabel, "qc", "sexClinical(GSet).tiff")
 
 tiff(filename = pSexClPath,
@@ -503,7 +507,7 @@ tiff(filename = pSexClPath,
      res = 70, type = "cairo")
 
 plot(x = pSexD$xMed, y = pSexD$yMed, type = "n", xlab = "X chr, median total intensity (log2)", ylab = "Y chr, median total intensity (log2)")
-text(x = pSexD$xMed, y = pSexD$yMed, labels = pSexD$Row.names, 
+text(x = pSexD$xMed, y = pSexD$yMed, labels = pSexD$Row.names,
      col = ifelse(pSexD$Sex == "1", "deepskyblue", "deeppink3"))
 legend("bottomleft", c("M", "F"), col = c("deepskyblue", "deeppink3"), pch = 16)
 dev.off()
@@ -511,7 +515,7 @@ dev.off()
 cat("Clinical Sex plot saved to: ", pSexClPath, "\n")
 cat("=======================================================================\n")
 
-# Bind the predicted sex to the targets file and identify any mismatches 
+# Bind the predicted sex to the targets file and identify any mismatches
 targets$PredSex <- pSex$predictedSex
 # Convert F = 0 and M = 1 in the column predSex
 targets$PredSex <- ifelse(targets$PredSex == "F", 0, 1)
@@ -519,29 +523,29 @@ targets$PredSex <- ifelse(targets$PredSex == "F", 0, 1)
 # === Remove Failed Samples from targets ===
 targets <- targets[!(targets[[opt$SampleID]] %in% failedSamples), ]
 
-# Add PredSex to pData  
+# Add PredSex to pData
 pData(RGSet)$PredSex <- targets$PredSex
 
 cat("Mistmaches found")
 print(targets[targets$Sex != targets$PredSex, 1:3])
 cat("=======================================================================\n")
 
-cat("Running normalization methods using Minfi and WateRmelon: ", 
+cat("Running normalization methods using Minfi and WateRmelon: ",
     paste(opt$normMethodList, collapse = ", "), "\n")
 
 sexVec <- NULL
 if (!is.null(opt$sexColumn) && opt$sexColumn %in% colnames(pData(RGSet))) {
   sexVec <- pData(RGSet)[, opt$sexColumn]
 } else {
-  cat("Note: sexColumn not found in pData(RGSet). 
+  cat("Note: sexColumn not found in pData(RGSet).
       Fallback to NULL; funnorm/adjustedfunnorm will run without sex covariate.\n")
 }
 
-normPaths <- c(); firstMethod <- TRUE  
+normPaths <- c(); firstMethod <- TRUE
 for (method in opt$normMethodList) {
         cat("  → Applying normalization:", method, "\n")
         set.seed(opt$funnormSeed)
-        
+
         normObj <- switch(
                 method,
                 "adjustedfunnorm" = adjustedFunnorm(RGSet, sex = sexVec),
@@ -552,15 +556,15 @@ for (method in opt$normMethodList) {
                 stop(paste("Unknown normalization method:", method))
         )
         if (method %in% c("funnorm","adjustedfunnorm") && is.null(sexVec)) {
-          cat("Requested method uses sex, but sex not provided; 
+          cat("Requested method uses sex, but sex not provided;
               proceeded with sex = NULL.\n")
         }
-        
+
         if (firstMethod) {
                 MSetF <- normObj
                 firstMethod <- FALSE
         }
-        
+
         normPath <- file.path(normDir, paste0("norm_", method, "_RGSet.RData"))
         save(normObj, file = normPath)
         normPaths <- c(normPaths, normPath)
@@ -568,29 +572,29 @@ for (method in opt$normMethodList) {
 }
 
 # -------------- Plot Row vs Normalise data --------------
-rawNormlPath <- file.path("figures", 
+rawNormlPath <- file.path("figures",
                         opt$scriptLabel, "qc", "sexComparison_RawNorm(MSetF).tiff")
 
 tiff(filename = rawNormlPath,
      width = opt$tiffWidth,
      height = opt$tiffHeight,
      res = opt$tiffRes, type = "cairo")
-     
+
 par(mfrow=c(1,2))
-densityPlot(RGSet, 
+densityPlot(RGSet,
             sampGroups=targets[[opt$sexColumn]],
-            main="Raw", 
+            main="Raw",
             legend=FALSE)
-legend("top", 
-       legend = levels(factor(targets[[opt$sexColumn]])), 
+legend("top",
+       legend = levels(factor(targets[[opt$sexColumn]])),
        text.col=brewer.pal(8,"Dark2"))
 
-densityPlot(getBeta(MSetF), 
+densityPlot(getBeta(MSetF),
             sampGroups=targets[[opt$sexColumn]],
-            main="Normalized", 
+            main="Normalized",
             legend=FALSE)
-legend("top", 
-       legend = levels(factor(targets[[opt$sexColumn]])), 
+legend("top",
+       legend = levels(factor(targets[[opt$sexColumn]])),
        text.col=brewer.pal(8,"Dark2"))
 dev.off()
 
@@ -598,7 +602,7 @@ cat("Plot Raw vs Normalisation data saved to: ", rawNormlPath, "\n")
 cat("=======================================================================\n")
 
 # ----------- Probe Filtering Based on Detection P-values -----------
-cat("Filtering probes with detection p-values: ", 
+cat("Filtering probes with detection p-values: ",
     opt$pvalThreshold, "...\n")
 
 # Recompute detection p-values
@@ -618,7 +622,7 @@ cat("Filtered object saved to: ", MSetFfltPath, "\n")
 cat("=======================================================================\n")
 
 # ----------- Filter Probes on Sex Chromosomes -----------
-cat("Removing probes on chromosomes: ", paste(opt$chrToRemoveList, 
+cat("Removing probes on chromosomes: ", paste(opt$chrToRemoveList,
                                               collapse = ", "), "\n")
 # Identify probes to remove
 ann <- getAnnotation(RGSet)
@@ -636,7 +640,7 @@ cat("Sex chromosome-filtered object saved to: ", rxyPath, "\n")
 cat("=======================================================================\n")
 
 # ----------- Remove Probes with SNPs -----------
-cat("Removing probes with SNPs at: ", paste(opt$snpList, collapse = ", "), 
+cat("Removing probes with SNPs at: ", paste(opt$snpList, collapse = ", "),
     " with MAF >=", opt$mafThreshold, "\n")
 
 # Apply SNP probe filtering
@@ -647,7 +651,7 @@ MSetF_Flt_Rxy_Ds <- dropLociWithSnps(
 )
 cat("Remaining probes after SNP filtering: ", nrow(MSetF_Flt_Rxy_Ds), "\n")
 
-snpPath <- file.path(filterDir, paste0("removSNPs_MAF", opt$mafThreshold, 
+snpPath <- file.path(filterDir, paste0("removSNPs_MAF", opt$mafThreshold,
                                        "_MSetF_Flt_Rxy_Ds.RData"))
 save(MSetF_Flt_Rxy_Ds, file = snpPath)
 cat("SNP-filtered object saved to: ", snpPath, "\n")
@@ -698,9 +702,9 @@ cat("=======================================================================\n")
 groupFactor <- factor(targets[[opt$plotGroupVar]])
 groupSex <- factor(targets[[opt$sexColumn]])
 
-mdsPath <- file.path("figures", 
-                          opt$scriptLabel, 
-                          "metrics", 
+mdsPath <- file.path("figures",
+                          opt$scriptLabel,
+                          "metrics",
                           "examineMDS_PostFilteringCrossRect(MSetF_Flt_Rxy_Ds_Rc).tiff")
 
 tiff(filename = mdsPath,
@@ -712,16 +716,16 @@ pal <- brewer.pal(8,"Dark2")
 par(mfrow=c(1,2))
 plotMDS(getM(MSetF_Flt_Rxy_Ds_Rc),
         main="Timepoint",
-        top=1000, gene.selection="common", 
+        top=1000, gene.selection="common",
         col=pal[groupFactor], dim=c(1,2))
-legend("right", legend=levels(groupFactor), 
+legend("right", legend=levels(groupFactor),
        text.col = brewer.pal(8,"Dark2"),
        cex=0.7, bg="white")
-plotMDS(getM(MSetF_Flt_Rxy_Ds_Rc), 
+plotMDS(getM(MSetF_Flt_Rxy_Ds_Rc),
         main="Sex",
-        top=1000, gene.selection="common", 
+        top=1000, gene.selection="common",
         col=pal[groupSex], dim=c(2,3))
-legend("topright", legend=levels(groupSex), 
+legend("topright", legend=levels(groupSex),
        text.col = brewer.pal(8,"Dark2"),
        cex=0.7, bg="white")
 
@@ -731,18 +735,18 @@ cat("Plot examineMDS_PostFilteringCrossRect saved to: ", mdsPath, "\n")
 cat("=======================================================================\n")
 
 # ----------- Plot Density of Final Beta & M Values by Group Variable -----------
-cat("Plotting final density plots for grouping variable: ", 
+cat("Plotting final density plots for grouping variable: ",
     opt$plotGroupVar, "\n")
 
-betaMPlotPath <- file.path("figures", 
-                     opt$scriptLabel, 
-                     "metrics", 
+betaMPlotPath <- file.path("figures",
+                     opt$scriptLabel,
+                     "metrics",
                      "densityBeta&M(MSetF_Flt_Rxy_Ds_Rc).tiff")
 
 # Create TIFF output
-tiff(betaMPlotPath, 
-     width = opt$tiffWidth, 
-     height = opt$tiffHeight, 
+tiff(betaMPlotPath,
+     width = opt$tiffWidth,
+     height = opt$tiffHeight,
      res = opt$tiffRes, type = "cairo")
 par(mfrow = c(1, 2))
 
@@ -771,7 +775,7 @@ cat("=======================================================================\n")
 
 cat("Estimating cell composition with ref:", opt$lcRef, "\n")
 
-lc <- ewastools::estimateLC(beta, 
+lc <- ewastools::estimateLC(beta,
                             ref = opt$lcRef, constrained = TRUE)
 phenoLC <- cbind(targets, lc)
 
@@ -781,8 +785,8 @@ phenoLC <- dplyr::select(phenoLC, dplyr::all_of(leadCols), dplyr::everything())
 
 if (!dir.exists(opt$lcPhenoDir)) dir.create(opt$lcPhenoDir, recursive = TRUE)
 lcPhenoOut <- file.path(opt$lcPhenoDir, "phenoLC.csv")
-write.csv(phenoLC, 
-          file = lcPhenoOut, 
+write.csv(phenoLC,
+          file = lcPhenoOut,
           row.names = FALSE)
 cat("Saved phenoLC:", lcPhenoOut, "\n")
 
@@ -793,7 +797,7 @@ print(sessionInfo())
 # ==============================================================================
 
 # ----------- Close Logging -----------
-sink(type = "message")  
-sink()                  
-close(logCon)           
+sink(type = "message")
+sink()
+close(logCon)
 

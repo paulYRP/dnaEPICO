@@ -30,8 +30,12 @@ Imports:
     tidyr,
     glm2,
     Gviz,
+    IlluminaHumanMethylation450kmanifest,
+    IlluminaHumanMethylation450kanno.ilmn12.hg19,
     IlluminaHumanMethylationEPICv2anno.20a1.hg38,
     IlluminaHumanMethylationEPICv2manifest,
+    IlluminaHumanMethylationEPICmanifest,
+    IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
     lme4,
     lmerTest,
     MASS,
@@ -45,13 +49,13 @@ Imports:
     remotes
 Suggests:
     BiocManager,
-    BiocStyle, 
+    BiocStyle,
     RefManageR,
     sessioninfo,
     devtools,
     data.table,
-    testthat,
-    knitr,    
+    testthat (>= 3.0.0),
+    knitr,
     covr
 VignetteBuilder: knitr
 biocViews:
