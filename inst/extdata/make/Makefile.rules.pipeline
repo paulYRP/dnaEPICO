@@ -143,6 +143,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  annotationVersion = '$(ANNOTATION_VERSION)', \
 	  scriptLabel = '$(MODEL)/$(STEP1)', \
 	  baseDataFolder = '$(RDATA_DIR)', \
+	  figureBaseDir = '$(FIGURES_DIR), \
 	  tiffWidth = $(TIFF_WIDTH), \
 	  tiffHeight = $(TIFF_HEIGHT), \
 	  tiffRes = $(TIFF_RES), \
@@ -179,6 +180,8 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 	  ctrlSvaPercVar = $(CTRL_SVA_PERC_VAR), \
   	  ctrlSvaFlag = $(CTRL_SVA_FLAG), \
 	  scriptLabel = '$(MODEL)/$(STEP2)', \
+	  figureBaseDir = '$(FIGURES_DIR), \
+	  dataBaseDir = '$(DATA_DIR), \
 	  tiffWidth = $(TIFF_WIDTH), \
 	  tiffHeight = $(TIFF_HEIGHT), \
 	  tiffRes = $(TIFF_RES) )"

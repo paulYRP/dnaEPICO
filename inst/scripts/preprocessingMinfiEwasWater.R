@@ -491,15 +491,49 @@ cat("Predicted Sex plot saved to: ", pSexPath, "\n")
 cat("=======================================================================\n")
 
 # Create clinical sex plot
+cat("Clinical sex values...\n")
 pSexD <- as.data.frame(pSex)
 pSexD <- merge(pSexD, targets, by.x="row.names", by.y = opt$SampleID)
 head(pSexD[, 1:4])
 
-if (is.character(targets$Sex) || is.factor(targets$Sex)) {
-  targets$Sex <- ifelse(targets$Sex %in% c("F", "Female", "f", "female", "FEMALE"), 0, 1)
+# Extract sex column dynamically
+sexVec <- targets[[opt$sexColumn]]
+
+# Identify NA values
+nSexNA <- sum(is.na(sexVec))
+
+# Identify unknown / unexpected values (character or factor only)
+if (is.character(sexVec) || is.factor(sexVec)) {
+  knownSex <- c("F", "Female", "f", "female", "FEMALE",
+                "M", "Male", "m", "male", "MALE")
+  unknownSex <- setdiff(unique(sexVec), knownSex)
+} else {
+  unknownSex <- character(0)
 }
 
-# -------------- Plot Sex predictions --------------
+# Log sex integrity summary
+cat("Sex column integrity check:\n")
+cat("  Sex column used: ", opt$sexColumn, "\n")
+cat("  NA values:       ", nSexNA, "\n")
+cat("  Unknown labels:  ",
+    if (length(unknownSex) == 0) "None" else paste(unknownSex, collapse = ", "),
+    "\n")
+
+# Recode sex (F = 0, M = 1) — controlled by opt
+
+if (is.character(targets[[opt$sexColumn]]) || is.factor(targets[[opt$sexColumn]])) {
+  targets[[opt$sexColumn]] <-
+    ifelse(targets[[opt$sexColumn]] %in%
+             c("F", "Female", "f", "female", "FEMALE"),
+           0, 1)
+}
+
+# Synchronise recoded sex back into plotting data
+pSexD[[opt$sexColumn]] <- targets[[opt$sexColumn]][
+    match(pSexD$Row.names, targets[[opt$SampleID]])
+  ]
+
+# -------------- Plot clinical sex --------------
 pSexClPath <- file.path(opt$figureBaseDir,
                       opt$scriptLabel, "qc", "sexClinical(GSet).tiff")
 
@@ -510,7 +544,7 @@ tiff(filename = pSexClPath,
 
 plot(x = pSexD$xMed, y = pSexD$yMed, type = "n", xlab = "X chr, median total intensity (log2)", ylab = "Y chr, median total intensity (log2)")
 text(x = pSexD$xMed, y = pSexD$yMed, labels = pSexD$Row.names,
-     col = ifelse(pSexD$Sex == "1", "deepskyblue", "deeppink3"))
+     col = ifelse(pSexD[[opt$sexColumn]] == "1", "deepskyblue", "deeppink3"))
 legend("bottomleft", c("M", "F"), col = c("deepskyblue", "deeppink3"), pch = 16)
 dev.off()
 
@@ -529,7 +563,7 @@ targets <- targets[!(targets[[opt$SampleID]] %in% failedSamples), ]
 pData(RGSet)$PredSex <- targets$PredSex
 
 cat("Mistmaches found")
-print(targets[targets$Sex != targets$PredSex, 1:3])
+print(targets[targets[[opt$sexColumn]] != targets$PredSex, 1:3])
 cat("=======================================================================\n")
 
 cat("Running normalization methods using Minfi and WateRmelon: ",

@@ -178,7 +178,7 @@ print(head(sva))
 sentrixID <- as.factor(pData(RGSet)[[opt$SentrixIDColumn]])
 
 # Create TIFF output
-svaSentrixPath <- file.path("figures",
+svaSentrixPath <- file.path(opt$figureBaseDir,
                         opt$scriptLabel, "sva_SentrixID.tiff")
 tiff(file = svaSentrixPath,
      width = opt$tiffWidth,
@@ -202,7 +202,7 @@ cat("SVA Sentrix plot saved to: ", svaSentrixPath, "\n")
 # ----------- Plot SVA Colored by SentrixPosition -----------
 sentrixPos <- as.factor(pData(RGSet)[[opt$SentrixPositionColumn]])
 
-svaPositionpath <- file.path("figures", opt$scriptLabel, "sva_SentrixPosition.tiff")
+svaPositionpath <- file.path(opt$figureBaseDir, opt$scriptLabel, "sva_SentrixPosition.tiff")
 
 tiff(file = svaPositionpath,
      width = opt$tiffWidth,
@@ -259,11 +259,11 @@ lmsvaRed <- vector("list", K)
 
 # ----------- Save summaries of full models -----------
 capture.output(summary(lmsvaFull[[1]]),
-               file = file.path("data", opt$scriptLabel, "summary_full_sva1.txt"))
+               file = file.path(opt$dataBaseDir, opt$scriptLabel, "summary_full_sva1.txt"))
 
 if (K >= 2) {
   capture.output(summary(lmsvaFull[[2]]),
-                 file = file.path("data", opt$scriptLabel, "summary_full_sva2.txt"))
+                 file = file.path(opt$dataBaseDir, opt$scriptLabel, "summary_full_sva2.txt"))
 }
 
 # Perform backward elimination and write ANOVA output
@@ -276,11 +276,11 @@ for(i in 1:K){
     else break
     lmtmp = update(lmtmp, paste(".~. - ", ttmp) )
     capture.output(dttmp,
-                   file = file.path("data",
+                   file = file.path(opt$dataBaseDir,
                                     opt$scriptLabel, paste0("dropterm_step_sva", i, ".txt")),
                    append = TRUE)
     capture.output(summary(lmtmp),
-                   file = file.path("data",
+                   file = file.path(opt$dataBaseDir,
                                     opt$scriptLabel, paste0("dropterm_model_sva", i, ".txt")),
                    append = TRUE)
   }
@@ -291,11 +291,11 @@ for(i in 1:K){
 # ----------- Save ANOVA summaries for full and reduced models -----------
 for (i in 1:K) {
   capture.output(anova(lmsvaFull[[i]]),
-                 file = file.path("data",
+                 file = file.path(opt$dataBaseDir,
                                   opt$scriptLabel, paste0("anova_full_sva", i, ".txt")))
 
   capture.output(anova(lmsvaRed[[i]]),
-                 file = file.path("data",
+                 file = file.path(opt$dataBaseDir,
                                   opt$scriptLabel, paste0("anova_reduced_sva", i, ".txt")))
 }
 cat("=======================================================================\n")
@@ -304,7 +304,7 @@ cat("=======================================================================\n")
 
 # Prepare output TIFF file
 
-svaSentrixPositionPath <- file.path("figures",
+svaSentrixPositionPath <- file.path(opt$figureBaseDir,
                                     opt$scriptLabel, "sva_SentrixIDPosition.tiff")
 
 tiff(file = svaSentrixPositionPath,
