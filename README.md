@@ -24,7 +24,7 @@ coverage](https://codecov.io/gh/paulYRP/dnapipeR/graph/badge.svg)](https://app.c
 
 The goal of **`dnaEPICO`** is to provide a **modular, reproducible, and
 pipeline** for the preprocessing and statistical analysis of Illumina
-*EPICv2* DNA methylation array data.
+DNA methylation array data (EPICv2, EPIC and 450K).
 
 The package integrates preprocessing, quality control, phenotype
 merging, generalised linear models (GLM), linear mixed-effects models

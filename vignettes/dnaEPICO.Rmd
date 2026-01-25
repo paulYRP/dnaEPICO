@@ -10,7 +10,7 @@ author:
     affiliation:
     - Queensland University of Technology
 abstract: >
-  A comprehensive guide to using the dnaEPICO package. The package supports preprocessing and analysis of Illumina EPICv2 DNA methylation array data, including QC, filtering, SVA, cell-type deconvolution, phenotype integration, modelling, and export-ready files for the DNAmAge Clock Foundation platform.
+  A comprehensive guide to using the dnaEPICO package. The package supports preprocessing and analysis of Illumina DNA methylation array data (EPICv2, EPIC and 450K), including QC, filtering, SVA, cell-type deconvolution, phenotype integration, modelling, and export-ready files for the DNAmAge Clock Foundation platform.
 output: 
   BiocStyle::html_document:
     self_contained: yes
@@ -1230,42 +1230,420 @@ library(minfi)
 
 ```
 
-## Example 1: using pipeline
-  
-The following analysis is based on **DNA methylation** data obtained from the [GEO Series GSE285813](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE285813). The dataset includes genome-wide methylation profiles generated using the **Illumina Infinium MethylationEPIC v2.0 array**, derived from blood samples.
+##  Example 1: Local Test
 
-All the samples were selected for this analysis. Sample-level metadata was extracted and cleaned from the provided [Series Matrix](https://ftp.ncbi.nlm.nih.gov/geo/series/GSE285nnn/GSE285813/matrix/) text file.
+This document has the following dependencies
 
-*Dataset Summary*
+```{r, message=FALSE, eval = TRUE}
+library("dnaEPICO")
+library("ewastools")
 
-- **Organism:** *Homo sapiens*  
-- **Sample size:** 32 individuals  
-- **Access:** [NCBI GEO - GSE285813](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE285813)  
-- **Article:** [frontier (2025)](https://www.frontiersin.org/journals/cellular-and-infection-microbiology/articles/10.3389/fcimb.2024.1532417/full) 
+```
 
-## Aim
+The aim of this example is to show **how to run the complete `dnaEPICO` pipeline** using the example dataset provided by the `minfiData` package.
+
+This example is designed to:
+
+- help new users understand the pipeline structure  
+- demonstrate how data and results are organised on disk  
+- provide a safe, reproducible way to test the pipeline  
+
+To avoid creating permanent files on the user’s computer, **all steps are run inside a temporary directory**.  
+
+When analysing real data, users can simply replace the temporary directory with their own project folder.
+
+### Overview of example 1
+
+In this example, the pipeline performs the following steps:
+
+1. Stage raw input data (IDAT files and phenotype data)  
+2. Perform DNA methylation preprocessing and quality control  
+3. Estimate surrogate variables (technical variation)  
+4. Prepare phenotype-aligned methylation matrices  
+5. Generate figures and a summary PDF report  
+
+### Step 1: Create a temporary working directory
+
+We first create a temporary directory that will hold **all input files and outputs** for this example.
+
+```{r, message=FALSE, warning=FALSE, include=TRUE}
+# Temporary directory 
+tmpDir  <- file.path(tempdir(), "dnaEPICO_Test")
+dir.create(tmpDir, showWarnings = FALSE, recursive = TRUE)
+
+preprocDir <- file.path(tmpDir, "data", "preprocessingMinfiEwasWater")
+dir.create(preprocDir, showWarnings = FALSE, recursive = TRUE)
+
+# Register automatic cleanup when the vignette exits
+on.exit(unlink(tmpDir, recursive = TRUE, force = TRUE), add = TRUE)
+
+tmpDir
+
+```
+
+**Important:**
+
+* This directory is created only for this example
+* It will be deleted automatically at the end
+* Users analysing real data should use a permanent directory instead
+
+### Step 2: Load example IDAT files from minfiData
+
+The `minfiData` package contains a small set of Illumina 450K IDAT files tfrom blood samples.
+
+```{r download-raw, message=FALSE, warning=FALSE }
+# Locate minfiData extdata directory
+baseDir_minfi <- system.file("extdata", package = "minfiData")
+
+# Find all IDAT files
+idatFiles <- list.files(
+  baseDir_minfi,
+  pattern = "\\.idat$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+
+length(idatFiles)
+
+```
+
+We now copy these IDAT files into the directory structure expected by `dnaEPICO`.
+
+```{r}
+# Create IDAT directory
+idatDir <- file.path(preprocDir, "idats")
+dir.create(idatDir, showWarnings = FALSE, recursive = TRUE)
+
+# Copy IDATs into idatDir
+file.copy(idatFiles, idatDir, overwrite = TRUE)
+
+length(list.files(idatDir, pattern = "\\.idat$"))
+
+```
 
 
+### Step 3: Copy the cross-reactive probe annotation file
 
-## 
+The pipeline requires a file listing cross-reactive probes. This file is distributed with `dnaEPICO` and is copied into the preprocessing folder. It is a reduced version of the original file, which can be accessed from the following link:
+
+- [`12864_2024_10027_MOESM8_ESM.csv`](https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323)
+
+```{r}
+# Locate dnaEPICO extdata directory
+baseDir_dnaEPICO <- system.file("extdata", package = "dnaEPICO")
+
+# Source cross-reactive probe file
+crossReactiveSrc <- file.path(baseDir_dnaEPICO, "12864_2024_10027_MOESM8_ESM.csv")
+
+# Destination path inside tmpDir/data/preprocessingMinfiEwasWater/
+crossReactivePath <- file.path(preprocDir, "12864_2024_10027_MOESM8_ESM.csv")
+
+# Copy into the target folder
+file.copy(crossReactiveSrc, crossReactivePath, overwrite = TRUE)
+file.exists(crossReactivePath)
+
+```
+
+### Step 4: Create a phenotype file
+
+Next, we create a phenotype file using the sample sheet provided by `minfiData`.
 
 
 ```{r}
-ls("package:dnaEPICO")
+# Read SampleSheet from minfiData
+targets <- read.csv(
+  file.path(baseDir_minfi, "SampleSheet.csv"),
+  stringsAsFactors = FALSE,
+  skip = 7
+)
+
+# Create Basename column 
+targets$Basename <- paste0(
+  targets$Sentrix_ID,
+  "_",
+  targets$Sentrix_Position
+)
+
+# Create Timepoint column
+targets$Timepoint <- 1
+
+# Write phenotype file
+samplePath <- file.path(preprocDir, "sample_minfi.csv")
+write.csv(targets, samplePath, row.names = FALSE)
+
+file.exists(samplePath)
+
+
+```
+
+This phenotype file will be used throughout the pipeline.
+
+## Step 5: Preprocessing and quality control
+
+We now run the first pipeline stage, which performs:
+
+* reading of IDAT files
+* quality control
+* normalisation
+* probe filtering
+* generation of QC figures
+
+```{r}
+preprocessingMinfiEwasWater(
+  phenoFile = samplePath,
+  idatFolder = file.path(preprocDir, "idats"),
+  nSamples = NA,
+  SampleID = "Sample_Name",
+  phenoOrder = "Sample_Name;sex;Basename;Sentrix_ID;Sentrix_Position",
+  arrayType = "IlluminaHumanMethylation450k",
+  annotationVersion = "ilmn12.hg19",
+  sexColumn = "sex",
+  plotGroupVar = "sex",
+  tiffWidth = 2000,
+  tiffHeight = 1000,
+  tiffRes = 150,
+  qcCutoff = 10.5,
+  detPtype = "m+u",
+  detPThreshold = 0.05,
+  funnormSeed = 123,
+  normMethods = "adjustedfunnorm",
+  pvalThreshold = 0.01,
+  chrToRemove = "chrX,chrY",
+  snpsToRemove = "SBE,CpG",
+  mafThreshold = 0.1,
+  outputLogs = file.path(tmpDir, "logs"),
+  baseDataFolder = file.path(tmpDir, "rData"),
+  figureBaseDir = file.path(tmpDir, "figures"),
+  lcRef = "Reinius",
+  crossReactivePath = file.path(preprocDir, "12864_2024_10027_MOESM8_ESM.csv"),
+  lcPhenoDir = preprocDir
+)
+
+```
+
+### Step 6: Surrogate variable analysis (SVA)
+
+Next, we estimate surrogate variables to capture technical variation such as chip and position effects.
+
+```{r}
+rgsetPath <- file.path(
+  tmpDir,
+  "rData",
+  "preprocessingMinfiEwasWater",
+  "objects",
+  "RGSet.RData"
+)
+
+file.exists(rgsetPath)
 
 ```
 
 ```{r}
-?extractMake
+svaEnmix(
+  phenoFile = samplePath,
+  rgsetData = rgsetPath,
+  sepType = "",
+  outputLogs = file.path(tmpDir, "logs"),
+  nSamples = NA,
+  SampleID = "Sample_Name",
+  arrayType = "IlluminaHumanMethylation450k",
+  annotationVersion = "ilmn12.hg19",
+  SentrixIDColumn = "Sentrix_ID",
+  SentrixPositionColumn = "Sentrix_Position",
+  ctrlSvaPercVar = 0.90,
+  ctrlSvaFlag = 1,
+  scriptLabel = "svaEnmix",
+  tiffWidth = 2000,
+  tiffHeight = 1000,
+  tiffRes = 150,
+  dataBaseDir = file.path(tmpDir, "data") ,
+  figureBaseDir = file.path(tmpDir, "figures")
+  
+)
+
 ```
 
+### Step 7: Phenotype preprocessing
 
+This step aligns phenotype data with the processed methylation matrices.
 
-  
-  
-  
-  
-  
+```{r}
+# Metric paths produced by preprocessingMinfiEwasWater
+betaPath <- file.path(
+  tmpDir,
+  "rData",
+  "preprocessingMinfiEwasWater",
+  "metrics",
+  "beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+)
+
+mPath <- file.path(
+  tmpDir,
+  "rData",
+  "preprocessingMinfiEwasWater",
+  "metrics",
+  "m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+)
+
+cnPath <- file.path(
+  tmpDir,
+  "rData",
+  "preprocessingMinfiEwasWater",
+  "metrics",
+  "cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+)
+
+# Quick sanity check
+file.exists(betaPath)
+file.exists(mPath)
+file.exists(cnPath)
+
+```
+
+```{r}
+preprocessingPheno(
+  phenoFile = samplePath,
+  sepType = "",
+  betaPath = betaPath,
+  mPath = mPath,
+  cnPath = cnPath,
+  SampleID = "Sample_Name",
+  timeVar = "Timepoint",
+  timepoints = "1",
+  combineTimepoints = "1",
+  sexColumn = "sex",
+  outputPheno = file.path(tmpDir, "data", "preprocessingPheno"),
+  outputRData = file.path(tmpDir, "rData", "preprocessingPheno", "metrics"),
+  outputRDataMerge = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData"),
+  outputLogs = file.path(tmpDir, "logs"),
+  outputDir = file.path(tmpDir, "data", "preprocessingPheno")
+)
+
+```
+
+### Step 8: Generate a PDF report
+
+Finally, we generate a summary report that compiles figures and results from all previous steps.
+
+```{r}
+dnamReport(
+  output = "DNAm_Report.pdf",
+  outputDir = file.path(tmpDir, "reports"),
+
+  qcDir = file.path(
+    tmpDir, "figures", "preprocessingMinfiEwasWater", "enMix"
+  ),
+  preprocessingDir = file.path(
+    tmpDir, "figures", "preprocessingMinfiEwasWater", "qc"
+  ),
+  postprocessingDir = file.path(
+    tmpDir, "figures", "preprocessingMinfiEwasWater", "metrics"
+  ),
+  svaDir = file.path(
+    tmpDir, "figures", "svaEnmix"
+  ),
+  glmDir = file.path(
+    tmpDir, "figures", "methylationGLM_T1"
+  ),
+  glmmDir = file.path(
+    tmpDir, "figures", "methylationGLMM_T1T2"
+  ),
+
+  reportTitle = "DNA methylation",
+  author = "School of Biomedical Sciences",
+  date = format(Sys.Date(), "%B %d, %Y")
+)
+
+```
+
+## Example 2: Cluster Test
+
+For large studies or cluster environments, the same workflow can be executed via a Makefile.
+
+```{r, message=TRUE, warning=FALSE}
+# Extract Makefile
+extractMake(destDir = tmpDir)
+
+oldWd <- getwd()
+setwd(tmpDir)
+on.exit(setwd(oldWd), add = TRUE)
+
+system("make f3 MODEL=minfiData")
+
+```
+
+### Step 1: Selecting a single test model
+
+```make
+MODEL ?= minfiData 
+
+```
+
+For this example, the pipeline is run using **one explicit model** (`minfiData`) rather than multiple parallel models.
+This mirrors the single-dataset workflow demonstrated earlier in R.
+
+### Step 2: Using the example phenotype file
+
+```make
+PHENO_FILE = $(DATA_DIR)/$(STEP1)/sample_minfi.csv  
+
+```
+The phenotype file generated from `minfiData` (`sample_minfi.csv`) is used for consistency between:
+
+* interactive R execution
+* Makefile-driven execution
+
+### Step 3: Removing custom R library paths
+
+```make
+R_DIR = NULL
+
+```
+
+Setting `R_DIR = NULL` tells the pipeline to use the **default R library paths**, which is appropriate for:
+
+* local testing
+* vignette examples
+* containerised or module-based HPC environments
+
+### Step 4: Matching columns
+
+```make
+# # GLOBAL PARAMETERS
+SAMPLE_ID = Sample_Name 
+ARRAY_TYPE = IlluminaHumanMethylation450k 
+ANNOTATION_VERSION = ilmn12.hg19
+SEX_COLUMN = sex
+SENTRIX_ID_COLUMN = Sentrix_ID 
+SENTRIX_POSITION_COLUMN = Sentrix_Position 
+
+```
+
+These parameters ensure the Makefile uses the:
+
+* correct sample identifier, 
+* correct array platform and annotation, and 
+* correct sex column and chip metadata
+
+### Step 5: Plot grouping and cell composition reference
+
+```make
+PLOT_GROUP_VAR = sex 
+LC_REF = Reinius 
+
+```
+
+* Plots are grouped by `sex`, matching earlier QC figures
+* `Reinius` is selected as the reference panel because `minfiData` represents blood samples
+
+### Step 6: Timepoint
+
+```make
+TIMEPOINTS = 1 
+COMBINE_TIMEPOINTS = 1
+```
+
+The example dataset contains a **single timepoint**, so longitudinal logic is disabled.
 
 # Basics
 
