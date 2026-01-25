@@ -40,13 +40,16 @@ Imports:
     lmerTest,
     MASS,
     minfi,
+    minfiData,
     optparse,
     S4Vectors,
     SummarizedExperiment,
     wateRmelon,
     markdown,
     rmarkdown,
-    remotes
+    remotes,
+    ewastools (>= 1.8.0),
+    dnaEPICO (>= 0.99.0)
 Suggests:
     BiocManager,
     BiocStyle,
@@ -69,3 +72,6 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Config/testthat/edition: 3
+Remotes:  
+    hhhh5/ewastools,
+    paulYRP/dnaEPICO

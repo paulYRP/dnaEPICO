@@ -21,7 +21,7 @@
 #'
 #' @return
 #' Invisibly returns \code{NULL}. This function is called for its side effects,
-#' preparing analysis-ready phenotype–methylation datasets by subsetting,
+#' preparing analysis-ready phenotype-methylation datasets by subsetting,
 #' merging timepoints, aligning samples with beta, M, and CN matrices, and
 #' writing processed phenotype tables and RData objects to disk.
 #'
