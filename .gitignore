@@ -1,10 +1,66 @@
-.Rproj.user
+# ---- R package build artefacts ----
 inst/doc
-*.Rproj
-.Rhistory
-.RData
 .httr-oauth
-.DS_Store
 .quarto
 dev/
 check/
+
+# ---- R / IDE files ----
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+.Rprofile
+.Renviron
+.Rproj.user/
+*.Rproj
+
+# ---- macOS / Windows / Linux system files ----
+.DS_Store
+Thumbs.db
+.directory
+
+# ---- Logs and temporary outputs ----
+*.log
+*.aux
+*.out
+*.bak
+*.backups
+*.tmp
+
+# ---- Compiled / binary artefacts ----
+*.o
+*.so
+*.dll
+*.dylib
+*.a
+*.sl
+*.def
+
+# ---- Version control metadata (not allowed by Bioconductor) ----
+.gitattributes
+.gitmodules
+.hgtags
+
+# ---- Editors / IDEs ----
+.project
+.cproject
+.settings/
+.tm_properties
+.exrc
+.seed
+
+# ---- Debugging / tooling ----
+.gdb.history
+.unsrturl.bst
+
+# ---- R CMD check artefacts ----
+*.tar.gz
+*.Rcheck/
+
+# ---- Coverage / testing ----
+coverage.xml
+.covr/
+
+# ---- OS / sync tools ----
+.dropbox
