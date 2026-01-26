@@ -40,6 +40,7 @@ Imports:
     lmerTest,
     MASS,
     minfi,
+    ENmix,
     minfiData,
     optparse,
     S4Vectors,
