@@ -123,13 +123,14 @@ A core design principle is that each step creates its own folders and outputs, s
 
 `r Biocpkg("dnaEPICO")` expects:
 
+```
 ├── data/                                   # Processed data outputs (per model)
 │   ├── preprocessingMinfiEwasWater/
 │   │   ├── idats/                          # Folder containing raw IDAT files
 │   │   ├── pheno.csv                       # Phenotype file with sample metadata
 │   │   └── 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
 │   ├── Makefile                            # Arguments 
-
+```
 
 * **Phenotype file**: a CSV with sample identifiers and covariates.
 * **IDAT folder**: contains Illumina `*_Red.idat` and `*_Grn.idat` pairs.
@@ -149,6 +150,7 @@ extractMake(
 
 `r Biocpkg("dnaEPICO")` generates:
 
+```
 ├── data/                                   # Processed data outputs (per model)
 │   ├── preprocessingMinfiEwasWater/
 │   │   ├── idats/                          # Folder containing raw IDAT files
@@ -168,6 +170,7 @@ extractMake(
 ├── figures/                                # QC plots and visualization output
 ├── results/                                # Output tables and summary statistics
 ├── reports/                                # Optional rendered reports (PDF)
+```
 
 Each step writes:
 
@@ -189,6 +192,7 @@ Local use focuses on the first three steps that are commonly run interactively:
 
 ## Step 1: `preprocessingMinfiEwasWater()`
 
+```
 preprocessingMinfiEwasWater(
     phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
     idatFolder = "data/preprocessingMinfiEwasWater/idats",
@@ -220,6 +224,7 @@ preprocessingMinfiEwasWater(
     phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
     lcPhenoDir = "data/preprocessingMinfiEwasWater"
 )
+```
 
 ### What it does:
 
@@ -251,6 +256,7 @@ This wrapper executes the pipeline script in `inst/scripts/preprocessingMinfiEwa
 
 ## Step 2: `svaEnmix()`
 
+```
 svaEnmix(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     rgsetData = "rData/preprocessingMinfiEwasWater/objects/RGSet.RData",
@@ -269,7 +275,7 @@ svaEnmix(
     tiffHeight = 1000,
     tiffRes = 150
 )
-
+```
 
 ### What it does:
 
@@ -289,6 +295,7 @@ This wrapper executes `inst/scripts/svaEnmix.R`. Conceptually, it:
 
 ## Step 3: `preprocessingPheno()`
 
+```
 preprocessingPheno(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     sepType = "",
@@ -309,6 +316,7 @@ preprocessingPheno(
     outputLogs = "logs",
     outputDir = "data/preprocessingPheno"
 )
+```
 
 ### What it does:
 
@@ -355,6 +363,7 @@ On full datasets, model fitting across hundreds of thousands of CpGs typically r
 
 This step is typically executed on **HPC systems** due to memory and CPU requirements.
 
+```
 methylationGLM_T1(
     inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1.RData",
     outputLogs = "logs",
@@ -388,6 +397,7 @@ methylationGLM_T1(
                       Relation_to_Island,GencodeV41_Group",
     annotatedGLMOut = "data/methylationGLM_T1"
 ) 
+```
 
 ### What it does:
 
@@ -531,6 +541,7 @@ $$
 
 This step is typically executed on **HPC systems** due to memory and CPU requirements.
 
+```
 methylationGLMM_T1T2(
     inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
     outputLogs = "logs/",
@@ -565,6 +576,7 @@ methylationGLMM_T1T2(
                       Relation_to_Island,GencodeV41_Group",
     annotatedLMEOut = "data/methylationGLMM_T1T2"
 )
+```
 
 ### What it does:
 
@@ -664,26 +676,21 @@ Common grouped targets:
 
 ### Commands
 
-## Show status of pipeline outputs
-make status MODEL=model1
-
-## Run steps 1–3 for one model
-make f3 MODEL=model1
-
-## Run steps 1–4 for one model
-make f4 MODEL=model1
-
-## Run steps 1–3 and 5 for one model
-make f3lme MODEL=model1
-
-## Run full pipeline
-make all MODEL=model1
-
-## Run multiple models
-make models # run the entire pipeline for all models in parallel.
-make f3_models # run Steps 1–3 in parallel for all models.
-make f4_models # run Steps 1–4 in parallel for all models.
-make f3lme_models # run Steps 1–3 + LME in parallel for all models
+- Show status of pipeline outputs
+  - make status MODEL=model1
+- Run steps 1–3 for one model
+  - make f3 MODEL=model1
+- Run steps 1–4 for one model
+  - make f4 MODEL=model1
+- Run steps 1–3 and 5 for one model
+  - make f3lme MODEL=model1
+- Run full pipeline
+  - make all MODEL=model1
+- Run multiple models
+  - make models # run the entire pipeline for all models in parallel.
+  - make f3_models # run Steps 1–3 in parallel for all models.
+  - make f4_models # run Steps 1–4 in parallel for all models.
+  - make f3lme_models # run Steps 1–3 + LME in parallel for all models
 
 ## Makefile Modelling steps (HPC)
 
@@ -696,6 +703,7 @@ This Makefile defines **how dnaEPICO models are executed at scale**, controlling
 
 Rather than hard-coding parameters in R scripts, dnaEPICO uses a **declarative Makefile layer** so the same pipeline can be re-run with different configurations.
 
+```
 # ===============================================
 # USER CONFIGURATION
 # ===============================================
@@ -999,7 +1007,7 @@ $(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
 	  qcDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
 	  preprocessingDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)', \
 	  postprocessingDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)', \
-	  svaDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP2)/$(SVA_DIR)', \
+	  svaDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP2)', \
 	  glmDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)', \
 	  glmmDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
 	  reportTitle = 'DNA methylation – $(MODEL)', \
@@ -1050,11 +1058,13 @@ status:
 	@echo "============================"
 
 .PHONY: all clean status models f3 f4 f3lme f3_models f4_models f3lme_models
+```
 
 ### Model selection
 
-MODEL ?= model1
-MODELS = modelA modelB modelC
+
+- MODEL ?= model1
+- MODELS = modelA modelB modelC
 
 * `MODEL` defines **a single pipeline configuration**
 * `MODELS` defines **multiple independent configurations**
@@ -1063,23 +1073,27 @@ The same pipeline can therefore be run in two modes:
 
 **Single-model execution**
 
-make f4 MODEL=modelA
+
+- make f4 MODEL=modelA
+
 
 **Parallel multi-model execution**
 
-make f4_models
+- make f4_models
 
 In parallel mode, **each model runs as a fully independent pipeline**, with its own inputs, logs, figures, and outputs. No files are shared between models except the raw inputs (IDATs), unless explicitly specified.
 
 
 ## Per-model overrides
 
+```
 ifeq ($(MODEL), modelA)
   PHENO_FILE = data/preprocessingMinfiEwasWater/phenoA.csv
 ...
 else
   PHENO_FILE = data/preprocessingMinfiEwasWater/pheno.csv
 endif
+```
 
 This block **dynamically replaces variables** based on the selected model.
 
@@ -1097,11 +1111,11 @@ without duplicating code or Makefiles.
 
 ### Directory and step conventions
 
-STEP1 = preprocessingMinfiEwasWater
-STEP2 = svaEnmix
-STEP3 = preprocessingPheno
-STEP4 = methylationGLM_T1
-STEP5 = methylationGLMM_T1T2
+- STEP1 = preprocessingMinfiEwasWater
+- STEP2 = svaEnmix
+- STEP3 = preprocessingPheno
+- STEP4 = methylationGLM_T1
+- STEP5 = methylationGLMM_T1T2
 
 Each step writes outputs into **step-specific directories**. When running in parallel, directory paths are automatically namespaced by model, ensuring isolation between runs.
 
@@ -1113,9 +1127,10 @@ This design allows:
 
 ## Global parameters
 
-PHENO_FILE = ...
-SAMPLE_ID = ...
-TIME_VAR = ...
+- PHENO_FILE = ...
+- SAMPLE_ID = ...
+- TIME_VAR = ...
+- ...
 
 These parameters are **shared across preprocessing and modelling**.
 
@@ -1123,11 +1138,12 @@ Their definitions and expected formats are explained in the *Local use* section 
 
 ### Specific parameters
 
-PHENOTYPES = TreatmentGroup
-COVARIATES = Sex
-FACTOR_VARS = Sex,TreatmentGroup
-N_CORES = 64
-CHUNK_SIZE = 10000
+- PHENOTYPES = TreatmentGroup
+- COVARIATES = Sex
+- FACTOR_VARS = Sex,TreatmentGroup
+- N_CORES = 64
+- CHUNK_SIZE = 10000
+- ...
 
 These parameters control **how each model is fit**. In parallel execution:
 
@@ -1138,13 +1154,14 @@ Their definitions and expected formats are explained in the *Local use* section 
 
 ### Argument normalisation
 
+```
 ifeq ($(PRS_MAP),NULL)
   PRS_MAP_ARG = NULL
 else
   PRS_MAP_ARG = '$(PRS_MAP)'
 endif
 if ...
-
+```
 
 This section ensures that optional arguments are passed correctly to R scripts. It prevents accidental interpretation of the string `"NULL"` as a real value and guarantees consistent behaviour across local and cluster environments.
 
@@ -1152,7 +1169,8 @@ This section ensures that optional arguments are passed correctly to R scripts. 
 
 `dnamReport()` generates a PDF report by rendering `DNAm.Rmd` through a runner script (`DNAm.R`) shipped in `inst/scripts`.
 
-**dnamReport(**
+```
+dnamReport(
   output = "DNAm_Report.pdf",
   outputDir = "reports",
   qcDir = "figures/preprocessingMinfiEwasWater/enMix",
@@ -1165,6 +1183,7 @@ This section ensures that optional arguments are passed correctly to R scripts. 
   author = "School of Biomedical Sciences",
   date = format(Sys.Date(), "%B %d, %Y")
 )
+```
 
 # Troubleshooting
 
@@ -1181,6 +1200,10 @@ This example has the following dependencies
 ```{r dependencies, warning=FALSE, message=FALSE, eval=FALSE}
 library(dnaEPICO)
 library(ewastools)
+
+```
+
+```{r, warning=FALSE, message=FALSE}
 library(minfiData)
 library(minfi)
 
@@ -1219,6 +1242,9 @@ We first create a temporary directory that will hold **all input files and outpu
 tmpDir  <- file.path(tempdir(), "dnaEPICO_Test")
 dir.create(tmpDir, showWarnings = FALSE, recursive = TRUE)
 
+```
+
+```{r, message=FALSE, warning=FALSE, include=TRUE}
 preprocDir <- file.path(tmpDir, "data", "preprocessingMinfiEwasWater")
 dir.create(preprocDir, showWarnings = FALSE, recursive = TRUE)
 
@@ -1243,6 +1269,9 @@ The `minfiData` package contains a small set of Illumina 450K IDAT files tfrom b
 # Locate minfiData extdata directory
 baseDir_minfi <- system.file("extdata", package = "minfiData")
 
+```
+
+```{r, message=FALSE, warning=FALSE }
 # Find all IDAT files
 idatFiles <- list.files(
   baseDir_minfi,
@@ -1262,6 +1291,9 @@ We now copy these IDAT files into the directory structure expected by `dnaEPICO`
 idatDir <- file.path(preprocDir, "idats")
 dir.create(idatDir, showWarnings = FALSE, recursive = TRUE)
 
+```
+
+```{r}
 # Copy IDATs into idatDir
 file.copy(idatFiles, idatDir, overwrite = TRUE)
 
@@ -1280,12 +1312,21 @@ The pipeline requires a file listing cross-reactive probes. This file is distrib
 # Locate dnaEPICO extdata directory
 baseDir_dnaEPICO <- system.file("extdata", package = "dnaEPICO")
 
+```
+
+```{r}
 # Source cross-reactive probe file
 crossReactiveSrc <- file.path(baseDir_dnaEPICO, "12864_2024_10027_MOESM8_ESM.csv")
 
+```
+
+```{r}
 # Destination path inside tmpDir/data/preprocessingMinfiEwasWater/
 crossReactivePath <- file.path(preprocDir, "12864_2024_10027_MOESM8_ESM.csv")
 
+```
+
+```{r}
 # Copy into the target folder
 file.copy(crossReactiveSrc, crossReactivePath, overwrite = TRUE)
 file.exists(crossReactivePath)
@@ -1296,7 +1337,6 @@ file.exists(crossReactivePath)
 
 Next, we create a phenotype file using the sample sheet provided by `minfiData`.
 
-
 ```{r}
 # Read SampleSheet from minfiData
 targets <- read.csv(
@@ -1305,6 +1345,9 @@ targets <- read.csv(
   skip = 7
 )
 
+```
+
+```{r}
 # Create Basename column 
 targets$Basename <- paste0(
   targets$Sentrix_ID,
@@ -1312,9 +1355,15 @@ targets$Basename <- paste0(
   targets$Sentrix_Position
 )
 
+```
+
+```{r}
 # Create Timepoint column
 targets$Timepoint <- 1
 
+```
+
+```{r}
 # Write phenotype file
 samplePath <- file.path(preprocDir, "sample_minfi.csv")
 write.csv(targets, samplePath, row.names = FALSE)
@@ -1386,7 +1435,7 @@ file.exists(rgsetPath)
 
 ```
 
-```{r}
+```{r, eval=FALSE}
 svaEnmix(
   phenoFile = samplePath,
   rgsetData = rgsetPath,
@@ -1425,6 +1474,9 @@ betaPath <- file.path(
   "beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
 )
 
+```
+
+```{r}
 mPath <- file.path(
   tmpDir,
   "rData",
@@ -1433,6 +1485,9 @@ mPath <- file.path(
   "m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
 )
 
+```
+
+```{r}
 cnPath <- file.path(
   tmpDir,
   "rData",
@@ -1441,6 +1496,9 @@ cnPath <- file.path(
   "cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
 )
 
+```
+
+```{r}
 # Quick sanity check
 file.exists(betaPath)
 file.exists(mPath)
@@ -1448,7 +1506,7 @@ file.exists(cnPath)
 
 ```
 
-```{r}
+```{r, eval=FALSE}
 preprocessingPheno(
   phenoFile = samplePath,
   sepType = "",
@@ -1473,7 +1531,7 @@ preprocessingPheno(
 
 Finally, we generate a summary report that compiles figures and results from all previous steps.
 
-```{r}
+```{r, eval=FALSE}
 dnamReport(
   output = "DNAm_Report.pdf",
   outputDir = file.path(tmpDir, "reports"),
@@ -1508,7 +1566,7 @@ dnamReport(
 
 For large studies or cluster environments, the same workflow can be executed via a Makefile.
 
-```{r, message=TRUE, warning=FALSE}
+```{r, message=TRUE, warning=FALSE, eval=FALSE}
 # Extract Makefile
 extractMake(destDir = tmpDir)
 
@@ -1522,15 +1580,14 @@ system("make f3 MODEL=minfiData")
 
 ### Step 1: Selecting a single test model
 
-MODEL ?= minfiData 
-
+- MODEL ?= minfiData 
 
 For this example, the pipeline is run using **one explicit model** (`minfiData`) rather than multiple parallel models.
 This mirrors the single-dataset workflow demonstrated earlier in R.
 
 ### Step 2: Using the example phenotype file
 
-PHENO_FILE = $(DATA_DIR)/$(STEP1)/sample_minfi.csv  
+- PHENO_FILE = $(DATA_DIR)/$(STEP1)/sample_minfi.csv  
 
 The phenotype file generated from `minfiData` (`sample_minfi.csv`) is used for consistency between:
 
@@ -1539,8 +1596,7 @@ The phenotype file generated from `minfiData` (`sample_minfi.csv`) is used for c
 
 ### Step 3: Removing custom R library paths
 
-R_DIR = NULL
-
+- R_DIR = NULL
 
 Setting `R_DIR = NULL` tells the pipeline to use the **default R library paths**, which is appropriate for:
 
@@ -1550,13 +1606,14 @@ Setting `R_DIR = NULL` tells the pipeline to use the **default R library paths**
 
 ### Step 4: Matching columns
 
-# # GLOBAL PARAMETERS
-SAMPLE_ID = Sample_Name 
-ARRAY_TYPE = IlluminaHumanMethylation450k 
-ANNOTATION_VERSION = ilmn12.hg19
-SEX_COLUMN = sex
-SENTRIX_ID_COLUMN = Sentrix_ID 
-SENTRIX_POSITION_COLUMN = Sentrix_Position 
+
+- GLOBAL PARAMETERS
+  - SAMPLE_ID = Sample_Name 
+  - ARRAY_TYPE = IlluminaHumanMethylation450k 
+  - ANNOTATION_VERSION = ilmn12.hg19
+  - SEX_COLUMN = sex
+  - SENTRIX_ID_COLUMN = Sentrix_ID 
+  - SENTRIX_POSITION_COLUMN = Sentrix_Position 
 
 These parameters ensure the Makefile uses the:
 
@@ -1566,16 +1623,16 @@ These parameters ensure the Makefile uses the:
 
 ### Step 5: Plot grouping and cell composition reference
 
-PLOT_GROUP_VAR = sex 
-LC_REF = Reinius 
+- PLOT_GROUP_VAR = sex 
+- LC_REF = Reinius 
 
 * Plots are grouped by `sex`, matching earlier QC figures
 * `Reinius` is selected as the reference panel because `minfiData` represents blood samples
 
 ### Step 6: Timepoint
 
-TIMEPOINTS = 1 
-COMBINE_TIMEPOINTS = 1
+- TIMEPOINTS = 1 
+- COMBINE_TIMEPOINTS = 1
 
 The example dataset contains a **single timepoint**, so longitudinal logic is disabled.
 
