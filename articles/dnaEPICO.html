@@ -215,7 +215,7 @@ Makefile pipeline.</p>
 </h2>
 <p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
 expects:</p>
-<pre><code>├── data/                                   # Processed data outputs (per model)
+<pre class="make"><code>├── data/                                   # Processed data outputs (per model)
 │   ├── preprocessingMinfiEwasWater/
 │   │   ├── idats/                          # Folder containing raw IDAT files
 │   │   ├── pheno.csv                       # Phenotype file with sample metadata
@@ -242,7 +242,7 @@ EPICv2 probes from <a href="https://springernature.figshare.com/articles/dataset
 <span>  <span class="op">)</span></span></code></pre></div>
 <p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
 generates:</p>
-<pre><code>├── data/                                   # Processed data outputs (per model)
+<pre class="make"><code>├── data/                                   # Processed data outputs (per model)
 │   ├── preprocessingMinfiEwasWater/
 │   │   ├── idats/                          # Folder containing raw IDAT files
 │   │   ├── pheno.csv                       # Phenotype file with sample metadata
@@ -298,7 +298,8 @@ methylation matrices</li>
 <div class="section level3">
 <h3 id="step-1-preprocessingminfiewaswater">Step 1: <code>preprocessingMinfiEwasWater()</code><a class="anchor" aria-label="anchor" href="#step-1-preprocessingminfiewaswater"></a>
 </h3>
-<pre><code><span><span class="fu"><a href="../reference/preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater</a></span><span class="op">(</span></span>
 <span>    phenoFile <span class="op">=</span> <span class="st">"data/preprocessingMinfiEwasWater/pheno.csv"</span>,</span>
 <span>    idatFolder <span class="op">=</span> <span class="st">"data/preprocessingMinfiEwasWater/idats"</span>,</span>
 <span>    outputLogs <span class="op">=</span> <span class="st">"logs"</span>,</span>
@@ -328,7 +329,7 @@ methylation matrices</li>
 <span>    lcRef <span class="op">=</span> <span class="st">"salivaEPIC"</span>,</span>
 <span>    phenoOrder <span class="op">=</span> <span class="st">"Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position"</span>,</span>
 <span>    lcPhenoDir <span class="op">=</span> <span class="st">"data/preprocessingMinfiEwasWater"</span></span>
-<span><span class="op">)</span></span></code></pre>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="what-it-does">What it does:<a class="anchor" aria-label="anchor" href="#what-it-does"></a>
 </h4>
@@ -396,7 +397,8 @@ reference + output for pheno with cell fractions.</li>
 <div class="section level3">
 <h3 id="step-2-svaenmix">Step 2: <code>svaEnmix()</code><a class="anchor" aria-label="anchor" href="#step-2-svaenmix"></a>
 </h3>
-<pre><code><span><span class="fu"><a href="../reference/svaEnmix.html">svaEnmix</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/svaEnmix.html">svaEnmix</a></span><span class="op">(</span></span>
 <span>    phenoFile <span class="op">=</span> <span class="st">"data/preprocessingMinfiEwasWater/phenoLC.csv"</span>,</span>
 <span>    rgsetData <span class="op">=</span> <span class="st">"rData/preprocessingMinfiEwasWater/objects/RGSet.RData"</span>,</span>
 <span>    sepType <span class="op">=</span> <span class="st">""</span>,</span>
@@ -413,7 +415,7 @@ reference + output for pheno with cell fractions.</li>
 <span>    tiffWidth <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>    tiffHeight <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>    tiffRes <span class="op">=</span> <span class="fl">150</span></span>
-<span><span class="op">)</span></span></code></pre>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="what-it-does-1">What it does:<a class="anchor" aria-label="anchor" href="#what-it-does-1"></a>
 </h4>
@@ -450,7 +452,8 @@ needed to match the array sample structure.</li>
 <div class="section level3">
 <h3 id="step-3-preprocessingpheno">Step 3: <code>preprocessingPheno()</code><a class="anchor" aria-label="anchor" href="#step-3-preprocessingpheno"></a>
 </h3>
-<pre><code><span><span class="fu"><a href="../reference/preprocessingPheno.html">preprocessingPheno</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/preprocessingPheno.html">preprocessingPheno</a></span><span class="op">(</span></span>
 <span>    phenoFile <span class="op">=</span> <span class="st">"data/preprocessingMinfiEwasWater/phenoLC.csv"</span>,</span>
 <span>    sepType <span class="op">=</span> <span class="st">""</span>,</span>
 <span>    betaPath <span class="op">=</span></span>
@@ -469,7 +472,7 @@ needed to match the array sample structure.</li>
 <span>    sexColumn <span class="op">=</span> <span class="st">"Sex"</span>,</span>
 <span>    outputLogs <span class="op">=</span> <span class="st">"logs"</span>,</span>
 <span>    outputDir <span class="op">=</span> <span class="st">"data/preprocessingPheno"</span></span>
-<span><span class="op">)</span></span></code></pre>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="what-it-does-2">What it does:<a class="anchor" aria-label="anchor" href="#what-it-does-2"></a>
 </h4>
@@ -558,7 +561,8 @@ that can run the pipeline end-to-end or by grouped targets.</p>
 </h3>
 <p>This step is typically executed on <strong>HPC systems</strong> due
 to memory and CPU requirements.</p>
-<pre><code><span><span class="fu"><a href="../reference/methylationGLM_T1.html">methylationGLM_T1</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/methylationGLM_T1.html">methylationGLM_T1</a></span><span class="op">(</span></span>
 <span>    inputPheno <span class="op">=</span> <span class="st">"rData/preprocessingPheno/mergeData/phenoBetaT1.RData"</span>,</span>
 <span>    outputLogs <span class="op">=</span> <span class="st">"logs"</span>,</span>
 <span>    outputRData <span class="op">=</span> <span class="st">"rData/methylationGLM_T1/models"</span>,</span>
@@ -590,7 +594,7 @@ to memory and CPU requirements.</p>
 <span>    annotationCols <span class="op">=</span> <span class="st">"Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,</span></span>
 <span><span class="st">                      Relation_to_Island,GencodeV41_Group"</span>,</span>
 <span>    annotatedGLMOut <span class="op">=</span> <span class="st">"data/methylationGLM_T1"</span></span>
-<span><span class="op">)</span> </span></code></pre>
+<span><span class="op">)</span> </span></code></pre></div>
 <div class="section level4">
 <h4 id="what-it-does-3">What it does:<a class="anchor" aria-label="anchor" href="#what-it-does-3"></a>
 </h4>
@@ -816,7 +820,8 @@ and PRS. For example:</p>
 </h3>
 <p>This step is typically executed on <strong>HPC systems</strong> due
 to memory and CPU requirements.</p>
-<pre><code><span><span class="fu"><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2</a></span><span class="op">(</span></span>
 <span>    inputPheno <span class="op">=</span> <span class="st">"rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData"</span>,</span>
 <span>    outputLogs <span class="op">=</span> <span class="st">"logs/"</span>,</span>
 <span>    outputRData <span class="op">=</span> <span class="st">"rData/methylationGLMM_T1T2/models"</span>,</span>
@@ -849,7 +854,7 @@ to memory and CPU requirements.</p>
 <span>    annotationCols <span class="op">=</span> <span class="st">"Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,</span></span>
 <span><span class="st">                      Relation_to_Island,GencodeV41_Group"</span>,</span>
 <span>    annotatedLMEOut <span class="op">=</span> <span class="st">"data/methylationGLMM_T1T2"</span></span>
-<span><span class="op">)</span></span></code></pre>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="what-it-does-4">What it does:<a class="anchor" aria-label="anchor" href="#what-it-does-4"></a>
 </h4>
@@ -1096,7 +1101,7 @@ parameterised,</li>
 <p>Rather than hard-coding parameters in R scripts, dnaEPICO uses a
 <strong>declarative Makefile layer</strong> so the same pipeline can be
 re-run with different configurations.</p>
-<pre><code># ===============================================
+<pre class="make"><code># ===============================================
 # USER CONFIGURATION
 # ===============================================
 MAKEFLAGS += --output-sync
@@ -1479,7 +1484,7 @@ explicitly specified.</p>
 <div class="section level3">
 <h3 id="per-model-overrides">Per-model overrides<a class="anchor" aria-label="anchor" href="#per-model-overrides"></a>
 </h3>
-<pre><code>ifeq ($(MODEL), modelA)
+<pre class="make"><code>ifeq ($(MODEL), modelA)
   PHENO_FILE = data/preprocessingMinfiEwasWater/phenoA.csv
 ...
 else
@@ -1562,7 +1567,7 @@ use</em> section and are not repeated here.</p>
 <div class="section level4">
 <h4 id="argument-normalisation">Argument normalisation<a class="anchor" aria-label="anchor" href="#argument-normalisation"></a>
 </h4>
-<pre><code>ifeq ($(PRS_MAP),NULL)
+<pre class="make"><code>ifeq ($(PRS_MAP),NULL)
   PRS_MAP_ARG = NULL
 else
   PRS_MAP_ARG = '$(PRS_MAP)'
@@ -1581,7 +1586,8 @@ across local and cluster environments.</p>
 <p><code><a href="../reference/dnamReport.html">dnamReport()</a></code> generates a PDF report by rendering
 <code>DNAm.Rmd</code> through a runner script (<code>DNAm.R</code>)
 shipped in <code>inst/scripts</code>.</p>
-<pre><code><span><span class="fu"><a href="../reference/dnamReport.html">dnamReport</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/dnamReport.html">dnamReport</a></span><span class="op">(</span></span>
 <span>  output <span class="op">=</span> <span class="st">"DNAm_Report.pdf"</span>,</span>
 <span>  outputDir <span class="op">=</span> <span class="st">"reports"</span>,</span>
 <span>  qcDir <span class="op">=</span> <span class="st">"figures/preprocessingMinfiEwasWater/enMix"</span>,</span>
@@ -1593,7 +1599,7 @@ shipped in <code>inst/scripts</code>.</p>
 <span>  reportTitle <span class="op">=</span> <span class="st">"DNA methylation"</span>,</span>
 <span>  author <span class="op">=</span> <span class="st">"School of Biomedical Sciences"</span>,</span>
 <span>  date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"%B %d, %Y"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="troubleshooting">Troubleshooting<a class="anchor" aria-label="anchor" href="#troubleshooting"></a>
@@ -1672,7 +1678,7 @@ input files and outputs</strong> for this example.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">tmpDir</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">tmpDir</span></span>
-<span><span class="co">#&gt; [1] "C:\\Users\\ruizpint\\AppData\\Local\\Temp\\RtmpQBKxNw/dnaEPICO_Test"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "C:\\Users\\ruizpint\\AppData\\Local\\Temp\\RtmpIpcrvN/dnaEPICO_Test"</span></span></code></pre></div>
 <p><strong>Important:</strong></p>
 <ul>
 <li>This directory is created only for this example</li>
@@ -2047,9 +2053,9 @@ longitudinal logic is disabled.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-01-27 12:17:06 AEST"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-01-27 12:44:25 AEST"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 9.267 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 8.812 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.1 (2024-06-14 ucrt)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
