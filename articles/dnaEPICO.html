@@ -350,8 +350,8 @@ cross-reactive probes).</li>
 <li>Exports final matrices (Beta/M/CN) to <code>rData/</code>.</li>
 <li>Produces plots in <code>figures/</code> and logs in
 <code>logs/</code>.</li>
-<li>Optionally estimates cell composition (via <code>lcRef</code>) and
-writes <code>phenoLC.csv</code> into <code>lcPhenoDir</code>.</li>
+<li>Estimates cell composition (via <code>lcRef</code>) and writes
+<code>phenoLC.csv</code> into <code>lcPhenoDir</code>.</li>
 </ol>
 </div>
 <div class="section level4">
@@ -483,8 +483,8 @@ Conceptually, it:</p>
 <li><p>Aligns samples by <code>SampleID</code>.</p></li>
 <li><p>Creates timepoint-specific subsets
 (<code>timepoints</code>).</p></li>
-<li><p>Optionally combines timepoints (<code>combineTimepoints</code>)
-for longitudinal sets.</p></li>
+<li><p>Combines timepoints (<code>combineTimepoints</code>) for
+longitudinal sets.</p></li>
 <li>
 <p>Writes:</p>
 <ul>
@@ -610,8 +610,8 @@ Conceptually, it:</p>
 for each CpG.</p></li>
 <li><p>Models each specified phenotype separately, adjusting for
 covariates and factor variables.</p></li>
-<li><p>Optionally includes interaction terms and polygenic risk score
-(PRS) mappings.</p></li>
+<li><p>Includes interaction terms and polygenic risk score (PRS)
+mappings.</p></li>
 <li><p>Applies multiple-testing correction (FDR).</p></li>
 <li>
 <p>Writes:</p>
@@ -871,8 +871,8 @@ model <a href="https://cran.r-project.org/web/packages/lme4/index.html" class="e
 repeated measures using a subject-level random effect.</p></li>
 <li><p>Models fixed effects for phenotype, time, covariates, and
 optional interactions.</p></li>
-<li><p>Optionally includes <strong>phenotype-specific PRS terms</strong>
-based on <code>prsMap</code>.</p></li>
+<li><p>Includes <strong>phenotype-specific PRS terms</strong> based on
+<code>prsMap</code>.</p></li>
 <li><p>Tests interaction terms (e.g. phenotype × timepoint).</p></li>
 <li><p>Applies multiple-testing correction across CpGs.</p></li>
 <li>
@@ -1493,7 +1493,7 @@ input files and outputs</strong> for this example.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">tmpDir</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">tmpDir</span></span>
-<span><span class="co">#&gt; [1] "C:\\Users\\ruizpint\\AppData\\Local\\Temp\\RtmpO64311/dnaEPICO_Test"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "C:\\Users\\ruizpint\\AppData\\Local\\Temp\\RtmpETbjf0/dnaEPICO_Test"</span></span></code></pre></div>
 <p><strong>Important:</strong></p>
 <ul>
 <li>This directory is created only for this example</li>
@@ -1868,9 +1868,9 @@ longitudinal logic is disabled.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-01-27 14:34:41 AEST"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-01-27 14:50:14 AEST"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 10.516 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 13.508 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.1 (2024-06-14 ucrt)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
