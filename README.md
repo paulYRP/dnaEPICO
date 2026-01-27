@@ -75,16 +75,15 @@ Please run this yourself to check for any updates on how to cite
 
 ``` r
 print(citation('dnaEPICO'), bibtex = TRUE)
-#> dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array
-#> Data
+#> dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data
 #> 
-#>   Ruiz P., Metha D. dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA
+#>   Ruiz P., Metha D. dnaEPICO: Analysis Pipeline for Illumina DNA
 #>   Methylation Array Data. Bioconductor package.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
-#>     title = {dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data},
+#>     title = {dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data},
 #>     author = {Paul Ruiz and Divya Metha},
 #>     year = {2026},
 #>     url = {https://bioconductor.org/packages/dnaEPICO},

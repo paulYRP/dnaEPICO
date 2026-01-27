@@ -1,5 +1,5 @@
 Package: dnaEPICO
-Title: dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data
+Title: dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data
 Version: 0.99.0
 Date: 2026-01-18
 Authors@R: c(person("Paul", "Ruiz", role = c("aut", "cre"),
@@ -8,14 +8,15 @@ Authors@R: c(person("Paul", "Ruiz", role = c("aut", "cre"),
             comment = c(ORCID = "0000-0001-7971-7255")))
 Description:
     This package provides a modular and reproducible framework for the
-    preprocessing and analysis of Illumina EPICv2 DNA methylation array 
-    data. It supports quality control, probe filtering, cell-type 
-    deconvolution, phenotype integration, and downstream statistical 
-    modelling using generalised linear and linear mixed-effects models. 
-    The package builds on established Bioconductor infrastructure and 
-    wraps widely used tools such as 'minfi', 'ENmix', 'wateRmelon', and 
-    'ewastools', with support for execution on local workstations and 
-    high-performance computing environments.
+    preprocessing and analysis of Illumina DNA methylation array 
+    data (EPICv2, EPIC and 450K). It supports quality control, probe 
+    filtering, cell-type deconvolution, phenotype integration, and 
+    downstream statistical modelling using generalised linear and 
+    linear mixed-effects models. The package builds on established 
+    Bioconductor infrastructure and wraps widely used tools such as 
+    'minfi', 'ENmix', 'wateRmelon', and 'ewastools', with support for 
+    execution on local workstations and high-performance computing 
+    environments.
 License: AGPL-3 + file LICENSE
 URL: https://github.com/paulYRP/dnaEPICO
 BugReports: https://github.com/paulYRP/dnaEPICO/issues

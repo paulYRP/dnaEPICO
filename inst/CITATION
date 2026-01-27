@@ -1,8 +1,8 @@
-citHeader("dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data")
+citHeader("dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data")
 
 citEntry(
   entry = "Manual",
-  title = "dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data",
+  title = "dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data",
   author = c(
     person(
       given = "Paul",
@@ -23,7 +23,7 @@ citEntry(
   textVersion =
     paste(
       "Ruiz P., Metha D.",
-      "dnaEPICO: Analysis Pipeline for Illumina EPICv2 DNA Methylation Array Data.",
+      "dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data.",
       "Bioconductor package."
     )
 )

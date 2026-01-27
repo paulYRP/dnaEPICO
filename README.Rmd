@@ -67,6 +67,7 @@ run this yourself to check for any updates on how to cite __dnaEPICO__.
 
 ```{r 'citation', eval = requireNamespace('dnaEPICO')}
 print(citation('dnaEPICO'), bibtex = TRUE)
+
 ```
 
 Please note that the `dnaEPICO` was only made possible thanks to many other R and bioinformatics software authors, which are cited either in the vignettes and/or the paper(s) describing this package.
