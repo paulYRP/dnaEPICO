@@ -38,7 +38,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The **dnaEPICO** package supports preprocessing and analysis of Illumina EPICv2 DNA methylation array data. It covers data import, quality control, surrogate variable analysis, probe and sample filtering, cell-type deconvolution, phenotype integration, and downstream modelling using generalised linear and linear mixed-effects models. The package integrates with Bioconductor workflows and tools including `minfi`, `ENmix`, and `wateRmelon`. Additional functionality is provided via the `ewastools` package, which is installed from GitHub using `devtools::install_github("hhhh5/ewastools")`. 
+The **dnaEPICO** package supports preprocessing and analysis of Illumina DNA methylation array data (EPICv2, EPIC and 450K). It covers data import, quality control, surrogate variable analysis, probe and sample filtering, cell-type deconvolution, phenotype integration, and downstream modelling using generalised linear and linear mixed-effects models. The package integrates with Bioconductor workflows and tools including `minfi`, `ENmix`, and `wateRmelon`. Additional functionality is provided via the `ewastools` package, which is installed from GitHub using `devtools::install_github("hhhh5/ewastools")`. 
 
 dnaEPICO also prepares standardised DNA methylation files for direct export to the [DNAmAge Clock Foundation platform](https://dnamage.clockfoundation.org/user).
 
@@ -92,7 +92,7 @@ devtools::install_github('paulYRP/dnaEPICO')
 
 # Overview
 
-`r Biocpkg("dnaEPICO")` is a DNA methylation preprocessing and modelling pipeline designed for Illumina **EPICv2** arrays. It wraps reproducible analysis steps into a consistent structure that:
+`r Biocpkg("dnaEPICO")` is a DNA methylation preprocessing and modelling pipeline designed for Illumina arrays. It wraps reproducible analysis steps into a consistent structure that:
 
 * reads **IDATs** and phenotype metadata,
 * performs **QC**, filtering and normalisation,
@@ -246,7 +246,7 @@ This wrapper executes the pipeline script in `inst/scripts/preprocessingMinfiEwa
 * `idatFolder`: directory with IDAT pairs.
 * `nSamples`: subset for testing locally (e.g. `5`).
 * `SampleID`: name of the sample ID column in your phenotype file.
-* `arrayType`, `annotationVersion`: ensures the correct EPICv2 manifest/annotation is used.
+* `arrayType`, `annotationVersion`: ensures the correct manifest/annotation is used.
 * `qcCutoff`, `detPtype`, `detPThreshold`: QC rules; detection p-value is used to flag failed probes/samples.
 * `normMethods`: normalisation method(s) you want to apply.
 * `pvalThreshold`, `chrToRemove`, `snpsToRemove`, `mafThreshold`: probe-level filters.
@@ -1662,7 +1662,7 @@ This vignette was generated using `r Biocpkg("BiocStyle")`, with `r CRANpkg("kni
 
 ## Required knowledge
 
-`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for high-dimensional genomic data, with a focus on Illumina EPICv2 DNA methylation arrays. 
+`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for high-dimensional genomic data, with a focus on Illumina DNA methylation arrays. 
 
 Preprocessing and quality control are performed using established Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`. Additional functionality is provided via the `ewastools` package, which is installed from GitHub using `devtools::install_github("hhhh5/ewastools")`. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures.
 
