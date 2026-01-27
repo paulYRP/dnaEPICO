@@ -101,14 +101,14 @@ Metha</h4>
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>The <strong>dnaEPICO</strong> package supports preprocessing and
-analysis of Illumina EPICv2 DNA methylation array data. It covers data
-import, quality control, surrogate variable analysis, probe and sample
-filtering, cell-type deconvolution, phenotype integration, and
-downstream modelling using generalised linear and linear mixed-effects
-models. The package integrates with Bioconductor workflows and tools
-including <code>minfi</code>, <code>ENmix</code>, and
-<code>wateRmelon</code>. Additional functionality is provided via the
-<code>ewastools</code> package, which is installed from GitHub using
+analysis of Illumina DNA methylation array data (EPICv2, EPIC and 450K).
+It covers data import, quality control, surrogate variable analysis,
+probe and sample filtering, cell-type deconvolution, phenotype
+integration, and downstream modelling using generalised linear and
+linear mixed-effects models. The package integrates with Bioconductor
+workflows and tools including <code>minfi</code>, <code>ENmix</code>,
+and <code>wateRmelon</code>. Additional functionality is provided via
+the <code>ewastools</code> package, which is installed from GitHub using
 <code>devtools::install_github("hhhh5/ewastools")</code>.</p>
 <p>dnaEPICO also prepares standardised DNA methylation files for direct
 export to the <a href="https://dnamage.clockfoundation.org/user" class="external-link">DNAmAge
@@ -174,8 +174,8 @@ can be installed directly from our <a href="https://github.com/paulYRP/dnaEPICO"
 </h2>
 <p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
 is a DNA methylation preprocessing and modelling pipeline designed for
-Illumina <strong>EPICv2</strong> arrays. It wraps reproducible analysis
-steps into a consistent structure that:</p>
+Illumina arrays. It wraps reproducible analysis steps into a consistent
+structure that:</p>
 <ul>
 <li>reads <strong>IDATs</strong> and phenotype metadata,</li>
 <li>performs <strong>QC</strong>, filtering and normalisation,</li>
@@ -370,7 +370,7 @@ writes <code>phenoLC.csv</code> into <code>lcPhenoDir</code>.</li>
 phenotype file.</li>
 <li>
 <code>arrayType</code>, <code>annotationVersion</code>: ensures the
-correct EPICv2 manifest/annotation is used.</li>
+correct manifest/annotation is used.</li>
 <li>
 <code>qcCutoff</code>, <code>detPtype</code>,
 <code>detPThreshold</code>: QC rules; detection p-value is used to flag
@@ -1678,7 +1678,7 @@ input files and outputs</strong> for this example.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">tmpDir</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">tmpDir</span></span>
-<span><span class="co">#&gt; [1] "C:\\Users\\ruizpint\\AppData\\Local\\Temp\\RtmpIpcrvN/dnaEPICO_Test"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "C:\\Users\\ruizpint\\AppData\\Local\\Temp\\RtmpGIJ1EV/dnaEPICO_Test"</span></span></code></pre></div>
 <p><strong>Important:</strong></p>
 <ul>
 <li>This directory is created only for this example</li>
@@ -2053,9 +2053,9 @@ longitudinal logic is disabled.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-01-27 12:44:25 AEST"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-01-27 14:12:37 AEST"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 8.812 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 17.2 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.1 (2024-06-14 ucrt)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
@@ -2171,8 +2171,7 @@ running behind the scenes.</p>
 </h3>
 <p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
 is built on core Bioconductor infrastructure for high-dimensional
-genomic data, with a focus on Illumina EPICv2 DNA methylation
-arrays.</p>
+genomic data, with a focus on Illumina DNA methylation arrays.</p>
 <p>Preprocessing and quality control are performed using established
 Bioconductor tools, including <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
 <em><a href="https://bioconductor.org/packages/3.20/ENmix" class="external-link">ENmix</a></em>, and
