@@ -655,15 +655,17 @@ where (\text{PRS}_p) is included **only if it is defined for phenotype (p)**. Th
 * `Makefile.model.pipeline`: user configuration (models, variables, paths)
 * `Makefile.rules.pipeline`: pipeline targets and rules
 
-## Extracting `Makefile.model.pipeline` into a working directory
+Extracting `Makefile.model.pipeline` into a working directory
 
+```{r, eval=FALSE}
 ## Copies the example Makefile into the current directory
 extractMake(destDir = getwd(), overwrite = FALSE)
 
+```
 
 The internal template `Makefile.model.pipeline` is copied and renamed to `Makefile` in the destination directory.
 
-## Make targets: f3, f4, f3lme and all
+### Make targets: f3, f4, f3lme and all
 
 Common grouped targets:
 
@@ -1185,7 +1187,7 @@ file.exists(samplePath)
 
 This phenotype file will be used throughout the pipeline.
 
-## Step 5: Preprocessing and quality control
+### Step 5: Preprocessing and quality control
 
 We now run the first pipeline stage, which performs:
 
@@ -1397,7 +1399,7 @@ This mirrors the single-dataset workflow demonstrated earlier in R.
 
 ### Step 2: Using the example phenotype file
 
-- PHENO_FILE = $(DATA_DIR)/$(STEP1)/sample_minfi.csv  
+- PHENO_FILE = (DATA_DIR)/(STEP1)/sample_minfi.csv  
 
 The phenotype file generated from `minfiData` (`sample_minfi.csv`) is used for consistency between:
 
