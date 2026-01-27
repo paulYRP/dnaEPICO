@@ -1,5 +1,5 @@
 ==== Starting DNAm GLM Analysis (Timepoint 1) ====
-Start time:  2026-01-27 14:55:17 
+Start time:  2026-01-27 15:05:49 
 Input phenotype + beta file:  rData/preprocessingPheno/mergeData/phenoBetaT1.RData 
 Output RData folder:  rData/methylationGLM_T1/models 
 Output logs folder:  logs 
