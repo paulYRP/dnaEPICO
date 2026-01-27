@@ -1436,10 +1436,10 @@ These parameters ensure the Makefile uses the:
 ### Step 5: Plot grouping and cell composition reference
 
 - PLOT_GROUP_VAR = sex 
-- LC_REF = Reinius 
+- LC_REF = FlowSorted.Blood.450k 
 
 * Plots are grouped by `sex`, matching earlier QC figures
-* `Reinius` is selected as the reference panel because `minfiData` represents blood samples
+* `FlowSorted.Blood.450k` is selected as the reference panel because `minfiData` represents blood samples
 
 ### Step 6: Timepoint
 
