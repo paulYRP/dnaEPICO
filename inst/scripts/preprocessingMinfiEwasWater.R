@@ -62,7 +62,6 @@ suppressPackageStartupMessages({
         library(Gviz)
         library(ENmix)
         library(BeadSorted.Saliva.EPIC)
-        library(ewastools)
         library(optparse)
         library(ggplot2)
         library(ggpubr)
@@ -133,7 +132,7 @@ opt <- parse_args(OptionParser(option_list = list(
         make_option("--mafThreshold", type = "double", default = 0.1),
         make_option("--crossReactivePath", default = "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv", type = "character", help = "Path to cross-reactive probe file"),
         make_option("--plotGroupVar", default = "Sex", help = "Grouping variable for density plots"),
-        make_option("--lcRef", default = "salivaEPIC", help = "Reference for estimateLC (e.g., salivaEPIC, saliva, Reinius+Lin ...)"),
+        make_option("--lcRef", default = "salivaEPIC", help = "Reference for estimate Cell Composition with ewastool or ENmix (e.g., salivaEPIC, saliva, Reinius+Lin ...)"),
         make_option("--phenoOrder", default = "SampleName;Timepoint;Sex;PredSex;Basename;SentrixID;SentrixPosition", help = "Semicolon-separated leading column order; others appended"),
         make_option("--lcPhenoDir", default = "data/preprocessingMinfiEwasWater", help = "Output directory for the phenoLC.csv file [default: %default]")
 
@@ -807,13 +806,55 @@ cat("Density plots saved to: ", betaMPlotPath, "\n")
 
 cat("=======================================================================\n")
 
-# ----------- Cell Type Estimation using Ewastool -----------
+# ------ Cell Type Estimation (Reference-driven, auto-install) -------
 
-cat("Estimating cell composition with ref:", opt$lcRef, "\n")
+cat("Cell composition reference selected:", opt$lcRef, "\n")
 
-lc <- ewastools::estimateLC(beta,
-                            ref = opt$lcRef, constrained = TRUE)
-phenoLC <- cbind(targets, lc)
+ewasRefs <- c(
+  "HRS","Reinius","Bakulski","Lin","Gervin","deGoede",
+  "Mill","Salas","Lolipop","saliva","salivaEPIC"
+)
+
+useEwastools <- any(sapply(ewasRefs, grepl, x = opt$lcRef, fixed = TRUE))
+
+if (useEwastools) {
+
+  cat("Reference requires ewastools\n")
+
+  if (!requireNamespace("ewastools", quietly = TRUE)) {
+
+    cat("ewastools not installed → installing automatically\n")
+
+    if (!requireNamespace("devtools", quietly = TRUE)) {
+      stop("devtools is required to install ewastools but is not installed.")
+    }
+
+    devtools::install_github("hhhh5/ewastools", quiet = TRUE)
+  }
+
+  cat("Using ewastools backend\n")
+
+  lc <- ewastools::estimateLC(
+    meth = beta,
+    ref = opt$lcRef,
+    constrained = TRUE
+  )
+
+} else {
+
+  cat("Using ENmix Houseman-based cell composition\n")
+
+  lc <- ENmix::estimateCellProp(
+    userdata = beta,
+    refdata = opt$lcRef,
+    nonnegative = TRUE,
+    normalize = FALSE,
+    nProbes = 50,
+    refplot = FALSE
+  )
+}
+
+phenoLC <- phenoLC <- cbind(targets, lc)[, !duplicated(colnames(cbind(targets, lc)))]
 
 leadCols <- strsplit(opt$phenoOrder, ";", fixed = TRUE)[[1]]
 leadCols <- leadCols[leadCols %in% colnames(phenoLC)]
@@ -825,7 +866,6 @@ write.csv(phenoLC,
           file = lcPhenoOut,
           row.names = FALSE)
 cat("Saved phenoLC:", lcPhenoOut, "\n")
-
 cat("=======================================================================\n")
 
 cat("Session info:\n")

@@ -1301,7 +1301,6 @@ length(list.files(idatDir, pattern = "\\.idat$"))
 
 ```
 
-
 ### Step 3: Copy the cross-reactive probe annotation file
 
 The pipeline requires a file listing cross-reactive probes. This file is distributed with `dnaEPICO` and is copied into the preprocessing folder. It is a reduced version of the original file, which can be accessed from the following link:
@@ -1370,7 +1369,6 @@ write.csv(targets, samplePath, row.names = FALSE)
 
 file.exists(samplePath)
 
-
 ```
 
 This phenotype file will be used throughout the pipeline.
@@ -1411,7 +1409,7 @@ preprocessingMinfiEwasWater(
   outputLogs = file.path(tmpDir, "logs"),
   baseDataFolder = file.path(tmpDir, "rData"),
   figureBaseDir = file.path(tmpDir, "figures"),
-  lcRef = "Reinius",
+  lcRef = "FlowSorted.Blood.450k",
   crossReactivePath = file.path(preprocDir, "12864_2024_10027_MOESM8_ESM.csv"),
   lcPhenoDir = preprocDir
 )
