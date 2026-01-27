@@ -238,7 +238,7 @@ This wrapper executes the pipeline script in `inst/scripts/preprocessingMinfiEwa
 6. Performs probe filtering (p-value, chrX/Y removal, SNP filters, cross-reactive probes).
 7. Exports final matrices (Beta/M/CN) to `rData/`.
 8. Produces plots in `figures/` and logs in `logs/`.
-9. Optionally estimates cell composition (via `lcRef`) and writes `phenoLC.csv` into `lcPhenoDir`.
+9. Estimates cell composition (via `lcRef`) and writes `phenoLC.csv` into `lcPhenoDir`.
 
 ### Parameter guide:
 
@@ -325,7 +325,7 @@ This wrapper executes `inst/scripts/preprocessingPheno.R`. Conceptually, it:
 1. Loads phenotype and methylation matrices (Beta/M/CN).
 2. Aligns samples by `SampleID`.
 3. Creates timepoint-specific subsets (`timepoints`).
-4. Optionally combines timepoints (`combineTimepoints`) for longitudinal sets.
+4. Combines timepoints (`combineTimepoints`) for longitudinal sets.
 5. Writes:
 
    * exported phenotype tables into `outputPheno`,
@@ -406,7 +406,7 @@ This wrapper executes the external script `inst/scripts/methylationGLM_T1.R` usi
 1. Loads a merged phenotype–beta-value object (`inputPheno`) produced by `preprocessingPheno()`.
 2. Iterates over CpGs in chunks and fits a generalised linear model [(glm2)](https://cran.r-project.org/web/packages/glm2/index.html) for each CpG.
 3. Models each specified phenotype separately, adjusting for covariates and factor variables.
-4. Optionally includes interaction terms and polygenic risk score (PRS) mappings.
+4. Includes interaction terms and polygenic risk score (PRS) mappings.
 5. Applies multiple-testing correction (FDR).
 6. Writes:
 
@@ -586,7 +586,7 @@ This wrapper executes the external script `inst/scripts/methylationGLMM_T1T2.R` 
 2. Iterates over CpGs in chunks and fits a linear mixed-effects model [(lme4)](https://cran.r-project.org/web/packages/lme4/index.html).
 3. Fits **one model per phenotype**, accounting for repeated measures using a subject-level random effect.
 4. Models fixed effects for phenotype, time, covariates, and optional interactions.
-5. Optionally includes **phenotype-specific PRS terms** based on `prsMap`.
+5. Includes **phenotype-specific PRS terms** based on `prsMap`.
 6. Tests interaction terms (e.g. phenotype × timepoint).
 7. Applies multiple-testing correction across CpGs.
 8. Writes:
