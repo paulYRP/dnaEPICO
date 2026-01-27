@@ -169,7 +169,7 @@ extractMake(
 ├── logs/                                   # Logging output from script runs
 ├── figures/                                # QC plots and visualization output
 ├── results/                                # Output tables and summary statistics
-├── reports/                                # Optional rendered reports (PDF)
+├── reports/                                # Rendered reports (PDF)
 ```
 
 Each step writes:
