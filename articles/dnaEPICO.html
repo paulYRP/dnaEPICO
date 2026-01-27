@@ -1107,354 +1107,169 @@ re-run with different configurations.</p>
 MAKEFLAGS += --output-sync
 
 # ===============================================
-# Run all models 
+# MODELS SELECTION PARALLEL RUN
 # ===============================================
-models:
-    @echo "Running models in parallel: $(MODELS)"
-    @$(MAKE) -j $(words $(MODELS)) $(addprefix run-, $(MODELS))
-
-$(foreach m,$(MODELS),$(eval run-$(m):; \
-    @echo "&gt;&gt;&gt; Starting full pipeline for: $(m)"; \
-    $(MAKE) -j1 all MODEL=$(m); \
-    @echo "&lt;&lt;&lt; Finished full pipeline for: $(m)" \
-))
-
-default: all
-
-all: \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
-    $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv \
-    $(STEP6)/$(MODEL)/DNAm.pdf
-    
-# ===============================================
-# Group target: first3 (Steps 1 to 3)
-# ===============================================
-.PHONY: f3
-FIRST3 = \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
-    $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv
-
-f3: $(FIRST3) $(STEP6)/$(MODEL)/DNAm.pdf
+MODEL ?= model1 # Single model
+MODELS = modelA modelB modelC # Multiple models for parallel run
 
 # ===============================================
-# Run f3 (Steps 1 to 3) for all models in parallel
+# PER-MODEL OVERRIDES
 # ===============================================
-f3_models:
-    @echo "Running f3 (Steps 1–3) in parallel: $(MODELS)"
-    @$(MAKE) -j $(words $(MODELS)) $(addprefix runf3-, $(MODELS))
-
-$(foreach m,$(MODELS),$(eval runf3-$(m):;  \
-    @echo "&gt;&gt;&gt; Starting f3 for: $(m)"; \
-    $(MAKE) -j1 f3 MODEL=$(m); \
-    @echo "&lt;&lt;&lt; Finished f3 for: $(m)" \
-))
-
-# ===============================================
-# Group target: f4 (Steps 1 to 4)
-# ===============================================
-.PHONY: f4
-FIRST4 = \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
-    $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv
-
-f4: $(FIRST4) $(STEP6)/$(MODEL)/DNAm.pdf
-
-# ===============================================
-# Run f4 (Steps 1 to 4 only) for all models in parallel
-# ===============================================
-f4_models:
-    @echo "Running f4 (Steps 1–4) in parallel: $(MODELS)"
-    @$(MAKE) -j $(words $(MODELS)) $(addprefix runf4-, $(MODELS))
-
-$(foreach m,$(MODELS),$(eval runf4-$(m):; \
-    @echo "&gt;&gt;&gt; Starting f4 for: $(m)"; \
-    $(MAKE) -j1 f4 MODEL=$(m); \
-    @echo "&lt;&lt;&lt; Finished f4 for: $(m)" \
-))
-
-# ===============================================
-# Group target: f3lme (Steps 1 to 3 + LME)
-# ===============================================
-.PHONY: f3lme
-F3LME = \
-  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-    $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
-    $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
-    $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv
-
-f3lme: $(F3LME) $(STEP6)/$(MODEL)/DNAm.pdf
-
-# ===============================================
-# Run f3lme (Steps 1 to 3 + LME) for all models in parallel
-# ===============================================
-
-f3lme_models:
-    @echo "Running f3lme (Steps 1–3 + LME) in parallel: $(MODELS)"
-    @$(MAKE) -j $(words $(MODELS)) $(addprefix runf3lme-, $(MODELS))
-
-$(foreach m,$(MODELS),$(eval runf3lme-$(m):; \
-    @echo "&gt;&gt;&gt; Starting f3lme for: $(m)"; \
-    $(MAKE) -j1 f3lme MODEL=$(m); \
-    @echo "&lt;&lt;&lt; Finished f3lme for: $(m)" \
-))
-
-# =================================================================================================================================
-# Step 1: Minfi Preprocessing
-# =================================================================================================================================
-step1:
-    @echo "Running Step 1 for $(MODEL)"
-    $(MAKE) preprocessingMinfiEwasWater MODEL=$(MODEL)
-
-$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
-    Rscript -e "library(dnapipeR); preprocessingMinfiEwasWater( \
-      phenoFile = '$(PHENO_FILE)', \
-      sepType = '$(SEP_TYPE)', \
-      idatFolder = '$(DATA_DIR)/$(STEP1)/$(IDAT_DIR)/', \
-      outputLogs = '$(LOGS_DIR)/$(MODEL)', \
-      nSamples = $(N_SAMPLES), \
-      SampleID = '$(SAMPLE_ID)', \
-      arrayType = '$(ARRAY_TYPE)', \
-      annotationVersion = '$(ANNOTATION_VERSION)', \
-      scriptLabel = '$(MODEL)/$(STEP1)', \
-      baseDataFolder = '$(RDATA_DIR)', \
-      tiffWidth = $(TIFF_WIDTH), \
-      tiffHeight = $(TIFF_HEIGHT), \
-      tiffRes = $(TIFF_RES), \
-      qcCutoff = $(QC_CUTOFF), \
-      detPtype = '$(DET_PTYPE)', \
-      detPThreshold = $(DET_PTHRESHOLD), \
-      funnormSeed = $(FUNNORM_SEED), \
-      sexColumn = '$(SEX_COLUMN)', \
-      pvalThreshold = $(PVAL_THRESHOLD), \
-      chrToRemove = '$(CHR_TO_REMOVE)', \
-      snpsToRemove = '$(SNPS_TO_REMOVE)', \
-      crossReactivePath = '$(CROSS_REACTIVE_FILE)', \
-      mafThreshold = $(MAF_THRESHOLD), \
-      plotGroupVar = '$(PLOT_GROUP_VAR)', \
-      lcRef = '$(LC_REF)', \
-      phenoOrder = '$(PHENO_ORDER)', \
-      lcPhenoDir = '$(DATA_DIR)/$(MODEL)/$(STEP1)' )"
-
-# =================================================================================================================================
-# Step 2: Surrogate Variable Analysis
-# =================================================================================================================================
-$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
-    Rscript -e "library(dnapipeR); svaEnmix( \
-      phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
-      rgsetData = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData', \
-      sepType = '$(SEP_TYPE)', \
-      outputLogs = '$(LOGS_DIR)/$(MODEL)', \
-      nSamples = $(N_SAMPLES), \
-      SampleID = '$(SAMPLE_ID)', \
-      arrayType = '$(ARRAY_TYPE)', \
-      annotationVersion = '$(ANNOTATION_VERSION)', \
-      SentrixIDColumn = '$(SENTRIX_ID_COLUMN)', \
-      SentrixPositionColumn = '$(SENTRIX_POSITION_COLUMN)', \
-      ctrlSvaPercVar = $(CTRL_SVA_PERC_VAR), \
-      ctrlSvaFlag = $(CTRL_SVA_FLAG), \
-      scriptLabel = '$(MODEL)/$(STEP2)', \
-      tiffWidth = $(TIFF_WIDTH), \
-      tiffHeight = $(TIFF_HEIGHT), \
-      tiffRes = $(TIFF_RES) )"
-
-# =================================================================================================================================
-# Step 3: Merge Phenotype
-# =================================================================================================================================
-$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
-$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
-$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv: 
-    Rscript -e "library(dnapipeR); preprocessingPheno( \
-      phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
-      sepType = '$(SEP_TYPE)', \
-      betaPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
-      mPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
-      cnPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
-      SampleID = '$(SAMPLE_ID)', \
-      timeVar = '$(TIME_VAR)', \
-      timepoints = '$(TIMEPOINTS)', \
-      combineTimepoints = '$(COMBINE_TIMEPOINTS)', \
-      outputPheno = '$(DATA_DIR)/$(MODEL)/$(STEP3)', \
-      outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(METRICS_DIR)', \
-      outputRDataMerge = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)', \
-      outputLogs = '$(LOGS_DIR)/$(MODEL)', \
-      sexColumn = '$(SEX_COLUMN)', \
-      outputDir = '$(DATA_DIR)/$(MODEL)/$(STEP3)' )"  
-      
-# =================================================================================================================================
-# Step 4: GLM for T1
-# =================================================================================================================================
-$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
-    Rscript -e "library(dnapipeR); methylationGLM_T1( \
-      inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData', \
-      outputLogs = '$(LOGS_DIR)/$(MODEL)', \
-      outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
-      outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)/', \
-      phenotypes = '$(PHENOTYPES)', \
-      covariates = '$(COVARIATES)', \
-      factorVars = '$(FACTOR_VARS)', \
-      cpgPrefix = '$(CPG_PREFIX)', \
-      cpgLimit = $(CPG_LIMIT), \
-      nCores = $(N_CORES), \
-      plotWidth = $(TIFF_WIDTH), \
-      plotHeight = $(TIFF_HEIGHT), \
-      plotDPI = $(TIFF_RES), \
-      interactionTerm = $(INTERACTION_GLM_ARG), \
-      libPath = $(R_DIR_ARG), \
-      glmLibs = '$(GLM_LIBS)', \
-      prsMap = $(PRS_MAP_ARG), \
-      summaryPval = $(SUMMARY_PVAL), \
-      summaryResidualSD = $(SUMMARY_RESIDUAL_SD), \
-      saveSignificantCpGs = $(SAVE_SIGNIFICANT_CPGS), \
-      significantCpGDir = '$(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP4)', \
-      significantCpGPval = $(SIGNIFICANT_CPG_PVAL), \
-      saveTxtSummaries = $(SAVE_TXT_SUMMARIES), \
-      chunkSize = $(CHUNK_SIZE), \
-      summaryTxtDir = '$(RESULTS_DIR)/$(MODEL)/$(SUMMARY_DIR)/$(STEP4)', \
-      fdrThreshold = $(FDR_THRESHOLD), \
-      padjmethod = '$(PADJ_METHOD)', \
-      annotationPackage = '$(ANNOTATION_PACKAGE)', \
-      annotationCols = '$(ANNOTATION_COLS)', \
-      annotatedGLMOut = '$(DATA_DIR)/$(MODEL)/$(STEP4)' ) "
-
-# =================================================================================================================================
-# Step 5: LME for T1 vs T2 (Longitudinal Analysis)
-# =================================================================================================================================
-
-PERSON_VAR = person
-LME_LIBS = lme4,lmerTest
-SAVE_SIGNIFICANT_INTERACTIONS = TRUE
-SIGNIFICANT_INTERACTION_PVAL = 0.00001
+ifeq ($(MODEL), modelA)
+  PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoA.csv
 
 
-$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
-    Rscript -e "library(dnapipeR); methylationGLMM_T1T2( \
-      inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData', \
-      outputLogs = '$(LOGS_DIR)/$(MODEL)', \
-      outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP5)/$(MODEL_DIR)', \
-      outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
-      personVar = '$(PERSON_VAR)', \
-      timeVar = '$(TIME_VAR)', \
-      phenotypes = '$(PHENOTYPES)', \
-      covariates = '$(COVARIATES)', \
-      factorVars = '$(FACTOR_VARS)', \
-      lmeLibs = '$(LME_LIBS)', \
-      prsMap = $(PRS_MAP_ARG), \
-      libPath = $(R_DIR_ARG), \
-      cpgPrefix = '$(CPG_PREFIX)', \
-      cpgLimit = $(CPG_LIMIT), \
-      nCores = $(N_CORES), \
-      summaryPval = $(SUMMARY_PVAL), \
-      plotWidth = $(TIFF_WIDTH), \
-      plotHeight = $(TIFF_HEIGHT), \
-      plotDPI = $(TIFF_RES), \
-      interactionTerm = $(INTERACTION_LME_ARG), \
-      saveSignificantInteractions = $(SAVE_SIGNIFICANT_INTERACTIONS), \
-      significantInteractionDir = '$(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP5)', \
-      significantInteractionPval = $(SIGNIFICANT_INTERACTION_PVAL), \
-      saveTxtSummaries = $(SAVE_TXT_SUMMARIES), \
-      chunkSize = $(CHUNK_SIZE), \
-      summaryTxtDir = '$(RESULTS_DIR)/$(MODEL)/$(SUMMARY_DIR)/$(STEP5)', \
-      fdrThreshold = $(FDR_THRESHOLD), \
-      padjmethod = '$(PADJ_METHOD)', \
-      annotationPackage = '$(ANNOTATION_PACKAGE)', \
-      annotationCols = '$(ANNOTATION_COLS)', \
-      annotatedLMEOut = '$(DATA_DIR)/$(MODEL)/$(STEP5)' )"
+else ifeq ($(MODEL), modelB)
+  PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoB.csv
 
-# =================================================================================================================================
-# Step 6: Final Report
-# =================================================================================================================================
-REPORT_INPUTS = \
-    $(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData \
-    $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv
+else ifeq ($(MODEL), modelC)
+  PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoC.csv
 
-$(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
-    mkdir -p $(STEP6)/$(MODEL) $(LOGS_DIR)/$(MODEL)
-    Rscript -e "library(dnapipeR); dnamReport( \
-      output = 'DNAm.pdf', \
-      outputDir = '$(STEP6)/$(MODEL)', \
-      qcDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
-      preprocessingDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)', \
-      postprocessingDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)', \
-      svaDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP2)', \
-      glmDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)', \
-      glmmDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
-      reportTitle = 'DNA methylation – $(MODEL)', \
-      author = 'School of Biomedical Sciences' )" \
-      &gt; $(LOGS_DIR)/$(MODEL)/report.log 2&gt;&amp;1
-    @echo "Report built: $(STEP6)/$(MODEL)/DNAm.pdf"
+else # default (model1)
+  PHENO_FILE = $(DATA_DIR)/$(STEP1)/pheno.csv
 
-# =================================================================================================================================
-# Clean up outputs
-# =================================================================================================================================
-clean:
-ifeq ($(MODEL),all)
-    @echo "===== Cleaning all models ====="
-    @for m in $(MODELS); do \
-      echo "Cleaning model $$m ..."; \
-      rm -rf \
-        $(DATA_DIR)/$$m \
-        $(RDATA_DIR)/$$m \
-        $(STEP6)/$$m \
-        $(LOGS_DIR)/$$m \
-        $(FIGURES_DIR)/$$m \
-        $(RESULTS_DIR)/$$m; \
-    done
-    @echo "Clean completed for all models. Kept $(DATA_DIR)/$(STEP1)/."
-else
-    @echo "Cleaning outputs for: $(MODEL)"
-    rm -rf \
-        $(DATA_DIR)/$(MODEL) \
-        $(RDATA_DIR)/$(MODEL) \
-        $(STEP6)/$(MODEL) \
-        $(LOGS_DIR)/$(MODEL) \
-        $(FIGURES_DIR)/$(MODEL) \
-        $(RESULTS_DIR)/$(MODEL)
-    @echo "Clean completed for: $(MODEL)"
 endif
 
-# =================================================================================================================================
-# Status Check Target
-# =================================================================================================================================
-status:
-    @echo "===== Pipeline Status ====="
-    @test -e $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData &amp;&amp; echo "? Step 1: preprocessingMinfiEwasWater done" || echo "? Step 1: preprocessingMinfiEwasWater outcome file missing"
-    @test -e $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt &amp;&amp; echo "? Step 2: SVA done" || echo "? Step 2: SVA outcome file missing"
-    @test -e $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv &amp;&amp; echo "? Step 3: preprocessingPheno done" || echo "? Step 3: preprocessingPheno outcome file missing"
-    @test -e $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv &amp;&amp; echo "? Step 4: methylationGLM_T1 done" || echo "? Step 4: methylationGLM_T1 outcome file missing"
-    @test -e $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv &amp;&amp; echo "? Step 5: methylationGLMM_T1T2 done" || echo "? Step 5: methylationGLMM_T1T2 outcome file missing"
-    @test -e $(STEP6)/$(MODEL)/DNAm.pdf &amp;&amp; echo "? Step 6: Report generated" || echo "? Step 6: Report missing"
-    @echo "============================"
+# ===============================================
+# DIRECTORIES
+# ===============================================
+LOGS_DIR = logs
+DATA_DIR = data
+RDATA_DIR = rData
+RESULTS_DIR = results
+FIGURES_DIR = figures
+STEP1 = preprocessingMinfiEwasWater
+STEP2 = svaEnmix
+STEP3 = preprocessingPheno
+STEP4 = methylationGLM_T1
+STEP5 = methylationGLMM_T1T2
+STEP6 = reports
+METRICS_DIR = metrics
+IDAT_DIR = idats
+OBJ_DIR = objects
+MERGE_DIR = mergeData
+MODEL_DIR = models
+CPG_DIR = cpgs
+SUMMARY_DIR = summary
+ENMIX_DIR = enmix
+SVA_DIR = sva
+QC_DIR = qc
+R_DIR = ~/R/x86_64-pc-linux-gnu-library/4.4 # NULL is default R library path
 
-.PHONY: all clean status models f3 f4 f3lme f3_models f4_models f3lme_models</code></pre>
+# ===============================================
+# GLOBAL PARAMETERS
+# ===============================================
+# STEP 1-5 PARAMETERS
+PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoEMD.csv
+SEP_TYPE = ""
+SAMPLE_ID = Sample_Name
+N_SAMPLES = 30
+ARRAY_TYPE = IlluminaHumanMethylationEPICv2
+ANNOTATION_VERSION = 20a1.hg38
+TIFF_WIDTH = 2000
+TIFF_HEIGHT = 1000
+TIFF_RES = 150
+SEX_COLUMN = Sex
+SENTRIX_ID_COLUMN = Sentrix_ID
+SENTRIX_POSITION_COLUMN = Sentrix_Position
+BASENAME_COLUMN = Basename
+TIME_VAR = Timepoint
+PHENO_ORDER = $(SAMPLE_ID);$(TIME_VAR);$(SEX_COLUMN);PredSex;$(BASENAME_COLUMN);$(SENTRIX_ID_COLUMN);$(SENTRIX_POSITION_COLUMN)
+
+# STEP 4-5 PARAMETERS
+PHENOTYPES = TreatmentGroup
+COVARIATES = Sex
+FACTOR_VARS = Sex,TreatmentGroup
+CPG_PREFIX = cg
+CPG_LIMIT = NA
+PRS_MAP = NULL
+SUMMARY_PVAL = NA
+N_CORES = 64
+SAVE_TXT_SUMMARIES = TRUE
+CHUNK_SIZE = 10000
+FDR_THRESHOLD = 0.05
+PADJ_METHOD = fdr
+ANNOTATION_PACKAGE = IlluminaHumanMethylationEPICv2anno.20a1.hg38
+ANNOTATION_COLS = Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group
+
+# ===============================================
+# STEP 1 PARAMETERS
+# ===============================================
+QC_CUTOFF = 10.5
+DET_PTYPE = m+u
+DET_PTHRESHOLD = 0.05
+FUNNORM_SEED = 123
+PVAL_THRESHOLD = 0.01
+CHR_TO_REMOVE = chrX,chrY
+SNPS_TO_REMOVE = SBE,CpG
+CROSS_REACTIVE_FILE = $(DATA_DIR)/$(STEP1)/12864_2024_10027_MOESM8_ESM.csv
+MAF_THRESHOLD = 0.1
+PLOT_GROUP_VAR = TreatvControl_Time1_vs_Time2
+LC_REF = salivaEPIC
+
+# ===============================================
+# STEP 2 PARAMETERS
+# ===============================================
+CTRL_SVA_PERC_VAR = 0.90
+CTRL_SVA_FLAG = 1
+
+# ===============================================
+# STEP 3 PARAMETERS
+# ===============================================
+TIMEPOINTS = 1,2
+COMBINE_TIMEPOINTS = 1,2
+
+# ===============================================
+# STEP 4 PARAMETERS
+# ===============================================
+GLM_LIBS = glm2
+INTERACTION_GLM = NULL
+SUMMARY_RESIDUAL_SD = TRUE
+SAVE_SIGNIFICANT_CPGS = TRUE
+SIGNIFICANT_CPG_PVAL = 0.1
+
+# ==============================================
+# STEP 5 PARAMETERS
+# ==============================================
+PERSON_VAR = person
+LME_LIBS = lme4,lmerTest
+INTERACTION_LME = TreatvControl_Time1_vs_Time2
+SAVE_SIGNIFICANT_INTERACTIONS = TRUE
+SIGNIFICANT_INTERACTION_PVAL = 0.1
+
+# ===============================================
+# ARGUMENT NORMALISATION
+# ===============================================
+
+ifeq ($(PRS_MAP),NULL)
+  PRS_MAP_ARG = NULL
+else
+  PRS_MAP_ARG = '$(PRS_MAP)'
+endif
+
+ifeq ($(R_DIR),NULL)
+  R_DIR_ARG = NULL
+else
+  R_DIR_ARG = '$(R_DIR)'
+endif
+
+ifeq ($(INTERACTION_GLM),NULL)
+  INTERACTION_GLM_ARG = NULL
+else
+  INTERACTION_GLM_ARG = '$(INTERACTION_GLM)'
+endif
+
+ifeq ($(INTERACTION_LME),NULL)
+  INTERACTION_LME_ARG = NULL
+else
+  INTERACTION_LME_ARG = '$(INTERACTION_LME)'
+endif
+
+# ===============================================
+# INCLUDE PIPELINE FROM dnaEPICO
+# ===============================================
+DNAPIPE_MK := $(shell Rscript -e "cat(system.file('extdata','make','Makefile.rules.pipeline',package='dnaEPICO'))")
+include $(DNAPIPE_MK)</code></pre>
 <div class="section level4">
 <h4 id="model-selection">Model selection<a class="anchor" aria-label="anchor" href="#model-selection"></a>
 </h4>
@@ -1678,7 +1493,7 @@ input files and outputs</strong> for this example.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">tmpDir</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">tmpDir</span></span>
-<span><span class="co">#&gt; [1] "C:\\Users\\ruizpint\\AppData\\Local\\Temp\\RtmpGIJ1EV/dnaEPICO_Test"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "C:\\Users\\ruizpint\\AppData\\Local\\Temp\\RtmpO64311/dnaEPICO_Test"</span></span></code></pre></div>
 <p><strong>Important:</strong></p>
 <ul>
 <li>This directory is created only for this example</li>
@@ -2053,9 +1868,9 @@ longitudinal logic is disabled.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-01-27 14:12:37 AEST"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-01-27 14:34:41 AEST"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 17.2 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 10.516 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.1 (2024-06-14 ucrt)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
