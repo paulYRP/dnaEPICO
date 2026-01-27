@@ -6,4 +6,4 @@ NEW FEATURES
     o Initial Bioconductor submission of the dnaEPICO package.
 
     o Introduced a modular and reproducible pipeline for preprocessing
-      Illumina EPICv2 DNA methylation array data.
+      Illumina DNA methylation array data (EPICv2, EPIC and 450K).

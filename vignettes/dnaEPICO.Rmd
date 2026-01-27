@@ -123,7 +123,7 @@ A core design principle is that each step creates its own folders and outputs, s
 
 `r Biocpkg("dnaEPICO")` expects:
 
-```
+```make
 ├── data/                                   # Processed data outputs (per model)
 │   ├── preprocessingMinfiEwasWater/
 │   │   ├── idats/                          # Folder containing raw IDAT files
@@ -150,7 +150,7 @@ extractMake(
 
 `r Biocpkg("dnaEPICO")` generates:
 
-```
+```make
 ├── data/                                   # Processed data outputs (per model)
 │   ├── preprocessingMinfiEwasWater/
 │   │   ├── idats/                          # Folder containing raw IDAT files
@@ -192,7 +192,7 @@ Local use focuses on the first three steps that are commonly run interactively:
 
 ## Step 1: `preprocessingMinfiEwasWater()`
 
-```
+```{r, eval=FALSE}
 preprocessingMinfiEwasWater(
     phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
     idatFolder = "data/preprocessingMinfiEwasWater/idats",
@@ -256,7 +256,7 @@ This wrapper executes the pipeline script in `inst/scripts/preprocessingMinfiEwa
 
 ## Step 2: `svaEnmix()`
 
-```
+```{r, eval=FALSE}
 svaEnmix(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     rgsetData = "rData/preprocessingMinfiEwasWater/objects/RGSet.RData",
@@ -295,7 +295,7 @@ This wrapper executes `inst/scripts/svaEnmix.R`. Conceptually, it:
 
 ## Step 3: `preprocessingPheno()`
 
-```
+```{r, eval=FALSE}
 preprocessingPheno(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     sepType = "",
@@ -363,7 +363,7 @@ On full datasets, model fitting across hundreds of thousands of CpGs typically r
 
 This step is typically executed on **HPC systems** due to memory and CPU requirements.
 
-```
+```{r, eval=FALSE}
 methylationGLM_T1(
     inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1.RData",
     outputLogs = "logs",
@@ -541,7 +541,7 @@ $$
 
 This step is typically executed on **HPC systems** due to memory and CPU requirements.
 
-```
+```{r, eval=FALSE}
 methylationGLMM_T1T2(
     inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
     outputLogs = "logs/",
@@ -630,7 +630,6 @@ This wrapper executes the external script `inst/scripts/methylationGLMM_T1T2.R` 
 * `annotationCols`: comma-separated annotation fields to extract.
 * `annotatedLMEOut`: directory where annotated mixed-model result tables are written.
 
-
 ### LMEM structure used in dnaEPICO (`lme4`):
 
 For longitudinal analyses, the phenotype-specific structure remains, with additional random and interaction terms:
@@ -650,7 +649,6 @@ b*{\text{person}} +
 $$
 
 where (\text{PRS}_p) is included **only if it is defined for phenotype (p)**. The logic follows that of `methylationGLM_T1()`.
-
 
 # Makefile pipeline concepts
 
@@ -703,7 +701,7 @@ This Makefile defines **how dnaEPICO models are executed at scale**, controlling
 
 Rather than hard-coding parameters in R scripts, dnaEPICO uses a **declarative Makefile layer** so the same pipeline can be re-run with different configurations.
 
-```
+```make
 # ===============================================
 # USER CONFIGURATION
 # ===============================================
@@ -1062,7 +1060,6 @@ status:
 
 ### Model selection
 
-
 - MODEL ?= model1
 - MODELS = modelA modelB modelC
 
@@ -1086,7 +1083,7 @@ In parallel mode, **each model runs as a fully independent pipeline**, with its 
 
 ## Per-model overrides
 
-```
+```make
 ifeq ($(MODEL), modelA)
   PHENO_FILE = data/preprocessingMinfiEwasWater/phenoA.csv
 ...
@@ -1154,7 +1151,7 @@ Their definitions and expected formats are explained in the *Local use* section 
 
 ### Argument normalisation
 
-```
+```make
 ifeq ($(PRS_MAP),NULL)
   PRS_MAP_ARG = NULL
 else
@@ -1169,7 +1166,7 @@ This section ensures that optional arguments are passed correctly to R scripts. 
 
 `dnamReport()` generates a PDF report by rendering `DNAm.Rmd` through a runner script (`DNAm.R`) shipped in `inst/scripts`.
 
-```
+```{r, eval=FALSE}
 dnamReport(
   output = "DNAm_Report.pdf",
   outputDir = "reports",
