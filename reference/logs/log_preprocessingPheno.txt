@@ -1,5 +1,5 @@
 ==== Starting Phenotype Preprocessing ====
-Start Time:                2026-01-23 12:28:11 
+Start Time:                2026-01-27 12:16:41 
 Log file path:             logs/log_preprocessingPheno.txt 
 
 Phenotype file:            data\preprocessingMinfiEwasWater\phenoLC.csv 

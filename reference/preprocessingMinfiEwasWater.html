@@ -68,6 +68,7 @@ shipped in inst/scripts using system calls.</p>
 <span>  annotationVersion <span class="op">=</span> <span class="st">"20a1.hg38"</span>,</span>
 <span>  scriptLabel <span class="op">=</span> <span class="st">"preprocessingMinfiEwasWater"</span>,</span>
 <span>  baseDataFolder <span class="op">=</span> <span class="st">"rData"</span>,</span>
+<span>  figureBaseDir <span class="op">=</span> <span class="st">"figures"</span>,</span>
 <span>  sepType <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  tiffWidth <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  tiffHeight <span class="op">=</span> <span class="fl">1000</span>,</span>
@@ -128,6 +129,10 @@ shipped in inst/scripts using system calls.</p>
 
 <dt id="arg-basedatafolder">baseDataFolder<a class="anchor" aria-label="anchor" href="#arg-basedatafolder"></a></dt>
 <dd><p>Character. Base directory for RData outputs.</p></dd>
+
+
+<dt id="arg-figurebasedir">figureBaseDir<a class="anchor" aria-label="anchor" href="#arg-figurebasedir"></a></dt>
+<dd><p>Character. Base directory for Figures outputs.</p></dd>
 
 
 <dt id="arg-septype">sepType<a class="anchor" aria-label="anchor" href="#arg-septype"></a></dt>
@@ -230,6 +235,7 @@ and RData objects to disk.</p>
 <span class="r-in"><span>  annotationVersion <span class="op">=</span> <span class="st">"20a1.hg38"</span>,</span></span>
 <span class="r-in"><span>  scriptLabel <span class="op">=</span> <span class="st">"preprocessingMinfiEwasWater"</span>,</span></span>
 <span class="r-in"><span>  baseDataFolder <span class="op">=</span> <span class="st">"rData"</span>,</span></span>
+<span class="r-in"><span>  figureBaseDir <span class="op">=</span> <span class="st">"figures"</span>,</span></span>
 <span class="r-in"><span>  sepType <span class="op">=</span> <span class="st">""</span>,</span></span>
 <span class="r-in"><span>  tiffWidth <span class="op">=</span> <span class="fl">2000</span>,</span></span>
 <span class="r-in"><span>  tiffHeight <span class="op">=</span> <span class="fl">1000</span>,</span></span>
@@ -251,8 +257,8 @@ and RData objects to disk.</p>
 <span class="r-in"><span>  lcPhenoDir <span class="op">=</span> <span class="st">"data/preprocessingMinfiEwasWater"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Running preprocessingMinfiEwasWater:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Rscript "C:/Users/ruizpint/AppData/Local/Programs/R/R-4.4.1/library/dnaEPICO/scripts/preprocessingMinfiEwasWater.R" --phenoFile "data/preprocessingMinfiEwasWater/pheno.csv" --sepType "" --idatFolder "data/preprocessingMinfiEwasWater/idats" --outputLogs "logs" --nSamples NA --SampleID "Sample_Name" --arrayType "IlluminaHumanMethylationEPICv2" --annotationVersion "20a1.hg38" --scriptLabel "preprocessingMinfiEwasWater" --baseDataFolder "rData" --tiffWidth 2000 --tiffHeight 1000 --tiffRes 150 --qcCutoff 10.5 --detPtype "m+u" --detPThreshold 0.05 --funnormSeed 123 --normMethods "adjustedfunnorm" --sexColumn "Sex" --pvalThreshold 0.01 --chrToRemove "chrX,chrY" --snpsToRemove "SBE,CpG" --mafThreshold 0.1 --crossReactivePath "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv" --plotGroupVar "Sex" --lcRef "salivaEPIC" --phenoOrder "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position" --lcPhenoDir "data/preprocessingMinfiEwasWater"</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'Rscript "C:/Users/ruizpint/AppData/Local/Programs/R/R-4.4.1/library/dnaEPICO/scripts/preprocessingMinfiEwasWater.R" --phenoFile "data/preprocessingMinfiEwasWater/pheno.csv" --sepType "" --idatFolder "data/preprocessingMinfiEwasWater/idats" --outputLogs "logs" --nSamples NA --SampleID "Sample_Name" --arrayType "IlluminaHumanMethylationEPICv2" --annotationVersion "20a1.hg38" --scriptLabel "preprocessingMinfiEwasWater" --baseDataFolder "rData" --tiffWidth 2000 --tiffHeight 1000 --tiffRes 150 --qcCutoff 10.5 --detPtype "m+u" --detPThreshold 0.05 --funnormSeed 123 --normMethods "adjustedfunnorm" --sexColumn "Sex" --pvalThreshold 0.01 --chrToRemove "chrX,chrY" --snpsToRemove "SBE,CpG" --mafThreshold 0.1 --crossReactivePath "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv" --plotGroupVar "Sex" --lcRef "salivaEPIC" --phenoOrder "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position" --lcPhenoDir "data/preprocessingMinfiEwasWater"' execution failed with error code 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Rscript "C:/Users/ruizpint/AppData/Local/Programs/R/R-4.4.1/library/dnaEPICO/scripts/preprocessingMinfiEwasWater.R" --phenoFile "data/preprocessingMinfiEwasWater/pheno.csv" --sepType "" --idatFolder "data/preprocessingMinfiEwasWater/idats" --outputLogs "logs" --nSamples NA --SampleID "Sample_Name" --arrayType "IlluminaHumanMethylationEPICv2" --annotationVersion "20a1.hg38" --scriptLabel "preprocessingMinfiEwasWater" --baseDataFolder "rData" --figureBaseDir "figures" --tiffWidth 2000 --tiffHeight 1000 --tiffRes 150 --qcCutoff 10.5 --detPtype "m+u" --detPThreshold 0.05 --funnormSeed 123 --normMethods "adjustedfunnorm" --sexColumn "Sex" --pvalThreshold 0.01 --chrToRemove "chrX,chrY" --snpsToRemove "SBE,CpG" --mafThreshold 0.1 --crossReactivePath "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv" --plotGroupVar "Sex" --lcRef "salivaEPIC" --phenoOrder "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position" --lcPhenoDir "data/preprocessingMinfiEwasWater"</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'Rscript "C:/Users/ruizpint/AppData/Local/Programs/R/R-4.4.1/library/dnaEPICO/scripts/preprocessingMinfiEwasWater.R" --phenoFile "data/preprocessingMinfiEwasWater/pheno.csv" --sepType "" --idatFolder "data/preprocessingMinfiEwasWater/idats" --outputLogs "logs" --nSamples NA --SampleID "Sample_Name" --arrayType "IlluminaHumanMethylationEPICv2" --annotationVersion "20a1.hg38" --scriptLabel "preprocessingMinfiEwasWater" --baseDataFolder "rData" --figureBaseDir "figures" --tiffWidth 2000 --tiffHeight 1000 --tiffRes 150 --qcCutoff 10.5 --detPtype "m+u" --detPThreshold 0.05 --funnormSeed 123 --normMethods "adjustedfunnorm" --sexColumn "Sex" --pvalThreshold 0.01 --chrToRemove "chrX,chrY" --snpsToRemove "SBE,CpG" --mafThreshold 0.1 --crossReactivePath "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv" --plotGroupVar "Sex" --lcRef "salivaEPIC" --phenoOrder "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position" --lcPhenoDir "data/preprocessingMinfiEwasWater"' execution failed with error code 1</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

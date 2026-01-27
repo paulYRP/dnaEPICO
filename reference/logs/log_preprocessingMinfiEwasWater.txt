@@ -1,5 +1,5 @@
 ==== Starting preprocessingMinfiEwasWater ====
-Start Time:                2026-01-23 12:28:08 
+Start Time:                2026-01-27 12:16:39 
 Log file path:             logs/log_preprocessingMinfiEwasWater.txt 
 
 Phenotype file:            data/preprocessingMinfiEwasWater/pheno.csv 
@@ -10,6 +10,7 @@ SampleID column:           Sample_Name
 Array type:                IlluminaHumanMethylationEPICv2 
 Annotation version:        20a1.hg38 
 Base RData folder:         rData 
+Base Figure folder:         figures 
 TIFF size (w x h @ dpi):   2000  x  1000  @  150 
 QC cutoff (median):        10.5 
 Detection P-value type:    m+u 

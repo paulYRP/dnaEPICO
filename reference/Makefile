@@ -163,8 +163,8 @@ else
 endif
 
 # ===============================================
-# INCLUDE PIPELINE FROM dnapipeR
+# INCLUDE PIPELINE FROM dnaEPICO
 # ===============================================
-DNAPIPE_MK := $(shell Rscript -e "cat(system.file('extdata','make','Makefile.pipeline',package='dnaEPICO'))")
+DNAPIPE_MK := $(shell Rscript -e "cat(system.file('extdata','make','Makefile.rules.pipeline',package='dnaEPICO'))")
 include $(DNAPIPE_MK)
 

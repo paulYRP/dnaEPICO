@@ -74,7 +74,9 @@ inst/scripts using a system call.</p>
 <span>  scriptLabel <span class="op">=</span> <span class="st">"svaEnmix"</span>,</span>
 <span>  tiffWidth <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  tiffHeight <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  tiffRes <span class="op">=</span> <span class="fl">150</span></span>
+<span>  tiffRes <span class="op">=</span> <span class="fl">150</span>,</span>
+<span>  figureBaseDir <span class="op">=</span> <span class="st">"figures"</span>,</span>
+<span>  dataBaseDir <span class="op">=</span> <span class="st">"data"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -145,6 +147,14 @@ inst/scripts using a system call.</p>
 <dt id="arg-tiffres">tiffRes<a class="anchor" aria-label="anchor" href="#arg-tiffres"></a></dt>
 <dd><p>Integer. Resolution (DPI) for TIFF plots.</p></dd>
 
+
+<dt id="arg-figurebasedir">figureBaseDir<a class="anchor" aria-label="anchor" href="#arg-figurebasedir"></a></dt>
+<dd><p>Character. Base directory for Figures outputs.</p></dd>
+
+
+<dt id="arg-databasedir">dataBaseDir<a class="anchor" aria-label="anchor" href="#arg-databasedir"></a></dt>
+<dd><p>Character. Base directory for Data outputs.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -175,11 +185,13 @@ and logs to disk.</p>
 <span class="r-in"><span>  scriptLabel <span class="op">=</span> <span class="st">"svaEnmix"</span>,</span></span>
 <span class="r-in"><span>  tiffWidth <span class="op">=</span> <span class="fl">2000</span>,</span></span>
 <span class="r-in"><span>  tiffHeight <span class="op">=</span> <span class="fl">1000</span>,</span></span>
-<span class="r-in"><span>  tiffRes <span class="op">=</span> <span class="fl">150</span></span></span>
+<span class="r-in"><span>  tiffRes <span class="op">=</span> <span class="fl">150</span>,</span></span>
+<span class="r-in"><span>  figureBaseDir <span class="op">=</span> <span class="st">"figures"</span>,</span></span>
+<span class="r-in"><span>  dataBaseDir <span class="op">=</span> <span class="st">"data"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Running svaEnmix:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Rscript "C:/Users/ruizpint/AppData/Local/Programs/R/R-4.4.1/library/dnaEPICO/scripts/svaEnmix.R" --phenoFile "data/preprocessingMinfiEwasWater/phenoLC.csv" --rgsetData "rData/preprocessingMinfiEwasWater/objects/RGSet.RData" --sepType "" --outputLogs "logs" --nSamples 5 --SampleID "Sample_Name" --arrayType "IlluminaHumanMethylationEPICv2" --annotationVersion "20a1.hg38" --SentrixIDColumn "Sentrix_ID" --SentrixPositionColumn "Sentrix_Position" --ctrlSvaPercVar 0.9 --ctrlSvaFlag 1 --scriptLabel "svaEnmix" --tiffWidth 2000 --tiffHeight 1000 --tiffRes 150</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'Rscript "C:/Users/ruizpint/AppData/Local/Programs/R/R-4.4.1/library/dnaEPICO/scripts/svaEnmix.R" --phenoFile "data/preprocessingMinfiEwasWater/phenoLC.csv" --rgsetData "rData/preprocessingMinfiEwasWater/objects/RGSet.RData" --sepType "" --outputLogs "logs" --nSamples 5 --SampleID "Sample_Name" --arrayType "IlluminaHumanMethylationEPICv2" --annotationVersion "20a1.hg38" --SentrixIDColumn "Sentrix_ID" --SentrixPositionColumn "Sentrix_Position" --ctrlSvaPercVar 0.9 --ctrlSvaFlag 1 --scriptLabel "svaEnmix" --tiffWidth 2000 --tiffHeight 1000 --tiffRes 150' execution failed with error code 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Rscript "C:/Users/ruizpint/AppData/Local/Programs/R/R-4.4.1/library/dnaEPICO/scripts/svaEnmix.R" --phenoFile "data/preprocessingMinfiEwasWater/phenoLC.csv" --rgsetData "rData/preprocessingMinfiEwasWater/objects/RGSet.RData" --sepType "" --outputLogs "logs" --nSamples 5 --SampleID "Sample_Name" --arrayType "IlluminaHumanMethylationEPICv2" --annotationVersion "20a1.hg38" --SentrixIDColumn "Sentrix_ID" --SentrixPositionColumn "Sentrix_Position" --ctrlSvaPercVar 0.9 --ctrlSvaFlag 1 --scriptLabel "svaEnmix" --tiffWidth 2000 --tiffHeight 1000 --tiffRes 150 --figureBaseDir "figures" --dataBaseDir "data"</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'Rscript "C:/Users/ruizpint/AppData/Local/Programs/R/R-4.4.1/library/dnaEPICO/scripts/svaEnmix.R" --phenoFile "data/preprocessingMinfiEwasWater/phenoLC.csv" --rgsetData "rData/preprocessingMinfiEwasWater/objects/RGSet.RData" --sepType "" --outputLogs "logs" --nSamples 5 --SampleID "Sample_Name" --arrayType "IlluminaHumanMethylationEPICv2" --annotationVersion "20a1.hg38" --SentrixIDColumn "Sentrix_ID" --SentrixPositionColumn "Sentrix_Position" --ctrlSvaPercVar 0.9 --ctrlSvaFlag 1 --scriptLabel "svaEnmix" --tiffWidth 2000 --tiffHeight 1000 --tiffRes 150 --figureBaseDir "figures" --dataBaseDir "data"' execution failed with error code 1</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
