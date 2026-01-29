@@ -248,13 +248,6 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 # =================================================================================================================================
 # Step 5: LME for T1 vs T2 (Longitudinal Analysis)
 # =================================================================================================================================
-
-PERSON_VAR = person
-LME_LIBS = lme4,lmerTest
-SAVE_SIGNIFICANT_INTERACTIONS = TRUE
-SIGNIFICANT_INTERACTION_PVAL = 0.00001
-
-
 $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
 	Rscript -e "library(dnaEPICO); methylationGLMM_T1T2( \
 	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData', \
