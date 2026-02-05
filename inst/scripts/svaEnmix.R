@@ -87,7 +87,8 @@ opt <- parse_args(OptionParser(option_list = list(
   make_option("--tiffHeight", type = "integer", default = 1000),
   make_option("--tiffRes", type = "integer", default = 150),
   make_option("--figureBaseDir", default = "figures", help = "Base directory for all figures"),
-  make_option("--dataBaseDir", default = "data", help = "Base directory for data")
+  make_option("--dataBaseDir", default = "data", help = "Base directory for data"),
+  make_option("--rBaseDir", default = "rData", help = "Base directory for Rdata")
 
 )))
 
@@ -125,6 +126,8 @@ cat("TIFF dimensions (WxH): ", opt$tiffWidth, "x", opt$tiffHeight, " at", opt$ti
 dir.create(file.path(opt$figureBaseDir, opt$scriptLabel), showWarnings = FALSE,
            recursive = TRUE)
 dir.create(file.path(opt$dataBaseDir, opt$scriptLabel), showWarnings = FALSE,
+           recursive = TRUE)
+dir.create(file.path(opt$rBaseDir, opt$scriptLabel), showWarnings = FALSE,
            recursive = TRUE)
 cat("=======================================================================\n")
 
@@ -173,6 +176,29 @@ sva <- ctrlsva(
 )
 cat("Surrogate variables matrix (first few rows):\n")
 print(head(sva))
+
+# ---- Save SVA matrix ----
+svaSentrixRDataPath <- file.path(opt$rBaseDir,
+                                 opt$scriptLabel, "svaMatrix.RData")
+save(sva, file = svaSentrixRDataPath)
+cat("SVA Matrix RData saved to: ", svaSentrixRDataPath, "\n")
+
+svaSentrixRDataCSV <- file.path(opt$dataBaseDir,
+                                opt$scriptLabel, "svaMatrix.csv")
+write.csv(sva, svaSentrixRDataCSV, row.names = TRUE)
+cat("SVA Matrix CSV saved to: ", svaSentrixRDataCSV, "\n")
+
+# ---- Prepare SVA for merge ----
+svaD <- data.frame(SID = rownames(sva), sva, row.names = NULL)
+names(svaD)[1] <- opt$SampleID
+
+# ---- Merge with phenotype ----
+pheno <- merge(targets, svaD, by = opt$SampleID, all.x = TRUE)
+
+write.csv(pheno,
+          file = opt$phenoFile,
+          row.names = FALSE)
+cat("Saved phenoLC + SVA:", opt$phenoFile, "\n")
 
 # ----------- Plot SVA Colored by SentrixID -----------
 sentrixID <- as.factor(pData(RGSet)[[opt$SentrixIDColumn]])
