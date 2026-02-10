@@ -4,6 +4,8 @@ inst/doc
 .quarto
 dev/
 check/
+pkgdown/
+docs/
 
 # ---- R / IDE files ----
 .Rhistory
@@ -19,6 +21,7 @@ check/
 .DS_Store
 Thumbs.db
 .directory
+desktop.ini
 
 # ---- Logs and temporary outputs ----
 *.log
