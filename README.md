@@ -11,15 +11,9 @@ issues](https://img.shields.io/github/issues/paulYRP/dnaEPICO)](https://github.c
 pulls](https://img.shields.io/github/issues-pr/paulYRP/dnaEPICO)](https://github.com/paulYRP/dnaEPICO/pulls)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-<!-- [![Bioc release status](http://www.bioconductor.org/shields/build/release/bioc/dnaEPICO.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/dnaEPICO) -->
-<!-- [![Bioc devel status](http://www.bioconductor.org/shields/build/devel/bioc/dnaEPICO.svg)](https://bioconductor.org/checkResults/devel/bioc-LATEST/dnaEPICO) -->
-<!-- [![Bioc downloads rank](https://bioconductor.org/shields/downloads/release/dnaEPICO.svg)](http://bioconductor.org/packages/stats/bioc/dnaEPICO/) -->
-<!-- [![Bioc support](https://bioconductor.org/shields/posts/dnaEPICO.svg)](https://support.bioconductor.org/tag/dnaEPICO) -->
-<!-- [![Bioc history](https://bioconductor.org/shields/years-in-bioc/dnaEPICO.svg)](https://bioconductor.org/packages/release/bioc/html/dnaEPICO.html#since) -->
-<!-- [![Bioc last commit](https://bioconductor.org/shields/lastcommit/devel/bioc/dnaEPICO.svg)](http://bioconductor.org/checkResults/devel/bioc-LATEST/dnaEPICO/) -->
-<!-- [![Bioc dependencies](https://bioconductor.org/shields/dependencies/release/dnaEPICO.svg)](https://bioconductor.org/packages/release/bioc/html/dnaEPICO.html#since) -->
+<!-- [![Codecov test coverage](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg)](https://app.codecov.io/gh/paulYRP/dnaEPICO) -->
 [![Codecov test
-coverage](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg)](https://app.codecov.io/gh/paulYRP/dnaEPICO)
+coverage](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg?branch=devel)](https://app.codecov.io/gh/paulYRP/dnaEPICO?branch=devel)
 
 <!-- badges: end -->
 
