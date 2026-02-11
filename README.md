@@ -19,7 +19,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 <!-- [![Bioc last commit](https://bioconductor.org/shields/lastcommit/devel/bioc/dnaEPICO.svg)](http://bioconductor.org/checkResults/devel/bioc-LATEST/dnaEPICO/) -->
 <!-- [![Bioc dependencies](https://bioconductor.org/shields/dependencies/release/dnaEPICO.svg)](https://bioconductor.org/packages/release/bioc/html/dnaEPICO.html#since) -->
 [![Codecov test
-coverage](https://codecov.io/gh/paulYRP/dnapipeR/graph/badge.svg)](https://app.codecov.io/gh/paulYRP/dnapipeR)
+coverage](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg)](https://app.codecov.io/gh/paulYRP/dnaEPICO)
 <!-- badges: end -->
 
 The goal of **`dnaEPICO`** is to provide a **modular, reproducible, and
