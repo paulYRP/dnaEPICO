@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocessingPheno.R
 \name{preprocessingPheno}
 \alias{preprocessingPheno}
-\title{Run preprocessingPheno as an external pipeline script}
+\title{Run preprocessingPheno.R}
 \usage{
 preprocessingPheno(
   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
@@ -62,8 +62,7 @@ merging timepoints, aligning samples with beta, M, and CN matrices, and
 writing processed phenotype tables and RData objects to disk.
 }
 \description{
-Wrapper function that executes the preprocessingPheno.R script located
-in inst/scripts using a system call.
+Run preprocessingPheno.R
 }
 \examples{
 tmp <- tempdir()

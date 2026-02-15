@@ -1,9 +1,6 @@
 #' Generate a DNA methylation PDF report
-#'
-#' Wrapper function that runs DNAm.R and renders DNAm.Rmd from inst/scripts
-#' to generate a PDF report summarising preprocessing, QC, SVA, GLM, and GLMM
-#' results from the dnaEPICO pipeline.
-#'
+#' @import rmarkdown
+
 #' @param output Character. Name of the output PDF file.
 #' @param outputDir Character. Directory where the report will be saved.
 #' @param qcDir Character. Directory containing ENmix QC figures.
@@ -15,6 +12,12 @@
 #' @param reportTitle Character. Title of the report.
 #' @param author Character. Author name displayed in the report.
 #' @param date Character. Report date.
+#' @import IlluminaHumanMethylation450kmanifest
+#' @import IlluminaHumanMethylation450kanno.ilmn12.hg19
+#' @import IlluminaHumanMethylationEPICv2anno.20a1.hg38
+#' @import IlluminaHumanMethylationEPICv2manifest
+#' @import IlluminaHumanMethylationEPICmanifest
+#' @import IlluminaHumanMethylationEPICanno.ilm10b4.hg19
 #'
 #' @return
 #' Invisibly returns \code{NULL}. This function is called for its side effect
@@ -56,53 +59,35 @@ dnamReport <- function(
     date = format(Sys.Date(), "%B %d, %Y")
 ) {
 
-  # Helper: Convert to absolute path
-  makeAbs <- function(path) {
-    if (grepl("^([A-Za-z]:|/)", path)) return(path)
-    return(file.path(getwd(), path))
-  }
+# Fix Windows path handling for Pandoc/LaTeX:
+normalize_path <- function(x) gsub("\\\\", "/", normalizePath(x, winslash = "/", mustWork = FALSE))
 
-  # Locate Rmd + Runner Script
-  rmd <- system.file("scripts", "DNAm.Rmd", package = "dnaEPICO")
-  script <- system.file("scripts", "DNAm.R", package = "dnaEPICO")
+rmd        <- normalize_path(rmd)
+outputDir  <- normalize_path(outputDir)
+qcDir      <- normalize_path(qcDir)
+preDir     <- normalize_path(preDir)
+postDir    <- normalize_path(postDir)
+svaDir     <- normalize_path(svaDir)
+glmDir     <- normalize_path(glmDir)
+glmmDir    <- normalize_path(glmmDir)
+figDir    <- normalize_path(figDir)
 
-  if (rmd == "" || script == "")
-    stop("DNAm.Rmd or DNAm.R not found in package.")
-
-  outDirAbs <- makeAbs(outputDir)
-  dir.create(outDirAbs, recursive = TRUE, showWarnings = FALSE)
-
-  figDir <- file.path(outputDir, "figures")
-  dir.create(figDir, recursive = TRUE, showWarnings = FALSE)
-
-
-  # Build argument list for external Rscript
-  arg_list <- c(
-    "--rmd",        shQuote(rmd),
-    "--output",     shQuote(output),
-    "--outputDir",  shQuote(outDirAbs),
-    "--qcDir",      shQuote(makeAbs(qcDir)),
-    "--preDir",     shQuote(makeAbs(preprocessingDir)),
-    "--postDir",    shQuote(makeAbs(postprocessingDir)),
-    "--svaDir",     shQuote(makeAbs(svaDir)),
-    "--glmDir",     shQuote(makeAbs(glmDir)),
-    "--glmmDir",    shQuote(makeAbs(glmmDir)),
-    "--title",      shQuote(reportTitle),
-    "--author",     shQuote(author),
-    "--date",       shQuote(date),
-    "--figDir", shQuote(figDir)
-  )
-
-  # Construct Rscript command
-  cmd <- paste("Rscript", shQuote(script), paste(arg_list, collapse = " "))
-
-  # Run command
-  message("Running dnamReport():")
-  message(cmd)
-
-  if (.Platform$OS.type == "windows") {
-    shell(cmd)
-  } else {
-    system(cmd)
-  }
+render(
+  input = rmd,
+  output_file = output,
+  output_dir = outputDir,
+  params = list(
+    reportTitle = title,
+    author = author,
+    date = date,
+    qcDir = qcDir,
+    preprocessingDir = preDir,
+    postprocessingDir = postDir,
+    svaDir = svaDir,
+    glmDir = glmDir,
+    glmmDir = glmmDir,
+    figDir = figDir
+  ),
+  knit_root_dir = dirname(rmd)
+)
 }

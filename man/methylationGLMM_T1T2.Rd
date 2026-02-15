@@ -2,7 +2,7 @@
 % Please edit documentation in R/methylationGLMM_T1T2.R
 \name{methylationGLMM_T1T2}
 \alias{methylationGLMM_T1T2}
-\title{Run methylationGLMM_T1T2 as an external pipeline script}
+\title{Run methylationGLMM_T1T2.R}
 \usage{
 methylationGLMM_T1T2(
   inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
@@ -109,8 +109,7 @@ running CpG-level longitudinal mixed-effects models and writing model
 results, interaction summaries, plots, and annotated tables to disk.
 }
 \description{
-Wrapper function that executes the methylationGLMM_T1T2.R script located
-in inst/scripts using a system call.
+Run methylationGLMM_T1T2.R
 }
 \examples{
 tmp <- tempdir()

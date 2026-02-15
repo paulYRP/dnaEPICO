@@ -46,9 +46,7 @@ Invisibly returns \code{NULL}. This function is called for its side effect
 of generating a PDF report and associated output files.
 }
 \description{
-Wrapper function that runs DNAm.R and renders DNAm.Rmd from inst/scripts
-to generate a PDF report summarising preprocessing, QC, SVA, GLM, and GLMM
-results from the dnaEPICO pipeline.
+Generate a DNA methylation PDF report
 }
 \examples{
 tmp <- tempdir()

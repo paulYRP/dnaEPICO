@@ -1,9 +1,6 @@
 test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
-
-  # Skip test if example data are not available
-  skip_if_not_installed("minfiData")
-
-  # Load required package
+  
+  library(minfi)
   library(minfiData)
 
   # ------------------------------------------------------------------
@@ -85,7 +82,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
   # ------------------------------------------------------------------
 
   expect_error(
-    preprocessingMinfiEwasWater(
+    dnaEPICO::preprocessingMinfiEwasWater(
       phenoFile = phenoFile,
       idatFolder = tmpIdatDir,
       nSamples = 6,
@@ -95,7 +92,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
       annotationVersion = "ilmn12.hg19",
       sexColumn = "sex",
       plotGroupVar = "sex",
-      lcRef = "FlowSorted.Blood.450k",
+      lcRef = "saliva",
       outputLogs = file.path(tmpDir, "logs"),
       baseDataFolder = file.path(tmpDir, "rData"),
       crossReactivePath = crossReactivePath,

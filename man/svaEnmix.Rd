@@ -2,7 +2,7 @@
 % Please edit documentation in R/svaEnmix.R
 \name{svaEnmix}
 \alias{svaEnmix}
-\title{Run svaEnmix as an external pipeline script}
+\title{Run svaEnmix.R}
 \usage{
 svaEnmix(
   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
@@ -68,8 +68,7 @@ executing the external \code{svaEnmix.R} script and writing results, figures,
 and logs to disk.
 }
 \description{
-Wrapper function that executes the svaEnmix.R script located in
-inst/scripts using a system call.
+Run svaEnmix.R
 }
 \examples{
 tmp <- tempdir()

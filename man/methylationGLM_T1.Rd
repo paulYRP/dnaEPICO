@@ -2,7 +2,7 @@
 % Please edit documentation in R/methylationGLM_T1.R
 \name{methylationGLM_T1}
 \alias{methylationGLM_T1}
-\title{Run methylationGLM_T1 as an external pipeline script}
+\title{Run methylationGLM_T1.R}
 \usage{
 methylationGLM_T1(
   inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1.RData",
@@ -106,8 +106,7 @@ running CpG-level GLM analyses and writing model results, summaries,
 plots, and annotated tables to disk.
 }
 \description{
-Wrapper function that executes the methylationGLM_T1.R script located
-in inst/scripts using a system call.
+Run methylationGLM_T1.R
 }
 \examples{
 tmp <- tempdir()

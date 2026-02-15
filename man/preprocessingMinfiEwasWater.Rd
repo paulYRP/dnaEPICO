@@ -2,8 +2,7 @@
 % Please edit documentation in R/preprocessingMinfiEwasWater.R
 \name{preprocessingMinfiEwasWater}
 \alias{preprocessingMinfiEwasWater}
-\title{Run preprocessingMinfiEwasWater.R as an external script from inst/script/.R
-Run preprocessingMinfiEwasWater as an external pipeline script}
+\title{Run preprocessingMinfiEwasWater.R}
 \usage{
 preprocessingMinfiEwasWater(
   phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
@@ -23,7 +22,6 @@ preprocessingMinfiEwasWater(
   qcCutoff = 10.5,
   detPtype = "m+u",
   detPThreshold = 0.05,
-  funnormSeed = 123,
   normMethods = "adjustedfunnorm",
   sexColumn = "Sex",
   pvalThreshold = 0.01,
@@ -72,8 +70,6 @@ preprocessingMinfiEwasWater(
 
 \item{detPThreshold}{Numeric. Detection p-value threshold.}
 
-\item{funnormSeed}{Integer. Random seed for normalization.}
-
 \item{normMethods}{Character. Normalization method(s).}
 
 \item{sexColumn}{Character. Sex column name in phenotype data.}
@@ -103,8 +99,7 @@ probe filtering, cell composition estimation, and writing plots, logs,
 and RData objects to disk.
 }
 \description{
-Wrapper function that executes the preprocessingMinfiEwasWater.R script
-shipped in inst/scripts using system calls.
+Run preprocessingMinfiEwasWater.R
 }
 \examples{
 tmp <- tempdir()
@@ -129,7 +124,6 @@ preprocessingMinfiEwasWater(
   qcCutoff = 10.5,
   detPtype = "m+u",
   detPThreshold = 0.05,
-  funnormSeed = 123,
   normMethods = "adjustedfunnorm",
   sexColumn = "Sex",
   pvalThreshold = 0.01,

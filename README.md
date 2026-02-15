@@ -11,7 +11,6 @@ issues](https://img.shields.io/github/issues/paulYRP/dnaEPICO)](https://github.c
 pulls](https://img.shields.io/github/issues-pr/paulYRP/dnaEPICO)](https://github.com/paulYRP/dnaEPICO/pulls)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-<!-- [![Codecov test coverage](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg)](https://app.codecov.io/gh/paulYRP/dnaEPICO) -->
 [![Codecov test
 coverage](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg?branch=devel)](https://app.codecov.io/gh/paulYRP/dnaEPICO?branch=devel)
 

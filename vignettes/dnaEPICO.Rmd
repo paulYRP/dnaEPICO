@@ -38,18 +38,18 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The **dnaEPICO** package supports preprocessing and analysis of Illumina DNA methylation array data (EPICv2, EPIC and 450K). It covers data import, quality control, surrogate variable analysis, probe and sample filtering, cell-type deconvolution, phenotype integration, and downstream modelling using generalised linear and linear mixed-effects models. The package integrates with Bioconductor workflows and tools including `minfi`, `ENmix`, and `wateRmelon`. Additional functionality is provided via the `ewastools` package, which is installed from GitHub using `devtools::install_github("hhhh5/ewastools")`. 
+The **dnaEPICO** package supports preprocessing and analysis of Illumina DNA methylation array data (EPICv2, EPIC and 450K). It covers data import, quality control, surrogate variable analysis, probe and sample filtering, cell-type deconvolution, phenotype integration, and downstream modelling using generalised linear and linear mixed-effects models. The package integrates with Bioconductor workflows and tools including `minfi`, `ENmix`, and `wateRmelon`.  
 
-dnaEPICO also prepares standardised DNA methylation files for direct export to the [DNAmAge Clock Foundation platform](https://dnamage.clockfoundation.org/user).
+`r Biocpkg("dnaEPICO")` also prepares standardised DNA methylation files for direct export to the [DNAmAge Clock Foundation platform](https://dnamage.clockfoundation.org/user).
 
 ## Citing `dnaEPICO`
 
 The `r Biocpkg("dnaEPICO")` package implements methods described across multiple independent publications by different authors. As a result, no single manuscript fully describes all components of the package. This section provides guidance on how to cite dnaEPICO appropriately.
 
-The citation guidance below is adapted from the user guides and vignettes of the packages on which dnaEPICO builds, [minfi](https://github.com/hansenlab/minfi/blob/devel/vignettes/minfi.Rmd), [ENmix](https://github.com/xuz1/ENmix/blob/master/vignettes/ENmix.Rmd), [wateRmelon](https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/references.bib), and [ewastools](https://hhhh5.github.io/ewastools/articles/exemplary_ewas.html).
+The citation guidance below is adapted from the user guides and vignettes of the packages on which dnaEPICO builds, [minfi](https://github.com/hansenlab/minfi/blob/devel/vignettes/minfi.Rmd), [ENmix](https://github.com/xuz1/ENmix/blob/master/vignettes/ENmix.Rmd), and [wateRmelon](https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/references.bib).
 
-- If you use `preprocessingMinfiEwasWater()`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@SWAN], [@funnorm], [@noob] and [@quantile].
-- If you use `svaEnmix()`, please cite [@minfi], [@ENmix], and [@ewastools].
+- If you use `preprocessingMinfiEwasWater()`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@ewastools], [@SWAN], [@funnorm], [@noob] and [@quantile].
+- If you use `svaEnmix()`, please cite [@minfi] and [@ENmix].
 - If you use `make f3 MODEL=model1`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@SWAN], [@funnorm], [@noob], [@quantile] and [@ewastools].
 - If you use `make f4 MODEL=model1`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@SWAN], [@funnorm], [@noob], [@quantile], [@ewastools] and [@glm2].
 - If you use `make f3lme MODEL=model1`, please cite [@minfi], [@minfiEPIC], [@ENmix], [@wateRmelon], [@SWAN], [@funnorm], [@noob], [@quantile], [@ewastools] and [@lme4].
@@ -57,7 +57,7 @@ The citation guidance below is adapted from the user guides and vignettes of the
 
 # Installation
 
-`r Biocpkg("dnaEPICO")` implements methods in `r Biocpkg("minfi")`, `r Biocpkg("ENmix")` and `r Biocpkg("wateRmelon")` packages so there is quite the number of dependencies which need to be installed. Additional functionality is provided via the `ewastools` package. This can be handled by simply running:
+`r Biocpkg("dnaEPICO")` implements methods in `r Biocpkg("minfi")`, `r Biocpkg("ENmix")` and `r Biocpkg("wateRmelon")` packages so there is quite the number of dependencies which need to be installed. This can be handled by simply running:
 
 ```{r "install", eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
@@ -70,14 +70,8 @@ BiocManager::valid()
 
 ```
 
-```{r "github", eval = FALSE}
-devtools::install_github("hhhh5/ewastools")
-
-```
-
 ```{r "start", message=FALSE, eval = FALSE}
 library("dnaEPICO")
-library("ewastools")
 
 ```
 
@@ -210,7 +204,6 @@ preprocessingMinfiEwasWater(
     qcCutoff = 10.5,
     detPtype = "m+u",
     detPThreshold = 0.05,
-    funnormSeed = 123,
     normMethods = "adjustedfunnorm",
     sexColumn = "Sex",
     pvalThreshold = 0.01,
@@ -801,7 +794,6 @@ ANNOTATION_COLS = Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_
 QC_CUTOFF = 10.5
 DET_PTYPE = m+u
 DET_PTHRESHOLD = 0.05
-FUNNORM_SEED = 123
 PVAL_THRESHOLD = 0.01
 CHR_TO_REMOVE = chrX,chrY
 SNPS_TO_REMOVE = SBE,CpG
@@ -1013,7 +1005,6 @@ This example has the following dependencies
 
 ```{r dependencies, warning=FALSE, message=FALSE, eval=FALSE}
 library(dnaEPICO)
-library(ewastools)
 
 ```
 
@@ -1198,6 +1189,7 @@ We now run the first pipeline stage, which performs:
 * generation of QC figures
 
 ```{r, eval=FALSE}
+seed(123)
 preprocessingMinfiEwasWater(
   phenoFile = samplePath,
   idatFolder = file.path(preprocDir, "idats"),
@@ -1214,7 +1206,6 @@ preprocessingMinfiEwasWater(
   qcCutoff = 10.5,
   detPtype = "m+u",
   detPThreshold = 0.05,
-  funnormSeed = 123,
   normMethods = "adjustedfunnorm",
   pvalThreshold = 0.01,
   chrToRemove = "chrX,chrY",
@@ -1481,7 +1472,7 @@ This vignette was generated using `r Biocpkg("BiocStyle")`, with `r CRANpkg("kni
 
 `r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for high-dimensional genomic data, with a focus on Illumina DNA methylation arrays. 
 
-Preprocessing and quality control are performed using established Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`. Additional functionality is provided via the `ewastools` package, which is installed from GitHub using `devtools::install_github("hhhh5/ewastools")`. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures.
+Preprocessing and quality control are performed using established Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures.
 
 If you are asking yourself the question "Where do I start using Bioconductor?" you might be interested in [this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
 

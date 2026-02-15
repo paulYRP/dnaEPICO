@@ -150,7 +150,6 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  qcCutoff = $(QC_CUTOFF), \
 	  detPtype = '$(DET_PTYPE)', \
 	  detPThreshold = $(DET_PTHRESHOLD), \
-	  funnormSeed = $(FUNNORM_SEED), \
 	  sexColumn = '$(SEX_COLUMN)', \
 	  pvalThreshold = $(PVAL_THRESHOLD), \
 	  chrToRemove = '$(CHR_TO_REMOVE)', \

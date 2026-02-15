@@ -1,7 +1,12 @@
-#' Run preprocessingPheno as an external pipeline script
-#'
-#' Wrapper function that executes the preprocessingPheno.R script located
-#' in inst/scripts using a system call.
+#' Run preprocessingPheno.R
+#' @importFrom dplyr rename
+#' @import tidyverse
+#' @import readr
+#' @import stringr
+#' @import purrr
+#' @importFrom tibble rownames_to_column
+#' @importFrom utils read.csv write.csv
+#' @importFrom stats setNames
 #'
 #' @param phenoFile Character. Path to phenotype file.
 #' @param sepType Character. Field separator for phenotype file.
@@ -71,43 +76,233 @@ preprocessingPheno <- function(
     outputDir = "data/preprocessingPheno"
 ) {
 
-  # Locate script inside installed package
-  script <- system.file("scripts", "preprocessingPheno.R", package = "dnaEPICO")
-  if (script == "")
-    stop("Script preprocessingPheno.R not found in package.")
+dir.create(outputRData, recursive = TRUE, showWarnings = FALSE)
+dir.create(outputRDataMerge, recursive = TRUE, showWarnings = FALSE)
+dir.create(outputLogs, recursive = TRUE, showWarnings = FALSE)
+dir.create(outputPheno, recursive = TRUE, showWarnings = FALSE)
+dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
 
-  # Build argument list (shQuote for safety)
-  arg_list <- c(
-    "--phenoFile", shQuote(phenoFile),
-    "--sepType", shQuote(sepType),
-    "--betaPath", shQuote(betaPath),
-    "--mPath", shQuote(mPath),
-    "--cnPath", shQuote(cnPath),
-    "--SampleID", shQuote(SampleID),
-    "--timeVar", shQuote(timeVar),
-    "--timepoints", shQuote(timepoints),
-    "--combineTimepoints", shQuote(combineTimepoints),
-    "--outputPheno", shQuote(outputPheno),
-    "--outputRData", shQuote(outputRData),
-    "--outputRDataMerge", shQuote(outputRDataMerge),
-    "--sexColumn", shQuote(sexColumn),
-    "--outputLogs", shQuote(outputLogs),
-    "--outputDir", shQuote(outputDir)
-  )
+#===============================================================================
 
-  # Build full command for printing
-  cmd <- paste("Rscript", shQuote(script), paste(arg_list, collapse = " "))
+# ----------- Logging Setup -----------
+logFilePath <- file.path(outputLogs, "log_preprocessingPheno.txt")
+logCon <- file(logFilePath, open = "wt")
 
-  # User-visible messages
-  message("Running preprocessingPheno:")
-  message(cmd)
+sink(logCon, split = TRUE)
+sink(logCon, type = "message")
+#===============================================================================
 
-  # Silent execution (Windows + Linux/HPC)
-  invisible(
-    if (.Platform$OS.type == "windows") {
-      shell(cmd, intern = FALSE, translate = TRUE)
-    } else {
-      system(cmd, ignore.stdout = TRUE, ignore.stderr = TRUE)
-    }
-  )
+# ----------- Logging Start Info -----------
+cat("==== Starting Phenotype Preprocessing ====\n")
+cat("Start Time:               ", format(Sys.time()), "\n")
+cat("Log file path:            ", logFilePath, "\n\n")
+cat("Phenotype file:           ", phenoFile, "\n")
+cat("Beta path:                ", betaPath, "\n")
+cat("M-values path:            ", mPath, "\n")
+cat("CN path:                  ", cnPath, "\n\n")
+
+cat("Identifier column:        ", SampleID, "\n")
+cat("Timepoint column:        ", timeVar, "\n")
+cat("Timepoints (if present):  ", timepoints, "\n")
+cat("Combine timepoints:       ", combineTimepoints, "\n\n")
+cat("Sex column:               ", sexColumn, "\n")
+
+cat("Output phenotype dir:     ", outputPheno, "\n")
+cat("RData metrics dir:        ", outputRData, "\n")
+cat("RData merge dir:          ", outputRDataMerge, "\n\n")
+cat("=======================================================================\n")
+
+# ----------- Load Data -----------
+load(betaPath)
+load(mPath)
+load(cnPath)
+
+cat("Beta dimensions: ", dim(beta), "\n")
+cat("M dimensions: ", dim(m), "\n")
+cat("CN dimensions: ", dim(cn), "\n")
+
+# ----------- Read Phenotype File -----------
+if (sepType == "\\t") {
+  sepChar <- "\t"
+} else if (sepType == "") {
+  sepChar <- NULL
+} else {
+  sepChar <- sepType
+}
+
+# Now read the phenotype file
+if (!is.null(sepChar)) {
+  pheno <- read.csv(phenoFile, sep = sepChar)
+} else {
+  pheno <- read.csv(phenoFile)
+}
+
+cat("Phenotype file loaded with",
+    nrow(pheno), "samples and", ncol(pheno), "columns.\n")
+cat("Preview of phenoLC:\n")
+print(head(pheno[, 1:5]))
+cat("=======================================================================\n")
+
+# ----------- Subsetting Timepoints & Data Splitting -----------
+timepoints <- as.numeric(strsplit(timepoints, ",")[[1]])
+cat("Subsetting to timepoints:", paste(timepoints, collapse = ", "), "\n")
+
+# Print available timepoints in the phenotype
+cat("Available values in", timeVar, "column:\n")
+print(table(pheno[[timeVar]], useNA = "ifany"))
+
+for (tp in timepoints) {
+  # Subset phenotype by Timepoint
+  phenoSub <- subset(pheno, pheno[[timeVar]] == tp)
+  assign(paste0("phenoT", tp), phenoSub)
+
+  # Subset matrices using SID (SampleID) from phenoSub
+  sids <- as.character(phenoSub[[SampleID]])
+
+  assign(paste0("betaT", tp), beta[, sids])
+  assign(paste0("mT", tp),    m[,    sids])
+  assign(paste0("cnT", tp),   cn[,   sids])
+}
+
+# Save each subset
+for (tp in timepoints) {
+        write.csv(get(paste0("phenoT", tp)), file = file.path(outputPheno,
+                                                              paste0("phenoT",
+                                                                     tp, ".csv")),
+                  row.names = FALSE)
+        save(list = paste0("betaT", tp), file = file.path(outputRData,
+                                                          paste0("betaT",
+                                                                 tp, ".RData")))
+        save(list = paste0("mT", tp), file = file.path(outputRData,
+                                                       paste0("mT",
+                                                              tp, ".RData")))
+}
+
+# ----------- Merge Combined Timepoints for Longitudinal Analysis -----------
+cat("Combining timepoints:", combineTimepoints, "\n")
+combineTPs <- as.numeric(strsplit(combineTimepoints, ",")[[1]])
+
+combinedPhenoList <- lapply(combineTPs, function(tp) get(paste0("phenoT", tp)))
+phenoCombined <- do.call(rbind, combinedPhenoList)
+
+combineSuffix <- paste0("T", paste(combineTPs, collapse = "T"))
+write.csv(phenoCombined,
+          file = file.path(outputPheno,
+                                          paste0("pheno",
+                                                 combineSuffix, ".csv")),
+          row.names = FALSE)
+
+cat("Saved combined phenotype file for T1T2 at:", outputPheno, "\n")
+cat("=======================================================================\n")
+
+# ----------- Merge Beta Matrix with Phenotype ----------
+mergeBeta <- function(phenoFrame, betaMatrix, id = SampleID) {
+        rownames(phenoFrame) <- phenoFrame[[id]]
+        matched <- intersect(rownames(phenoFrame), colnames(betaMatrix))
+        phenoFrame <- phenoFrame[matched, ]
+        betaMatrix <- betaMatrix[, matched]
+
+        betaTranp <- as.data.frame(t(betaMatrix))
+        mergedData <- cbind(phenoFrame, betaTranp)
+        return(mergedData)
+}
+
+# Perform merge for each timepoint
+
+mergedList <- list()
+for (tp in timepoints) {
+        cat("Processing merge for timepoint:", tp, "\n")
+
+        phenoObj <- paste0("phenoT", tp)
+        betaObj <- paste0("betaT", tp)
+
+        if (!exists(phenoObj) || !exists(betaObj)) {
+                cat("Warning: One or both objects not found for T", tp, "\n", sep = "")
+                next
+        }
+
+        phenoTemp <- get(phenoObj)
+        betaTemp <- get(betaObj)
+
+        cat("  - pheno rows:", nrow(phenoTemp), "\n")
+        cat("  - beta cols:", ncol(betaTemp), "\n")
+
+        mergedTemp <- tryCatch({
+                mergeBeta(phenoTemp, betaTemp)
+        }, error = function(e) {
+                cat("[ERROR] mergeBeta failed for timepoint", tp, ":\n", conditionMessage(e), "\n")
+                return(NULL)
+        })
+
+        if (!is.null(mergedTemp)) {
+                mergedList[[as.character(tp)]] <- mergedTemp
+                save(mergedTemp, file = file.path(outputRDataMerge,
+                                                  paste0("phenoBetaT", tp, ".RData")))
+                cat("Saved merged object for T", tp, "\n", sep = "")
+        } else {
+                cat("Skipping save for T", tp, " due to error\n")
+        }
+}
+
+
+# ----------- Combine merged phenotype + beta matrix -----------
+combined <- do.call(rbind, mergedList[as.character(combineTPs)])
+save(combined,
+     file = file.path(outputRDataMerge,
+                      paste0("phenoBeta", combineSuffix, ".RData")))
+
+cat("Combined data saved for timepoints:",
+    paste(combineTPs, collapse = ", "), "\n")
+
+cat("Merged data saved to:", outputRDataMerge, "\n")
+cat("=======================================================================\n")
+# ----------- Preprocessing Betas for Horvath Calculator -----------
+
+betaCSV <- as.data.frame(beta)
+betaCSV <- tibble::rownames_to_column(betaCSV, var = "ProbeID")
+
+# Inspect changes
+dim(betaCSV)
+print(head(betaCSV)[1:5, 1:5])
+
+betaCSVPath <- file.path(outputDir, "beta.csv")
+write.csv(betaCSV, file = betaCSVPath, row.names = FALSE)
+cat("Beta CSV file for ClockFundation saved to:", betaCSVPath, "\n")
+
+zipFile <- file.path(outputDir, "beta.zip")
+
+zip(zipfile = zipFile, files = betaCSVPath, flags = "-j")
+
+cat("Beta ZIP file for ClockFundation saved to:", zipFile, "\n")
+
+# ----------- Preprocessing CSV for Horvath Calculator -----------
+
+# Rename the column "SampleName" to "id"
+pheno <- pheno %>%
+  rename(id = SampleID)
+
+# Recode Sex only if values are not already "Male"/"Female"
+uniqueSex <- unique(pheno[[sexColumn]])
+
+if (!all(uniqueSex %in% c("Male", "Female"))) {
+  cat("Re-encoding Sex: 0 = Female, 1 = Male\n")
+  pheno[[sexColumn]] <- ifelse(pheno[[sexColumn]] == 0, "Female", "Male")
+} else {
+  cat("Sex column already contains 'Male' and 'Female'. Skipping recoding.\n")
+}
+
+phenoCSVPath <- file.path(outputDir, "phenoCF.csv")
+
+write.csv(pheno, file = phenoCSVPath, row.names = FALSE)
+cat("Sample file for ClockFundation saved to:", phenoCSVPath, "\n")
+
+cat("=======================================================================\n")
+
+# ----------- Close Logging -----------
+cat("\nSession Info:\n")
+print(sessionInfo())
+# =============================================================================
+sink(type = "message")
+sink()
+close(logCon)
 }
