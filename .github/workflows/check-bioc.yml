@@ -255,6 +255,11 @@ jobs:
           covr::codecov(coverage = covr::package_coverage(type = "all"))
         shell: Rscript {0}
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Install package
         if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux'
         run: R CMD INSTALL .
