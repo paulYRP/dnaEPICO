@@ -12,12 +12,6 @@
 #' @param reportTitle Character. Title of the report.
 #' @param author Character. Author name displayed in the report.
 #' @param date Character. Report date.
-#' @import IlluminaHumanMethylation450kmanifest
-#' @import IlluminaHumanMethylation450kanno.ilmn12.hg19
-#' @import IlluminaHumanMethylationEPICv2anno.20a1.hg38
-#' @import IlluminaHumanMethylationEPICv2manifest
-#' @import IlluminaHumanMethylationEPICmanifest
-#' @import IlluminaHumanMethylationEPICanno.ilm10b4.hg19
 #'
 #' @return
 #' Invisibly returns \code{NULL}. This function is called for its side effect

@@ -10,12 +10,6 @@
 #' @import stringr
 #' @importFrom lme4 ranef fixef
 #' @import lmerTest
-#' @import IlluminaHumanMethylation450kmanifest
-#' @import IlluminaHumanMethylation450kanno.ilmn12.hg19
-#' @import IlluminaHumanMethylationEPICv2anno.20a1.hg38
-#' @import IlluminaHumanMethylationEPICv2manifest
-#' @import IlluminaHumanMethylationEPICmanifest
-#' @import IlluminaHumanMethylationEPICanno.ilm10b4.hg19
 #'
 #' @param inputPheno Character. Path to merged longitudinal phenotype and beta-value RData file.
 #' @param outputLogs Character. Directory for log files.
@@ -784,8 +778,7 @@ diagnosticPlotsLME <- function(summary,
                      color = paste("FDR <", fdrThreshold)) +
                 theme_minimal()
 
-        tiff(
-                filename = file.path(outputDir,
+        tiff(filename = file.path(outputDir,
                                      paste0("residualSignificance_",
                                             variable, ".tiff")),
                 width = plotWidth,

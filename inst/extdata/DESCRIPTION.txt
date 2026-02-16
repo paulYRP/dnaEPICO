@@ -47,24 +47,6 @@ It is NOT executed during package installation.
    epidemiology studies in children."
    https://pubmed.ncbi.nlm.nih.gov/33588693/
 
-3. Internal manifest data (sysdata.rda)
-
-   sysdata.rda contains the object:
-
-     MANIFESTS
-
-   This object was derived from the ewastools package and provides
-   probe ID mapping between legacy Illumina probe IDs and EPICv2
-   probe identifiers. It is required by `estimateLC()` to correctly
-   match CpG markers between reference coefficient matrices and
-   user methylation data.
-
-   Murat K, et al. (2020)
-   "Ewastools: Infinium Human Methylation BeadChip pipeline for
-   population epigenetics integrated into Galaxy."
-   GigaScience, 9(5):giaa049.
-   https://academic.oup.com/gigascience/article/9/5/giaa049/5836679
-
 # -----------------------------------------------------------
 # Make/ directory
 # -----------------------------------------------------------
@@ -96,10 +78,6 @@ inst/extdata/
 - 12864_2024_10027_MOESM8_ESM.csv
 - saliva.txt
 - salivaEPIC.txt
-
-R/sysdata.rda
-
-- Contains MANIFESTS (internal data)
 
 make/
 

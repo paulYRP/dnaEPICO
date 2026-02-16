@@ -16,12 +16,6 @@
 #' @import ENmix
 #' @import Gviz
 #' @importFrom dplyr select all_of everything
-#' @import IlluminaHumanMethylation450kmanifest
-#' @import IlluminaHumanMethylation450kanno.ilmn12.hg19
-#' @import IlluminaHumanMethylationEPICv2anno.20a1.hg38
-#' @import IlluminaHumanMethylationEPICv2manifest
-#' @import IlluminaHumanMethylationEPICmanifest
-#' @import IlluminaHumanMethylationEPICanno.ilm10b4.hg19
 #'
 #' @param phenoFile Character. Path to phenotype CSV file.
 #' @param idatFolder Character. Path to IDAT files directory.
@@ -357,7 +351,7 @@ cat("Running QC plotting from MSet object...\n")
 qc <- getQC(MSet)
 
 qcPath <- file.path(figureBaseDir, scriptLabel, "qc", "quality_control(MSet).tiff")
-tiff(file = qcPath,
+tiff(filename = qcPath,
      width = tiffWidth,
      height = tiffHeight,
      res = tiffRes, type = "cairo")
@@ -383,7 +377,7 @@ cat("Detection RData p-values saved to: ", detPpath, "\n")
 
 detPlotPath <- file.path(figureBaseDir, scriptLabel, "qc", "detection_pvalues(RGSet).tiff")
 
-tiff(file = detPlotPath,
+tiff(filename = detPlotPath,
      width = tiffWidth,
      height = tiffHeight,
      res = tiffRes, type = "cairo")
@@ -766,7 +760,7 @@ betaMPlotPath <- file.path(figureBaseDir,
                      "densityBeta&M(MSetF_Flt_Rxy_Ds_Rc).tiff")
 
 # Create TIFF output
-tiff(betaMPlotPath,
+tiff(filename = betaMPlotPath,
      width = tiffWidth,
      height = tiffHeight,
      res = tiffRes, type = "cairo")

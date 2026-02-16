@@ -4,12 +4,7 @@
 #' @import ENmix
 #' @import ggplot2
 #' @import ggpubr
-#' @import IlluminaHumanMethylation450kmanifest
-#' @import IlluminaHumanMethylation450kanno.ilmn12.hg19
-#' @import IlluminaHumanMethylationEPICv2anno.20a1.hg38
-#' @import IlluminaHumanMethylationEPICv2manifest
-#' @import IlluminaHumanMethylationEPICmanifest
-#' @import IlluminaHumanMethylationEPICanno.ilm10b4.hg19
+#' @importFrom MASS dropterm
 #'
 #' @param phenoFile Character. Path to phenotype file with cell composition data.
 #' @param rgsetData Character. Path to RGSet RData file.
@@ -196,7 +191,7 @@ sentrixID <- as.factor(pData(RGSet)[[SentrixIDColumn]])
 # Create TIFF output
 svaSentrixPath <- file.path(figureBaseDir,
                         scriptLabel, "sva_SentrixID.tiff")
-tiff(file = svaSentrixPath,
+tiff(filename = svaSentrixPath,
      width = tiffWidth,
      height = tiffHeight,
      res = tiffRes, type = "cairo")
@@ -220,7 +215,7 @@ sentrixPos <- as.factor(pData(RGSet)[[SentrixPositionColumn]])
 
 svaPositionpath <- file.path(figureBaseDir, scriptLabel, "sva_SentrixPosition.tiff")
 
-tiff(file = svaPositionpath,
+tiff(filename = svaPositionpath,
      width = tiffWidth,
      height = tiffHeight,
      res = tiffRes, type = "cairo")
@@ -323,7 +318,7 @@ cat("=======================================================================\n")
 svaSentrixPositionPath <- file.path(figureBaseDir,
                                     scriptLabel, "sva_SentrixIDPosition.tiff")
 
-tiff(file = svaSentrixPositionPath,
+tiff(filename = svaSentrixPositionPath,
      width = tiffWidth,
      height = tiffHeight,
      res = tiffRes,
