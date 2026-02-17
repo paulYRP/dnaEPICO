@@ -191,6 +191,7 @@ cat("Save significant interactions: ", saveSignificantInteractions, "\n")
 cat("Significant interaction p-value cutoff: ", significantInteractionPval, "\n")
 cat("Directory to save significant interactions: ", significantInteractionDir, "\n")
 cat("Save summary TXT files: ", saveTxtSummaries, "\n")
+cat("Chunk size for processing CpGs: ", ifelse(is.null(chunkSize), "Auto", chunkSize), "\n")
 cat("Summary p-value threshold: ", summaryPval, "\n")
 cat("Padjmethod: ", padjmethod, "\n")
 cat("FDR threshold for significance: ", fdrThreshold, "\n")
@@ -454,20 +455,9 @@ cpgsLME <- function(
         clusterExport(
                 cl,
                 varlist = c("fitList", "pValue", "interactionTerm",
-                            "phenotype", "libPath", "lmeLibs"),
+                            "phenotype", "libPath", "lmeLibs", "chunkSize"),
                 envir = environment()
         )
-
-        # clusterEvalQ(cl, {
-        #         if (!is.null(libPath)) {
-        #                 .libPaths(libPath)
-        #         }
-        #         sapply(lmeLibs, function(pkg) {
-        #                 if (!require(pkg, character.only = TRUE)) {
-        #                         stop(paste("Failed to load package:", pkg))
-        #                 }
-        #         })
-        # })
 
         clusterEvalQ(cl, {
                 if (!is.null(libPath)) {
@@ -574,7 +564,8 @@ for (pheno in phenotypeList) {
                 pValue = summaryPval,
                 libPath = libPath,
                 lmeLibs = lmeLibList,
-                interactionTerm = interactionTerm
+                interactionTerm = interactionTerm,
+                chunkSize = chunkSize
         )
 
         save(fitResult, file = summaryFile)
@@ -839,6 +830,13 @@ annotateLME <- function(
                 annotationObject,
                 annotationCols = strsplit(annotationCols, ",")[[1]]
 ) {
+        cat("Starting annotation of LMER summaries...\n")
+        print(annotationCols)
+        annotationCols <- trimws(annotationCols)
+        annotationCols <- gsub("\n", "", annotationCols)
+        cat("\nCorrected annotation columns:\n")
+        print(annotationCols)
+
         modelNames <- names(summaryList)
 
         cat("Merging LME summaries...\n")
@@ -877,6 +875,9 @@ annotateLME <- function(
 
         annDF <- as.data.frame(annotationObject)
 
+        cat("\nColumns in annotationObject:\n")
+        print(colnames(annDF))
+
 	annDF$CpG <- rownames(annDF)
 
         if (!is.null(annotationCols)) {
@@ -885,6 +886,17 @@ annotateLME <- function(
 
         annotatedResults <- merge(mergedSummary, annDF, by = "CpG", all.x = TRUE)
         colnames(annotatedResults)[1] <- "IlmnID"
+
+        cat("\nColumns in annotatedResults:\n")
+        print(colnames(annotatedResults))
+
+        cat("\nRequested annotationCols:\n")
+        print(annotationCols)
+
+        missingCols <- setdiff(annotationCols, colnames(annotatedResults))
+
+        cat("\nMissing columns:\n")
+        print(missingCols)
 
         cat("Annotation completed. Annotated CpGs:", nrow(annotatedResults), "\n")
         return(annotatedResults)
