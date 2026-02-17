@@ -36,6 +36,8 @@ dnamReport(
 
 \item{glmmDir}{Character. Directory containing GLMM figures.}
 
+\item{figDir}{Character. Directory where figures will be copied for the report.}
+
 \item{reportTitle}{Character. Title of the report.}
 
 \item{author}{Character. Author name displayed in the report.}

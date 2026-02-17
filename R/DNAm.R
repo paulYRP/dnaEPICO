@@ -10,6 +10,7 @@
 #' @param svaDir Character. Directory containing SVA figures.
 #' @param glmDir Character. Directory containing GLM figures.
 #' @param glmmDir Character. Directory containing GLMM figures.
+#' @param figDir Character. Directory where figures will be copied for the report.
 #' @param reportTitle Character. Title of the report.
 #' @param author Character. Author name displayed in the report.
 #' @param date Character. Report date.
@@ -65,7 +66,7 @@ if (rmd == "") {
   }
 
 if (!requireNamespace("tinytex", quietly = TRUE) || !tinytex::is_tinytex()) {
-    message("TinyTeX/LaTeX not available → skipping PDF report generation.")
+    message("TinyTeX/LaTeX not available, skipping PDF report generation.")
     return(invisible(NULL))
   }
 

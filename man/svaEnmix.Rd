@@ -62,6 +62,8 @@ svaEnmix(
 \item{figureBaseDir}{Character. Base directory for Figures outputs.}
 
 \item{dataBaseDir}{Character. Base directory for Data outputs.}
+
+\item{rBaseDir}{Character. Base directory for RData outputs.}
 }
 \value{
 Invisibly returns \code{NULL}. This function is called for its side effects,

@@ -24,6 +24,7 @@
 #' @param tiffRes Integer. Resolution (DPI) for TIFF plots.
 #' @param figureBaseDir Character. Base directory for Figures outputs.
 #' @param dataBaseDir Character. Base directory for Data outputs.
+#' @param rBaseDir Character. Base directory for RData outputs.
 #'
 #' @return
 #' Invisibly returns \code{NULL}. This function is called for its side effects,

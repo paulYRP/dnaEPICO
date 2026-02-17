@@ -192,6 +192,13 @@ jobs:
           ## Install BiocGenerics
           BiocManager::install("BiocGenerics")
         shell: Rscript {0}
+      
+      - name: Install TinyTeX (LaTeX for PDF)
+        run: |
+          install.packages("tinytex", repos="https://cloud.r-project.org")
+          tinytex::install_tinytex()
+          tinytex:::install_yihui_pkgs()
+        shell: Rscript {0}
 
       - name: Install covr
         if: github.ref == 'refs/heads/devel' && env.run_covr == 'true' && runner.os == 'Linux'
