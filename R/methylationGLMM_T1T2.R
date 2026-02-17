@@ -123,7 +123,7 @@ methylationGLMM_T1T2 <- function(
     significantInteractionDir = "preliminaryResults/cpgs/methylationGLMM_T1T2",
     significantInteractionPval = 0.05,
     saveTxtSummaries = TRUE,
-    chunkSize = 10000,
+    chunkSize = NULL,
     summaryTxtDir = "preliminaryResults/summary/methylationGLMM_T1T2/lmer",
     fdrThreshold = 0.05,
     padjmethod = "fdr",
@@ -260,7 +260,7 @@ lme <- function(
                 timeVar = timeVar,
                 covariates = covariateList,
                 factorVars = factorVarsList,
-                interactionTerm = interactionTerm,
+                interactionTerm = NULL,
                 cpgPrefix = cpgPrefix,
                 cpgLimit = cpgLimit,
                 nCore = nCores,
@@ -420,12 +420,12 @@ cat("=======================================================================\n")
 cpgsLME <- function(
                 fitList,
                 phenotype,
-                interactionTerm = interactionTerm,
+                interactionTerm = NULL,
                 pValue = summaryPval,
                 nCore = nCores,
                 libPath = libPath,
                 lmeLibs = lmeLibList,
-                chunkSize = chunkSize
+                chunkSize = NULL
 
 ) {
         cat("Extracting LME interaction effects for:", phenotype, "\n")
@@ -593,7 +593,7 @@ saveSignificantInteractions <- function(
                 resultName = deparse(substitute(resultList)),
                 baseDir = significantInteractionDir,
                 pvalThreshold = significantInteractionPval,
-                interactionTerm = interactionTerm
+                interactionTerm = NULL
 ) {
         resultDir <- file.path(baseDir, resultName)
         if (!dir.exists(resultDir)) dir.create(resultDir, recursive = TRUE)

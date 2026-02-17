@@ -29,7 +29,7 @@ methylationGLM_T1(
   significantCpGDir = "preliminaryResults/cpgs/methylationGLM_T1",
   significantCpGPval = 0.05,
   saveTxtSummaries = TRUE,
-  chunkSize = 10000,
+  chunkSize = NULL,
   summaryTxtDir = "preliminaryResults/summary/methylationGLM_T1/glm",
   fdrThreshold = 0.05,
   padjmethod = "fdr",

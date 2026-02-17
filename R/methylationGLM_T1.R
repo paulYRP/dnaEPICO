@@ -112,7 +112,7 @@ methylationGLM_T1 <- function(
     significantCpGDir = "preliminaryResults/cpgs/methylationGLM_T1",
     significantCpGPval = 0.05,
     saveTxtSummaries = TRUE,
-    chunkSize = 10000,
+    chunkSize = NULL,
     summaryTxtDir = "preliminaryResults/summary/methylationGLM_T1/glm",
     fdrThreshold = 0.05,
     padjmethod = "fdr",
@@ -180,8 +180,8 @@ cat("GLM libraries: ", glmLibs, "\n")
 cat("PRS mapping: ", ifelse(is.null(prsMap), "None", paste(prsMap, collapse = ", ")), "\n")
 cat("Include Residual SD in summary: ", summaryResidualSD, "\n")
 cat("Summary p-value filter: ", ifelse(is.na(summaryPval), "None", summaryPval), "\n")
-cat("Save TXT summaries: ", saveTxtSummaries, "\n")
 cat("Save summary tables: ", saveTxtSummaries, "\n")
+cat("Chunk size for parallel processing: ", ifelse(is.null(chunkSize), "Auto", chunkSize), "\n")
 cat("Summary output folder: ", summaryTxtDir, "\n")
 cat("FDR threshold: ", fdrThreshold, "\n")
 cat("P-value adjustment method: ", padjmethod, "\n")
@@ -334,7 +334,7 @@ glm <- function(
                             "covariates",
                             "factorVars",
                             "libPath",
-                            "glmLibList", "fullFormula"),
+                            "glmLibList", "fullFormula", "chunkSize"),
                 envir = environment()
         )
 
@@ -459,13 +459,14 @@ cpgsGLM <- function(
                 nCore = nCores,
                 libPath = libPath,
                 glmLibList = glmLibList,
-                chunkSize = chunkSize
+                chunkSize = NULL
 
 ) {
+
   cat("Starting extraction for variable:", variable, "\n")
   cpgNames <- names(fitList)
   if (is.null(chunkSize)) {
-    chunkSize <- max(1000, floor(length(cpgNames) / (nCore * 4)))
+    chunkSize <- max(10, floor(length(cpgNames) / (nCore * 4)))
   }
   cat("Total CpGs:", length(cpgNames), "| Using chunkSize:", chunkSize, "\n")
 
@@ -488,17 +489,6 @@ cpgsGLM <- function(
                 "glmLibList"),
     envir = environment()
   )
-
-#   clusterEvalQ(cl, {
-#     if (!is.null(libPath)) {
-#       .libPaths(libPath)
-#     }
-#     sapply(glmLibList, function(pkg) {
-#       if (!require(pkg, character.only = TRUE)) {
-#         stop(paste("Failed to load package:", pkg))
-#       }
-#     })
-#   })
 
   clusterEvalQ(cl, {
     if (!is.null(libPath)) {
@@ -608,7 +598,8 @@ for (pheno in phenotypeList) {
                 pValue = summaryPval,
                 nCore = nCores,
                 libPath = libPath,
-                glmLibList = glmLibList
+                glmLibList = glmLibList,
+                chunkSize = chunkSize
         )
 
         save(fitResult, file = summaryFile)
@@ -665,7 +656,7 @@ saveSignificantCpGs <- function(
 }
 
 # ---------- Save Significant CpGs to Directory -----------
-if (saveSignificantCpGs) {
+if (isTRUE(saveSignificantCpGs)) {
         cat("Saving significant CpGs to:", significantCpGDir, "\n")
 
         for (pheno in strsplit(phenotypes, ",")[[1]]) {
@@ -881,6 +872,13 @@ annotateGLM <- function(
                 annotationObject,
                 annotationCols = strsplit(annotationCols, ",")[[1]]
 ) {
+        cat("Starting annotation of GLM summaries...\n")
+        print(annotationCols)
+        annotationCols <- trimws(annotationCols)
+        annotationCols <- gsub("\n", "", annotationCols)
+        cat("\nCorrected annotation columns:\n")
+        print(annotationCols)
+
         modelNames <- names(summaryList)
 
         cat("Merging GLM summaries...\n")
@@ -913,11 +911,25 @@ annotateGLM <- function(
 
         cat("Merging annotation with GLM summary...\n")
         annotatedResults <- merge(mergedSummary,
-                                  annDF, by = "CpG", all.x = TRUE)
+                                  annDF, by = "CpG", all.x = TRUE) 
 
+        if (is.null(annotatedResults) || nrow(annotatedResults) == 0) {
+                stop("Annotation merge produced empty result")
+                }
+                                 
         finalCols <- c("CpG",
                        unlist(lapply(cleanedSummaries, function(df) colnames(df)[-1])),
                        annotationCols)
+
+        cat("\nColumns in annotatedResults:\n")
+        print(colnames(annotatedResults))
+
+        cat("\nRequested finalCols:\n")
+        print(finalCols)
+
+        missingCols <- setdiff(finalCols, colnames(annotatedResults))
+        cat("\nMissing columns:\n")
+        print(missingCols)
 
         annotatedResults <- annotatedResults[, finalCols]
         colnames(annotatedResults)[1] <- "IlmnID"

@@ -30,7 +30,7 @@ methylationGLMM_T1T2(
   significantInteractionDir = "preliminaryResults/cpgs/methylationGLMM_T1T2",
   significantInteractionPval = 0.05,
   saveTxtSummaries = TRUE,
-  chunkSize = 10000,
+  chunkSize = NULL,
   summaryTxtDir = "preliminaryResults/summary/methylationGLMM_T1T2/lmer",
   fdrThreshold = 0.05,
   padjmethod = "fdr",
