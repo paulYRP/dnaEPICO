@@ -201,31 +201,34 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
   # ------------------------------------------------------------------
   # 8. Generate Report
   # ------------------------------------------------------------------
-    dnamReport(
-      output = "DNAm_Report.pdf",
-      outputDir = file.path(tmpDir, "reports"),
 
-      qcDir = file.path(
-        tmpDir, "figures", "preprocessingMinfiEwasWater", "enMix"
+  expect_error(
+      dnaEPICO::dnamReport(
+        output = "DNAm_Report.pdf",
+        outputDir = file.path(tmpDir, "reports"),
+        qcDir = file.path(
+          tmpDir, "figures", "preprocessingMinfiEwasWater", "enMix"
+        ),
+        preprocessingDir = file.path(
+          tmpDir, "figures", "preprocessingMinfiEwasWater", "qc"
+        ),
+        postprocessingDir = file.path(
+          tmpDir, "figures", "preprocessingMinfiEwasWater", "metrics"
+        ),
+        svaDir = file.path(
+          tmpDir, "figures", "svaEnmix"
+        ),
+        glmDir = file.path(
+          tmpDir, "figures", "methylationGLM_T1"
+        ),
+        glmmDir = file.path(
+          tmpDir, "figures", "methylationGLMM_T1T2"
+        ),
+        reportTitle = "DNA methylation",
+        author = "School of Biomedical Sciences",
+        date = format(Sys.Date(), "%B %d, %Y")
       ),
-      preprocessingDir = file.path(
-        tmpDir, "figures", "preprocessingMinfiEwasWater", "qc"
-      ),
-      postprocessingDir = file.path(
-        tmpDir, "figures", "preprocessingMinfiEwasWater", "metrics"
-      ),
-      svaDir = file.path(
-        tmpDir, "figures", "svaEnmix"
-      ),
-      glmDir = file.path(
-        tmpDir, "figures", "methylationGLM_T1"
-      ),
-      glmmDir = file.path(
-        tmpDir, "figures", "methylationGLMM_T1T2"
-      ),
-
-      reportTitle = "DNA methylation",
-      author = "School of Biomedical Sciences",
-      date = format(Sys.Date(), "%B %d, %Y")
-    )
+        NA
+      )
+    
 })
