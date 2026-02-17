@@ -50,7 +50,8 @@ Imports:
     tibble,
     pointblank,
     forcats,
-    tiff
+    tiff,
+    tinytex
 Suggests:
     IlluminaHumanMethylation450kmanifest,
     IlluminaHumanMethylation450kanno.ilmn12.hg19,

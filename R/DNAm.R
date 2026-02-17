@@ -64,6 +64,11 @@ if (rmd == "") {
     stop("DNAm.Rmd not found inside package (inst/scripts/).")
   }
 
+if (!requireNamespace("tinytex", quietly = TRUE) || !tinytex::is_tinytex()) {
+    message("TinyTeX/LaTeX not available → skipping PDF report generation.")
+    return(invisible(NULL))
+  }
+
 rmd        <- normalize_path(rmd)
 outputDir  <- normalize_path(outputDir)
 qcDir      <- normalize_path(qcDir)
