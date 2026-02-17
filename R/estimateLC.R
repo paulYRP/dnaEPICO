@@ -168,23 +168,17 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
         pointblank::row_count_match(937055)
 
     # ---------------- EPICv2 controls ----------------
-    # ---- Bioconductor-safe large file read ----
-    old_vroom_size <- getOption("vroom.connection_size", NULL)
-    options(vroom.connection_size = 1048576000)
 
-    on.exit({
-      if (is.null(old_vroom_size)) {
-        options(vroom.connection_size = NULL)
-      } else {
-        options(vroom.connection_size = old_vroom_size)
-      }
-    }, add = TRUE)
+    tmp_dir <- tempfile()
+    dir.create(tmp_dir)
 
-    # Sys.setenv("VROOM_CONNECTION_SIZE" = 1048576000)
+    utils::unzip(tmp_epic2, files = epic2_csv, exdir = tmp_dir)
+
+    epic2_path <- file.path(tmp_dir, epic2_csv)
 
     CONTROLS$EPICv2 =
         readr::read_csv(
-            con_epic2_ctrl,
+            epic2_path,
             skip = 7 + 937055 + 2, #
             col_names = c("address", "group", "channel", "name"),
             col_types = "iccc",
@@ -285,11 +279,16 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
         pointblank::col_vals_in_set(chr38, c(lvls_chr38, NA)) |>
         pointblank::row_count_match(865918)
 
-    con_epic1_ctrl <- unz(tmp_epic1, epic1_csv)
+    tmp_dir <- tempfile()
+    dir.create(tmp_dir)
+
+    utils::unzip(tmp_epic1, files = epic1_csv, exdir = tmp_dir)
+
+    epic1_path <- file.path(tmp_dir, epic1_csv)
 
     CONTROLS$EPICv1 =
         readr::read_csv(
-            con_epic1_ctrl,
+            epic1_path,
             skip = 7 + 865918 + 2, # initial lines + loci + 2 headers
             col_names = c("address", "group", "channel", "name"),
             col_types = "iccc",
@@ -361,10 +360,19 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
         pointblank::col_vals_in_set(chr37, c(lvls_chr37, NA)) |>
         pointblank::row_count_match(485553 + 24)
 
+    tmp_450K <- tempfile(fileext = ".csv")
+
+    utils::download.file(
+      "https://webdata.illumina.com/downloads/productfiles/humanmethylation450/humanmethylation450_15017482_v1-2.csv",
+      destfile = tmp_450K,
+      mode = "wb",
+      quiet = TRUE
+    )
+
     CONTROLS$`450K` =
         # fp_manifest$`450K` |>
         readr::read_csv(
-            url("https://webdata.illumina.com/downloads/productfiles/humanmethylation450/humanmethylation450_15017482_v1-2.csv"),
+            tmp_450K,
             skip = 7 + 485553 + 24 + 2, # initial lines + loci + deviation + 2 headers
             col_names = c("address", "group", "channel", "name"),
             col_types = "iccc",
