@@ -31,6 +31,7 @@
 #'   svaDir = "figures/svaEnmix/sva",
 #'   glmDir = "figures/methylationGLM_T1",
 #'   glmmDir = "figures/methylationGLMM_T1T2",
+#'   figDir = "reports/figures",
 #'   reportTitle = "DNA methylation analysis",
 #'   author = "School of Biomedical Sciences",
 #'   date = format(Sys.Date(), "%B %d, %Y")
@@ -41,13 +42,13 @@
 dnamReport <- function(
     output = "DNAm_Report.pdf",
     outputDir = "reports",
-
     qcDir = "figures/preprocessingMinfiEwasWater/enMix",
     preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
     postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
     svaDir = "figures/svaEnmix/sva",
     glmDir = "figures/methylationGLM_T1",
     glmmDir = "figures/methylationGLMM_T1T2",
+    figDir = "reports/figures",
     reportTitle = "DNA methylation",
     author = "School of Biomedical Sciences",
     date = format(Sys.Date(), "%B %d, %Y")
@@ -56,22 +57,31 @@ dnamReport <- function(
 # Fix Windows path handling for Pandoc/LaTeX:
 normalize_path <- function(x) gsub("\\\\", "/", normalizePath(x, winslash = "/", mustWork = FALSE))
 
+rmd <- system.file("scripts", "DNAm.Rmd", package = "dnaEPICO")
+
+if (rmd == "") {
+    stop("DNAm.Rmd not found inside package (inst/scripts/).")
+  }
+
 rmd        <- normalize_path(rmd)
 outputDir  <- normalize_path(outputDir)
 qcDir      <- normalize_path(qcDir)
-preDir     <- normalize_path(preDir)
-postDir    <- normalize_path(postDir)
+preDir     <- normalize_path(preprocessingDir)
+postDir    <- normalize_path(postprocessingDir)
 svaDir     <- normalize_path(svaDir)
 glmDir     <- normalize_path(glmDir)
 glmmDir    <- normalize_path(glmmDir)
 figDir    <- normalize_path(figDir)
 
-render(
+if (!dir.exists(outputDir)) dir.create(outputDir, recursive = TRUE)
+if (!dir.exists(figDir)) dir.create(figDir, recursive = TRUE)
+
+rmarkdown::render(
   input = rmd,
   output_file = output,
   output_dir = outputDir,
   params = list(
-    reportTitle = title,
+    reportTitle = reportTitle,
     author = author,
     date = date,
     qcDir = qcDir,

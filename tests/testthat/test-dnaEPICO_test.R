@@ -224,6 +224,9 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
         glmmDir = file.path(
           tmpDir, "figures", "methylationGLMM_T1T2"
         ),
+        figDir = file.path(
+          tmpDir, "reports", "figures"
+        ),
         reportTitle = "DNA methylation",
         author = "School of Biomedical Sciences",
         date = format(Sys.Date(), "%B %d, %Y")

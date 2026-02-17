@@ -13,6 +13,7 @@ dnamReport(
   svaDir = "figures/svaEnmix/sva",
   glmDir = "figures/methylationGLM_T1",
   glmmDir = "figures/methylationGLMM_T1T2",
+  figDir = "reports/figures",
   reportTitle = "DNA methylation",
   author = "School of Biomedical Sciences",
   date = format(Sys.Date(), "\%B \%d, \%Y")
@@ -62,6 +63,7 @@ dnamReport(
   svaDir = "figures/svaEnmix/sva",
   glmDir = "figures/methylationGLM_T1",
   glmmDir = "figures/methylationGLMM_T1T2",
+  figDir = "reports/figures",
   reportTitle = "DNA methylation analysis",
   author = "School of Biomedical Sciences",
   date = format(Sys.Date(), "\%B \%d, \%Y")
