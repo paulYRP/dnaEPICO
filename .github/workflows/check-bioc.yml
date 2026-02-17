@@ -255,7 +255,7 @@ jobs:
           cov <- covr::package_coverage(type = "all")
           print(cov)
           print(covr::percent_coverage(cov))
-          covr::write_coverage(cov, file = "coverage.xml", type = "cobertura")
+          covr::to_cobertura(cov, filename = "coverage.xml")
         shell: Rscript {0}
 
       - name: Install gpg (required by Codecov)
