@@ -138,7 +138,8 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
         tiffHeight = 1000,
         tiffRes = 150,
         dataBaseDir = file.path(tmpDir, "data") ,
-        figureBaseDir = file.path(tmpDir, "figures")
+        figureBaseDir = file.path(tmpDir, "figures"),
+        rBaseDir = file.path(tmpDir, "rData")
         
       ),
       NA

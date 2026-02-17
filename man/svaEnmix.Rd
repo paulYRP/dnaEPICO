@@ -22,7 +22,8 @@ svaEnmix(
   tiffHeight = 1000,
   tiffRes = 150,
   figureBaseDir = "figures",
-  dataBaseDir = "data"
+  dataBaseDir = "data",
+  rBaseDir = "rData"
 )
 }
 \arguments{

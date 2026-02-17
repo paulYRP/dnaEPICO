@@ -181,6 +181,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 	  scriptLabel = '$(MODEL)/$(STEP2)', \
 	  figureBaseDir = '$(FIGURES_DIR)', \
 	  dataBaseDir = '$(DATA_DIR)', \
+	  rBaseDir = '$(RDATA_DIR)', \
 	  tiffWidth = $(TIFF_WIDTH), \
 	  tiffHeight = $(TIFF_HEIGHT), \
 	  tiffRes = $(TIFF_RES) )"
