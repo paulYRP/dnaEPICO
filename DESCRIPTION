@@ -49,7 +49,8 @@ Imports:
     stats,
     tibble,
     pointblank,
-    forcats
+    forcats,
+    tiff
 Suggests:
     IlluminaHumanMethylation450kmanifest,
     IlluminaHumanMethylation450kanno.ilmn12.hg19,
