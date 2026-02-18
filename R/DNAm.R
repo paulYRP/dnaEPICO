@@ -59,10 +59,10 @@ dnamReport <- function(
 # Fix Windows path handling for Pandoc/LaTeX:
 normalize_path <- function(x) gsub("\\\\", "/", normalizePath(x, winslash = "/", mustWork = FALSE))
 
-rmd <- system.file("scripts", "DNAm.Rmd", package = "dnaEPICO")
+rmd <- system.file("extdata", "DNAm.Rmd", package = "dnaEPICO")
 
 if (rmd == "") {
-    stop("DNAm.Rmd not found inside package (inst/scripts/).")
+    stop("DNAm.Rmd not found inside package (inst/extdata/).")
   }
 
 if (!requireNamespace("tinytex", quietly = TRUE) || !tinytex::is_tinytex()) {
