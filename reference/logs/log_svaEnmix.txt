@@ -1,11 +1,10 @@
 ==== Starting SVA Estimation with Enmix ====
-Start time:  2026-01-28 09:57:29 
+Start time:  2026-02-18 02:04:49 
 
 Log file path:  logs/log_svaEnmix.txt 
 
 Pheno file:  data/preprocessingMinfiEwasWater/phenoLC.csv 
 Separator type:   
-IDAT folder:  
 Log directory:  logs 
 Sample limit:  5 
 SampleID column:  Sample_Name 
@@ -16,9 +15,16 @@ ctrlSva percvar:  0.9
 ctrlSva flag:  1 
 TIFF dimensions (WxH):  2000 x 1000  at 150 dpi
 =======================================================================
-Error in file(file, "rt") : cannot open the connection
-Calls: read.csv -> read.table -> file
-In addition: Warning message:
-In file(file, "rt") :
-  cannot open file 'data/preprocessingMinfiEwasWater/phenoLC.csv': No such file or directory
-Execution halted
+Writing `reference/svaEnmix.html`
+── Building articles ───────────────────────────────────────────────────────────
+Writing `articles/index.html`
+Reading vignettes/dnaEPICO.Rmd
+Writing `articles/dnaEPICO.html`
+── Building news ───────────────────────────────────────────────────────────────
+Writing `news/index.html`
+── Building sitemap ────────────────────────────────────────────────────────────
+Writing `sitemap.xml`
+── Checking for problems ───────────────────────────────────────────────────────
+── Finished building pkgdown site for package dnaEPICO ─────────────────────────
+── Extra files for GitHub pages ────────────────────────────────────────────────
+Writing `.nojekyll`
