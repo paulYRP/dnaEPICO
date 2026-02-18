@@ -23,7 +23,7 @@ Run estimateLC.R
 tmp <- tempdir()
 stopifnot(dir.exists(tmp))
 
-\donttest{
+\dontrun{
 estimateLC(
  meth = beta, 
  ref = "saliva",
