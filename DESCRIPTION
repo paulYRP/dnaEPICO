@@ -74,8 +74,7 @@ Suggests:
     covr,
     FlowSorted.Blood.EPIC,
     FlowSorted.Blood.450k,
-    BeadSorted.Saliva.EPIC,
-    tinytex
+    BeadSorted.Saliva.EPIC
 VignetteBuilder: knitr
 biocViews:
   Software, 
