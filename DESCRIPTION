@@ -34,6 +34,7 @@ Imports:
     Gviz,
     dplyr,
     tidyverse,
+    ggrepel,
     readr,
     stringr,
     purrr,
@@ -59,7 +60,6 @@ Suggests:
     IlluminaHumanMethylationEPICmanifest,
     IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
     minfiData,
-    ggrepel,
     GenomicRanges,
     S4Vectors,
     SummarizedExperiment,
@@ -74,7 +74,8 @@ Suggests:
     covr,
     FlowSorted.Blood.EPIC,
     FlowSorted.Blood.450k,
-    BeadSorted.Saliva.EPIC
+    BeadSorted.Saliva.EPIC,
+    tinytex
 VignetteBuilder: knitr
 biocViews:
   Software, 

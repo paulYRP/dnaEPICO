@@ -1335,6 +1335,8 @@ preprocessingPheno(
 
 Finally, we generate a summary report that compiles figures and results from all previous steps.
 
+`Note: PDF report generation requires a working LaTeX installation.TinyTeX can be installed in R using: install.packages("tinytex") and tinytex::install_tinytex()`. For troubleshooting LaTeX-related issues, see the [TinyTeX](https://yihui.org/tinytex/) documentation.
+
 ```{r}
 dnamReport(
   output = "DNAm_Report.pdf",

@@ -4,6 +4,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
   library(minfiData)
   library(IlluminaHumanMethylation450kmanifest)
   library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+  testthat::skip_if_not_installed("tinytex")
 
   # ------------------------------------------------------------------
   # 1. Locate minfiData example files
