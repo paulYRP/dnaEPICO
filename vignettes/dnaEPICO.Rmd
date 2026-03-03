@@ -975,6 +975,8 @@ This section ensures that optional arguments are passed correctly to R scripts. 
 
 `dnamReport()` generates a PDF report by rendering `DNAm.Rmd` through a runner script (`DNAm.R`) shipped in `inst/scripts`.
 
+`Note: PDF report generation requires a working LaTeX installation.TinyTeX can be installed in R using: install.packages("tinytex") and tinytex::install_tinytex()`. For troubleshooting LaTeX-related issues, see the [TinyTeX](https://yihui.org/tinytex/) documentation.
+
 ```{r, eval=FALSE}
 dnamReport(
   output = "DNAm_Report.pdf",
@@ -1334,8 +1336,6 @@ preprocessingPheno(
 ### Step 8: Generate a PDF report
 
 Finally, we generate a summary report that compiles figures and results from all previous steps.
-
-`Note: PDF report generation requires a working LaTeX installation.TinyTeX can be installed in R using: install.packages("tinytex") and tinytex::install_tinytex()`. For troubleshooting LaTeX-related issues, see the [TinyTeX](https://yihui.org/tinytex/) documentation.
 
 ```{r}
 dnamReport(
