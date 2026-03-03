@@ -1,5 +1,5 @@
 ==== Starting DNAm LME Analysis (Timepoint 1 vs 3) ====
-Start time:  2026-03-03 05:10:39 
+Start time:  2026-03-03 06:10:13 
 Input phenotype + beta file:  rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData 
 Person ID variable:  person 
 Timepoint variable:  Timepoint 
