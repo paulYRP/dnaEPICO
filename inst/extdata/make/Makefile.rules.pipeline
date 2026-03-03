@@ -132,7 +132,7 @@ $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RDat
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
-	Rscript -e "library(dnaEPICO); preprocessingMinfiEwasWater( \
+	Rscript -e "set.seed($(SEED)); library(dnaEPICO); preprocessingMinfiEwasWater( \
 	  phenoFile = '$(PHENO_FILE)', \
 	  sepType = '$(SEP_TYPE)', \
 	  idatFolder = '$(DATA_DIR)/$(STEP1)/$(IDAT_DIR)/', \

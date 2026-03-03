@@ -67,3 +67,5 @@ coverage.xml
 
 # ---- OS / sync tools ----
 .dropbox
+/doc/
+/Meta/

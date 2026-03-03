@@ -27,7 +27,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}  
 ---
 
-```{r setup, include = FALSE}
+```{r, include = FALSE}
 startTime <- Sys.time()
 knitr::opts_chunk$set(
     collapse = TRUE,
@@ -1003,7 +1003,7 @@ The following examples are brief demonstrations on how to perform DNA methylatio
 
 This example has the following dependencies
 
-```{r dependencies, warning=FALSE, message=FALSE, eval=FALSE}
+```{r dependencies, warning=FALSE, message=FALSE}
 library(dnaEPICO)
 
 ```
@@ -1188,8 +1188,8 @@ We now run the first pipeline stage, which performs:
 * probe filtering
 * generation of QC figures
 
-```{r, eval=FALSE}
-seed(123)
+```{r}
+set.seed(123)
 preprocessingMinfiEwasWater(
   phenoFile = samplePath,
   idatFolder = file.path(preprocDir, "idats"),
@@ -1238,7 +1238,7 @@ file.exists(rgsetPath)
 
 ```
 
-```{r, eval=FALSE}
+```{r}
 svaEnmix(
   phenoFile = samplePath,
   rgsetData = rgsetPath,
@@ -1310,7 +1310,7 @@ file.exists(cnPath)
 
 ```
 
-```{r, eval=FALSE}
+```{r}
 preprocessingPheno(
   phenoFile = samplePath,
   sepType = "",
@@ -1335,7 +1335,7 @@ preprocessingPheno(
 
 Finally, we generate a summary report that compiles figures and results from all previous steps.
 
-```{r, eval=FALSE}
+```{r}
 dnamReport(
   output = "DNAm_Report.pdf",
   outputDir = file.path(tmpDir, "reports"),
@@ -1380,15 +1380,29 @@ oldWd <- getwd()
 setwd(tmpDir)
 on.exit(setwd(oldWd), add = TRUE)
 
-system("make f3 MODEL=minfiData")
+system(paste(
+  "make f3",
+  "MODEL=model1",
+  "PHENO_FILE=data/preprocessingMinfiEwasWater/sample_minfi.csv",
+  "ARRAY_TYPE=IlluminaHumanMethylation450k",
+  "ANNOTATION_VERSION=ilmn12.hg19",
+  "SEX_COLUMN=sex",
+  "PLOT_GROUP_VAR=sex",
+  "LC_REF=FlowSorted.Blood.450k",
+  "TIMEPOINTS=1",
+  "COMBINE_TIMEPOINTS=1",
+  "R_DIR=NULL",
+  "N_SAMPLES=NA",        
+  "N_CORES=1"         
+))
 
 ```
 
 ### Step 1: Selecting a single test model
 
-- MODEL ?= minfiData 
+- MODEL ?= model1 
 
-For this example, the pipeline is run using **one explicit model** (`minfiData`) rather than multiple parallel models.
+For this example, the pipeline is run using **one explicit model** (`model1`) rather than multiple parallel models.
 This mirrors the single-dataset workflow demonstrated earlier in R.
 
 ### Step 2: Using the example phenotype file
@@ -1412,14 +1426,13 @@ Setting `R_DIR = NULL` tells the pipeline to use the **default R library paths**
 
 ### Step 4: Matching columns
 
-
-- GLOBAL PARAMETERS
-  - SAMPLE_ID = Sample_Name 
-  - ARRAY_TYPE = IlluminaHumanMethylation450k 
-  - ANNOTATION_VERSION = ilmn12.hg19
-  - SEX_COLUMN = sex
-  - SENTRIX_ID_COLUMN = Sentrix_ID 
-  - SENTRIX_POSITION_COLUMN = Sentrix_Position 
+`GLOBAL PARAMETERS`
+- SAMPLE_ID = Sample_Name 
+- ARRAY_TYPE = IlluminaHumanMethylation450k 
+- ANNOTATION_VERSION = ilmn12.hg19
+- SEX_COLUMN = sex
+- SENTRIX_ID_COLUMN = Sentrix_ID 
+- SENTRIX_POSITION_COLUMN = Sentrix_Position 
 
 These parameters ensure the Makefile uses the:
 
@@ -1446,14 +1459,14 @@ The example dataset contains a **single timepoint**, so longitudinal logic is di
 
 Date the vignette was generated.
 
-```{r reproduce1, echo=FALSE}
+```{r, echo=FALSE}
 ## Date the vignette was generated
 Sys.time()
 ```
 
 Wallclock time spent generating the vignette.
 
-```{r reproduce2, echo=FALSE}
+```{r, echo=FALSE}
 ## Processing time in seconds
 totalTime <- diff(c(startTime, Sys.time()))
 round(totalTime, digits = 3)
