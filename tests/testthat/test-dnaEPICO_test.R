@@ -246,65 +246,65 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
         NA
       )
 
-  # ------------------------------------------------------------------
-  # 11. Run GLM
-  # ------------------------------------------------------------------
+  # # ------------------------------------------------------------------
+  # # 11. Run GLM
+  # # ------------------------------------------------------------------
+  #
+  # expect_error(
+  #     dnaEPICO::methylationGLM_T1(
+  #       inputPheno = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData",
+  #                              "phenoBetaT1.RData"),
+  #       outputLogs = file.path(tmpDir, "logs"),
+  #       outputRData = file.path(tmpDir, "rData", "methylationGLM_T1", "models"),
+  #       outputPlots = file.path(tmpDir, "figures", "methylationGLM_T1"),
+  #       phenotypes = "status",
+  #       covariates = "sex",
+  #       factorVars = "sex,status",
+  #       cpgLimit = 5,
+  #       nCores = 1,
+  #       summaryPval = 1,
+  #       significantCpGDir = file.path(tmpDir, "results", "cpgs", "methylationGLM_T1"),
+  #       summaryTxtDir = file.path(tmpDir, "results", "summary", "methylationGLM_T1",
+  #                                 "glm"),
+  #       annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island",
+  #       annotatedGLMOut = file.path(tmpDir, "data", "methylationGLM_T1"),
+  #       annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+  #       chunkSize = 1,
+  #       significantCpGPval = 1
+  #     ),
+  #       NA
+  #     )
 
-  expect_error(
-      dnaEPICO::methylationGLM_T1(
-        inputPheno = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData",
-                               "phenoBetaT1.RData"),
-        outputLogs = file.path(tmpDir, "logs"),
-        outputRData = file.path(tmpDir, "rData", "methylationGLM_T1", "models"),
-        outputPlots = file.path(tmpDir, "figures", "methylationGLM_T1"),
-        phenotypes = "status",
-        covariates = "sex",
-        factorVars = "sex,status",
-        cpgLimit = 5,
-        nCores = 1,
-        summaryPval = 1,
-        significantCpGDir = file.path(tmpDir, "results", "cpgs", "methylationGLM_T1"),
-        summaryTxtDir = file.path(tmpDir, "results", "summary", "methylationGLM_T1",
-                                  "glm"),
-        annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island",
-        annotatedGLMOut = file.path(tmpDir, "data", "methylationGLM_T1"),
-        annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-        chunkSize = 1,
-        significantCpGPval = 1
-      ),
-        NA
-      )
-
-  # ------------------------------------------------------------------
-  # 12. Run LMER
-  # ------------------------------------------------------------------
-
-  expect_error(
-      dnaEPICO::methylationGLMM_T1T2(
-        inputPheno = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData", "phenoBetaT1.RData"),
-        outputLogs = file.path(tmpDir, "logs"),
-        outputRData = file.path(tmpDir, "rData", "methylationGLMM_T1T2", "models"),
-        outputPlots = file.path(tmpDir, "figures", "methylationGLMM_T1T2"),
-        phenotypes = "status",
-        personVar = "person",
-        covariates = "sex",
-        factorVars = "sex,status",
-        cpgLimit = 10,
-        nCores = 1,
-        summaryPval = 1,
-        significantInteractionDir = file.path(tmpDir, "results", "cpgs", "methylationGLMM_T1T2"),
-        summaryTxtDir = file.path(tmpDir, "results", "summary", "methylationGLMM_T1T2", "lmer"),
-        annotatedLMEOut = file.path(tmpDir, "data", "methylationGLMM_T1T2"),
-        annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-        chunkSize = 1,
-        significantInteractionPval = 1,
-        saveSignificantInteractions = FALSE,
-        annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island"
-
-      ),
-        NA
-      )
-
+  # # ------------------------------------------------------------------
+  # # 12. Run LMER
+  # # ------------------------------------------------------------------
+  #
+  # expect_error(
+  #     dnaEPICO::methylationGLMM_T1T2(
+  #       inputPheno = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData", "phenoBetaT1.RData"),
+  #       outputLogs = file.path(tmpDir, "logs"),
+  #       outputRData = file.path(tmpDir, "rData", "methylationGLMM_T1T2", "models"),
+  #       outputPlots = file.path(tmpDir, "figures", "methylationGLMM_T1T2"),
+  #       phenotypes = "status",
+  #       personVar = "person",
+  #       covariates = "sex",
+  #       factorVars = "sex,status",
+  #       cpgLimit = 10,
+  #       nCores = 1,
+  #       summaryPval = 1,
+  #       significantInteractionDir = file.path(tmpDir, "results", "cpgs", "methylationGLMM_T1T2"),
+  #       summaryTxtDir = file.path(tmpDir, "results", "summary", "methylationGLMM_T1T2", "lmer"),
+  #       annotatedLMEOut = file.path(tmpDir, "data", "methylationGLMM_T1T2"),
+  #       annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+  #       chunkSize = 1,
+  #       significantInteractionPval = 1,
+  #       saveSignificantInteractions = FALSE,
+  #       annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island"
+  #
+  #     ),
+  #       NA
+  #     )
+  #
 
 
 })

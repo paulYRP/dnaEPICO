@@ -6,7 +6,7 @@ author:
     affiliation:
     - Queensland University of Technology
     email: ruizpint@qut.edu.au
-  - name: Divya Metha
+  - name: Divya Mehta
     affiliation:
     - Queensland University of Technology
 abstract: >
