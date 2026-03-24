@@ -5,6 +5,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Bio
   library(IlluminaHumanMethylation450kmanifest)
   library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
   testthat::skip_if_not_installed("tinytex")
+  testthat::skip_if_not_installed("withr")
 
   # ------------------------------------------------------------------
   # 1. Locate minfiData example files
@@ -91,6 +92,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
   library(IlluminaHumanMethylation450kmanifest)
   library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
   testthat::skip_if_not_installed("tinytex")
+  testthat::skip_if_not_installed("withr")
 
   # ------------------------------------------------------------------
   # 1. Locate minfiData example files
