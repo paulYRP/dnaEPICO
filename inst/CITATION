@@ -1,10 +1,11 @@
-citHeader("dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data, generated as part of 10.3390/epigenomes9040039")
+citHeader(
+  "dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data, generated as part of 10.3390/epigenomes9040039")
 
-Article(
-  entry = "Article",
+bibentry(
+  bibtype = "Article",
   title = "dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data",
   doi = "10.3390/epigenomes9040039",
-  journal = "Epigenomes",s
+  journal = "Epigenomes",
   author = c(
     person(
       given = "Paul",
@@ -20,12 +21,6 @@ Article(
       comment = c(ORCID = "0000-0001-7971-7255")
     )
   ),
-  year = 2025,
-  url = "https://bioconductor.org/packages/dnaEPICO",
-  textVersion =
-    paste(
-      "Ruiz P., Mehta D.",
-      "dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data.",
-      "Bioconductor package."
-    )
+  year = "2025",
+  url = "https://bioconductor.org/packages/dnaEPICO"
 )
