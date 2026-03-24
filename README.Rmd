@@ -56,8 +56,7 @@ BiocManager::install("paulYRP/dnaEPICO")
 
 ## Citation
 
-Below is the citation output from using `citation('dnaEPICO')` in R. Please
-run this yourself to check for any updates on how to cite __dnaEPICO__.
+Below is the citation output from using `citation('dnaEPICO')` in R. Please run this yourself to check for any updates on how to cite __dnaEPICO__.
 
 ```{r 'citation', eval = requireNamespace('dnaEPICO')}
 print(citation('dnaEPICO'), bibtex = TRUE)

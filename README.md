@@ -68,17 +68,22 @@ Please run this yourself to check for any updates on how to cite
 
 ``` r
 print(citation('dnaEPICO'), bibtex = TRUE)
-#> dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data
+#> dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data,
+#> generated as part of 10.3390/epigenomes9040039
 #> 
-#>   Ruiz P., Metha D. dnaEPICO: Analysis Pipeline for Illumina DNA
-#>   Methylation Array Data. Bioconductor package.
+#>   Ruiz P, Mehta D (2025). "dnaEPICO: Analysis Pipeline for Illumina DNA
+#>   Methylation Array Data." _Epigenomes_. doi:10.3390/epigenomes9040039
+#>   <https://doi.org/10.3390/epigenomes9040039>,
+#>   <https://bioconductor.org/packages/dnaEPICO>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
-#>   @Manual{,
+#>   @Article{,
 #>     title = {dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data},
-#>     author = {Paul Ruiz and Divya Metha},
-#>     year = {2026},
+#>     doi = {10.3390/epigenomes9040039},
+#>     journal = {Epigenomes},
+#>     author = {Paul Ruiz and Divya Mehta},
+#>     year = {2025},
 #>     url = {https://bioconductor.org/packages/dnaEPICO},
 #>   }
 ```

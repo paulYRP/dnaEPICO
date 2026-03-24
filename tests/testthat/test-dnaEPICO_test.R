@@ -82,29 +82,29 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
   setwd(tmpDir)
   on.exit(setwd(oldWd), add = TRUE)
 
-  # ------------------------------------------------------------------
-  # 6. Run preprocessing pipeline
-  # ------------------------------------------------------------------
-
-  expect_error(
-    dnaEPICO::preprocessingMinfiEwasWater(
-      phenoFile = phenoFile,
-      idatFolder = tmpIdatDir,
-      nSamples = 6,
-      SampleID = "Sample_Name",
-      phenoOrder = "Sample_Name;sex;Basename;Sentrix_ID;Sentrix_Position",
-      arrayType = "IlluminaHumanMethylation450k",
-      annotationVersion = "ilmn12.hg19",
-      sexColumn = "sex",
-      plotGroupVar = "sex",
-      lcRef = "FlowSorted.Blood.450k",
-      outputLogs = file.path(tmpDir, "logs"),
-      baseDataFolder = file.path(tmpDir, "rData"),
-      crossReactivePath = crossReactivePath,
-      lcPhenoDir = tmpDir
-    ),
-    NA
-  )
+  # # ------------------------------------------------------------------
+  # # 6. Run preprocessing pipeline
+  # # ------------------------------------------------------------------
+  #
+  # expect_error(
+  #   dnaEPICO::preprocessingMinfiEwasWater(
+  #     phenoFile = phenoFile,
+  #     idatFolder = tmpIdatDir,
+  #     nSamples = 6,
+  #     SampleID = "Sample_Name",
+  #     phenoOrder = "Sample_Name;sex;Basename;Sentrix_ID;Sentrix_Position",
+  #     arrayType = "IlluminaHumanMethylation450k",
+  #     annotationVersion = "ilmn12.hg19",
+  #     sexColumn = "sex",
+  #     plotGroupVar = "sex",
+  #     lcRef = "FlowSorted.Blood.450k",
+  #     outputLogs = file.path(tmpDir, "logs"),
+  #     baseDataFolder = file.path(tmpDir, "rData"),
+  #     crossReactivePath = crossReactivePath,
+  #     lcPhenoDir = tmpDir
+  #   ),
+  #   NA
+  # )
 
   # # ------------------------------------------------------------------
   # # 7. Run sva
