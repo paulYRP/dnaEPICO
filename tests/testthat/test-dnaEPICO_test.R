@@ -1,5 +1,5 @@
 test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
-  
+
   library(minfi)
   library(minfiData)
   library(IlluminaHumanMethylation450kmanifest)
@@ -141,7 +141,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
         dataBaseDir = file.path(tmpDir, "data") ,
         figureBaseDir = file.path(tmpDir, "figures"),
         rBaseDir = file.path(tmpDir, "rData")
-        
+
       ),
       NA
     )
@@ -247,7 +247,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
       )
 
   # ------------------------------------------------------------------
-  # 11. Run GLM 
+  # 11. Run GLM
   # ------------------------------------------------------------------
 
   expect_error(
@@ -261,7 +261,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
         covariates = "sex,age",
         factorVars = "sex,status",
         cpgLimit = 5,
-        nCores = 5,
+        nCores = 1,
         summaryPval = 1,
         significantCpGDir = file.path(tmpDir, "results", "cpgs", "methylationGLM_T1"),
         summaryTxtDir = file.path(tmpDir, "results", "summary", "methylationGLM_T1",
@@ -274,9 +274,9 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
       ),
         NA
       )
-    
+
   # ------------------------------------------------------------------
-  # 12. Run LMER 
+  # 12. Run LMER
   # ------------------------------------------------------------------
 
   expect_error(
@@ -290,7 +290,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
         covariates = "sex,age",
         factorVars = "sex,status",
         cpgLimit = 10,
-        nCores = 8,
+        nCores = 1,
         summaryPval = 1,
         significantInteractionDir = file.path(tmpDir, "results", "cpgs", "methylationGLMM_T1T2"),
         summaryTxtDir = file.path(tmpDir, "results", "summary", "methylationGLMM_T1T2", "lmer"),
@@ -305,6 +305,6 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs", {
         NA
       )
 
-  
-    
+
+
 })
