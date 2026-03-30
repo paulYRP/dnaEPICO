@@ -15,15 +15,15 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 <!-- badges: end -->
 
-The goal of **`dnaEPICO`** is to provide a **modular, reproducible, and
-pipeline** for the preprocessing and statistical analysis of Illumina
-DNA methylation array data (EPICv2, EPIC and 450K).
+dnaEPICO aims to provide a **modular and reproducible pipeline** for
+preprocessing and statistically analysing Illumina DNA methylation array
+data from the EPICv2, EPIC, and 450K platforms.
 
 The package integrates preprocessing, quality control, phenotype
 merging, generalised linear models (GLM), linear mixed-effects models
-(LME), and automated report generation. It is designed to run seamlessly
-on local machines as well as High-Performance Computing (HPC)
-environments via a **GNU Make–based workflow**.
+(LME), and automated report generation. It is designed to operate on
+both local machines and High-Performance Computing (HPC) environments
+through a **GNU Make–based workflow**.
 
 ## Installation instructions
 

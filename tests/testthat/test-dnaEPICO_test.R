@@ -185,7 +185,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
       annotationVersion = "ilmn12.hg19",
       sexColumn = "sex",
       plotGroupVar = "sex",
-      lcRef = "FlowSorted.Blood.450k",
+      lcRef = "saliva",
       outputLogs = file.path(tmpDir, "logs"),
       baseDataFolder = file.path(tmpDir, "rData"),
       crossReactivePath = crossReactivePath,
