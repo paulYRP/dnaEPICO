@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.8</span>
       </span>
     </div>
 
@@ -77,7 +77,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-03-24</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-03-31</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO.Rmd" class="external-link"><code>vignettes/dnaEPICO.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO.Rmd</code></div>
@@ -88,12 +88,11 @@ Mehta</h4>
     
         <div class="abstract">
       <p class="abstract">Abstract</p>
-      <p>A comprehensive guide to using the dnaEPICO package. The
-      package supports preprocessing and analysis of Illumina DNA
-      methylation array data (EPICv2, EPIC and 450K), including QC,
-      filtering, SVA, cell-type deconvolution, phenotype integration,
-      modelling, and export-ready files for the DNAmAge Clock Foundation
-      platform.</p>
+      <p>A comprehensive guide to use the dnaEPICO package. The package
+      supports preprocessing and analysis of Illumina DNA methylation
+      array data (EPICv2, EPIC and 450K), including QC, filtering, SVA,
+      cell-type deconvolution, phenotype integration, modelling, and
+      export-ready files for the DNAmAge Clock Foundation platform.</p>
     </div>
     
 <div class="section level2">
@@ -103,10 +102,10 @@ Mehta</h4>
 analysis of Illumina DNA methylation array data (EPICv2, EPIC and 450K).
 It covers data import, quality control, surrogate variable analysis,
 probe and sample filtering, cell-type deconvolution, phenotype
-integration, and downstream modelling using generalised linear and
-linear mixed-effects models. The package integrates with Bioconductor
-workflows and tools including <code>minfi</code>, <code>ENmix</code>,
-and <code>wateRmelon</code>.</p>
+integration, and a modelling using generalised linear and linear
+mixed-effects models. The package integrates with Bioconductor workflows
+and tools including <code>minfi</code>, <code>ENmix</code>, and
+<code>wateRmelon</code>.</p>
 <p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
 also prepares standardised DNA methylation files for direct export to
 the <a href="https://dnamage.clockfoundation.org/user" class="external-link">DNAmAge Clock
@@ -137,8 +136,8 @@ and <a href="https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/refer
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
-implements methods in <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
+<p>The <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
+package builds on methods from <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
 <em><a href="https://bioconductor.org/packages/3.20/ENmix" class="external-link">ENmix</a></em> and
 <em><a href="https://bioconductor.org/packages/3.20/wateRmelon" class="external-link">wateRmelon</a></em>
 packages so there is quite the number of dependencies which need to be
@@ -178,7 +177,7 @@ structure that:</p>
 <strong>RData objects</strong>, and a <strong>PDF report</strong>.</li>
 </ul>
 <p>A core design principle is that each step creates its own folders and
-outputs, so you can run steps independently or chain them through the
+outputs, so you can run steps independently or link them through the
 Makefile pipeline.</p>
 <div class="section level3">
 <h3 id="localcluster-use">Local/Cluster use<a class="anchor" aria-label="anchor" href="#localcluster-use"></a>
@@ -188,11 +187,11 @@ Makefile pipeline.</p>
 <li>testing the pipeline end-to-end on a small subset,</li>
 <li>preparing clean merged data objects,</li>
 <li>generating QC plots and logs,</li>
-<li>validating input formatting and parameter choices.</li>
+<li>and validating input formatting and parameter choices.</li>
 </ul>
 <p><strong>Cluster/HPC use</strong> is recommended for:</p>
 <ul>
-<li>genome-wide modelling (hundreds of thousands of CpGs),</li>
+<li>genome-wide modelling across hundreds of thousands of CpGs,</li>
 <li>parallel chunk processing,</li>
 <li>large memory operations and multi-core execution,</li>
 <li>reproducible batch execution with Make targets (<code>f3</code>,
@@ -210,17 +209,14 @@ expects:</p>
 │   │   ├── idats/                          # Folder containing raw IDAT files
 │   │   ├── pheno.csv                       # Phenotype file with sample metadata
 │   │   └── 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
-│   ├── Makefile                            # Arguments </code></pre>
+│   ├── Makefile                            # Arguments</code></pre>
 <ul>
 <li>
-<strong>Phenotype file</strong>: a CSV with sample identifiers and
-covariates.</li>
+<strong>Phenotype file</strong>: a <code>csv</code> with sample
+identifiers and covariates.</li>
 <li>
 <strong>IDAT folder</strong>: contains Illumina
 <code>*_Red.idat</code> and <code>*_Grn.idat</code> pairs.</li>
-<li>
-<strong>Output folders</strong>: created by each step (logs, rData,
-figures, reports).</li>
 </ul>
 <p>You can download the list of off-target cross-hybridisation sites for
 EPICv2 probes from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323" class="external-link"><code>12864_2024_10027_MOESM8_ESM.csv</code></a>.</p>
@@ -266,7 +262,7 @@ exports)</li>
 <code>reports/</code>: final PDF report</li>
 </ul>
 <p>This <em>“each function writes to its own folder”</em> approach is
-intentional: it improves reproducibility, debugging, and HPC
+intentional, and it improves reproducibility, debugging, and HPC
 resuming.</p>
 </div>
 <div class="section level2">
@@ -276,8 +272,8 @@ resuming.</p>
 interactively:</p>
 <ol style="list-style-type: decimal">
 <li>
-<code><a href="../reference/preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater()</a></code>: import + QC + normalise
-+ filter + cell composition</li>
+<code><a href="../reference/preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater()</a></code>: import QC, normalise,
+filter and cell composition</li>
 <li>
 <code><a href="../reference/svaEnmix.html">svaEnmix()</a></code>: surrogate variable analysis using ENmix
 control probes</li>
@@ -379,7 +375,7 @@ to remove.</li>
 how the final phenotype table is ordered.</li>
 <li>
 <code>lcRef</code>, <code>lcPhenoDir</code>: cell composition
-reference + output for pheno with cell fractions.</li>
+reference; output for phenotype(s) with cell fractions.</li>
 </ul>
 </div>
 </div>
@@ -468,22 +464,19 @@ needed to match the array sample structure.</li>
 <p>This wrapper executes <code>inst/scripts/preprocessingPheno.R</code>.
 Conceptually, it:</p>
 <ol style="list-style-type: decimal">
-<li><p>Loads phenotype and methylation matrices (Beta/M/CN).</p></li>
-<li><p>Aligns samples by <code>SampleID</code>.</p></li>
-<li><p>Creates timepoint-specific subsets
-(<code>timepoints</code>).</p></li>
-<li><p>Combines timepoints (<code>combineTimepoints</code>) for
-longitudinal sets.</p></li>
-<li>
-<p>Writes:</p>
+<li>Loads phenotype and methylation matrices (Beta/M/CN).</li>
+<li>Aligns samples by <code>SampleID</code>.</li>
+<li>Creates timepoint-specific subsets (<code>timepoints</code>).</li>
+<li>Combines timepoints (<code>combineTimepoints</code>) for
+longitudinal sets.</li>
+<li>Writes:</li>
+</ol>
 <ul>
 <li>exported phenotype tables into <code>outputPheno</code>,</li>
 <li>methylation metric objects into <code>outputRData</code>,</li>
-<li>merged objects (e.g., <code>phenoBetaT1.RData</code>) into
+<li>and merged objects (e.g., <code>phenoBetaT1.RData</code>) into
 <code>outputRDataMerge</code>.</li>
 </ul>
-</li>
-</ol>
 </div>
 <div class="section level4">
 <h4 id="parameter-guide-2">Parameter guide:<a class="anchor" aria-label="anchor" href="#parameter-guide-2"></a>
@@ -588,8 +581,7 @@ to memory and CPU requirements.</p>
 <h4 id="what-it-does-3">What it does:<a class="anchor" aria-label="anchor" href="#what-it-does-3"></a>
 </h4>
 <p>This wrapper executes the external script
-<code>inst/scripts/methylationGLM_T1.R</code> using a system call.
-Conceptually, it:</p>
+<code>inst/scripts/methylationGLM_T1.R</code>. Conceptually, it:</p>
 <ol style="list-style-type: decimal">
 <li><p>Loads a merged phenotype–beta-value object
 (<code>inputPheno</code>) produced by
@@ -659,7 +651,7 @@ interactions.</li>
 <code>libPath</code>: optional library path for HPC
 environments.</li>
 <li>
-<code>glmLibs</code>: GLM backend library to use
+<code>glmLibs</code>: GLM library to use
 (e.g. <code>glm2</code>).</li>
 <li>
 <code>prsMap</code>: optional PRS mapping file to include genetic
@@ -708,25 +700,40 @@ tables are written.</li>
 <div class="section level4">
 <h4 id="glm-structure-used-in-dnaepico-glm2">GLM structure used in dnaEPICO (<code>glm2</code>):<a class="anchor" aria-label="anchor" href="#glm-structure-used-in-dnaepico-glm2"></a>
 </h4>
-<p>For each CpG site ( cg_i ), dnaEPICO fits a generalised linear model
+<p>For each CpG site (CpG_i), dnaEPICO fits a generalised linear model
 of the form:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Methylation</mtext><mo>*</mo><mrow><mi>c</mi><msub><mi>g</mi><mi>i</mi></msub></mrow><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><mo>∑</mo><mi>*</mi><msup><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msup><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>⋅</mo><mtext mathvariant="normal">Covariate</mtext><mo>*</mo><mi>k</mi><mo>+</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">
-\text{Methylation}*{cg_i} =
-\beta_0 +
-\beta_1 \cdot \text{Phenotype} +
-\sum*{k=1}^{K} \beta_{k+1} \cdot \text{Covariate}*k +
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>⋅</mo><msub><mtext mathvariant="normal">Covariate</mtext><mi>k</mi></msub><mo>+</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">
+\text{Methylation}_{CpG_i} =
+\beta_0
++
+\beta_1 \cdot \text{Phenotype}
++
+\sum_{k=1}^{K} \beta_{k+1} \cdot \text{Covariate}_k
++
 \varepsilon
 </annotation></semantics></math></p>
-<p>where methylation is typically represented as
-<strong>M-values</strong> (or Beta-values, depending on
-configuration).</p>
-</div>
-<div class="section level4">
-<h4 id="glm-without-prs-default">GLM without PRS (default):<a class="anchor" aria-label="anchor" href="#glm-without-prs-default"></a>
-</h4>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>c</mi><msub><mi>g</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Age</mtext><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Sex</mtext><mo>+</mo><msub><mi>β</mi><mn>4</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Ethnicity</mtext><mo>+</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd><mtd columnalign="left" style="text-align: left"><mi>+</mi><msub><mi>β</mi><mn>5</mn></msub><mo>⋅</mo><mtext mathvariant="normal">TraumaDefinition</mtext><mo>+</mo><msub><mi>β</mi><mn>6</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Leukocytes</mtext><mo>+</mo><msub><mi>β</mi><mn>7</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Epithelial.cells</mtext><mo>+</mo><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
+<p>where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><annotation encoding="application/x-tex">\text{Methylation}_{CpG_i}</annotation></semantics></math>
+is the methylation value at CpG site
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math>
+is the intercept,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtext mathvariant="normal">Phenotype</mtext><annotation encoding="application/x-tex">\text{Phenotype}</annotation></semantics></math>
+is the variable of interest,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mtext mathvariant="normal">Covariate</mtext><mi>k</mi></msub><annotation encoding="application/x-tex">\text{Covariate}_k</annotation></semantics></math>
+represents the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>-th
+covariate in the model,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>1</mn></msub><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><annotation encoding="application/x-tex">\beta_{k+1}</annotation></semantics></math>
+are the corresponding regression coefficients, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ε</mi><annotation encoding="application/x-tex">\varepsilon</annotation></semantics></math>
+is the residual error term.</p>
+<p>For example, the following is a GLM without PRS (default):</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Age</mtext><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Sex</mtext><mo>+</mo><msub><mi>β</mi><mn>4</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Ethnicity</mtext><mo>+</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd><mtd columnalign="left" style="text-align: left"><mi>+</mi><msub><mi>β</mi><mn>5</mn></msub><mo>⋅</mo><mtext mathvariant="normal">TraumaDefinition</mtext><mo>+</mo><msub><mi>β</mi><mn>6</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Leukocytes</mtext><mo>+</mo><msub><mi>β</mi><mn>7</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Epithelial.cells</mtext><mo>+</mo><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
 \begin{aligned}
-\text{Methylation}_{cg_i} = \;&amp;
+\text{Methylation}_{CpG_i} = \;&amp;
 \beta_0 +
 \beta_1 \cdot \text{Phenotype} +
 \beta_2 \cdot \text{Age} +
@@ -739,21 +746,6 @@ configuration).</p>
 \varepsilon
 \end{aligned}
 </annotation></semantics></math></p>
-<p><strong>Mapping to dnaEPICO parameters</strong></p>
-<ul>
-<li>
-<strong>Phenotype</strong>:<code>phenotypes</code>
-</li>
-<li>
-<strong>Age, Sex, Ethnicity, TraumaDefinition, Leukocytes,
-Epithelial.cells</strong>: <code>covariates</code>
-</li>
-<li>
-<strong>Sex, Ethnicity, TraumaDefinition</strong>: converted to
-<code>factorVars</code>
-</li>
-<li>(): residual error term</li>
-</ul>
 </div>
 <div class="section level4">
 <h4 id="glm-with-prs">GLM with PRS:<a class="anchor" aria-label="anchor" href="#glm-with-prs"></a>
@@ -761,14 +753,15 @@ Epithelial.cells</strong>: <code>covariates</code>
 <p>When a PRS is supplied via <code>prsMap</code>, the model is
 <strong>extended only for the matching phenotype</strong>.</p>
 <p>From the example above:</p>
-<p>prsMap = “Pheno1:PRS_1,Pheno2:PRS_2,Pheno3:PRS_3,Pheno4:PRS_4”</p>
+<p><strong>prsMap =
+“Pheno1:PRS_1,Pheno2:PRS_2,Pheno3:PRS_3,Pheno4:PRS_4”</strong></p>
 <p>This defines a <strong>one-to-one mapping</strong> between phenotype
 and PRS. For example:</p>
 <ul>
 <li>Pheno1 with PRS_1</li>
 </ul>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Methylation</mtext><mo>*</mo><mrow><mi>c</mi><msub><mi>g</mi><mi>i</mi></msub></mrow><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Pheno1</mtext><mo>+</mo><mo>∑</mo><mi>*</mi><msup><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msup><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>⋅</mo><mtext mathvariant="normal">Covariate</mtext><mo>*</mo><mi>k</mi><mo>+</mo><mi>β</mi><mo>*</mo><mtext mathvariant="normal">PRS</mtext><mo>⋅</mo><mtext mathvariant="normal">PRS_1</mtext><mo>+</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">
-\text{Methylation}*{cg_i} =
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Pheno1</mtext><mo>+</mo><mo>∑</mo><mi>*</mi><msup><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msup><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>⋅</mo><mtext mathvariant="normal">Covariate</mtext><mo>*</mo><mi>k</mi><mo>+</mo><mi>β</mi><mo>*</mo><mtext mathvariant="normal">PRS</mtext><mo>⋅</mo><mtext mathvariant="normal">PRS_1</mtext><mo>+</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">
+\text{Methylation}_{CpG_i} =
 \beta_0 +
 \beta_1 \cdot \text{Pheno1} +
 \sum*{k=1}^{K} \beta_{k+1} \cdot \text{Covariate}*k +
@@ -791,22 +784,14 @@ and PRS. For example:</p>
 <h4 id="interaction-term">Interaction term<a class="anchor" aria-label="anchor" href="#interaction-term"></a>
 </h4>
 <p>If an interaction is specified (e.g. phenotype × timepoint):</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Methylation</mtext><mo>*</mo><mrow><mi>c</mi><msub><mi>g</mi><mi>i</mi></msub></mrow><mo>=</mo><mi>…</mi><mo>+</mo><mi>β</mi><mo>*</mo><mrow><mi>i</mi><mi>n</mi><mi>t</mi></mrow><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">Phenotype</mtext><mo>×</mo><mtext mathvariant="normal">Timepoint</mtext><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">
-\text{Methylation}*{cg_i} =
-\ldots +
-\beta*{int} \cdot (\text{Phenotype} \times \text{Timepoint}) +
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">Phenotype</mtext><mo>*</mo><mtext mathvariant="normal">Timepoint</mtext><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mo>∑</mo><mi>*</mi><msup><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msup><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>⋅</mo><mtext mathvariant="normal">Covariate</mtext><mo>*</mo><mi>k</mi><mo>+</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">
+\text{Methylation}_{CpG_i} =
+\beta_0 +
+\beta_1 \cdot (\text{Phenotype} * \text{Timepoint}) +
+\sum*{k=1}^{K} \beta_{k+1} \cdot \text{Covariate}*k +
 \varepsilon
-</annotation></semantics></math></p>
-<p><strong>Mapping</strong></p>
-<ul>
-<li>Interaction definition: <code>interactionTerm</code>
-</li>
-</ul>
-</div>
-</div>
-<div class="section level3">
-<h3 id="step-5-methylationglmm_t1t2">Step 5: <code>methylationGLMM_T1T2()</code><a class="anchor" aria-label="anchor" href="#step-5-methylationglmm_t1t2"></a>
-</h3>
+</annotation></semantics></math> ## Step 5:
+<code><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2()</a></code></p>
 <p>This step is typically executed on <strong>HPC systems</strong> due
 to memory and CPU requirements.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -844,12 +829,12 @@ to memory and CPU requirements.</p>
 <span><span class="st">                      Relation_to_Island,GencodeV41_Group"</span>,</span>
 <span>    annotatedLMEOut <span class="op">=</span> <span class="st">"data/methylationGLMM_T1T2"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level4">
 <h4 id="what-it-does-4">What it does:<a class="anchor" aria-label="anchor" href="#what-it-does-4"></a>
 </h4>
 <p>This wrapper executes the external script
-<code>inst/scripts/methylationGLMM_T1T2.R</code> using a system call.
-Conceptually, it:</p>
+<code>inst/scripts/methylationGLMM_T1T2.R</code>. Conceptually, it:</p>
 <ol style="list-style-type: decimal">
 <li><p>Loads a merged <strong>longitudinal
 phenotype–methylation</strong> object (<code>inputPheno</code>) created
@@ -862,7 +847,7 @@ repeated measures using a subject-level random effect.</p></li>
 optional interactions.</p></li>
 <li><p>Includes <strong>phenotype-specific PRS terms</strong> based on
 <code>prsMap</code>.</p></li>
-<li><p>Tests interaction terms (e.g. phenotype × timepoint).</p></li>
+<li><p>Interaction terms (e.g. phenotype × timepoint).</p></li>
 <li><p>Applies multiple-testing correction across CpGs.</p></li>
 <li>
 <p>Writes:</p>
@@ -977,22 +962,58 @@ result tables are written.</li>
 </h4>
 <p>For longitudinal analyses, the phenotype-specific structure remains,
 with additional random and interaction terms:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mtext mathvariant="normal">Methylation</mtext><mo>*</mo><mrow><mi>c</mi><msub><mi>g</mi><mi>i</mi></msub></mrow><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msubsup><mi>β</mi><mn>0</mn><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>+</mo><msubsup><mi>β</mi><mn>1</mn><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>⋅</mo><mi>p</mi><mo>+</mo><msubsup><mi>β</mi><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>⋅</mo><mtext mathvariant="normal">Timepoint</mtext><mo>+</mo><msubsup><mi>β</mi><mn>3</mn><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo>×</mo><mtext mathvariant="normal">Timepoint</mtext><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd><mtd columnalign="left" style="text-align: left"><mi>+</mi><mi>β</mi><mo>*</mo><msup><mtext mathvariant="normal">PRS</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo stretchy="true" form="postfix">)</mo></mrow></msup><mo>⋅</mo><mtext mathvariant="normal">PRS</mtext><mo>*</mo><mi>p</mi><mo>+</mo><mi>b</mi><mo>*</mo><mtext mathvariant="normal">person</mtext><mo>+</mo><msup><mi>ε</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo stretchy="true" form="postfix">)</mo></mrow></msup></mtd></mtr></mtable><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>P</mi><mi>h</mi><mi>e</mi><mi>n</mi><mi>o</mi><mi>t</mi><mi>y</mi><mi>p</mi><mi>e</mi><mo>*</mo><mtext mathvariant="normal">Timepoint</mtext><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mtext mathvariant="normal">covariate</mtext><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>⋅</mo><mtext mathvariant="normal">PRS</mtext><mo>+</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="false" form="prefix">|</mo><mi>p</mi><mi>e</mi><mi>r</mi><mi>s</mi><mi>o</mi><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
 \begin{aligned}
-\text{Methylation}*{cg_i} = \;&amp;
-\beta_0^{(p)} +
-\beta_1^{(p)} \cdot p +
-\beta_2^{(p)} \cdot \text{Timepoint} +
-\beta_3^{(p)} \cdot (p \times \text{Timepoint}) + \\
-&amp;+
-\beta*{\text{PRS}}^{(p)} \cdot \text{PRS}*p +
-b*{\text{person}} +
-\varepsilon^{(p)}
+\text{Methylation}_{CpG_i} = \;&amp;
+\beta_0 +
+\beta_1 \cdot (Phenotype * \text{Timepoint}) + 
+\beta_2 \cdot \text{covariate} +
+\beta_3 \cdot {\text{PRS}} +
+(1 | person)+
+\varepsilon
 \end{aligned}
 </annotation></semantics></math></p>
 <p>where (_p) is included <strong>only if it is defined for phenotype
 (p)</strong>. The logic follows that of
 <code><a href="../reference/methylationGLM_T1.html">methylationGLM_T1()</a></code>.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Timepoint</mtext><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">Phenotype</mtext><mo>×</mo><mtext mathvariant="normal">Timepoint</mtext><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><msub><mi>β</mi><mn>4</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Age</mtext><mo>+</mo><msub><mi>β</mi><mn>5</mn></msub><mo>⋅</mo><mtext mathvariant="normal">PRS</mtext><mo>+</mo><msub><mi>b</mi><mtext mathvariant="normal">person</mtext></msub><mo>+</mo><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
+\begin{aligned}
+\text{Methylation}_{CpG_i} =\;&amp;
+\beta_0 +
+\beta_1 \cdot \text{Phenotype} +
+\beta_2 \cdot \text{Timepoint} +
+\beta_3 \cdot (\text{Phenotype} \times \text{Timepoint}) +
+\beta_4 \cdot \text{Age} +
+\beta_5 \cdot \text{PRS} +
+b_{\text{person}} +
+\varepsilon
+\end{aligned}
+</annotation></semantics></math></p>
+<p>where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><annotation encoding="application/x-tex">\text{Methylation}_{CpG_i}</annotation></semantics></math>
+is the methylation value at CpG site
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math>
+is the intercept,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtext mathvariant="normal">Phenotype</mtext><annotation encoding="application/x-tex">\text{Phenotype}</annotation></semantics></math>
+is the variable of interest,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">Phenotype</mtext><mo>×</mo><mtext mathvariant="normal">Timepoint</mtext><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(\text{Phenotype} \times \text{Timepoint})</annotation></semantics></math>
+is the interaction term between phenotype and timepoint,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtext mathvariant="normal">covariate</mtext><annotation encoding="application/x-tex">\text{covariate}</annotation></semantics></math>
+is an example covariate included in the model,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtext mathvariant="normal">PRS</mtext><annotation encoding="application/x-tex">\text{PRS}</annotation></semantics></math>
+represents the polygenic risk score,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>1</mn></msub><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>2</mn></msub><annotation encoding="application/x-tex">\beta_2</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>3</mn></msub><annotation encoding="application/x-tex">\beta_3</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>4</mn></msub><annotation encoding="application/x-tex">\beta_4</annotation></semantics></math>,
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>5</mn></msub><annotation encoding="application/x-tex">\beta_5</annotation></semantics></math>
+are the corresponding regression coefficients for the fixed effects,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>b</mi><mtext mathvariant="normal">person</mtext></msub><annotation encoding="application/x-tex">b_{\text{person}}</annotation></semantics></math>
+is the random intercept for each individual, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ε</mi><annotation encoding="application/x-tex">\varepsilon</annotation></semantics></math>
+is the residual error term.</p>
 </div>
 </div>
 </div>
@@ -1060,12 +1081,18 @@ and renamed to <code>Makefile</code> in the destination directory.</p>
 </li>
 <li>Run multiple models
 <ul>
-<li>make models # run the entire pipeline for all models in
-parallel.</li>
-<li>make f3_models # run Steps 1–3 in parallel for all models.</li>
-<li>make f4_models # run Steps 1–4 in parallel for all models.</li>
-<li>make f3lme_models # run Steps 1–3 + LME in parallel for all
-models</li>
+<li>make models <em>(run the entire pipeline for all models in
+parallel.)</em>
+</li>
+<li>make f3_models <em>(run Steps 1–3 in parallel for all
+models.)</em>
+</li>
+<li>make f4_models <em>(run Steps 1–4 in parallel for all
+models.)</em>
+</li>
+<li>make f3lme_models <em>(run Steps 1–3 + LME in parallel for all
+models.)</em>
+</li>
 </ul>
 </li>
 </ul>
@@ -1252,17 +1279,22 @@ endif
 # INCLUDE PIPELINE FROM dnaEPICO
 # ===============================================
 DNAPIPE_MK := $(shell Rscript -e "cat(system.file('extdata','make','Makefile.rules.pipeline',package='dnaEPICO'))")
-include $(DNAPIPE_MK)</code></pre>
+include $(DNAPIPE_MK)
+</code></pre>
 <div class="section level4">
 <h4 id="model-selection">Model selection<a class="anchor" aria-label="anchor" href="#model-selection"></a>
 </h4>
 <ul>
-<li><p>MODEL ?= model1</p></li>
-<li><p>MODELS = modelA modelB modelC</p></li>
-<li><p><code>MODEL</code> defines <strong>a single pipeline
-configuration</strong></p></li>
-<li><p><code>MODELS</code> defines <strong>multiple independent
-configurations</strong></p></li>
+<li>MODEL ?= model1</li>
+<li>MODELS = modelA modelB modelC</li>
+<li>
+<code>MODEL</code> defines <strong>a single pipeline
+configuration</strong>
+</li>
+<li>
+<code>MODELS</code> defines <strong>multiple independent
+configurations</strong>
+</li>
 </ul>
 <p>The same pipeline can therefore be run in two modes:</p>
 <p><strong>Single-model execution</strong></p>
@@ -1374,7 +1406,7 @@ if ...</code></pre>
 <p>This section ensures that optional arguments are passed correctly to
 R scripts. It prevents accidental interpretation of the string
 <code>"NULL"</code> as a real value and guarantees consistent behaviour
-across local and cluster environments.</p>
+across local and Scluster environments.</p>
 </div>
 </div>
 </div>
@@ -1405,10 +1437,11 @@ For troubleshooting LaTeX-related issues, see the <a href="https://yihui.org/tin
 <h2 id="troubleshooting">Troubleshooting<a class="anchor" aria-label="anchor" href="#troubleshooting"></a>
 </h2>
 <ul>
-<li>If a step “fails”, check logs in <code>logs/</code>.</li>
+<li>If a step “fails”, check logs in <code>logs/</code>
+</li>
 <li>If Make targets are missing, confirm:
 <ul>
-<li>correct <code>include Makefile.rules.pipeline</code>
+<li>your working directory contains a valid <code>Makefile</code>
 </li>
 </ul>
 </li>
@@ -1420,7 +1453,7 @@ For troubleshooting LaTeX-related issues, see the <a href="https://yihui.org/tin
 <p>The following examples are brief demonstrations on how to perform DNA
 methylation analysis using <code>dnaEPICO</code> functions and
 arguments.</p>
-<p>This example has the following dependencies</p>
+<p>This example has the following dependencies:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/paulYRP/dnaEPICO" class="external-link">dnaEPICO</a></span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
@@ -1434,11 +1467,9 @@ arguments.</p>
 provided by the <code>minfiData</code> package.</p>
 <p>This example is designed to:</p>
 <ul>
-<li>help new users understand the pipeline structure<br>
-</li>
-<li>demonstrate how data and results are organised on disk<br>
-</li>
-<li>provide a safe, reproducible way to test the pipeline</li>
+<li>help new users understand the pipeline structure,</li>
+<li>demonstrate how data and results are organised on disk,</li>
+<li>and provide a safe, reproducible way to test the pipeline</li>
 </ul>
 <p>To avoid creating permanent files on the user’s computer, <strong>all
 steps are run inside a temporary directory</strong>.</p>
@@ -1477,7 +1508,7 @@ input files and outputs</strong> for this example.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">tmpDir</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">tmpDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpf6UEhA/dnaEPICO_Test"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/tmp/RtmpC3qcqa/dnaEPICO_Test"</span></span></code></pre></div>
 <p><strong>Important:</strong></p>
 <ul>
 <li>This directory is created only for this example</li>
@@ -1490,7 +1521,7 @@ instead</li>
 <h4 id="step-2-load-example-idat-files-from-minfidata">Step 2: Load example IDAT files from minfiData<a class="anchor" aria-label="anchor" href="#step-2-load-example-idat-files-from-minfidata"></a>
 </h4>
 <p>The <code>minfiData</code> package contains a small set of Illumina
-450K IDAT files tfrom blood samples.</p>
+450K IDAT files from blood samples.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Locate minfiData extdata directory</span></span>
 <span><span class="va">baseDir_minfi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package <span class="op">=</span> <span class="st">"minfiData"</span><span class="op">)</span></span></code></pre></div>
@@ -1506,7 +1537,7 @@ instead</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">idatFiles</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 12</span></span></code></pre></div>
 <p>We now copy these IDAT files into the directory structure expected by
-<code>dnaEPICO</code>.</p>
+S<code>dnaEPICO</code>.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create IDAT directory</span></span>
 <span><span class="va">idatDir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">preprocDir</span>, <span class="st">"idats"</span><span class="op">)</span></span>
@@ -1581,11 +1612,11 @@ which can be accessed from the following link:</p>
 </h4>
 <p>We now run the first pipeline stage, which performs:</p>
 <ul>
-<li>reading of IDAT files</li>
-<li>quality control</li>
-<li>normalisation</li>
-<li>probe filtering</li>
-<li>generation of QC figures</li>
+<li>reading of IDAT files,</li>
+<li>quality control,</li>
+<li>normalisation,</li>
+<li>probe filtering,</li>
+<li>and generation of QC figures</li>
 </ul>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
@@ -1618,18 +1649,18 @@ which can be accessed from the following link:</p>
 <span>  lcPhenoDir <span class="op">=</span> <span class="va">preprocDir</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ==== Starting preprocessingMinfiEwasWater ====</span></span>
-<span><span class="co">#&gt; Start Time:                2026-03-24 05:43:14 </span></span>
-<span><span class="co">#&gt; Log file path:             /tmp/Rtmpf6UEhA/dnaEPICO_Test/logs/log_preprocessingMinfiEwasWater.txt </span></span>
+<span><span class="co">#&gt; Start Time:                2026-03-31 00:45:42 </span></span>
+<span><span class="co">#&gt; Log file path:             /tmp/RtmpC3qcqa/dnaEPICO_Test/logs/log_preprocessingMinfiEwasWater.txt </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Phenotype file:            /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingMinfiEwasWater/sample_minfi.csv </span></span>
+<span><span class="co">#&gt; Phenotype file:            /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingMinfiEwasWater/sample_minfi.csv </span></span>
 <span><span class="co">#&gt; Separator type:   </span></span>
-<span><span class="co">#&gt; IDAT folder:               /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingMinfiEwasWater/idats </span></span>
+<span><span class="co">#&gt; IDAT folder:               /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingMinfiEwasWater/idats </span></span>
 <span><span class="co">#&gt; nSamples limit:            all </span></span>
 <span><span class="co">#&gt; SampleID column:           Sample_Name </span></span>
 <span><span class="co">#&gt; Array type:                IlluminaHumanMethylation450k </span></span>
 <span><span class="co">#&gt; Annotation version:        ilmn12.hg19 </span></span>
-<span><span class="co">#&gt; Base RData folder:         /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData </span></span>
-<span><span class="co">#&gt; Base Figure folder:         /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures </span></span>
+<span><span class="co">#&gt; Base RData folder:         /tmp/RtmpC3qcqa/dnaEPICO_Test/rData </span></span>
+<span><span class="co">#&gt; Base Figure folder:         /tmp/RtmpC3qcqa/dnaEPICO_Test/figures </span></span>
 <span><span class="co">#&gt; TIFF size (w x h @ dpi):   2000  x  1000  @  150 </span></span>
 <span><span class="co">#&gt; QC cutoff (median):        10.5 </span></span>
 <span><span class="co">#&gt; Detection P-value type:    m+u </span></span>
@@ -1644,7 +1675,7 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt;   Chromosomes to remove:   chrX,chrY </span></span>
 <span><span class="co">#&gt;   SNP positions filter:    SBE,CpG </span></span>
 <span><span class="co">#&gt;   MAF threshold:           0.1 </span></span>
-<span><span class="co">#&gt;   Cross-reactive file:     /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv </span></span>
+<span><span class="co">#&gt;   Cross-reactive file:     /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Cell composition (estimateLC):</span></span>
 <span><span class="co">#&gt;   Reference:               FlowSorted.Blood.450k </span></span>
@@ -1678,7 +1709,7 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; Plotting  NORM_G .jpg</span></span>
 <span><span class="co">#&gt; Plotting  NORM_T .jpg</span></span>
 <span><span class="co">#&gt; Plotting  NORM_ACGT .jpg</span></span>
-<span><span class="co">#&gt; Generated ENmix control JPGs in: /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/enMix </span></span>
+<span><span class="co">#&gt; Generated ENmix control JPGs in: /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/enMix </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Applied annotation:  IlluminaHumanMethylation450k, ilmn12.hg19 </span></span>
 <span><span class="co">#&gt; Manifest used:</span></span>
@@ -1691,12 +1722,12 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; Number of SNP type I probes: 25 </span></span>
 <span><span class="co">#&gt; Number of SNP type II probes: 40 </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
-<span><span class="co">#&gt; RGSet saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/objects/RGSet.RData </span></span>
+<span><span class="co">#&gt; RGSet saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/objects/RGSet.RData </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Running preprocessRaw() to generate MSet...</span></span>
 <span><span class="co">#&gt; MSet created with 6 samples and 485512 probes.</span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
-<span><span class="co">#&gt; MSet saved to: /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/objects/MSet.RData </span></span>
+<span><span class="co">#&gt; MSet saved to: /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/objects/MSet.RData </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Preview of methylated intensities:</span></span>
 <span><span class="co">#&gt;            GroupA_3 GroupA_2 GroupB_3</span></span>
@@ -1783,7 +1814,7 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; cg20253340 13.70217 14.06483 13.69360 13.88722 14.20526</span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Running QC plotting from MSet object...</span></span>
-<span><span class="co">#&gt; QC plot saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/quality_control(MSet).tiff </span></span>
+<span><span class="co">#&gt; QC plot saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/quality_control(MSet).tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Calculating detection p-values...</span></span>
 <span><span class="co">#&gt; Detection p-values calculated using type:  m+u </span></span>
@@ -1795,27 +1826,27 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; cg00214611 1.727636e-260 0.8252957388 7.893160e-10 5.017703e-01 0.781146377</span></span>
 <span><span class="co">#&gt; cg00455876  0.000000e+00 0.1759300809 3.160650e-83 4.191290e-01 0.509724924</span></span>
 <span><span class="co">#&gt; cg01707559  0.000000e+00 0.0008455845 0.000000e+00 4.362571e-11 0.001268238</span></span>
-<span><span class="co">#&gt; Detection RData p-values saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/qc/detP_RGSet.RData</span></span>
-<span><span class="co">#&gt; Detection plot p-values saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/detection_pvalues(RGSet).tiff </span></span>
+<span><span class="co">#&gt; Detection RData p-values saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/qc/detP_RGSet.RData</span></span>
+<span><span class="co">#&gt; Detection plot p-values saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/detection_pvalues(RGSet).tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Calculate the mean detection p-values across all samples...</span></span>
 <span><span class="co">#&gt; Number of failed samples: 0 </span></span>
 <span><span class="co">#&gt; Samples before filtering: 6 </span></span>
 <span><span class="co">#&gt; Samples after filtering: 6 </span></span>
-<span><span class="co">#&gt; RGSet saved after removing the failed samples to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/objects/RGSet.RData </span></span>
+<span><span class="co">#&gt; RGSet saved after removing the failed samples to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/objects/RGSet.RData </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Generating density plot of Beta values...</span></span>
-<span><span class="co">#&gt; Density plot saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/densityBeta(MSet).tiff </span></span>
+<span><span class="co">#&gt; Density plot saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/densityBeta(MSet).tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Predicting sex based on Beta values...</span></span>
-<span><span class="co">#&gt; Predicted Sex plot saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/sexPrediction(GSet).tiff </span></span>
+<span><span class="co">#&gt; Predicted Sex plot saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/sexPrediction(GSet).tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Clinical sex values...</span></span>
 <span><span class="co">#&gt; Sex column integrity check:</span></span>
 <span><span class="co">#&gt;   Sex column used:  sex </span></span>
 <span><span class="co">#&gt;   NA values:        0 </span></span>
 <span><span class="co">#&gt;   Unknown labels:   None</span></span>
-<span><span class="co">#&gt; Clinical Sex plot saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/sexClinical(GSet).tiff </span></span>
+<span><span class="co">#&gt; Clinical Sex plot saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/sexClinical(GSet).tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Mistmaches found[1] Sample_Name  Sample_Well  Sample_Plate</span></span>
 <span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span>
@@ -1826,12 +1857,12 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; [adjustedFunnorm] Mapping to genome</span></span>
 <span><span class="co">#&gt; [adjustedFunnorm] Quantile extraction</span></span>
 <span><span class="co">#&gt; [adjustedFunnorm] Normalization</span></span>
-<span><span class="co">#&gt; Saved normalized object:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/normObjects/norm_adjustedfunnorm_RGSet.RData</span></span>
-<span><span class="co">#&gt; Plot Raw vs Normalisation data saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/sexComparison_RawNorm(MSetF).tiff </span></span>
+<span><span class="co">#&gt; Saved normalized object:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/normObjects/norm_adjustedfunnorm_RGSet.RData</span></span>
+<span><span class="co">#&gt; Plot Raw vs Normalisation data saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/qc/sexComparison_RawNorm(MSetF).tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Filtering probes with detection p-values:  0.01 ...</span></span>
 <span><span class="co">#&gt; Probes retained:  466668 / 485512 </span></span>
-<span><span class="co">#&gt; Filtered object saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/filterObjects/removProbes_MSetF_Flt.RData </span></span>
+<span><span class="co">#&gt; Filtered object saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/filterObjects/removProbes_MSetF_Flt.RData </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Removing probes on chromosomes:  chrX, chrY </span></span>
 <span><span class="co">#&gt; Remaining probes after removing selected chromosomes:</span></span>
@@ -1840,19 +1871,19 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; 45338 23371 27833 23541 11955 14417 14661 21474 26554  5538 24983 33341 10158 </span></span>
 <span><span class="co">#&gt; chr21 chr22  chr3  chr4  chr5  chr6  chr7  chr8  chr9 </span></span>
 <span><span class="co">#&gt;  4136  8368 23930 19029 23181 35088 29275 20091  9575 </span></span>
-<span><span class="co">#&gt; Sex chromosome-filtered object saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/filterObjects/removChrXY_MSetF_Flt_Rxy.RData </span></span>
+<span><span class="co">#&gt; Sex chromosome-filtered object saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/filterObjects/removChrXY_MSetF_Flt_Rxy.RData </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Removing probes with SNPs at:  SBE, CpG  with MAF &gt;= 0.1 </span></span>
 <span><span class="co">#&gt; Remaining probes after SNP filtering:  451304 </span></span>
-<span><span class="co">#&gt; SNP-filtered object saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/filterObjects/removSNPs_MAF0.1_MSetF_Flt_Rxy_Ds.RData </span></span>
+<span><span class="co">#&gt; SNP-filtered object saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/filterObjects/removSNPs_MAF0.1_MSetF_Flt_Rxy_Ds.RData </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Loading cross-reactive probe list from:</span></span>
-<span><span class="co">#&gt;  /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv </span></span>
+<span><span class="co">#&gt;  /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv </span></span>
 <span><span class="co">#&gt; Probes retained after cross-reactive filter:  451304 </span></span>
-<span><span class="co">#&gt; Cross-reactive-filtered object saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/filterObjects/removCrossReactive_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
+<span><span class="co">#&gt; Cross-reactive-filtered object saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/filterObjects/removCrossReactive_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Extracting final DNAm matrices (M, Beta, CN)...</span></span>
-<span><span class="co">#&gt; M-values saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
+<span><span class="co">#&gt; M-values saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
 <span><span class="co">#&gt;              GroupA_3   GroupA_2   GroupB_3   GroupB_1   GroupA_1</span></span>
 <span><span class="co">#&gt; cg13869341  2.6393989  4.5098963  3.5921764  2.4425984  2.3233487</span></span>
 <span><span class="co">#&gt; cg14008030  1.1068115  0.7804484  1.3156115  1.0308431  0.9513732</span></span>
@@ -1860,7 +1891,7 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; cg20826792 -3.2152921 -3.0354748 -3.3089689 -2.6377700 -3.1260062</span></span>
 <span><span class="co">#&gt; cg00381604 -5.7736577 -5.9343344 -5.7260241 -5.5323099 -5.9329137</span></span>
 <span><span class="co">#&gt; cg20253340  0.4886808  0.9086010 -0.2618946 -0.1448504  0.4240629</span></span>
-<span><span class="co">#&gt; Beta-values saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
+<span><span class="co">#&gt; Beta-values saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
 <span><span class="co">#&gt;              GroupA_3   GroupA_2   GroupB_3   GroupB_1   GroupA_1</span></span>
 <span><span class="co">#&gt; cg13869341 0.86170119 0.95795345 0.92343122 0.84462880 0.83347005</span></span>
 <span><span class="co">#&gt; cg14008030 0.68291127 0.63203702 0.71339133 0.67140047 0.65913495</span></span>
@@ -1868,7 +1899,7 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; cg20826792 0.09720524 0.10870567 0.09165419 0.13843342 0.10277336</span></span>
 <span><span class="co">#&gt; cg00381604 0.01795101 0.01608951 0.01854242 0.02115069 0.01610511</span></span>
 <span><span class="co">#&gt; cg20253340 0.58388143 0.65244281 0.45474134 0.47492040 0.57295995</span></span>
-<span><span class="co">#&gt; CN-values saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
+<span><span class="co">#&gt; CN-values saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
 <span><span class="co">#&gt;            GroupA_3 GroupA_2 GroupB_3 GroupB_1 GroupA_1</span></span>
 <span><span class="co">#&gt; cg13869341 15.30437 15.49182 15.82079 15.60943 15.75944</span></span>
 <span><span class="co">#&gt; cg14008030 14.18634 15.04115 14.84927 14.73982 15.09002</span></span>
@@ -1877,14 +1908,14 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; cg00381604 13.82183 14.11709 13.96986 14.12212 14.25033</span></span>
 <span><span class="co">#&gt; cg20253340 13.52945 13.94953 13.64490 13.83988 14.15564</span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
-<span><span class="co">#&gt; Plot examineMDS_PostFilteringCrossRect saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/metrics/examineMDS_PostFilteringCrossRect(MSetF_Flt_Rxy_Ds_Rc).tiff </span></span>
+<span><span class="co">#&gt; Plot examineMDS_PostFilteringCrossRect saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/metrics/examineMDS_PostFilteringCrossRect(MSetF_Flt_Rxy_Ds_Rc).tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Plotting final density plots for grouping variable:  sex</span></span>
-<span><span class="co">#&gt; Density plots saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/metrics/densityBeta&amp;M(MSetF_Flt_Rxy_Ds_Rc).tiff </span></span>
+<span><span class="co">#&gt; Density plots saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/preprocessingMinfiEwasWater/metrics/densityBeta&amp;M(MSetF_Flt_Rxy_Ds_Rc).tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Cell composition reference selected: FlowSorted.Blood.450k </span></span>
 <span><span class="co">#&gt; Using ENmix Houseman-based cell composition</span></span>
-<span><span class="co">#&gt; Saved phenoLC: /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingMinfiEwasWater/phenoLC.csv </span></span>
+<span><span class="co">#&gt; Saved phenoLC: /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingMinfiEwasWater/phenoLC.csv </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Session info:</span></span>
 <span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
@@ -1931,11 +1962,11 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; [18] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [19] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [20] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [21] dnaEPICO_0.99.7                                   </span></span>
+<span><span class="co">#&gt; [21] dnaEPICO_0.99.8                                   </span></span>
 <span><span class="co">#&gt; [22] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] fs_2.0.0                  ProtGenerics_1.38.0      </span></span>
+<span><span class="co">#&gt;   [1] fs_2.0.1                  ProtGenerics_1.38.0      </span></span>
 <span><span class="co">#&gt;   [3] bitops_1.0-9              blastula_0.3.6           </span></span>
 <span><span class="co">#&gt;   [5] httr_1.4.8                RColorBrewer_1.1-3       </span></span>
 <span><span class="co">#&gt;   [7] doParallel_1.0.17         numDeriv_2016.8-1.1      </span></span>
@@ -1982,12 +2013,12 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt;  [89] S4Arrays_1.6.0            tidyverse_2.0.0          </span></span>
 <span><span class="co">#&gt;  [91] glm2_1.2.1                reformulas_0.4.4         </span></span>
 <span><span class="co">#&gt;  [93] survival_3.8-6            statmod_1.5.1            </span></span>
-<span><span class="co">#&gt;  [95] nlme_3.1-168              bit64_4.6.0-1            </span></span>
+<span><span class="co">#&gt;  [95] nlme_3.1-169              bit64_4.6.0-1            </span></span>
 <span><span class="co">#&gt;  [97] progress_1.2.3            filelock_1.0.3           </span></span>
 <span><span class="co">#&gt;  [99] bslib_0.10.0              nor1mix_1.3-3            </span></span>
 <span><span class="co">#&gt; [101] affyio_1.76.0             irlba_2.3.7              </span></span>
 <span><span class="co">#&gt; [103] KernSmooth_2.23-26        otel_0.2.0               </span></span>
-<span><span class="co">#&gt; [105] rpart_4.1.24              colorspace_2.1-2         </span></span>
+<span><span class="co">#&gt; [105] rpart_4.1.27              colorspace_2.1-2         </span></span>
 <span><span class="co">#&gt; [107] DBI_1.3.0                 Hmisc_5.2-5              </span></span>
 <span><span class="co">#&gt; [109] nnet_7.3-20               tidyselect_1.2.1         </span></span>
 <span><span class="co">#&gt; [111] bit_4.6.0                 compiler_4.4.2           </span></span>
@@ -2000,7 +2031,7 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; [125] affy_1.84.0               quadprog_1.5-8           </span></span>
 <span><span class="co">#&gt; [127] rappdirs_0.3.4            tiff_0.1-12              </span></span>
 <span><span class="co">#&gt; [129] stringr_1.6.0             digest_0.6.39            </span></span>
-<span><span class="co">#&gt; [131] minqa_1.2.8               rmarkdown_2.30           </span></span>
+<span><span class="co">#&gt; [131] minqa_1.2.8               rmarkdown_2.31           </span></span>
 <span><span class="co">#&gt; [133] GEOquery_2.74.0           jpeg_0.1-11              </span></span>
 <span><span class="co">#&gt; [135] htmltools_0.5.9           pkgconfig_2.0.3          </span></span>
 <span><span class="co">#&gt; [137] base64enc_0.1-6           lme4_2.0-1               </span></span>
@@ -2031,7 +2062,7 @@ which can be accessed from the following link:</p>
 <span><span class="co">#&gt; [187] reshape_0.8.10            ggplot2_4.0.2            </span></span>
 <span><span class="co">#&gt; [189] broom_1.0.12              xtable_1.8-8             </span></span>
 <span><span class="co">#&gt; [191] restfulr_0.0.16           AnnotationFilter_1.30.0  </span></span>
-<span><span class="co">#&gt; [193] rstatix_0.7.3             ragg_1.5.1               </span></span>
+<span><span class="co">#&gt; [193] rstatix_0.7.3             ragg_1.5.2               </span></span>
 <span><span class="co">#&gt; [195] tibble_3.3.1              lmerTest_3.2-1           </span></span>
 <span><span class="co">#&gt; [197] memoise_2.0.1             AnnotationDbi_1.68.0     </span></span>
 <span><span class="co">#&gt; [199] GenomicAlignments_1.42.0  cluster_2.1.8.2</span></span></code></pre></div>
@@ -2076,13 +2107,13 @@ such as chip and position effects.</p>
 <span>  </span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ==== Starting SVA Estimation with Enmix ====</span></span>
-<span><span class="co">#&gt; Start time:  2026-03-24 05:44:59 </span></span>
+<span><span class="co">#&gt; Start time:  2026-03-31 00:47:38 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Log file path:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/logs/log_svaEnmix.txt </span></span>
+<span><span class="co">#&gt; Log file path:  /tmp/RtmpC3qcqa/dnaEPICO_Test/logs/log_svaEnmix.txt </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Pheno file:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingMinfiEwasWater/sample_minfi.csv </span></span>
+<span><span class="co">#&gt; Pheno file:  /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingMinfiEwasWater/sample_minfi.csv </span></span>
 <span><span class="co">#&gt; Separator type:   </span></span>
-<span><span class="co">#&gt; Log directory:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/logs </span></span>
+<span><span class="co">#&gt; Log directory:  /tmp/RtmpC3qcqa/dnaEPICO_Test/logs </span></span>
 <span><span class="co">#&gt; Sample limit:  All </span></span>
 <span><span class="co">#&gt; SampleID column:  Sample_Name </span></span>
 <span><span class="co">#&gt; Sentrix ID column:  Sentrix_ID </span></span>
@@ -2115,11 +2146,11 @@ such as chip and position effects.</p>
 <span><span class="co">#&gt; GroupB_1  -3840.017 -1215.872 -10610.1476</span></span>
 <span><span class="co">#&gt; GroupA_1  10355.156 -9071.276  -7419.7718</span></span>
 <span><span class="co">#&gt; GroupB_2   3637.102 24364.897   -237.5511</span></span>
-<span><span class="co">#&gt; SVA Matrix RData saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/svaEnmix/svaMatrix.RData </span></span>
-<span><span class="co">#&gt; SVA Matrix CSV saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/svaEnmix/svaMatrix.csv </span></span>
-<span><span class="co">#&gt; Saved phenoLC + SVA: /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingMinfiEwasWater/sample_minfi.csv</span></span>
-<span><span class="co">#&gt; SVA Sentrix plot saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/svaEnmix/sva_SentrixID.tiff</span></span>
-<span><span class="co">#&gt; SVA Position plot saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/svaEnmix/sva_SentrixPosition.tiff </span></span>
+<span><span class="co">#&gt; SVA Matrix RData saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/svaEnmix/svaMatrix.RData </span></span>
+<span><span class="co">#&gt; SVA Matrix CSV saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/data/svaEnmix/svaMatrix.csv </span></span>
+<span><span class="co">#&gt; Saved phenoLC + SVA: /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingMinfiEwasWater/sample_minfi.csv</span></span>
+<span><span class="co">#&gt; SVA Sentrix plot saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/svaEnmix/sva_SentrixID.tiff</span></span>
+<span><span class="co">#&gt; SVA Position plot saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/svaEnmix/sva_SentrixPosition.tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Number of surrogate variables (K): 3 </span></span>
 <span><span class="co">#&gt; SentrixID class: factor </span></span>
@@ -2159,7 +2190,7 @@ such as chip and position effects.</p>
 <span><span class="co">#&gt; Warning in anova.lm(lmsvaRed[[i]]): ANOVA F-tests on an essentially perfect fit</span></span>
 <span><span class="co">#&gt; are unreliable</span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
-<span><span class="co">#&gt; SVA Sentrix/Position plot saved to:  /tmp/Rtmpf6UEhA/dnaEPICO_Test/figures/svaEnmix/sva_SentrixIDPosition.tiff </span></span>
+<span><span class="co">#&gt; SVA Sentrix/Position plot saved to:  /tmp/RtmpC3qcqa/dnaEPICO_Test/figures/svaEnmix/sva_SentrixIDPosition.tiff </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Session info:</span></span>
 <span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
@@ -2206,11 +2237,11 @@ such as chip and position effects.</p>
 <span><span class="co">#&gt; [18] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [19] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [20] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [21] dnaEPICO_0.99.7                                   </span></span>
+<span><span class="co">#&gt; [21] dnaEPICO_0.99.8                                   </span></span>
 <span><span class="co">#&gt; [22] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] fs_2.0.0                  ProtGenerics_1.38.0      </span></span>
+<span><span class="co">#&gt;   [1] fs_2.0.1                  ProtGenerics_1.38.0      </span></span>
 <span><span class="co">#&gt;   [3] bitops_1.0-9              blastula_0.3.6           </span></span>
 <span><span class="co">#&gt;   [5] httr_1.4.8                RColorBrewer_1.1-3       </span></span>
 <span><span class="co">#&gt;   [7] doParallel_1.0.17         numDeriv_2016.8-1.1      </span></span>
@@ -2257,12 +2288,12 @@ such as chip and position effects.</p>
 <span><span class="co">#&gt;  [89] S4Arrays_1.6.0            tidyverse_2.0.0          </span></span>
 <span><span class="co">#&gt;  [91] glm2_1.2.1                reformulas_0.4.4         </span></span>
 <span><span class="co">#&gt;  [93] survival_3.8-6            statmod_1.5.1            </span></span>
-<span><span class="co">#&gt;  [95] nlme_3.1-168              bit64_4.6.0-1            </span></span>
+<span><span class="co">#&gt;  [95] nlme_3.1-169              bit64_4.6.0-1            </span></span>
 <span><span class="co">#&gt;  [97] progress_1.2.3            filelock_1.0.3           </span></span>
 <span><span class="co">#&gt;  [99] bslib_0.10.0              nor1mix_1.3-3            </span></span>
 <span><span class="co">#&gt; [101] affyio_1.76.0             irlba_2.3.7              </span></span>
 <span><span class="co">#&gt; [103] KernSmooth_2.23-26        otel_0.2.0               </span></span>
-<span><span class="co">#&gt; [105] rpart_4.1.24              colorspace_2.1-2         </span></span>
+<span><span class="co">#&gt; [105] rpart_4.1.27              colorspace_2.1-2         </span></span>
 <span><span class="co">#&gt; [107] DBI_1.3.0                 Hmisc_5.2-5              </span></span>
 <span><span class="co">#&gt; [109] nnet_7.3-20               tidyselect_1.2.1         </span></span>
 <span><span class="co">#&gt; [111] bit_4.6.0                 compiler_4.4.2           </span></span>
@@ -2275,7 +2306,7 @@ such as chip and position effects.</p>
 <span><span class="co">#&gt; [125] affy_1.84.0               quadprog_1.5-8           </span></span>
 <span><span class="co">#&gt; [127] rappdirs_0.3.4            tiff_0.1-12              </span></span>
 <span><span class="co">#&gt; [129] stringr_1.6.0             digest_0.6.39            </span></span>
-<span><span class="co">#&gt; [131] minqa_1.2.8               rmarkdown_2.30           </span></span>
+<span><span class="co">#&gt; [131] minqa_1.2.8               rmarkdown_2.31           </span></span>
 <span><span class="co">#&gt; [133] GEOquery_2.74.0           jpeg_0.1-11              </span></span>
 <span><span class="co">#&gt; [135] htmltools_0.5.9           pkgconfig_2.0.3          </span></span>
 <span><span class="co">#&gt; [137] base64enc_0.1-6           lme4_2.0-1               </span></span>
@@ -2306,7 +2337,7 @@ such as chip and position effects.</p>
 <span><span class="co">#&gt; [187] reshape_0.8.10            ggplot2_4.0.2            </span></span>
 <span><span class="co">#&gt; [189] broom_1.0.12              xtable_1.8-8             </span></span>
 <span><span class="co">#&gt; [191] restfulr_0.0.16           AnnotationFilter_1.30.0  </span></span>
-<span><span class="co">#&gt; [193] rstatix_0.7.3             ragg_1.5.1               </span></span>
+<span><span class="co">#&gt; [193] rstatix_0.7.3             ragg_1.5.2               </span></span>
 <span><span class="co">#&gt; [195] tibble_3.3.1              lmerTest_3.2-1           </span></span>
 <span><span class="co">#&gt; [197] memoise_2.0.1             AnnotationDbi_1.68.0     </span></span>
 <span><span class="co">#&gt; [199] GenomicAlignments_1.42.0  cluster_2.1.8.2</span></span></code></pre></div>
@@ -2368,13 +2399,13 @@ matrices.</p>
 <span>  outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tmpDir</span>, <span class="st">"data"</span>, <span class="st">"preprocessingPheno"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ==== Starting Phenotype Preprocessing ====</span></span>
-<span><span class="co">#&gt; Start Time:                2026-03-24 05:45:01 </span></span>
-<span><span class="co">#&gt; Log file path:             /tmp/Rtmpf6UEhA/dnaEPICO_Test/logs/log_preprocessingPheno.txt </span></span>
+<span><span class="co">#&gt; Start Time:                2026-03-31 00:47:40 </span></span>
+<span><span class="co">#&gt; Log file path:             /tmp/RtmpC3qcqa/dnaEPICO_Test/logs/log_preprocessingPheno.txt </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Phenotype file:            /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingMinfiEwasWater/sample_minfi.csv </span></span>
-<span><span class="co">#&gt; Beta path:                 /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
-<span><span class="co">#&gt; M-values path:             /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
-<span><span class="co">#&gt; CN path:                   /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
+<span><span class="co">#&gt; Phenotype file:            /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingMinfiEwasWater/sample_minfi.csv </span></span>
+<span><span class="co">#&gt; Beta path:                 /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
+<span><span class="co">#&gt; M-values path:             /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
+<span><span class="co">#&gt; CN path:                   /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Identifier column:         Sample_Name </span></span>
 <span><span class="co">#&gt; Timepoint column:         Timepoint </span></span>
@@ -2382,9 +2413,9 @@ matrices.</p>
 <span><span class="co">#&gt; Combine timepoints:        1 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Sex column:                sex </span></span>
-<span><span class="co">#&gt; Output phenotype dir:      /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingPheno </span></span>
-<span><span class="co">#&gt; RData metrics dir:         /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingPheno/metrics </span></span>
-<span><span class="co">#&gt; RData merge dir:           /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingPheno/mergeData </span></span>
+<span><span class="co">#&gt; Output phenotype dir:      /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingPheno </span></span>
+<span><span class="co">#&gt; RData metrics dir:         /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingPheno/metrics </span></span>
+<span><span class="co">#&gt; RData merge dir:           /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingPheno/mergeData </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Beta dimensions:  451304 6 </span></span>
@@ -2406,14 +2437,14 @@ matrices.</p>
 <span><span class="co">#&gt; 1 </span></span>
 <span><span class="co">#&gt; 6 </span></span>
 <span><span class="co">#&gt; Combining timepoints: 1 </span></span>
-<span><span class="co">#&gt; Saved combined phenotype file for T1T2 at: /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingPheno </span></span>
+<span><span class="co">#&gt; Saved combined phenotype file for T1T2 at: /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingPheno </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; Processing merge for timepoint: 1 </span></span>
 <span><span class="co">#&gt;   - pheno rows: 6 </span></span>
 <span><span class="co">#&gt;   - beta cols: 6 </span></span>
 <span><span class="co">#&gt; Saved merged object for T1</span></span>
 <span><span class="co">#&gt; Combined data saved for timepoints: 1 </span></span>
-<span><span class="co">#&gt; Merged data saved to: /tmp/Rtmpf6UEhA/dnaEPICO_Test/rData/preprocessingPheno/mergeData </span></span>
+<span><span class="co">#&gt; Merged data saved to: /tmp/RtmpC3qcqa/dnaEPICO_Test/rData/preprocessingPheno/mergeData </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt;      ProbeID   GroupA_3   GroupA_2   GroupB_3   GroupB_1</span></span>
 <span><span class="co">#&gt; 1 cg13869341 0.86170119 0.95795345 0.92343122 0.84462880</span></span>
@@ -2421,10 +2452,10 @@ matrices.</p>
 <span><span class="co">#&gt; 3 cg12045430 0.03194010 0.04397503 0.03534566 0.13103183</span></span>
 <span><span class="co">#&gt; 4 cg20826792 0.09720524 0.10870567 0.09165419 0.13843342</span></span>
 <span><span class="co">#&gt; 5 cg00381604 0.01795101 0.01608951 0.01854242 0.02115069</span></span>
-<span><span class="co">#&gt; Beta CSV file for ClockFundation saved to: /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingPheno/beta.csv </span></span>
-<span><span class="co">#&gt; Beta ZIP file for ClockFundation saved to: /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingPheno/beta.zip </span></span>
+<span><span class="co">#&gt; Beta CSV file for ClockFundation saved to: /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingPheno/beta.csv </span></span>
+<span><span class="co">#&gt; Beta ZIP file for ClockFundation saved to: /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingPheno/beta.zip </span></span>
 <span><span class="co">#&gt; Re-encoding Sex: 0 = Female, 1 = Male</span></span>
-<span><span class="co">#&gt; Sample file for ClockFundation saved to: /tmp/Rtmpf6UEhA/dnaEPICO_Test/data/preprocessingPheno/phenoCF.csv </span></span>
+<span><span class="co">#&gt; Sample file for ClockFundation saved to: /tmp/RtmpC3qcqa/dnaEPICO_Test/data/preprocessingPheno/phenoCF.csv </span></span>
 <span><span class="co">#&gt; =======================================================================</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Session Info:</span></span>
@@ -2472,11 +2503,11 @@ matrices.</p>
 <span><span class="co">#&gt; [18] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [19] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [20] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [21] dnaEPICO_0.99.7                                   </span></span>
+<span><span class="co">#&gt; [21] dnaEPICO_0.99.8                                   </span></span>
 <span><span class="co">#&gt; [22] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] fs_2.0.0                  ProtGenerics_1.38.0      </span></span>
+<span><span class="co">#&gt;   [1] fs_2.0.1                  ProtGenerics_1.38.0      </span></span>
 <span><span class="co">#&gt;   [3] bitops_1.0-9              blastula_0.3.6           </span></span>
 <span><span class="co">#&gt;   [5] httr_1.4.8                RColorBrewer_1.1-3       </span></span>
 <span><span class="co">#&gt;   [7] doParallel_1.0.17         numDeriv_2016.8-1.1      </span></span>
@@ -2523,12 +2554,12 @@ matrices.</p>
 <span><span class="co">#&gt;  [89] S4Arrays_1.6.0            tidyverse_2.0.0          </span></span>
 <span><span class="co">#&gt;  [91] glm2_1.2.1                reformulas_0.4.4         </span></span>
 <span><span class="co">#&gt;  [93] survival_3.8-6            statmod_1.5.1            </span></span>
-<span><span class="co">#&gt;  [95] nlme_3.1-168              bit64_4.6.0-1            </span></span>
+<span><span class="co">#&gt;  [95] nlme_3.1-169              bit64_4.6.0-1            </span></span>
 <span><span class="co">#&gt;  [97] progress_1.2.3            filelock_1.0.3           </span></span>
 <span><span class="co">#&gt;  [99] bslib_0.10.0              nor1mix_1.3-3            </span></span>
 <span><span class="co">#&gt; [101] affyio_1.76.0             irlba_2.3.7              </span></span>
 <span><span class="co">#&gt; [103] KernSmooth_2.23-26        otel_0.2.0               </span></span>
-<span><span class="co">#&gt; [105] rpart_4.1.24              colorspace_2.1-2         </span></span>
+<span><span class="co">#&gt; [105] rpart_4.1.27              colorspace_2.1-2         </span></span>
 <span><span class="co">#&gt; [107] DBI_1.3.0                 Hmisc_5.2-5              </span></span>
 <span><span class="co">#&gt; [109] nnet_7.3-20               tidyselect_1.2.1         </span></span>
 <span><span class="co">#&gt; [111] bit_4.6.0                 compiler_4.4.2           </span></span>
@@ -2541,7 +2572,7 @@ matrices.</p>
 <span><span class="co">#&gt; [125] affy_1.84.0               quadprog_1.5-8           </span></span>
 <span><span class="co">#&gt; [127] rappdirs_0.3.4            tiff_0.1-12              </span></span>
 <span><span class="co">#&gt; [129] stringr_1.6.0             digest_0.6.39            </span></span>
-<span><span class="co">#&gt; [131] minqa_1.2.8               rmarkdown_2.30           </span></span>
+<span><span class="co">#&gt; [131] minqa_1.2.8               rmarkdown_2.31           </span></span>
 <span><span class="co">#&gt; [133] GEOquery_2.74.0           jpeg_0.1-11              </span></span>
 <span><span class="co">#&gt; [135] htmltools_0.5.9           pkgconfig_2.0.3          </span></span>
 <span><span class="co">#&gt; [137] base64enc_0.1-6           lme4_2.0-1               </span></span>
@@ -2572,7 +2603,7 @@ matrices.</p>
 <span><span class="co">#&gt; [187] reshape_0.8.10            ggplot2_4.0.2            </span></span>
 <span><span class="co">#&gt; [189] broom_1.0.12              xtable_1.8-8             </span></span>
 <span><span class="co">#&gt; [191] restfulr_0.0.16           AnnotationFilter_1.30.0  </span></span>
-<span><span class="co">#&gt; [193] rstatix_0.7.3             ragg_1.5.1               </span></span>
+<span><span class="co">#&gt; [193] rstatix_0.7.3             ragg_1.5.2               </span></span>
 <span><span class="co">#&gt; [195] tibble_3.3.1              lmerTest_3.2-1           </span></span>
 <span><span class="co">#&gt; [197] memoise_2.0.1             AnnotationDbi_1.68.0     </span></span>
 <span><span class="co">#&gt; [199] GenomicAlignments_1.42.0  cluster_2.1.8.2</span></span></code></pre></div>
@@ -2614,9 +2645,9 @@ results from all previous steps.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; processing file: DNAm.Rmd</span></span>
 <span><span class="co">#&gt; output file: DNAm.knit.md</span></span>
-<span><span class="co">#&gt; /usr/bin/pandoc +RTS -K512m -RTS DNAm.knit.md --to latex --from markdown+autolink_bare_uris+tex_math_single_backslash --output /tmp/Rtmpf6UEhA/dnaEPICO_Test/reports/DNAm_Report.tex --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/latex-div.lua --embed-resources --standalone --table-of-contents --toc-depth 2 --number-sections --highlight-style tango --pdf-engine pdflatex --variable graphics --include-in-header /tmp/Rtmpf6UEhA/rmarkdown-str1e871bbd2877.html</span></span>
+<span><span class="co">#&gt; /usr/bin/pandoc +RTS -K512m -RTS DNAm.knit.md --to latex --from markdown+autolink_bare_uris+tex_math_single_backslash --output /tmp/RtmpC3qcqa/dnaEPICO_Test/reports/DNAm_Report.tex --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/latex-div.lua --embed-resources --standalone --table-of-contents --toc-depth 2 --number-sections --highlight-style tango --pdf-engine pdflatex --variable graphics --extract-media /tmp/RtmpC3qcqa/dnaEPICO_Test/reports/DNAm_Report_files --include-in-header /tmp/RtmpC3qcqa/rmarkdown-strab35222d9b26.html</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Output created: /tmp/Rtmpf6UEhA/dnaEPICO_Test/reports/DNAm_Report.pdf</span></span></code></pre></div>
+<span><span class="co">#&gt; Output created: /tmp/RtmpC3qcqa/dnaEPICO_Test/reports/DNAm_Report.pdf</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level3">
@@ -2678,38 +2709,39 @@ R.</p>
 <li>R_DIR = NULL</li>
 </ul>
 <p>Setting <code>R_DIR = NULL</code> tells the pipeline to use the
-<strong>default R library paths</strong>, which is appropriate for:</p>
-<ul>
-<li>local testing</li>
-<li>vignette examples</li>
-<li>containerised or module-based HPC environments</li>
-</ul>
+<strong>default R library paths</strong>, which is appropriate for local
+testing. You need to use a directory if you are running this in HPC
+environments.</p>
 </div>
 <div class="section level4">
 <h4 id="step-4-matching-columns">Step 4: Matching columns<a class="anchor" aria-label="anchor" href="#step-4-matching-columns"></a>
 </h4>
-<p><code>GLOBAL PARAMETERS</code> - SAMPLE_ID = Sample_Name - ARRAY_TYPE
-= IlluminaHumanMethylation450k - ANNOTATION_VERSION = ilmn12.hg19 -
-SEX_COLUMN = sex - SENTRIX_ID_COLUMN = Sentrix_ID -
-SENTRIX_POSITION_COLUMN = Sentrix_Position</p>
+<p><code>GLOBAL PARAMETERS</code>:</p>
+<ul>
+<li>SAMPLE_ID = Sample_Name</li>
+<li>ARRAY_TYPE = IlluminaHumanMethylation450k</li>
+<li>ANNOTATION_VERSION = ilmn12.hg19</li>
+<li>SEX_COLUMN = sex</li>
+<li>SENTRIX_ID_COLUMN = Sentrix_ID</li>
+<li>SENTRIX_POSITION_COLUMN = Sentrix_Position</li>
+</ul>
 <p>These parameters ensure the Makefile uses the:</p>
 <ul>
 <li>correct sample identifier,</li>
-<li>correct array platform and annotation, and</li>
-<li>correct sex column and chip metadata</li>
+<li>correct array platform and annotation,</li>
+<li>and correct sex column and chip metadata</li>
 </ul>
 </div>
 <div class="section level4">
 <h4 id="step-5-plot-grouping-and-cell-composition-reference">Step 5: Plot grouping and cell composition reference<a class="anchor" aria-label="anchor" href="#step-5-plot-grouping-and-cell-composition-reference"></a>
 </h4>
 <ul>
-<li><p>PLOT_GROUP_VAR = sex</p></li>
-<li><p>LC_REF = FlowSorted.Blood.450k</p></li>
-<li><p>Plots are grouped by <code>sex</code>, matching earlier QC
-figures</p></li>
-<li><p><code>FlowSorted.Blood.450k</code> is selected as the reference
-panel because <code>minfiData</code> represents blood samples</p></li>
+<li>PLOT_GROUP_VAR = sex</li>
+<li>LC_REF = FlowSorted.Blood.450k</li>
 </ul>
+<p>Plots are grouped by <code>sex</code>, matching earlier QC figures.
+<code>FlowSorted.Blood.450k</code> is selected as the reference panel
+because <code>minfiData</code> represents blood samples.</p>
 </div>
 <div class="section level4">
 <h4 id="step-6-timepoint">Step 6: Timepoint<a class="anchor" aria-label="anchor" href="#step-6-timepoint"></a>
@@ -2727,9 +2759,9 @@ longitudinal logic is disabled.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-03-24 05:45:24 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-03-31 00:48:04 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 2.427 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 2.636 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -2778,11 +2810,11 @@ longitudinal logic is disabled.</p>
 <span><span class="co">#&gt; [21] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [22] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [23] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [24] dnaEPICO_0.99.7                                   </span></span>
+<span><span class="co">#&gt; [24] dnaEPICO_0.99.8                                   </span></span>
 <span><span class="co">#&gt; [25] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] fs_2.0.0                  ProtGenerics_1.38.0      </span></span>
+<span><span class="co">#&gt;   [1] fs_2.0.1                  ProtGenerics_1.38.0      </span></span>
 <span><span class="co">#&gt;   [3] bitops_1.0-9              blastula_0.3.6           </span></span>
 <span><span class="co">#&gt;   [5] httr_1.4.8                RColorBrewer_1.1-3       </span></span>
 <span><span class="co">#&gt;   [7] doParallel_1.0.17         numDeriv_2016.8-1.1      </span></span>
@@ -2827,13 +2859,13 @@ longitudinal logic is disabled.</p>
 <span><span class="co">#&gt;  [85] rbibutils_2.4.1           S4Arrays_1.6.0           </span></span>
 <span><span class="co">#&gt;  [87] tidyverse_2.0.0           glm2_1.2.1               </span></span>
 <span><span class="co">#&gt;  [89] reformulas_0.4.4          survival_3.8-6           </span></span>
-<span><span class="co">#&gt;  [91] tinytex_0.58              statmod_1.5.1            </span></span>
-<span><span class="co">#&gt;  [93] nlme_3.1-168              bit64_4.6.0-1            </span></span>
+<span><span class="co">#&gt;  [91] tinytex_0.59              statmod_1.5.1            </span></span>
+<span><span class="co">#&gt;  [93] nlme_3.1-169              bit64_4.6.0-1            </span></span>
 <span><span class="co">#&gt;  [95] progress_1.2.3            filelock_1.0.3           </span></span>
 <span><span class="co">#&gt;  [97] bslib_0.10.0              nor1mix_1.3-3            </span></span>
 <span><span class="co">#&gt;  [99] affyio_1.76.0             irlba_2.3.7              </span></span>
 <span><span class="co">#&gt; [101] KernSmooth_2.23-26        otel_0.2.0               </span></span>
-<span><span class="co">#&gt; [103] rpart_4.1.24              colorspace_2.1-2         </span></span>
+<span><span class="co">#&gt; [103] rpart_4.1.27              colorspace_2.1-2         </span></span>
 <span><span class="co">#&gt; [105] DBI_1.3.0                 Hmisc_5.2-5              </span></span>
 <span><span class="co">#&gt; [107] nnet_7.3-20               tidyselect_1.2.1         </span></span>
 <span><span class="co">#&gt; [109] bit_4.6.0                 compiler_4.4.2           </span></span>
@@ -2846,7 +2878,7 @@ longitudinal logic is disabled.</p>
 <span><span class="co">#&gt; [123] affy_1.84.0               quadprog_1.5-8           </span></span>
 <span><span class="co">#&gt; [125] rappdirs_0.3.4            stringr_1.6.0            </span></span>
 <span><span class="co">#&gt; [127] digest_0.6.39             minqa_1.2.8              </span></span>
-<span><span class="co">#&gt; [129] rmarkdown_2.30            GEOquery_2.74.0          </span></span>
+<span><span class="co">#&gt; [129] rmarkdown_2.31            GEOquery_2.74.0          </span></span>
 <span><span class="co">#&gt; [131] jpeg_0.1-11               htmltools_0.5.9          </span></span>
 <span><span class="co">#&gt; [133] pkgconfig_2.0.3           base64enc_0.1-6          </span></span>
 <span><span class="co">#&gt; [135] lme4_2.0-1                sparseMatrixStats_1.18.0 </span></span>
@@ -2877,7 +2909,7 @@ longitudinal logic is disabled.</p>
 <span><span class="co">#&gt; [185] ggplot2_4.0.2             broom_1.0.12             </span></span>
 <span><span class="co">#&gt; [187] xtable_1.8-8              restfulr_0.0.16          </span></span>
 <span><span class="co">#&gt; [189] AnnotationFilter_1.30.0   rstatix_0.7.3            </span></span>
-<span><span class="co">#&gt; [191] ragg_1.5.1                tibble_3.3.1             </span></span>
+<span><span class="co">#&gt; [191] ragg_1.5.2                tibble_3.3.1             </span></span>
 <span><span class="co">#&gt; [193] lmerTest_3.2-1            memoise_2.0.1            </span></span>
 <span><span class="co">#&gt; [195] AnnotationDbi_1.68.0      GenomicAlignments_1.42.0 </span></span>
 <span><span class="co">#&gt; [197] cluster_2.1.8.2</span></span></code></pre>
