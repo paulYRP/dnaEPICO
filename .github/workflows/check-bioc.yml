@@ -202,12 +202,12 @@ jobs:
           ## Install BiocGenerics
           BiocManager::install("BiocGenerics")
         shell: Rscript {0}
-      
-      - name: Install TinyTeX (LaTeX for PDF)
-        run: |
-          install.packages("tinytex", repos="https://cloud.r-project.org")
-          tinytex::install_tinytex()
-        shell: Rscript {0}
+
+      ## Keep TeX available across runners for the report path, but use the
+      ## maintained r-lib action instead of calling tinytex::install_tinytex()
+      ## directly, since the upstream installer URL can fail on macOS.
+      - name: Setup TinyTeX
+        uses: r-lib/actions/setup-tinytex@v2
 
       - name: Install covr
         if: github.ref == 'refs/heads/devel' && env.run_covr == 'true' && runner.os == 'Linux'
