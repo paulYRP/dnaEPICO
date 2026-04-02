@@ -1,5 +1,5 @@
 ==== Starting DNAm GLM Analysis (Timepoint 1) ====
-Start time:  2026-03-31 09:49:05 
+Start time:  2026-04-02 05:15:45 
 Input phenotype + beta file:  rData/preprocessingPheno/mergeData/phenoBetaT1.RData 
 Output RData folder:  rData/methylationGLM_T1/models 
 Output logs folder:  logs 
@@ -13,7 +13,7 @@ CpG column prefix:  cg
 CpG limit:  All 
 Number of cores:  4 
 Interaction term:  
-Library path:  
+Library path:  /__w/_temp/Library /usr/local/lib/R/site-library /usr/local/lib/R/library 
 GLM libraries:  glm2 
 PRS mapping:  None 
 Include Residual SD in summary:  TRUE 

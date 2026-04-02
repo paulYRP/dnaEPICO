@@ -1,5 +1,5 @@
 ==== Starting DNAm LME Analysis (Timepoint 1 vs 3) ====
-Start time:  2026-03-31 09:49:05 
+Start time:  2026-04-02 05:15:45 
 Input phenotype + beta file:  rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData 
 Person ID variable:  person 
 Timepoint variable:  Timepoint 
@@ -10,7 +10,7 @@ Covariates:  Sex,Age,Ethnicity,TraumaDefinition,
 PRS mapping:  None 
 Factor variables:  Sex,Ethnicity,TraumaDefinition,Timepoint 
 LME libraries:  lme4,lmerTest 
-Library path:  Default (R system) 
+Library path:  /__w/_temp/Library 
 CpG prefix pattern:  cg 
 CpG limit:  All CpGs 
 Number of cores:  4 

@@ -1,5 +1,5 @@
 ==== Starting SVA Estimation with Enmix ====
-Start time:  2026-03-31 09:49:06 
+Start time:  2026-04-02 05:15:45 
 
 Log file path:  logs/log_svaEnmix.txt 
 
@@ -19,6 +19,8 @@ Writing `reference/svaEnmix.html`
 ── Building articles ───────────────────────────────────────────────────────────
 Writing `articles/index.html`
 Reading vignettes/dnaEPICO.Rmd
+Setting options('download.file.method.GEOquery'='auto')
+Setting options('GEOquery.inmemory.gpl'=FALSE)
 Writing `articles/dnaEPICO.html`
 ── Building news ───────────────────────────────────────────────────────────────
 Writing `news/index.html`
