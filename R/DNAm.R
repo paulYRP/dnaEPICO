@@ -1,6 +1,4 @@
 #' Generate a DNA methylation PDF report
-#' @import rmarkdown
-#' @import tiff
 #'
 #' @param output Character. Name of the output PDF file.
 #' @param outputDir Character. Directory where the report will be saved.

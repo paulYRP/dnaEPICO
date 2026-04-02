@@ -1,56 +1,54 @@
 Package: dnaEPICO
 Title: dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data
-Version: 0.99.9
+Version: 0.99.10
 Date: 2026-01-18
 Authors@R: c(person("Paul", "Ruiz", role = c("aut", "cre"),
             email = "ruizpint@qut.edu.au", comment = c(ORCID = "0009-0007-6714-3566")),
             person("Divya", "Mehta", role = "aut",
             comment = c(ORCID = "0000-0001-7971-7255")))
 Description:
-    This package provides a modular and reproducible framework for the
-    preprocessing and analysis of Illumina DNA methylation array 
-    data (EPICv2, EPIC and 450K). It supports quality control, probe 
-    filtering, cell-type deconvolution, phenotype integration, and 
-    downstream statistical modelling using generalised linear and 
-    linear mixed-effects models. The package builds on established 
-    Bioconductor infrastructure and wraps widely used tools such as 
-    'minfi', 'ENmix', and 'wateRmelon', with support for execution 
-    on local workstations and high-performance computing environments.
+    A modular and reproducible workflow for preprocessing and analysing
+    Illumina DNA methylation array data from the EPICv2, EPIC, and
+    450K platforms. The package integrates quality control, probe
+    filtering, cell-type deconvolution, phenotype preparation,
+    generalised linear models, linear mixed-effects models, and
+    automated report generation. It builds on established Bioconductor
+    infrastructure and wraps commonly used tools including 'minfi',
+    'ENmix', and 'wateRmelon', with support for both local execution
+    and high-performance computing workflows.
 License: AGPL-3 + file LICENSE
 URL: https://github.com/paulYRP/dnaEPICO
 BugReports: https://github.com/paulYRP/dnaEPICO/issues
 Depends: R (>= 4.4)
 Imports:
+    Biobase,
     GenomeInfoDb,
     RColorBrewer,
     data.table,
     ggplot2,
-    ggpubr,
     MASS,
+    magrittr,
+    methods,
     minfi,
     limma,
     wateRmelon,
     ENmix,
-    Gviz,
     dplyr,
-    tidyverse,
     ggrepel,
     readr,
     stringr,
-    purrr,
     glm2,
     parallel,
-    tidyr,
     lme4,
     lmerTest,
     quadprog,
     rmarkdown,
+    rlang,
     utils,
     stats,
     tibble,
     pointblank,
     forcats,
-    tiff,
     tinytex
 Suggests:
     IlluminaHumanMethylation450kmanifest,
@@ -70,6 +68,7 @@ Suggests:
     sessioninfo,
     devtools,
     testthat,
+    tiff,
     knitr,
     covr,
     withr,

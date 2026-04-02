@@ -1,12 +1,5 @@
 #' Run preprocessingPheno.R
-#' @importFrom dplyr rename
-#' @import tidyverse
-#' @import readr
-#' @import stringr
-#' @import purrr
-#' @importFrom tibble rownames_to_column
-#' @importFrom utils read.csv write.csv
-#' @importFrom stats setNames
+#' @importFrom magrittr %>%
 #'
 #' @param phenoFile Character. Path to phenotype file.
 #' @param sepType Character. Field separator for phenotype file.
@@ -132,15 +125,15 @@ if (sepType == "\\t") {
 
 # Now read the phenotype file
 if (!is.null(sepChar)) {
-  pheno <- read.csv(phenoFile, sep = sepChar)
+  pheno <- utils::read.csv(phenoFile, sep = sepChar)
 } else {
-  pheno <- read.csv(phenoFile)
+  pheno <- utils::read.csv(phenoFile)
 }
 
 cat("Phenotype file loaded with",
     nrow(pheno), "samples and", ncol(pheno), "columns.\n")
 cat("Preview of phenoLC:\n")
-print(head(pheno[, 1:5]))
+print(utils::head(pheno[, 1:5]))
 cat("=======================================================================\n")
 
 # ----------- Subsetting Timepoints & Data Splitting -----------
@@ -166,7 +159,7 @@ for (tp in timepoints) {
 
 # Save each subset
 for (tp in timepoints) {
-        write.csv(get(paste0("phenoT", tp)), file = file.path(outputPheno,
+        utils::write.csv(get(paste0("phenoT", tp)), file = file.path(outputPheno,
                                                               paste0("phenoT",
                                                                      tp, ".csv")),
                   row.names = FALSE)
@@ -186,7 +179,7 @@ combinedPhenoList <- lapply(combineTPs, function(tp) get(paste0("phenoT", tp)))
 phenoCombined <- do.call(rbind, combinedPhenoList)
 
 combineSuffix <- paste0("T", paste(combineTPs, collapse = "T"))
-write.csv(phenoCombined,
+utils::write.csv(phenoCombined,
           file = file.path(outputPheno,
                                           paste0("pheno",
                                                  combineSuffix, ".csv")),
@@ -263,15 +256,15 @@ betaCSV <- tibble::rownames_to_column(betaCSV, var = "ProbeID")
 
 # Inspect changes
 dim(betaCSV)
-print(head(betaCSV)[1:5, 1:5])
+print(utils::head(betaCSV)[1:5, 1:5])
 
 betaCSVPath <- file.path(outputDir, "beta.csv")
-write.csv(betaCSV, file = betaCSVPath, row.names = FALSE)
+utils::write.csv(betaCSV, file = betaCSVPath, row.names = FALSE)
 cat("Beta CSV file for ClockFundation saved to:", betaCSVPath, "\n")
 
 zipFile <- file.path(outputDir, "beta.zip")
 
-zip(zipfile = zipFile, files = betaCSVPath, flags = "-j")
+utils::zip(zipfile = zipFile, files = betaCSVPath, flags = "-j")
 
 cat("Beta ZIP file for ClockFundation saved to:", zipFile, "\n")
 
@@ -279,7 +272,7 @@ cat("Beta ZIP file for ClockFundation saved to:", zipFile, "\n")
 
 # Rename the column "SampleName" to "id"
 pheno <- pheno %>%
-  rename(id = SampleID)
+  dplyr::rename(id = SampleID)
 
 # Recode Sex only if values are not already "Male"/"Female"
 uniqueSex <- unique(pheno[[sexColumn]])
@@ -293,14 +286,14 @@ if (!all(uniqueSex %in% c("Male", "Female"))) {
 
 phenoCSVPath <- file.path(outputDir, "phenoCF.csv")
 
-write.csv(pheno, file = phenoCSVPath, row.names = FALSE)
+utils::write.csv(pheno, file = phenoCSVPath, row.names = FALSE)
 cat("Sample file for ClockFundation saved to:", phenoCSVPath, "\n")
 
 cat("=======================================================================\n")
 
 # ----------- Close Logging -----------
 cat("\nSession Info:\n")
-print(sessionInfo())
+print(utils::sessionInfo())
 # =============================================================================
 sink(type = "message")
 sink()

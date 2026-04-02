@@ -1,10 +1,4 @@
 #' Run svaEnmix.R
-#' @import minfi
-#' @import Gviz
-#' @import ENmix
-#' @import ggplot2
-#' @import ggpubr
-#' @importFrom MASS dropterm
 #'
 #' @param phenoFile Character. Path to phenotype file with cell composition data.
 #' @param rgsetData Character. Path to RGSet RData file.
@@ -129,9 +123,9 @@ if (sepType == "\\t") {
 
 # Now read the phenotype file
 if (!is.null(sepChar)) {
-  targets <- read.csv(phenoFile, sep = sepChar)
+  targets <- utils::read.csv(phenoFile, sep = sepChar)
 } else {
-  targets <- read.csv(phenoFile)
+  targets <- utils::read.csv(phenoFile)
 }
 
 if (!is.na(nSamples) && nSamples < nrow(targets)) {
@@ -144,25 +138,25 @@ if (!is.na(nSamples) && nSamples < nrow(targets)) {
 cat("Phenotype file loaded with",
     nrow(targets), "samples and", ncol(targets), "columns.\n")
 cat("Preview of targets:\n")
-print(head(targets[, 1:6]))
+print(utils::head(targets[, 1:6]))
 cat("=======================================================================\n")
 
 # ----------- Load IDAT Files into RGSet -----------
 load(rgsetData)
 
 # Assign custom sample names
-sampleNames(RGSet) <- targets[[SampleID]]
-cat("RGSet loaded with", length(sampleNames(RGSet)), "samples.\n")
+Biobase::sampleNames(RGSet) <- targets[[SampleID]]
+cat("RGSet loaded with", length(Biobase::sampleNames(RGSet)), "samples.\n")
 cat("=======================================================================\n")
 
 # ----------- Estimate Surrogate Variables from Control Probes -----------
-sva <- ctrlsva(
+sva <- ENmix::ctrlsva(
   rgSet = RGSet,
   percvar = ctrlSvaPercVar,
   flag = ctrlSvaFlag
 )
 cat("Surrogate variables matrix (first few rows):\n")
-print(head(sva))
+print(utils::head(sva))
 
 # ---- Save SVA matrix ----
 svaSentrixRDataPath <- file.path(rBaseDir,
@@ -172,7 +166,7 @@ cat("SVA Matrix RData saved to: ", svaSentrixRDataPath, "\n")
 
 svaSentrixRDataCSV <- file.path(dataBaseDir,
                                 scriptLabel, "svaMatrix.csv")
-write.csv(sva, svaSentrixRDataCSV, row.names = TRUE)
+utils::write.csv(sva, svaSentrixRDataCSV, row.names = TRUE)
 cat("SVA Matrix CSV saved to: ", svaSentrixRDataCSV, "\n")
 
 # ---- Prepare SVA for merge ----
@@ -182,57 +176,57 @@ names(svaD)[1] <- SampleID
 # ---- Merge with phenotype ----
 pheno <- merge(targets, svaD, by = SampleID, all.x = TRUE)
 
-write.csv(pheno,
+utils::write.csv(pheno,
           file = phenoFile,
           row.names = FALSE)
 cat("Saved phenoLC + SVA:", phenoFile, "\n")
 
 # ----------- Plot SVA Colored by SentrixID -----------
-sentrixID <- as.factor(pData(RGSet)[[SentrixIDColumn]])
+sentrixID <- as.factor(Biobase::pData(RGSet)[[SentrixIDColumn]])
 
 # Create TIFF output
 svaSentrixPath <- file.path(figureBaseDir,
                         scriptLabel, "sva_SentrixID.tiff")
-tiff(filename = svaSentrixPath,
+grDevices::tiff(filename = svaSentrixPath,
      width = tiffWidth,
      height = tiffHeight,
      res = tiffRes, type = "cairo")
 
-plot(sva[, 1], sva[, 2],
-     col = rainbow(length(levels(sentrixID)))[sentrixID],
+graphics::plot(sva[, 1], sva[, 2],
+     col = grDevices::rainbow(length(levels(sentrixID)))[sentrixID],
      pch = 16,
      xlab = "Surrogate Variable 1 (PC1)",
      ylab = "Surrogate Variable 2 (PC2)",
      main = "Surrogate Variables Colored by Chip (SentrixID)")
-legend("topright", legend = levels(sentrixID),
-       col = rainbow(length(levels(sentrixID))),
+graphics::legend("topright", legend = levels(sentrixID),
+       col = grDevices::rainbow(length(levels(sentrixID))),
        pch = 16, title = "SentrixID", cex = 0.6)
 
-dev.off()
+grDevices::dev.off()
 
 cat("SVA Sentrix plot saved to: ", svaSentrixPath, "\n")
 
 # ----------- Plot SVA Colored by SentrixPosition -----------
-sentrixPos <- as.factor(pData(RGSet)[[SentrixPositionColumn]])
+sentrixPos <- as.factor(Biobase::pData(RGSet)[[SentrixPositionColumn]])
 
 svaPositionpath <- file.path(figureBaseDir, scriptLabel, "sva_SentrixPosition.tiff")
 
-tiff(filename = svaPositionpath,
+grDevices::tiff(filename = svaPositionpath,
      width = tiffWidth,
      height = tiffHeight,
      res = tiffRes, type = "cairo")
 
-plot(sva[, 1], sva[, 2],
-     col = rainbow(length(levels(sentrixPos)))[sentrixPos],
+graphics::plot(sva[, 1], sva[, 2],
+     col = grDevices::rainbow(length(levels(sentrixPos)))[sentrixPos],
      pch = 16,
      xlab = "Surrogate Variable 1 (PC1)",
      ylab = "Surrogate Variable 2 (PC2)",
      main = "Surrogate Variables Colored by Sentrix Position")
-legend("topright", legend = levels(sentrixPos),
-       col = rainbow(length(levels(sentrixPos))),
+graphics::legend("topright", legend = levels(sentrixPos),
+       col = grDevices::rainbow(length(levels(sentrixPos))),
        pch = 16, title = "SentrixPosition", cex = 0.6)
 
-dev.off()
+grDevices::dev.off()
 
 cat("SVA Position plot saved to: ", svaPositionpath, "\n")
 cat("=======================================================================\n")
@@ -259,11 +253,11 @@ print(sva[1, ])
 cat("Sample names in SVA matrix:",
     paste(rownames(sva)[1:5], collapse = ", "), "\n")
 cat("Sample names in pData(RGSet):",
-    paste(rownames(pData(RGSet))[1:5], collapse = ", "), "\n")
+    paste(rownames(Biobase::pData(RGSet))[1:5], collapse = ", "), "\n")
 
 # Fit linear models for each surrogate variable
 lmsvaFull <- lapply(1:K, function(i)
-  lm(sva[, i] ~ SentrixID + SentrixPosition,
+  stats::lm(sva[, i] ~ SentrixID + SentrixPosition,
      data.frame("SentrixID" = sentrixID,
                 "SentrixPosition" = sentrixPos))
 )
@@ -271,11 +265,11 @@ lmsvaFull <- lapply(1:K, function(i)
 lmsvaRed <- vector("list", K)
 
 # ----------- Save summaries of full models -----------
-capture.output(summary(lmsvaFull[[1]]),
+  utils::capture.output(summary(lmsvaFull[[1]]),
                file = file.path(dataBaseDir, scriptLabel, "summary_full_sva1.txt"))
 
 if (K >= 2) {
-  capture.output(summary(lmsvaFull[[2]]),
+  utils::capture.output(summary(lmsvaFull[[2]]),
                  file = file.path(dataBaseDir, scriptLabel, "summary_full_sva2.txt"))
 }
 
@@ -283,16 +277,16 @@ if (K >= 2) {
 for(i in 1:K){
   lmtmp = lmsvaFull[[i]]
   while(1){
-    dttmp = dropterm(lmtmp, test = "F")
+    dttmp = MASS::dropterm(lmtmp, test = "F")
     if(max(dttmp$`Pr(F)`, na.rm = TRUE) > (0.05))
       ttmp = rownames(dttmp)[which.max(dttmp$`Pr(F)`)]
     else break
-    lmtmp = update(lmtmp, paste(".~. - ", ttmp) )
-    capture.output(dttmp,
+    lmtmp = stats::update(lmtmp, paste(".~. - ", ttmp) )
+    utils::capture.output(dttmp,
                    file = file.path(dataBaseDir,
                                     scriptLabel, paste0("dropterm_step_sva", i, ".txt")),
                    append = TRUE)
-    capture.output(summary(lmtmp),
+    utils::capture.output(summary(lmtmp),
                    file = file.path(dataBaseDir,
                                     scriptLabel, paste0("dropterm_model_sva", i, ".txt")),
                    append = TRUE)
@@ -303,11 +297,11 @@ for(i in 1:K){
 
 # ----------- Save ANOVA summaries for full and reduced models -----------
 for (i in 1:K) {
-  capture.output(anova(lmsvaFull[[i]]),
+  utils::capture.output(stats::anova(lmsvaFull[[i]]),
                  file = file.path(dataBaseDir,
                                   scriptLabel, paste0("anova_full_sva", i, ".txt")))
 
-  capture.output(anova(lmsvaRed[[i]]),
+  utils::capture.output(stats::anova(lmsvaRed[[i]]),
                  file = file.path(dataBaseDir,
                                   scriptLabel, paste0("anova_reduced_sva", i, ".txt")))
 }
@@ -320,23 +314,23 @@ cat("=======================================================================\n")
 svaSentrixPositionPath <- file.path(figureBaseDir,
                                     scriptLabel, "sva_SentrixIDPosition.tiff")
 
-tiff(filename = svaSentrixPositionPath,
+grDevices::tiff(filename = svaSentrixPositionPath,
      width = tiffWidth,
      height = tiffHeight,
      res = tiffRes,
      type = "cairo")
 
 # Prepare plotting layout
-par(mfrow = c(K, K), family = "Times", las = 1)
+graphics::par(mfrow = c(K, K), family = "Times", las = 1)
 
 # Extract and map IDs/positions
-colorMap <- rainbow(length(levels(sentrixID)))
+colorMap <- grDevices::rainbow(length(levels(sentrixID)))
 pchMap <- 1:length(levels(sentrixPos))
 
 # Plot matrix
 for (i in 1:K) {
   for (j in 1:K) {
-    plot(sva[, j], sva[, i],
+    graphics::plot(sva[, j], sva[, i],
          col = colorMap[sentrixID],
          pch = pchMap[sentrixPos],
          xlab = paste("SV", j),
@@ -345,13 +339,13 @@ for (i in 1:K) {
 
     # Legend only in top-left panel
     if (i == 1 && j == 1) {
-      legend("topright",
+      graphics::legend("topright",
              legend = levels(sentrixID),
              col = colorMap,
              pch = 15,
              title = "SentrixID",
              cex = 0.6)
-      legend("bottomright",
+      graphics::legend("bottomright",
              legend = levels(sentrixPos),
              pch = pchMap,
              title = "SentrixPosition",
@@ -361,13 +355,13 @@ for (i in 1:K) {
 }
 
 # Close plotting device
-dev.off()
+grDevices::dev.off()
 
 cat("SVA Sentrix/Position plot saved to: ", svaSentrixPositionPath, "\n")
 cat("=======================================================================\n")
 
 cat("Session info:\n")
-print(sessionInfo())
+print(utils::sessionInfo())
 # ==============================================================================
 
 # ----------- Close Logging -----------

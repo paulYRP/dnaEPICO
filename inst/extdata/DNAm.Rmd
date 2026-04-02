@@ -33,11 +33,6 @@ knitr::opts_chunk$set(message = F)
 knitr::opts_chunk$set(cache = F)
 knitr::opts_chunk$set(verbose = F)
 
-library(knitr)
-library(gridExtra)
-library(grid)
-library(tiff)
-
 ```
 
 ```{r, include=F}
@@ -60,7 +55,7 @@ img_dir <- params$qcDir
 imgs <- list.files(img_dir, pattern = "\\.jpg$", full.names = TRUE)
 
 # Include all
-include_graphics(imgs)
+knitr::include_graphics(imgs)
 
 ```
 
@@ -75,9 +70,9 @@ if (dir.exists(dir)) {
   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
   if (length(files) > 0) {
     for (f in files) {
-      img <- readTIFF(f)
-      plot(as.raster(img))
-      title(main = basename(f))
+      img <- tiff::readTIFF(f)
+      graphics::plot(grDevices::as.raster(img))
+      graphics::title(main = basename(f))
     }
   }
 }
@@ -95,9 +90,9 @@ if (dir.exists(dir)) {
 
   if (length(files) > 0) {
     for (f in files) {
-      img <- readTIFF(f)
-      plot(as.raster(img))
-      title(main = basename(f))
+      img <- tiff::readTIFF(f)
+      graphics::plot(grDevices::as.raster(img))
+      graphics::title(main = basename(f))
     }
   }
 }
@@ -115,9 +110,9 @@ if (dir.exists(dir)) {
 
   if (length(files) > 0) {
     for (f in files) {
-      img <- readTIFF(f)
-      plot(as.raster(img))
-      title(main = basename(f))
+      img <- tiff::readTIFF(f)
+      graphics::plot(grDevices::as.raster(img))
+      graphics::title(main = basename(f))
     }
   }
 }
@@ -136,9 +131,9 @@ if (dir.exists(dir)) {
 
   if (length(files) > 0) {
     for (f in files) {
-      img <- readTIFF(f)
-      plot(as.raster(img))
-      title(main = basename(f))
+      img <- tiff::readTIFF(f)
+      graphics::plot(grDevices::as.raster(img))
+      graphics::title(main = basename(f))
     }
   }
   
@@ -148,9 +143,9 @@ if (dir.exists(dir)) {
     if (length(sub_files) > 0) {
       sub_name <- basename(sub)  
       for (f in sub_files) {
-        img <- readTIFF(f)
-        plot(as.raster(img))
-        title(main = paste(sub_name, basename(f), sep = " - "))
+        img <- tiff::readTIFF(f)
+        graphics::plot(grDevices::as.raster(img))
+        graphics::title(main = paste(sub_name, basename(f), sep = " - "))
       }
     }
   }
@@ -169,9 +164,9 @@ if (dir.exists(dir)) {
   files <- list.files(dir, pattern = "\\.tiff$", full.names = TRUE)
   if (length(files) > 0) {
     for (f in files) {
-      img <- readTIFF(f)
-      plot(as.raster(img))
-      title(main = basename(f))
+      img <- tiff::readTIFF(f)
+      graphics::plot(grDevices::as.raster(img))
+      graphics::title(main = basename(f))
     }
   }
   
@@ -181,9 +176,9 @@ if (dir.exists(dir)) {
     if (length(sub_files) > 0) {
       sub_name <- basename(sub)  
       for (f in sub_files) {
-        img <- readTIFF(f)
-        plot(as.raster(img))
-        title(main = paste(sub_name, basename(f), sep = " - "))
+        img <- tiff::readTIFF(f)
+        graphics::plot(grDevices::as.raster(img))
+        graphics::title(main = paste(sub_name, basename(f), sep = " - "))
       }
     }
   }

@@ -1,15 +1,6 @@
 #' Run methylationGLMM_T1T2.R
-#' @import parallel
-#' @import ggplot2
-#' @import ggrepel
-#' @import minfi
-#' @importFrom data.table rbindlist
-#' @importFrom dplyr select group_by summarise across all_of
-#' @import tidyr
-#' @import readr
-#' @import stringr
-#' @importFrom lme4 ranef fixef
-#' @import lmerTest
+#' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #'
 #' @param inputPheno Character. Path to merged longitudinal phenotype and beta-value RData file.
 #' @param outputLogs Character. Directory for log files.
@@ -142,8 +133,12 @@ if (is.character(summaryPval) && tolower(summaryPval) == "na") {
         summaryPval <- NA
 }
 
+if (is.null(libPath)) {
+        libPath <- .libPaths()
+}
+
 if (!is.null(prsMap)) {
-        prsMapList <- setNames(
+        prsMapList <- stats::setNames(
                 sapply(strsplit(unlist(strsplit(prsMap, ",")), ":"), `[`, 2),
                 sapply(strsplit(unlist(strsplit(prsMap, ",")), ":"), `[`, 1)
         )
@@ -221,7 +216,7 @@ if (!(personVar %in% colnames(phenoBT1T2))) {
                                                         phenoBT1T2$SID)))
 
   cat("Example mapping of SID to person ID:\n")
-  print(head(phenoBT1T2[order(phenoBT1T2[[personVar]],
+  print(utils::head(phenoBT1T2[order(phenoBT1T2[[personVar]],
                               phenoBT1T2$SID),
                         c("SID", personVar)], 20
   ))
@@ -243,11 +238,11 @@ cat("=======================================================================\n")
 # ----------- Summary Stats by Timepoint -----------
 cat("Summary statistics for phenotype scores by timepoint:\n")
 phenoBT1T2 %>%
-        dplyr::select(all_of(timeVar), all_of(phenotypeList)) %>%
-        group_by(.data[[timeVar]]) %>%
-        summarise(across(everything(), list(
+        dplyr::select(dplyr::all_of(timeVar), dplyr::all_of(phenotypeList)) %>%
+        dplyr::group_by(.data[[timeVar]]) %>%
+        dplyr::summarise(dplyr::across(dplyr::everything(), list(
                 mean = ~mean(., na.rm = TRUE),
-                sd   = ~sd(., na.rm = TRUE),
+                sd   = ~stats::sd(., na.rm = TRUE),
                 n    = ~sum(!is.na(.))
         ))) %>%
         print(width = Inf)
@@ -275,14 +270,14 @@ lme <- function(
         covariateNames <- c(timeVar, phenoScore, covariates)
         cpgCol <- grep(paste0("^", cpgPrefix), colnames(merge), value = TRUE)
         if (!is.na(cpgLimit)) {
-                cpgCol <- head(cpgCol, as.numeric(cpgLimit))
+                cpgCol <- utils::head(cpgCol, as.numeric(cpgLimit))
         }
 
-        cl <- makeCluster(nCore)
-        clusterExport(cl, varlist = c("merge", "phenoScore", "personVar",
+        cl <- parallel::makeCluster(nCore)
+        parallel::clusterExport(cl, varlist = c("merge", "phenoScore", "personVar",
                                       "timeVar", "covariateNames", "factorVars",
                                       "interactionTerm", "libPath", "lmeLibs"),
-                      envir = environment())
+                       envir = environment())
 
         # clusterEvalQ(cl, {
         #         if (!is.null(libPath)) {
@@ -295,9 +290,9 @@ lme <- function(
         #         })
         # })
 
-        clusterEvalQ(cl, {
+        parallel::clusterEvalQ(cl, {
                 if (!is.null(libPath)) {
-                        .libPaths(libPath)
+                        .libPaths(unique(c(libPath, .libPaths())))
                 }
 
                 for (pkg in lmeLibs) {
@@ -330,28 +325,28 @@ lme <- function(
                           fixedPart <- paste(c(phenoScore, fixedTerms), collapse = " + ")
                         }
 
-                        form <- as.formula(paste("beta ~",
+                        form <- stats::as.formula(paste("beta ~",
                                                  fixedPart,
                                                  "+ (1|",
                                                  personVar, ")"))
 
-                        model <- lmer(form,
+                        model <- lmerTest::lmer(form,
                                       data = modelData,
-                                      na.action = na.exclude, REML = TRUE)
+                                      na.action = stats::na.exclude, REML = TRUE)
 
                         list(
                                 coef = summary(model)$coefficients,
-                                residuals = residuals(model),
-                                fitted = fitted(model),
-                                ranef = ranef(model),
-                                fixef = fixef(model)
+                                residuals = stats::residuals(model),
+                                fitted = stats::fitted(model),
+                                ranef = lme4::ranef(model),
+                                fixef = lme4::fixef(model)
                         )
                 }, error = function(e) NULL)
         }
 
-        fitList <- parLapply(cl, cpgCol, fit)
+        fitList <- parallel::parLapply(cl, cpgCol, fit)
         names(fitList) <- cpgCol
-        stopCluster(cl)
+        parallel::stopCluster(cl)
         return(fitList)
 }
 
@@ -451,17 +446,17 @@ cpgsLME <- function(
         cpgNames <- names(fitList)
         cpgChunks <- splitIntoChunks(cpgNames, chunkSize)
 
-        cl <- makeCluster(nCore)
-        clusterExport(
+        cl <- parallel::makeCluster(nCore)
+        parallel::clusterExport(
                 cl,
                 varlist = c("fitList", "pValue", "interactionTerm",
                             "phenotype", "libPath", "lmeLibs", "chunkSize"),
                 envir = environment()
         )
 
-        clusterEvalQ(cl, {
+        parallel::clusterEvalQ(cl, {
                 if (!is.null(libPath)) {
-                        .libPaths(libPath)
+                        .libPaths(unique(c(libPath, .libPaths())))
                 }
 
                 for (pkg in lmeLibs) {
@@ -474,7 +469,7 @@ cpgsLME <- function(
         })
 
 
-        results <- parLapplyLB(cl, cpgChunks, function(chunk) {
+        results <- parallel::parLapplyLB(cl, cpgChunks, function(chunk) {
           outList <- vector("list", length(chunk))
           idx <- 1
           for (cpg in chunk) {
@@ -519,7 +514,7 @@ cpgsLME <- function(
           }
         })
 
-        stopCluster(cl)
+        parallel::stopCluster(cl)
 
         summary <- do.call(rbind, results)
 
@@ -611,7 +606,7 @@ saveSignificantInteractions <- function(
               if (!dir.exists(cpgDir)) dir.create(cpgDir)
 
               outputFile <- file.path(cpgDir, paste0(cpgName, ".txt"))
-              write.table(coefTable, file = outputFile,
+              utils::write.table(coefTable, file = outputFile,
                           sep = "\t", quote = FALSE)
             }
           }
@@ -644,7 +639,7 @@ saveSummaryToTxt <- function(
 
         dir.create(dirname(outputFile), recursive = TRUE, showWarnings = FALSE)
 
-        write.table(
+        utils::write.table(
                 summaryDF,
                 file = outputFile,
                 sep = "\t",
@@ -699,31 +694,31 @@ diagnosticPlotsLME <- function(summary,
                                ) {
 
         ## Multiple Testing Correction
-        summary$FDR <- p.adjust(summary$P.value, method = padjmethod)
+        summary$FDR <- stats::p.adjust(summary$P.value, method = padjmethod)
 
         ## Genomic Inflation Factor (λ)
-        chisq <- qchisq(1 - summary$P.value, df = 1)
-        lambda <- round(median(chisq, na.rm = TRUE) / qchisq(0.5, df = 1), 3)
+        chisq <- stats::qchisq(1 - summary$P.value, df = 1)
+        lambda <- round(stats::median(chisq, na.rm = TRUE) / stats::qchisq(0.5, df = 1), 3)
         message("Genomic inflation factor: ", lambda)
 
         ## Q-Q Plot
         pvals <- summary$P.value
         pvals <- pvals[!is.na(pvals)]
 
-        tiff(filename = file.path(outputDir,
+        grDevices::tiff(filename = file.path(outputDir,
                                   paste0("qqplot_", variable, ".tiff")),
              width = plotWidth,
              height = plotHeight,
              res = plotDPI, type = "cairo")
 
-        qqplot(-log10(ppoints(length(pvals))), -log10(sort(pvals)),
+        stats::qqplot(-log10(stats::ppoints(length(pvals))), -log10(sort(pvals)),
                main = paste("Q-Q Plot of p-values for", variable,
                             "\nGenomic Inflation Factor= ", lambda),
                xlab = "Expected -log10(p)",
                ylab = "Observed -log10(p)",
                pch = 16, col = "black")
-        abline(0, 1, col = "red")
-        dev.off()
+        graphics::abline(0, 1, col = "red")
+        grDevices::dev.off()
 
         ## Mean Beta Values
         cpgCols <- grep(paste0("^", cpgPrefix),
@@ -737,39 +732,39 @@ diagnosticPlotsLME <- function(summary,
         summary <- summary[!is.na(summary$log2meanBeta), ]
 
         ## Plot: Residual Proxy (SD estimate) vs Mean Methylation
-        tiff(filename = file.path(outputDir,
+        grDevices::tiff(filename = file.path(outputDir,
                                   paste0("residualSD_", variable, ".tiff")),
              width = plotWidth,
              height = plotHeight,
              res = plotDPI, type = "cairo")
 
-        plot(summary$log2meanBeta,
+        graphics::plot(summary$log2meanBeta,
              summary$Std.Error,
-             pch = 20,
-             col = rgb(0, 0, 0, 0.4),
+              pch = 20,
+             col = grDevices::rgb(0, 0, 0, 0.4),
              xlab = "log2(Average Beta)",
              ylab = "Standard Error",
              main = "SD vs Average Beta (proxy from Std. Error)")
-        lines(lowess(summary$log2meanBeta, summary$Std.Error),
+        graphics::lines(stats::lowess(summary$log2meanBeta, summary$Std.Error),
               col = "red", lwd = 2)
-        dev.off()
+        grDevices::dev.off()
 
         ## Plot: Significance vs Variability (colored by FDR)
-        p <- ggplot(summary, aes(x = -log10(P.value),
-                            y = Std.Error, color = FDR < fdrThreshold)) +
-                geom_point(alpha = 0.6) +
-                geom_text_repel(data = subset(summary,
+        p <- ggplot2::ggplot(summary, ggplot2::aes(x = -log10(P.value),
+                             y = Std.Error, color = FDR < fdrThreshold)) +
+                ggplot2::geom_point(alpha = 0.6) +
+                ggrepel::geom_text_repel(data = subset(summary,
                                               FDR < fdrThreshold),
-                                aes(label = CpG)) +
-                scale_color_manual(values = c("FALSE" = "grey50",
+                                ggplot2::aes(label = CpG)) +
+                ggplot2::scale_color_manual(values = c("FALSE" = "grey50",
                                               "TRUE" = "firebrick")) +
-                labs(title = paste("Standard Error vs Significance for", variable),
+                ggplot2::labs(title = paste("Standard Error vs Significance for", variable),
                      x = "-log10(p-value)",
                      y = "Standard Error",
-                     color = paste("FDR <", fdrThreshold)) +
-                theme_minimal()
+                      color = paste("FDR <", fdrThreshold)) +
+                ggplot2::theme_minimal()
 
-        tiff(filename = file.path(outputDir,
+        grDevices::tiff(filename = file.path(outputDir,
                                      paste0("residualSignificance_",
                                             variable, ".tiff")),
                 width = plotWidth,
@@ -777,7 +772,7 @@ diagnosticPlotsLME <- function(summary,
                 res = plotDPI, type = "cairo"
         )
         print(p)
-        dev.off()
+        grDevices::dev.off()
 }
 # ==============================================================================
 
@@ -817,7 +812,7 @@ cat("=======================================================================\n")
 
 # ----------- Load Annotation Object -----------
 cat("Loading annotation object:", annotationPackage, "\n")
-annotationObject <- getAnnotation(get(annotationPackage))
+annotationObject <- minfi::getAnnotation(get(annotationPackage))
 
 cat("Annotation loaded with", nrow(annotationObject), "probes\n")
 cat("Available columns:\n")
@@ -907,7 +902,7 @@ cat("Running annotation of LME summary results...\n")
 
 # Build summaryList dynamically
 phenotypeNames <- strsplit(phenotypes, ",")[[1]]
-summaryList <- setNames(
+summaryList <- stats::setNames(
         lapply(phenotypeNames, function(pheno) {
                 get(paste0(pheno, "SummaryLME"))
         }),
@@ -919,7 +914,7 @@ print(names(summaryList))
 
 for (nm in names(summaryList)) {
   cat("First few rows of", nm, "summary:\n")
-  print(head(summaryList[[nm]]))
+  print(utils::head(summaryList[[nm]]))
   cat("Column names in", nm, "summary:\n")
   print(colnames(summaryList[[nm]]))
 }
@@ -936,7 +931,7 @@ annotatedLMEPath <- file.path(annotatedLMEOut, "annotatedLME.csv")
 
 cat("Saving annotated LME results to:", annotatedLMEPath, "\n")
 
-write.csv(
+utils::write.csv(
         annotatedLME,
         file = annotatedLMEPath,
         row.names = FALSE
@@ -946,7 +941,7 @@ cat("Finished writing annotated LME results.\n")
 cat("=======================================================================\n")
 
 cat("Session info:\n")
-print(sessionInfo())
+print(utils::sessionInfo())
 # ==============================================================================
 
 # ----------- Close Logging -----------

@@ -1,9 +1,4 @@
 #' Run methylationGLM_T1.R
-#' @import parallel
-#' @import glm2
-#' @import ggplot2
-#' @import ggrepel
-#' @import minfi
 #'
 #' @param inputPheno Character. Path to merged phenotype and beta-value RData file.
 #' @param outputLogs Character. Directory for log files.
@@ -131,8 +126,12 @@ if (is.character(summaryPval) && tolower(summaryPval) == "na") {
         summaryPval <- NA
 }
 
+if (is.null(libPath)) {
+        libPath <- .libPaths()
+}
+
 if (!is.null(prsMap)) {
-        prsMapList <- setNames(
+        prsMapList <- stats::setNames(
                 sapply(strsplit(unlist(strsplit(prsMap, ",")), ":"), `[`, 2),
                 sapply(strsplit(unlist(strsplit(prsMap, ",")), ":"), `[`, 1)
         )
@@ -239,59 +238,59 @@ print(summary(phenoBT1[, c(phenotypes, covariates)]))
 for (var in phenotypes) {
 
         if (is.numeric(phenoBT1[[var]])) {
-          p <- ggplot(phenoBT1, aes_string(x = var)) +
-            geom_histogram(bins = 30, fill = "steelblue", color = "white") +
-            labs(title = paste("Distribution of", var),
+          p <- ggplot2::ggplot(phenoBT1, ggplot2::aes_string(x = var)) +
+            ggplot2::geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+            ggplot2::labs(title = paste("Distribution of", var),
                  x = var, y = "Frequency") +
-            theme_minimal()
+            ggplot2::theme_minimal()
 
         } else {
-          p <- ggplot(phenoBT1, aes_string(x = var)) +
-            geom_bar(fill = "steelblue") +
-            labs(title = paste("Distribution of", var), x = var, y = "Count") +
-            theme_minimal()
+          p <- ggplot2::ggplot(phenoBT1, ggplot2::aes_string(x = var)) +
+            ggplot2::geom_bar(fill = "steelblue") +
+            ggplot2::labs(title = paste("Distribution of", var), x = var, y = "Count") +
+            ggplot2::theme_minimal()
         }
 
-        tiff(filename = file.path(outputPlots, paste0("hist_", var, ".tiff")),
+        grDevices::tiff(filename = file.path(outputPlots, paste0("hist_", var, ".tiff")),
              width = plotWidth,
              height = plotHeight,
              res = plotDPI, type = "cairo")
 
         print(p)
-        dev.off()
+        grDevices::dev.off()
 }
 
 catVars <- intersect(factorVars, colnames(phenoBT1))
 for (var in catVars) {
-        p <- ggplot(phenoBT1, aes_string(x = var)) +
-                geom_bar(fill = "darkorange") +
-                labs(title = paste("Distribution of",
+        p <- ggplot2::ggplot(phenoBT1, ggplot2::aes_string(x = var)) +
+                ggplot2::geom_bar(fill = "darkorange") +
+                ggplot2::labs(title = paste("Distribution of",
                                    var), x = var, y = "Count") +
-                theme_minimal()
-        tiff(filename = file.path(outputPlots, paste0("bar_", var, ".tiff")),
+                ggplot2::theme_minimal()
+        grDevices::tiff(filename = file.path(outputPlots, paste0("bar_", var, ".tiff")),
              width = plotWidth,
              height = plotHeight,
              res = plotDPI, type = "cairo")
         print(p)
-        dev.off()
+        grDevices::dev.off()
 }
 
 numVars <- setdiff(covariates, factorVars)
 numVars <- intersect(numVars, colnames(phenoBT1))
 
 for (var in numVars) {
-        p <- ggplot(phenoBT1, aes_string(x = var)) +
-                geom_histogram(bins = 30, fill = "darkgreen", color = "white") +
-                labs(title = paste("Distribution of", var),
+        p <- ggplot2::ggplot(phenoBT1, ggplot2::aes_string(x = var)) +
+                ggplot2::geom_histogram(bins = 30, fill = "darkgreen", color = "white") +
+                ggplot2::labs(title = paste("Distribution of", var),
                      x = var, y = "Frequency") +
-                theme_minimal()
+                ggplot2::theme_minimal()
 
-        tiff(filename = file.path(outputPlots, paste0("hist_", var, ".tiff")),
+        grDevices::tiff(filename = file.path(outputPlots, paste0("hist_", var, ".tiff")),
              width = plotWidth,
              height = plotHeight,
              res = plotDPI, type = "cairo")
         print(p)
-        dev.off()
+        grDevices::dev.off()
 }
 
 cat("Plots saved to:", outputPlots, "\n")
@@ -325,10 +324,10 @@ glm <- function(
 
         cpgCol <- grep(paste0("^", cpgPrefix), colnames(merge), value = TRUE)
         if (!is.na(cpgLimit)) {
-                cpgCol <- head(cpgCol, as.numeric(cpgLimit))
+                cpgCol <- utils::head(cpgCol, as.numeric(cpgLimit))
         }
-        cl <- makeCluster(nCore)
-        clusterExport(
+        cl <- parallel::makeCluster(nCore)
+        parallel::clusterExport(
                 cl,
                 varlist = c("phenoScore", "interactionTerm",
                             "covariates",
@@ -349,9 +348,9 @@ glm <- function(
         #         })
         # })
 
-        clusterEvalQ(cl, {
+        parallel::clusterEvalQ(cl, {
                 if (!is.null(libPath)) {
-                        .libPaths(libPath)
+                        .libPaths(unique(c(libPath, .libPaths())))
                 }
 
                 for (pkg in glmLibList) {
@@ -380,24 +379,24 @@ glm <- function(
                                 }
                         }
 
-                        fit <- glm2(
-                                formula = as.formula(paste("beta", fullFormula)),
+                        fit <- glm2::glm2(
+                                formula = stats::as.formula(paste("beta", fullFormula)),
                                 data = model,
-                                family = gaussian(),
-                                na.action = na.exclude
+                                family = stats::gaussian(),
+                                na.action = stats::na.exclude
                         )
 
                         return(list(
                                 coef = summary(fit)$coefficients,
-                                residuals = residuals(fit),
-                                fitted = fitted(fit)
+                                residuals = stats::residuals(fit),
+                                fitted = stats::fitted(fit)
                         ))
                 }, error = function(e) NULL)
         }
 
-        fitList <- parLapply(cl, cpgCol, fit)
+        fitList <- parallel::parLapply(cl, cpgCol, fit)
         names(fitList) <- cpgCol
-        stopCluster(cl)
+        parallel::stopCluster(cl)
 
         return(fitList)
 }
@@ -477,8 +476,8 @@ cpgsGLM <- function(
   cpgNames <- names(fitList)
   cpgChunks <- splitIntoChunks(cpgNames, chunkSize)
 
-  cl <- makeCluster(nCore)
-  clusterExport(
+  cl <- parallel::makeCluster(nCore)
+  parallel::clusterExport(
     cl,
     varlist = c("fitList",
                 "variable",
@@ -490,9 +489,9 @@ cpgsGLM <- function(
     envir = environment()
   )
 
-  clusterEvalQ(cl, {
+  parallel::clusterEvalQ(cl, {
     if (!is.null(libPath)) {
-        .libPaths(libPath)
+        .libPaths(unique(c(libPath, .libPaths())))
     }
 
     for (pkg in glmLibList) {
@@ -505,7 +504,7 @@ cpgsGLM <- function(
   })
  
 
-  results <- parLapplyLB(cl, cpgChunks, function(chunk) {
+  results <- parallel::parLapplyLB(cl, cpgChunks, function(chunk) {
     outList <- vector("list", length(chunk))
     idx <- 1
     for (cpg in chunk) {
@@ -535,7 +534,7 @@ cpgsGLM <- function(
       tmp$Coefficient <- rownames(tmp)
 
       if (includeResidualSD && !is.null(modelObj$residuals)) {
-        tmp$ResidualSD <- sd(modelObj$residuals, na.rm = TRUE)
+        tmp$ResidualSD <- stats::sd(modelObj$residuals, na.rm = TRUE)
       }
 
       if (!is.null(tmp)) {
@@ -546,7 +545,7 @@ cpgsGLM <- function(
     do.call(rbind, outList)
   })
 
-  stopCluster(cl)
+  parallel::stopCluster(cl)
 
   summary <- do.call(rbind, results)
 
@@ -649,7 +648,7 @@ saveSignificantCpGs <- function(
         cpgDir <- file.path(resultDir, cpgName)
         if (!dir.exists(cpgDir)) dir.create(cpgDir)
         outputFile <- file.path(cpgDir, paste0(cpgName, ".txt"))
-        write.table(coefTable, file = outputFile, sep = "\t", quote = FALSE)
+        utils::write.table(coefTable, file = outputFile, sep = "\t", quote = FALSE)
       }
     }
   }
@@ -690,7 +689,7 @@ saveSummaryToTxt <- function(
 
         dir.create(dirname(outputFile), recursive = TRUE, showWarnings = FALSE)
 
-        write.table(
+        utils::write.table(
                 summaryDF,
                 file = outputFile,
                 sep = "\t",
@@ -748,22 +747,22 @@ diagnosticPlots <- function(
 
         dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
 
-        summary$FDR <- p.adjust(summary$`Pr(>|t|)`, method = padjmethod)
+        summary$FDR <- stats::p.adjust(summary$`Pr(>|t|)`, method = padjmethod)
 
-        chisq <- qchisq(1 - summary$`Pr(>|t|)`, df = 1)
-        lambda <- round(median(chisq, na.rm = TRUE) / qchisq(0.5, df = 1), 3)
+        chisq <- stats::qchisq(1 - summary$`Pr(>|t|)`, df = 1)
+        lambda <- round(stats::median(chisq, na.rm = TRUE) / stats::qchisq(0.5, df = 1), 3)
         message("Genomic inflation factor: ", lambda)
 
         # -- Q-Q Plot of P-values --
         pvals <- summary$`Pr(>|t|)`
         pvals <- pvals[!is.na(pvals)]
-        tiff(filename = file.path(outputDir,
+        grDevices::tiff(filename = file.path(outputDir,
                                   paste0("qqplot_", variable, ".tiff")),
              width = plotWidth,
              height = plotHeight,
              res = plotDPI, type = "cairo")
-        qqplot(
-                -log10(ppoints(length(pvals))),
+        stats::qqplot(
+                -log10(stats::ppoints(length(pvals))),
                 -log10(sort(pvals)),
                 main = paste("Q-Q Plot of p-values for", variable,
                              "\nGenomic Inflation Factor= ", lambda),
@@ -772,8 +771,8 @@ diagnosticPlots <- function(
                 pch = 16,
                 col = "black"
         )
-        abline(0, 1, col = "red")
-        dev.off()
+        graphics::abline(0, 1, col = "red")
+        grDevices::dev.off()
 
         # -- Residual SD vs log2(mean Beta) --
         cpgCols <- grep(paste0("^", cpgPrefix),
@@ -784,44 +783,44 @@ diagnosticPlots <- function(
         summary$log2meanBeta <- meanBetaLog[summary$CpG]
         summary <- summary[!is.na(summary$log2meanBeta), ]
 
-        tiff(filename = file.path(outputDir,
+        grDevices::tiff(filename = file.path(outputDir,
                                   paste0("residualSD_", variable, ".tiff")),
              width = plotWidth,
              height = plotHeight,
              res = plotDPI, type = "cairo")
-        plot(summary$log2meanBeta,
+        graphics::plot(summary$log2meanBeta,
              summary$ResidualSD,
              pch = 20,
-             col = rgb(0, 0, 0, 0.4),
+             col = grDevices::rgb(0, 0, 0, 0.4),
              xlab = "log2(Average Beta)",
              ylab = "Residual Standard Deviation",
              main = "plotSA-style: Residual SD vs Average Beta")
-        lines(lowess(summary$log2meanBeta, summary$ResidualSD),
+        graphics::lines(stats::lowess(summary$log2meanBeta, summary$ResidualSD),
               col = "red", lwd = 2)
-        dev.off()
+        grDevices::dev.off()
 
         # -- Residual SD vs Significance --
-        p <- ggplot(summary,
-                    aes(x = -log10(`Pr(>|t|)`),
+        p <- ggplot2::ggplot(summary,
+                    ggplot2::aes(x = -log10(`Pr(>|t|)`),
                         y = ResidualSD,
                         color = FDR < fdrThreshold)) +
-                geom_point(alpha = 0.6) +
-                geom_text_repel(data = subset(summary,
+                ggplot2::geom_point(alpha = 0.6) +
+                ggrepel::geom_text_repel(data = subset(summary,
                                               FDR < fdrThreshold),
-                                aes(label = CpG)) +
-                scale_color_manual(values = c("FALSE" = "grey50",
+                                ggplot2::aes(label = CpG)) +
+                ggplot2::scale_color_manual(values = c("FALSE" = "grey50",
                                               "TRUE" = "firebrick")) +
-                labs(
+                ggplot2::labs(
                         title = paste("Residual SD vs Significance for",
                                       variable),
                         x = "-log10(p-value)",
                         y = "Residual SD",
                         color = paste("FDR <", fdrThreshold)
                 ) +
-                theme_minimal()
+                ggplot2::theme_minimal()
 
         # Save as TIFF using tiff() + print() + dev.off()
-        tiff(filename = file.path(outputDir,
+        grDevices::tiff(filename = file.path(outputDir,
                                      paste0("residualSignificance_",
                                             variable, ".tiff")),
                 width = plotWidth,
@@ -829,7 +828,7 @@ diagnosticPlots <- function(
                 res = plotDPI, type = "cairo"
         )
         print(p)
-        dev.off()
+        grDevices::dev.off()
 
 
 }
@@ -859,7 +858,7 @@ cat("=======================================================================\n")
 
 # ----------- Load Annotation Data -----------
 cat("Loading annotation object:", annotationPackage, "\n")
-annotationObject <- getAnnotation(get(annotationPackage))
+annotationObject <- minfi::getAnnotation(get(annotationPackage))
 
 cat("Annotation loaded with", nrow(annotationObject), "probes\n")
 cat("Annotation columns available:\n")
@@ -945,7 +944,7 @@ cat("Running annotation of GLM summary results...\n")
 
 # Split phenotype names and fetch each corresponding summary object
 phenotypeNames <- strsplit(phenotypes, ",")[[1]]
-summaryList <- setNames(
+summaryList <- stats::setNames(
         lapply(phenotypeNames, function(pheno) {
                 get(paste0(pheno, "SummaryGLM"))
         }),
@@ -958,20 +957,20 @@ annotationColsVec <- strsplit(annotationCols, ",")[[1]]
 # Run the annotation function
 annotatedGLM <- annotateGLM(
         summaryList = summaryList,
-        annotationObject = getAnnotation(get(annotationPackage)),
+        annotationObject = minfi::getAnnotation(get(annotationPackage)),
         annotationCols = annotationColsVec
 )
 
 # Save annotated results
 cat("Saving annotated GLM summary to:", annotatedGLMOut, "\n")
-write.csv(
+utils::write.csv(
         annotatedGLM,
         file = file.path(annotatedGLMOut, "annotatedGLM.csv"),
         row.names = FALSE)
 cat("=======================================================================\n")
 
 cat("Session info:\n")
-print(sessionInfo())
+print(utils::sessionInfo())
 # ==============================================================================
 
 # ----------- Close Logging -----------

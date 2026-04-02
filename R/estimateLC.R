@@ -1,13 +1,4 @@
 #' Run estimateLC.R
-#' @import stringr
-#' @importFrom data.table data.table setkey
-#' @import quadprog
-#' @importFrom dplyr select all_of everything mutate
-#' @importFrom GenomeInfoDb getChromInfoFromUCSC
-#' @importFrom readr read_csv
-#' @importFrom pointblank col_vals_in_set row_count_match
-#' @importFrom forcats fct_relevel
-#' @importFrom utils download.file unzip
 #'
 #' @param meth Matrix of beta values
 #' @param ref Choice of reference dataset: available options are `saliva` and `salivaEPIC`. The functions are extracted from `ewastools (Murat, K, et al. 2020)` and adapted to work onloy with the saliva reference panel of `Middleton et al. 2020`.
@@ -44,7 +35,7 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
 
     J <- ncol(meth)
 
-    coefs <- read.table(system.file("extdata", paste0(ref, ".txt"), package = "dnaEPICO"))
+    coefs <- utils::read.table(system.file("extdata", paste0(ref, ".txt"), package = "dnaEPICO"))
 
     coefs <- as.matrix(coefs)
     n_celltypes <- ncol(coefs)
@@ -83,11 +74,11 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
 
     tmp_epic2 <- tempfile(fileext = ".zip")
 
-    download.file(fp_manifest$EPICv2, tmp_epic2, mode = "wb")
+    utils::download.file(fp_manifest$EPICv2, tmp_epic2, mode = "wb")
 
     epic2_csv <- "MethylationEPIC v2.0 Files/EPIC-8v2-0_A2.csv"
 
-    con_epic2 <- unz(tmp_epic2, epic2_csv)
+    con_epic2 <- base::unz(tmp_epic2, epic2_csv)
 
     MANIFESTS$EPICv2 =
         readr::read_csv(
@@ -192,11 +183,11 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
 
     tmp_epic1 <- tempfile(fileext = ".zip")
 
-    download.file(fp_manifest$EPICv1, tmp_epic1, mode = "wb")
+    utils::download.file(fp_manifest$EPICv1, tmp_epic1, mode = "wb")
 
     epic1_csv <- "infinium-methylationepic-v-1-0-b5-manifest-file.csv"
 
-    con_epic1 <- unzip(tmp_epic1, epic1_csv)
+    con_epic1 <- utils::unzip(tmp_epic1, epic1_csv)
 
     MANIFESTS$EPICv1 =
         readr::read_csv(
@@ -432,7 +423,7 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
 
     if (any(is.na(markers))) {
       coefs <- coefs[!is.na(markers), , drop = FALSE]
-      markers <- na.omit(markers)
+      markers <- stats::na.omit(markers)
     }
 
     EST <- sapply(1:J, function(j) {
