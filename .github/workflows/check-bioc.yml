@@ -203,6 +203,14 @@ jobs:
           BiocManager::install("BiocGenerics")
         shell: Rscript {0}
 
+      ## In the Bioconductor Linux container, setup-tinytex can fail before
+      ## refreshing package indexes, leaving texinfo unavailable.
+      - name: Install texinfo for TinyTeX
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libtext-unidecode-perl texinfo texinfo-lib
+
       ## Keep TeX available across runners for the report path, but use the
       ## maintained r-lib action instead of calling tinytex::install_tinytex()
       ## directly, since the upstream installer URL can fail on macOS.
