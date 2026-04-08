@@ -778,7 +778,7 @@ ewasRefs <- c(
   "saliva","salivaEPIC"
 )
 
-useLC <- any(sapply(ewasRefs, grepl, x = lcRef, fixed = TRUE))
+useLC <- lcRef %in% ewasRefs
 
 if (useLC) {
 
