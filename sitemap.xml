@@ -9,14 +9,17 @@
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/news/index.html</loc></url>
+<url><loc>/reference/dnaEPICO-package.html</loc></url>
 <url><loc>/reference/dnamReport.html</loc></url>
 <url><loc>/reference/estimateLC.html</loc></url>
 <url><loc>/reference/extractMake.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/methylationGLMM_T1T2.html</loc></url>
 <url><loc>/reference/methylationGLM_T1.html</loc></url>
+<url><loc>/reference/plotPreprocessingMinfiEwasWater.html</loc></url>
 <url><loc>/reference/preprocessingMinfiEwasWater.html</loc></url>
 <url><loc>/reference/preprocessingPheno.html</loc></url>
 <url><loc>/reference/svaEnmix.html</loc></url>
+<url><loc>/reference/writePreprocessingMinfiEwasWater.html</loc></url>
 </urlset>
 
