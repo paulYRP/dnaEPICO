@@ -207,7 +207,12 @@ analyzeSvaEnmix <- function(
     log_file = log_file
   )
 
-  sample_names <- colnames(RGSet)
+  sample_names <- svaEnmixGetRGSetSampleNames(RGSet)
+
+  if (length(sample_names) == 0L) {
+    stop("Could not determine sample names from the loaded RGSet.", call. = FALSE)
+  }
+
   match_idx <- match(sample_names, rownames(sva))
 
   if (anyNA(match_idx)) {
@@ -215,7 +220,7 @@ analyzeSvaEnmix <- function(
   }
 
   sva <- sva[match_idx, , drop = FALSE]
-  col_data <- SummarizedExperiment::colData(RGSet)
+  col_data <- svaEnmixGetRGSetColData(RGSet)
   sentrix_id <- as.factor(col_data[[SentrixIDColumn]])
   sentrix_position <- as.factor(col_data[[SentrixPositionColumn]])
   K <- ncol(sva)

@@ -237,6 +237,6 @@ test_that("svaEnmix reports invalid saved RGSet objects clearly", {
             verbose = FALSE,
             saveOutputs = FALSE
         ),
-        "does not contain a usable RGSet"
+        "does not expose a usable sample count"
     )
 })

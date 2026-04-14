@@ -17,6 +17,141 @@
 #'
 #' @keywords internal
 #' @noRd
+svaEnmixGetRGSetSampleNames <- function(RGSet) {
+  sample_names <- tryCatch(colnames(RGSet), error = function(...) NULL)
+
+  if (length(sample_names) > 0L) {
+    return(sample_names)
+  }
+
+  if (!isS4(RGSet)) {
+    return(character(0))
+  }
+
+  slots <- methods::slotNames(RGSet)
+
+  if ("colData" %in% slots) {
+    col_data <- methods::slot(RGSet, "colData")
+    sample_names <- rownames(as.data.frame(col_data))
+
+    if (length(sample_names) > 0L) {
+      return(sample_names)
+    }
+  }
+
+  if ("phenoData" %in% slots) {
+    pheno_data <- Biobase::pData(Biobase::phenoData(RGSet))
+    sample_names <- rownames(pheno_data)
+
+    if (length(sample_names) > 0L) {
+      return(sample_names)
+    }
+  }
+
+  character(0)
+}
+
+#' @keywords internal
+#' @noRd
+svaEnmixGetRGSetSampleCount <- function(RGSet) {
+  rgset_dim <- tryCatch(dim(RGSet), error = function(...) NULL)
+
+  if (length(rgset_dim) == 2L) {
+    return(rgset_dim[[2L]])
+  }
+
+  sample_names <- svaEnmixGetRGSetSampleNames(RGSet)
+
+  if (length(sample_names) > 0L) {
+    return(length(sample_names))
+  }
+
+  if (!isS4(RGSet)) {
+    return(NULL)
+  }
+
+  slots <- methods::slotNames(RGSet)
+
+  if ("colData" %in% slots) {
+    return(nrow(as.data.frame(methods::slot(RGSet, "colData"))))
+  }
+
+  if ("phenoData" %in% slots) {
+    return(nrow(Biobase::pData(Biobase::phenoData(RGSet))))
+  }
+
+  NULL
+}
+
+#' @keywords internal
+#' @noRd
+svaEnmixSetRGSetSampleNames <- function(RGSet, sampleNames) {
+  updated_rgset <- tryCatch(
+    {
+      colnames(RGSet) <- sampleNames
+      RGSet
+    },
+    error = function(...) NULL
+  )
+
+  if (!is.null(updated_rgset)) {
+    return(updated_rgset)
+  }
+
+  if (!isS4(RGSet)) {
+    stop("Could not set sample names on the loaded RGSet object.", call. = FALSE)
+  }
+
+  slots <- methods::slotNames(RGSet)
+
+  if ("colData" %in% slots) {
+    col_data <- methods::slot(RGSet, "colData")
+    rownames(col_data) <- sampleNames
+    methods::slot(RGSet, "colData") <- col_data
+    return(RGSet)
+  }
+
+  if ("phenoData" %in% slots) {
+    pheno_data <- Biobase::phenoData(RGSet)
+    rownames(Biobase::pData(pheno_data)) <- sampleNames
+    Biobase::phenoData(RGSet) <- pheno_data
+    return(RGSet)
+  }
+
+  stop("Could not set sample names on the loaded RGSet object.", call. = FALSE)
+}
+
+#' @keywords internal
+#' @noRd
+svaEnmixGetRGSetColData <- function(RGSet) {
+  col_data <- tryCatch(
+    SummarizedExperiment::colData(RGSet),
+    error = function(...) NULL
+  )
+
+  if (!is.null(col_data)) {
+    return(col_data)
+  }
+
+  if (!isS4(RGSet)) {
+    stop("Could not retrieve column metadata from the loaded RGSet.", call. = FALSE)
+  }
+
+  slots <- methods::slotNames(RGSet)
+
+  if ("colData" %in% slots) {
+    return(methods::slot(RGSet, "colData"))
+  }
+
+  if ("phenoData" %in% slots) {
+    return(Biobase::pData(Biobase::phenoData(RGSet)))
+  }
+
+  stop("Could not retrieve column metadata from the loaded RGSet.", call. = FALSE)
+}
+
+#' @keywords internal
+#' @noRd
 svaEnmixValidateRGSet <- function(
     RGSet,
     rgsetData,
@@ -32,6 +167,8 @@ svaEnmixValidateRGSet <- function(
   )
   rgset_class <- paste(class(RGSet), collapse = ", ")
   rgset_dims <- dim(RGSet)
+  rgset_ncol <- svaEnmixGetRGSetSampleCount(RGSet)
+  slots <- if (isS4(RGSet)) methods::slotNames(RGSet) else character(0)
 
   emitLogMinfiEwasWater(
     c(
@@ -43,35 +180,43 @@ svaEnmixValidateRGSet <- function(
         } else {
           "unavailable"
         }
+      ),
+      paste(
+        "Loaded RGSet sample count:  ",
+        if (length(rgset_ncol) == 1L && !is.na(rgset_ncol)) {
+          rgset_ncol
+        } else {
+          "unavailable"
+        }
+      ),
+      paste(
+        "Loaded RGSet slots:         ",
+        if (length(slots) > 0L) {
+          paste(slots, collapse = ", ")
+        } else {
+          "unavailable"
+        }
       )
     ),
     verbose = verbose,
     log_path = log_path
   )
 
-  if (length(rgset_dims) != 2L) {
+  if (!(length(rgset_ncol) == 1L && !is.na(rgset_ncol))) {
     stop(
       "The object loaded from ",
       rgsetData,
       " has class ",
       rgset_class,
-      " and does not contain a usable RGSet with two dimensions.",
+      " and does not expose a usable sample count after loading.",
       call. = FALSE
     )
   }
 
-  if (!methods::is(RGSet, "SummarizedExperiment")) {
-    stop(
-      "The object loaded from ",
-      rgsetData,
-      " has class ",
-      rgset_class,
-      " and is not compatible with SummarizedExperiment-based RGSet processing.",
-      call. = FALSE
-    )
-  }
-
-  RGSet
+  list(
+    RGSet = RGSet,
+    sampleCount = rgset_ncol
+  )
 }
 
 #' Estimate surrogate variables from ENmix control probes
@@ -246,7 +391,7 @@ svaEnmix <- function(
         path = rgsetData,
         preferred_name = "RGSet"
       )
-      RGSet <- svaEnmixValidateRGSet(
+      rgset_validation <- svaEnmixValidateRGSet(
         RGSet = RGSet,
         rgsetData = rgsetData,
         verbose = verbose,
@@ -254,7 +399,8 @@ svaEnmix <- function(
         log_dir = outputLogs,
         log_file = log_file
       )
-      rgset_ncol <- ncol(RGSet)
+      RGSet <- rgset_validation$RGSet
+      rgset_ncol <- rgset_validation$sampleCount
 
       if (rgset_ncol != nrow(targets)) {
         stop(
@@ -267,7 +413,10 @@ svaEnmix <- function(
         )
       }
 
-      colnames(RGSet) <- targets[[SampleID]]
+      RGSet <- svaEnmixSetRGSetSampleNames(
+        RGSet = RGSet,
+        sampleNames = targets[[SampleID]]
+      )
       Biobase::annotation(RGSet) <- c(
         array = arrayType,
         annotation = annotationVersion
