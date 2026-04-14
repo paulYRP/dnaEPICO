@@ -19,7 +19,7 @@ readRGSetMinfiEwasWater(
 \arguments{
 \item{idatFolder}{Character. Directory containing the IDAT files.}
 
-\item{targets}{Data frame returned by \code{readTargetsMinfiEwasWater()} or an
+\item{targets}{Data frame returned by \code{readPhenotypeTargets()} or an
 equivalent phenotype table.}
 
 \item{SampleID}{Character. Name of the phenotype column containing sample

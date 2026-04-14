@@ -159,7 +159,7 @@ preprocessingPheno <- function(
     log_path = log_path
   )
 
-  pheno <- readTargetsMinfiEwasWater(
+  pheno <- readPhenotypeTargets(
     phenoFile = phenoFile,
     sepType = sepType,
     SampleID = SampleID,

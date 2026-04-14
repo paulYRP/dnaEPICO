@@ -10,26 +10,23 @@ extractMake(destDir, overwrite = FALSE)
 \item{destDir}{Character. Destination directory where the Makefile
 will be copied.}
 
-\item{overwrite}{Logical. Whether to overwrite an existing file.
-Default is FALSE.}
+\item{overwrite}{Logical. Whether to overwrite an existing \code{Makefile} in
+\code{destDir}. The default is \code{FALSE}.}
 }
 \value{
-Invisibly returns \code{NULL}.
+Character scalar containing the path to the copied \code{Makefile}.
 }
 \description{
 Copies the example Makefile pipeline shipped with dnaEPICO to a
 user-specified directory for local execution or modification.
 }
 \examples{
-tmp <- tempdir()
-stopifnot(dir.exists(tmp))
-
-\donttest{
-## Copy the dnaEPICO Makefile pipeline into a project directory
-extractMake(
-  destDir = getwd(),
-  overwrite = FALSE
+tmp <- file.path(tempdir(), "dnaEPICO-make-example")
+dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
+makefile_path <- extractMake(
+  destDir = tmp,
+  overwrite = TRUE
 )
-}
+stopifnot(file.exists(makefile_path))
 
 }

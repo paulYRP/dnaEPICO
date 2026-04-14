@@ -1,4 +1,4 @@
-test_that("readTargetsMinfiEwasWater is quiet by default and subsets rows", {
+test_that("readPhenotypeTargets is quiet by default and subsets rows", {
   pheno <- data.frame(
     Sample_Name = c("S1", "S2", "S3"),
     Sex = c("F", "M", "F"),
@@ -11,7 +11,7 @@ test_that("readTargetsMinfiEwasWater is quiet by default and subsets rows", {
   targets <- NULL
 
   expect_silent({
-    targets <- dnaEPICO::readTargetsMinfiEwasWater(
+    targets <- dnaEPICO::readPhenotypeTargets(
       phenoFile = pheno_file,
       SampleID = "Sample_Name",
       nSamples = 2
@@ -23,7 +23,7 @@ test_that("readTargetsMinfiEwasWater is quiet by default and subsets rows", {
   expect_identical(targets$Sample_Name, c("S1", "S2"))
 })
 
-test_that("readTargetsMinfiEwasWater can emit verbose messages and write logs", {
+test_that("readPhenotypeTargets can emit verbose messages and write logs", {
   pheno <- data.frame(
     Sample_Name = c("S1", "S2"),
     Sex = c("F", "M"),
@@ -35,7 +35,7 @@ test_that("readTargetsMinfiEwasWater can emit verbose messages and write logs", 
   utils::write.csv(pheno, pheno_file, row.names = FALSE)
 
   expect_message(
-    dnaEPICO::readTargetsMinfiEwasWater(
+    dnaEPICO::readPhenotypeTargets(
       phenoFile = pheno_file,
       SampleID = "Sample_Name",
       verbose = TRUE,
@@ -45,14 +45,14 @@ test_that("readTargetsMinfiEwasWater can emit verbose messages and write logs", 
     "Phenotype file loaded with 2 samples and 2 columns."
   )
 
-  log_file <- file.path(log_dir, "log_readTargetsMinfiEwasWater.txt")
+  log_file <- file.path(log_dir, "log_readPhenotypeTargets.txt")
   expect_true(file.exists(log_file))
 
   log_lines <- readLines(log_file, warn = FALSE)
   expect_true(any(grepl("Preview of targets:", log_lines, fixed = TRUE)))
 })
 
-test_that("readTargetsMinfiEwasWater validates the SampleID column", {
+test_that("readPhenotypeTargets validates the SampleID column", {
   pheno <- data.frame(
     sample_name = c("S1", "S2"),
     Sex = c("F", "M"),
@@ -63,7 +63,7 @@ test_that("readTargetsMinfiEwasWater validates the SampleID column", {
   utils::write.csv(pheno, pheno_file, row.names = FALSE)
 
   expect_error(
-    dnaEPICO::readTargetsMinfiEwasWater(
+    dnaEPICO::readPhenotypeTargets(
       phenoFile = pheno_file,
       SampleID = "Sample_Name"
     ),

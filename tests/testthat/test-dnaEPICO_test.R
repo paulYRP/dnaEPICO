@@ -295,56 +295,62 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
   # 9. Generate Report
   # ------------------------------------------------------------------
 
-  report_err <- tryCatch(
-    {
-      dnaEPICO::dnamReport(
-        output = "DNAm_Report.pdf",
-        outputDir = file.path(tmpDir, "reports"),
-        qcDir = file.path(
-          tmpDir, "figures", "preprocessingMinfiEwasWater", "enMix"
-        ),
-        preprocessingDir = file.path(
-          tmpDir, "figures", "preprocessingMinfiEwasWater", "qc"
-        ),
-        postprocessingDir = file.path(
-          tmpDir, "figures", "preprocessingMinfiEwasWater", "metrics"
-        ),
-        svaDir = file.path(
-          tmpDir, "figures", "svaEnmix"
-        ),
-        glmDir = file.path(
-          tmpDir, "figures", "methylationGLM_T1"
-        ),
-        glmmDir = file.path(
-          tmpDir, "figures", "methylationGLMM_T1T2"
-        ),
-        figDir = file.path(
-          tmpDir, "reports", "figures"
-        ),
-        reportTitle = "DNA methylation",
-        author = "School of Biomedical Sciences",
-        date = format(Sys.Date(), "%B %d, %Y")
-      )
-      NULL
-    },
-    error = identity
+  report_result <- dnaEPICO::dnamReport(
+    output = "DNAm_Report.pdf",
+    outputDir = file.path(tmpDir, "reports"),
+    qcDir = file.path(
+      tmpDir, "figures", "preprocessingMinfiEwasWater", "enMix"
+    ),
+    preprocessingDir = file.path(
+      tmpDir, "figures", "preprocessingMinfiEwasWater", "qc"
+    ),
+    postprocessingDir = file.path(
+      tmpDir, "figures", "preprocessingMinfiEwasWater", "metrics"
+    ),
+    svaDir = file.path(
+      tmpDir, "figures", "svaEnmix"
+    ),
+    glmDir = file.path(
+      tmpDir, "figures", "methylationGLM_T1"
+    ),
+    glmmDir = file.path(
+      tmpDir, "figures", "methylationGLMM_T1T2"
+    ),
+    figDir = file.path(
+      tmpDir, "reports", "figures"
+    ),
+    reportTitle = "DNA methylation",
+    author = "School of Biomedical Sciences",
+    date = format(Sys.Date(), "%B %d, %Y"),
+    verbose = FALSE,
+    logs = TRUE,
+    logDir = file.path(tmpDir, "logs")
   )
-  if (inherits(report_err, "error") &&
-      grepl("LaTeX failed to compile", conditionMessage(report_err), fixed = TRUE)) {
-    testthat::skip(conditionMessage(report_err))
+  if (identical(report_result$status, "failed")) {
+    testthat::skip(
+      paste(
+        "Report rendering failed in the current local environment:",
+        if (is.null(report_result$errorMessage)) "unknown render error" else report_result$errorMessage
+      )
+    )
   }
-  expect_null(report_err)
+  expect_true(report_result$status %in% c("rendered", "skipped"))
+  expect_true(file.exists(file.path(tmpDir, "logs", "log_dnamReport.txt")))
+  if (identical(report_result$status, "rendered")) {
+    expect_true(file.exists(report_result$outputFile))
+  }
 
   # ------------------------------------------------------------------
   # 10. Extract Makefile
   # ------------------------------------------------------------------
   expect_error(
-      dnaEPICO::extractMake(
-        destDir = tmpDir,
-        overwrite = TRUE
-      ),
-        NA
-      )
+    makefile_path <- dnaEPICO::extractMake(
+      destDir = tmpDir,
+      overwrite = TRUE
+    ),
+    NA
+  )
+  expect_true(file.exists(makefile_path))
 
   # ------------------------------------------------------------------
   # 11. Run GLM

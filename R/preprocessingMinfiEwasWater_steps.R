@@ -5,7 +5,7 @@
 #' return the resulting `RGChannelSet`.
 #'
 #' @param idatFolder Character. Directory containing the IDAT files.
-#' @param targets Data frame returned by `readTargetsMinfiEwasWater()` or an
+#' @param targets Data frame returned by `readPhenotypeTargets()` or an
 #'   equivalent phenotype table.
 #' @param SampleID Character. Name of the phenotype column containing sample
 #'   identifiers used to label the `RGChannelSet`.

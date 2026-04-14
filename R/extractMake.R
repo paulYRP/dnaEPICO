@@ -5,29 +5,32 @@
 #'
 #' @param destDir Character. Destination directory where the Makefile
 #'   will be copied.
-#' @param overwrite Logical. Whether to overwrite an existing file.
-#'   Default is FALSE.
+#' @param overwrite Logical. Whether to overwrite an existing `Makefile` in
+#'   `destDir`. The default is `FALSE`.
 #'
-#' @return
-#' Invisibly returns \code{NULL}.
+#' @return Character scalar containing the path to the copied `Makefile`.
 #'
 #' @examples
-#' tmp <- tempdir()
-#' stopifnot(dir.exists(tmp))
-#'
-#' \donttest{
-#' ## Copy the dnaEPICO Makefile pipeline into a project directory
-#' extractMake(
-#'   destDir = getwd(),
-#'   overwrite = FALSE
+#' tmp <- file.path(tempdir(), "dnaEPICO-make-example")
+#' dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
+#' makefile_path <- extractMake(
+#'   destDir = tmp,
+#'   overwrite = TRUE
 #' )
-#' }
+#' stopifnot(file.exists(makefile_path))
 #'
 #' @export
 extractMake <- function(destDir, overwrite = FALSE) {
+  if (!is.character(destDir) || length(destDir) != 1L || !nzchar(destDir)) {
+    stop("destDir must be a single, non-empty character path.", call. = FALSE)
+  }
+
+  if (!is.logical(overwrite) || length(overwrite) != 1L || is.na(overwrite)) {
+    stop("overwrite must be a single TRUE or FALSE value.", call. = FALSE)
+  }
 
   if (!dir.exists(destDir)) {
-    stop("Destination directory does not exist: ", destDir)
+    stop("Destination directory does not exist: ", destDir, call. = FALSE)
   }
 
   makefileSrc <- system.file(
@@ -40,11 +43,15 @@ extractMake <- function(destDir, overwrite = FALSE) {
 
   makefileDest <- file.path(destDir, "Makefile")
 
-  file.copy(
+  copied <- file.copy(
     makefileSrc,
     makefileDest,
-    overwrite
+    overwrite = overwrite
   )
 
-  invisible(makefileDest)
+  if (!isTRUE(copied)) {
+    stop("Failed to copy the packaged Makefile to: ", makefileDest, call. = FALSE)
+  }
+
+  normalizePath(makefileDest, winslash = "/", mustWork = FALSE)
 }

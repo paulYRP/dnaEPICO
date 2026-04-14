@@ -244,7 +244,7 @@ preprocessingMinfiEwasWater <- function(
     }
   }
 
-  targets <- readTargetsMinfiEwasWater(
+  targets <- readPhenotypeTargets(
     phenoFile = phenoFile,
     sepType = sepType,
     nSamples = nSamples,

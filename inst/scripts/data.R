@@ -68,10 +68,10 @@
 # ensuring transparency and methodological reproducibility.
 
 # -----------------------------------------------------------
-# DNAm.Rmd file
+# dnamReport.Rmd template
 # -----------------------------------------------------------
 
-# `DNAm.Rmd` is executed to generate a PDF report via dnamReport.Rd
+# `dnamReport.Rmd` is the packaged report template used by `dnamReport()`
 
 # -----------------------------------------------------------
 # Final location in the package
@@ -84,9 +84,8 @@
 #   - 12864_2024_10027_MOESM8_ESM.csv
 # - saliva.txt
 # - salivaEPIC.txt
-# - DNAm.Rmd
+# - dnamReport.Rmd
 #
 # inst/extdata/make/
 #
 #   - Workflow reproducible pipeline execution files
-

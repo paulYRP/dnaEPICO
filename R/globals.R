@@ -1,15 +1,14 @@
 # ================================================================
-# dnaEPICO — Global variable declarations for NSE compatibility
+# dnaEPICO - Global variable declarations for NSE compatibility
 # ================================================================
 #
 # Purpose:
 # Declare variables used via Non-Standard Evaluation (NSE) so that
 # R CMD check does not produce "no visible binding for global variable"
 #
-# This file does NOT modify runtime behaviour. It only informs the
+# This file does not modify runtime behaviour. It only informs the
 # static code analyser about variables used inside:
-#   - data.table
-#   - dplyr / tidyverse pipelines
+#   - data.table operations
 #   - modelling outputs
 #   - annotation tables
 #

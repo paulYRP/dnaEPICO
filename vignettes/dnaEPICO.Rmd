@@ -94,9 +94,10 @@ devtools::install_github('paulYRP/dnaEPICO')
 - computes surrogate variables (**SVA**),
 - merges phenotype data with methylation matrices,
 - fits **GLM** (cross-sectional) and **GLMM/LME** (longitudinal) models,
-- writes **logs**, **figures**, **RData objects**, and a **PDF report**.
+- returns structured in-memory result objects for interactive use,
+- optionally writes **logs**, **figures**, legacy **RData objects**, and a **PDF report** when requested.
 
-Each step writes its outputs to a dedicated folder. This design lets you run steps independently or connect them through the Makefile pipeline.
+Each step can be run interactively without writing files, or connected through the Makefile pipeline when you set `saveOutputs = TRUE`. This design lets you inspect results in memory first and still reproduce the classic folder-based workflow when needed.
 
 ## Local/Cluster use
 
@@ -119,12 +120,12 @@ Each step writes its outputs to a dedicated folder. This design lets you run ste
 `r Biocpkg("dnaEPICO")` expects a project layout like this:
 
 ``` make
-â”œâ”€â”€ data/                                   # Processed data outputs (per model)
-â”‚   â”œâ”€â”€ preprocessingMinfiEwasWater/
-â”‚   â”‚   â”œâ”€â”€ idats/                          # Folder containing raw IDAT files
-â”‚   â”‚   â”œâ”€â”€ pheno.csv                       # Phenotype file with sample metadata
-â”‚   â”‚   â””â”€â”€ 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
-â”‚   â”œâ”€â”€ Makefile                            # Arguments
+├── data/                                   # Processed data outputs (per model)
+│   ├── preprocessingMinfiEwasWater/
+│   │   ├── idats/                          # Folder containing raw IDAT files
+│   │   ├── pheno.csv                       # Phenotype file with sample metadata
+│   │   └── 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
+│   ├── Makefile                            # Arguments
 ```
 
 - **Phenotype file**: a `CSV` with sample identifiers and covariates.
@@ -135,37 +136,37 @@ Cross-hybridisation probe data for EPICv2 can be downloaded from [`12864_2024_10
 You can extract the example Makefile with:
 
 ```{r, eval=FALSE}
-extractMake(
+makefilePath <- extractMake(
   destDir = getwd(),
   overwrite = FALSE
-  )
+)
 ```
 
-`r Biocpkg("dnaEPICO")` produces:
+When disk outputs are enabled, `r Biocpkg("dnaEPICO")` produces:
 
 ``` make
-â”œâ”€â”€ data/                                   # Processed data outputs (per model)
-â”‚   â”œâ”€â”€ preprocessingMinfiEwasWater/
-â”‚   â”‚   â”œâ”€â”€ idats/                          # Folder containing raw IDAT files
-â”‚   â”‚   â”œâ”€â”€ pheno.csv                       # Phenotype file with sample metadata
-â”‚   â”‚   â””â”€â”€ 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
-â”‚   â”œâ”€â”€ model1/                             # Outputs specific to the first model
-â”‚   â”‚   â”œâ”€â”€ preprocessingMinfiEwasWater/    # Preprocessed phenotype + QC from Minfi
-â”‚   â”‚   â”œâ”€â”€ svaEnmix/                       # Surrogate variable analysis 
-â”‚   â”‚   â”œâ”€â”€ preprocessingPheno/             # Cleaned and merged phenotype files 
-â”‚   â”‚   â”œâ”€â”€ methylationGLM_T1/              # CpG-level GLM results (single timepoint)
-â”‚   â”‚   â”œâ”€â”€ methylationGLMM_T1T2/           # Longitudinal LME results (T1 vs T2)
-â”‚   â”‚   â””â”€â”€ ...                             # Additional subfolders by model
-â”‚   â”œâ”€â”€ model2/
-â”‚   â””â”€â”€ model3/
-â”œâ”€â”€ rData/                                  # Processed R objects (MSet, Beta, CN matrices, etc.)
-â”œâ”€â”€ logs/                                   # Logging output from script runs
-â”œâ”€â”€ figures/                                # QC plots and visualization output
-â”œâ”€â”€ results/                                # Output tables and summary statistics
-â”œâ”€â”€ reports/                                # Rendered reports (PDF)
+├── data/                                   # Processed data outputs (per model)
+│   ├── preprocessingMinfiEwasWater/
+│   │   ├── idats/                          # Folder containing raw IDAT files
+│   │   ├── pheno.csv                       # Phenotype file with sample metadata
+│   │   └── 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
+│   ├── model1/                             # Outputs specific to the first model
+│   │   ├── preprocessingMinfiEwasWater/    # Preprocessed phenotype + QC from Minfi
+│   │   ├── svaEnmix/                       # Surrogate variable analysis 
+│   │   ├── preprocessingPheno/             # Cleaned and merged phenotype files 
+│   │   ├── methylationGLM_T1/              # CpG-level GLM results (single timepoint)
+│   │   ├── methylationGLMM_T1T2/           # Longitudinal LME results (T1 vs T2)
+│   │   └── ...                             # Additional subfolders by model
+│   ├── model2/
+│   └── model3/
+├── rData/                                  # Processed R objects (MSet, Beta, CN matrices, etc.)
+├── logs/                                   # Logging output from script runs
+├── figures/                                # QC plots and visualization output
+├── results/                                # Output tables and summary statistics
+├── reports/                                # Rendered reports (PDF)
 ```
 
-Each step writes:
+When `saveOutputs = TRUE`, the workflow writes:
 
 - `logs/`: logs
 - `rData/`: intermediate and final R objects
@@ -173,7 +174,7 @@ Each step writes:
 - `data/`: exported tables and annotated results
 - `reports/`: final report files
 
-This approach improves reproducibility, debugging, and HPC resuming.
+This approach improves reproducibility, debugging, and HPC resuming while keeping the functions usable in the traditional in-memory Bioconductor style.
 
 # Local use
 
@@ -186,7 +187,7 @@ Local use focuses on the first three steps that are usually run interactively:
 ## Step 1: `preprocessingMinfiEwasWater()`
 
 ```{r, eval=FALSE}
-preprocessingMinfiEwasWater(
+preprocessResult <- preprocessingMinfiEwasWater(
     phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
     idatFolder = "data/preprocessingMinfiEwasWater/idats",
     outputLogs = "logs",
@@ -214,13 +215,21 @@ preprocessingMinfiEwasWater(
     plotGroupVar = "Sex",
     lcRef = "salivaEPIC",
     phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
-    lcPhenoDir = "data/preprocessingMinfiEwasWater"
+    lcPhenoDir = "data/preprocessingMinfiEwasWater",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE,
+    saveOutputs = FALSE
 )
 ```
 
+The example above shows the interactive, in-memory style. For the folder-based
+pipeline and Makefile workflow, set `saveOutputs = TRUE` so later steps can
+reuse the saved files.
+
 ### What it does:
 
-This wrapper runs `inst/scripts/preprocessingMinfiEwasWater.R`. It:
+This wrapper coordinates the modular preprocessing helpers and returns a structured result object. It:
 
 1.  Reads the phenotype CSV (`phenoFile`) and IDAT files (`idatFolder`).
 2.  Loads an `RGChannelSet` and performs initial QC.
@@ -228,9 +237,8 @@ This wrapper runs `inst/scripts/preprocessingMinfiEwasWater.R`. It:
 4.  Computes detection p-values and filters failed probes and samples.
 5.  Applies normalisation using `normMethods`.
 6.  Filters probes based on detection p-values, sex chromosomes, SNPs, and cross-reactive probes.
-7.  Exports final Beta, M, and CN matrices to `rData/`.
-8.  Writes QC plots to `figures/` and logs to `logs/`.
-9.  Estimates cell composition with `lcRef` and writes `phenoLC.csv` to `lcPhenoDir`.
+7.  Returns the filtered phenotype table, preprocessing objects, metrics, and cell composition estimates in memory.
+8.  Optionally writes QC plots, logs, legacy `.RData` outputs, and `phenoLC.csv` when `saveOutputs = TRUE`.
 
 ### Parameter guide:
 
@@ -245,11 +253,14 @@ This wrapper runs `inst/scripts/preprocessingMinfiEwasWater.R`. It:
 -   `crossReactivePath`: path to cross-reactive probe list.
 -   `phenoOrder`: order of columns in the final phenotype table.
 -   `lcRef`, `lcPhenoDir`: cell type reference and output directory for cell fraction results.
+-   `display`: draw exploratory plots on the active device.
+-   `verbose`, `logs`: control message output and optional log files.
+-   `saveOutputs`: write the classic folder-based outputs instead of relying only on the returned object.
 
 ## Step 2: `svaEnmix()`
 
 ```{r, eval=FALSE}
-svaEnmix(
+svaResult <- svaEnmix(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     rgsetData = "rData/preprocessingMinfiEwasWater/objects/RGSet.RData",
     sepType = "",
@@ -266,6 +277,9 @@ svaEnmix(
     tiffWidth = 2000,
     tiffHeight = 1000,
     tiffRes = 150,
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE,
     saveOutputs = TRUE
 )
 ```
@@ -277,7 +291,8 @@ This wrapper coordinates the modular `svaEnmix()` helpers. It:
 1.  Loads the `RGSet` object from `rgsetData` and phenotype data from `phenoFile`.
 2.  Uses ENmix control probes to derive control-based surrogate variables.
 3.  Selects the number of surrogate components needed to explain `ctrlSvaPercVar` of variance.
-4.  Optionally writes summary outputs, plots, and updated objects when `saveOutputs = TRUE`.
+4.  Returns the surrogate-variable results, merged phenotype table, and model summaries in memory.
+5.  Optionally writes summary outputs, plots, and updated objects when `saveOutputs = TRUE`.
 
 ### Parameter guide:
 
@@ -285,11 +300,14 @@ This wrapper coordinates the modular `svaEnmix()` helpers. It:
 -   `phenoFile`: phenotype file that includes cell fractions.
 -   `ctrlSvaPercVar`: proportion of variance explained by control-derived SVA components.
 -   `SentrixIDColumn`, `SentrixPositionColumn`: columns that identify array positions.
+-   `display`: draw SVA plots on the active device.
+-   `verbose`, `logs`: control message output and optional log files.
+-   `saveOutputs`: write exported SVA files for downstream pipeline steps.
 
 ## Step 3: `preprocessingPheno()`
 
 ```{r, eval=FALSE}
-preprocessingPheno(
+phenoResult <- preprocessingPheno(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     sepType = "",
     betaPath =
@@ -308,6 +326,8 @@ preprocessingPheno(
     sexColumn = "Sex",
     outputLogs = "logs",
     outputDir = "data/preprocessingPheno",
+    verbose = FALSE,
+    logs = FALSE,
     saveOutputs = TRUE
 )
 ```
@@ -320,7 +340,8 @@ This wrapper coordinates the modular `preprocessingPheno()` helpers. It:
 2.  Aligns samples using `SampleID`.
 3.  Creates timepoint-specific subsets based on `timepoints`.
 4.  Combines timepoints for longitudinal analysis using `combineTimepoints`.
-5.  Optionally writes cleaned phenotype tables to `outputPheno`, metric objects to `outputRData`, and merged objects to `outputRDataMerge` when `saveOutputs = TRUE`.
+5.  Returns aligned phenotype-plus-methylation objects for downstream modelling.
+6.  Optionally writes cleaned phenotype tables to `outputPheno`, metric objects to `outputRData`, and merged objects to `outputRDataMerge` when `saveOutputs = TRUE`.
 
 ### Parameter guide:
 
@@ -336,6 +357,8 @@ This wrapper coordinates the modular `preprocessingPheno()` helpers. It:
 -   `sexColumn`: column used for biological sex.
 -   `outputLogs`: directory for logs.
 -   `outputDir`: base directory for exported files.
+-   `verbose`, `logs`: control message output and optional log files.
+-   `saveOutputs`: write pipeline-ready CSV, ZIP, and `.RData` outputs.
 
 This step produces analysis-ready phenotypeâ€“methylation objects for GLM and LME modelling and creates files compatible with the DNAmAge Clock Foundation platform.
 
@@ -655,7 +678,7 @@ Extract the example Makefile into the current directory:
 
 ```{r, eval=FALSE}
 ## Copies the example Makefile into the current directory
-extractMake(destDir = getwd(), overwrite = FALSE)
+makefilePath <- extractMake(destDir = getwd(), overwrite = FALSE)
 ```
 
 The example template `Makefile.model.pipeline` is copied and renamed to `Makefile`.
@@ -837,7 +860,9 @@ This allows users to:
 -   STEP4 = methylationGLM_T1
 -   STEP5 = methylationGLMM_T1T2
 
-Each step writes outputs into **step-specific directories**. When running in parallel, directory paths are automatically namespaced by model, ensuring isolation between runs.
+In the Makefile pipeline, each step writes outputs into **step-specific
+directories**. When running in parallel, directory paths are automatically
+namespaced by model, ensuring isolation between runs.
 
 This design allows:
 
@@ -879,18 +904,23 @@ endif
 if ...
 ```
 
-This section ensures that optional arguments are passed correctly to R scripts. It prevents accidental interpretation of the string `"NULL"` as a real value and guarantees consistent behaviour across local and Scluster environments.
+This section ensures that optional arguments are passed correctly to R scripts. It prevents accidental interpretation of the string `"NULL"` as a real value and guarantees consistent behaviour across local and cluster environments.
 
 # Reporting
 
-`dnamReport()` generates a PDF report by rendering `DNAm.Rmd` through a
-runner script (`DNAm.R`) shipped in `inst/scripts`.
+The reporting step follows the same modular pattern as the analysis steps:
 
-`Note: PDF report generation requires a working LaTeX installation.TinyTeX can be installed in R using: install.packages("tinytex") and tinytex::install_tinytex()`.
+1.  `prepareDnamReportInputs()` collects report metadata and figure inventories.
+2.  `renderDnamReport()` renders a prepared report object.
+3.  `dnamReport()` is a convenience wrapper around both steps.
+
+Use the split API when you want to inspect the report inputs before rendering. Use `dnamReport()` when you want the convenience wrapper.
+
+Note: PDF report generation requires a working LaTeX installation. TinyTeX can be installed in R using `install.packages("tinytex")` and `tinytex::install_tinytex()`.
 For troubleshooting LaTeX-related issues, see the [TinyTeX](https://yihui.org/tinytex/) documentation.
 
 ```{r, eval=FALSE}
-dnamReport(
+preparedReport <- prepareDnamReportInputs(
   output = "DNAm_Report.pdf",
   outputDir = "reports",
   qcDir = "figures/preprocessingMinfiEwasWater/enMix",
@@ -901,13 +931,38 @@ dnamReport(
   glmmDir = "figures/methylationGLMM_T1T2",
   reportTitle = "DNA methylation",
   author = "School of Biomedical Sciences",
-  date = format(Sys.Date(), "%B %d, %Y")
+  date = format(Sys.Date(), "%B %d, %Y"),
+  verbose = FALSE,
+  logs = FALSE
+)
+
+reportRender <- renderDnamReport(
+  preparedReport = preparedReport,
+  verbose = FALSE,
+  logs = FALSE
+)
+
+reportInfo <- dnamReport(
+  output = "DNAm_Report.pdf",
+  outputDir = "reports",
+  qcDir = "figures/preprocessingMinfiEwasWater/enMix",
+  preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
+  postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
+  svaDir = "figures/svaEnmix/sva",
+  glmDir = "figures/methylationGLM_T1",
+  glmmDir = "figures/methylationGLMM_T1T2",
+  reportTitle = "DNA methylation",
+  author = "School of Biomedical Sciences",
+  date = format(Sys.Date(), "%B %d, %Y"),
+  render = TRUE,
+  verbose = FALSE,
+  logs = FALSE
 )
 ```
 
 # Troubleshooting
 
-- If a step â€œfailsâ€, check logs in `logs/`
+- If a step "fails", check logs in `logs/`
 - If Make targets are missing, confirm:
   - your working directory contains a valid `Makefile`
 
@@ -938,7 +993,7 @@ This example is designed to:
 - demonstrate how data and results are organised on disk,
 - and provide a safe, reproducible way to test the pipeline
 
-To avoid creating permanent files on the userâ€™s computer, **all steps are run inside a temporary directory**.
+To avoid creating permanent files on the user's computer, **all steps are run inside a temporary directory**.
 
 When analysing real data, users can simply replace the temporary directory with their own project folder.
 
@@ -1003,7 +1058,7 @@ length(idatFiles)
 
 ```
 
-We now copy these IDAT files into the directory structure expected by S`dnaEPICO`.
+We now copy these IDAT files into the directory structure expected by `dnaEPICO`.
 
 ```{r}
 # Create IDAT directory
@@ -1104,7 +1159,7 @@ We now run the first pipeline stage, which performs:
 
 ```{r}
 set.seed(123)
-preprocessingMinfiEwasWater(
+preprocessResult <- preprocessingMinfiEwasWater(
   phenoFile = samplePath,
   idatFolder = file.path(preprocDir, "idats"),
   nSamples = NA,
@@ -1130,8 +1185,11 @@ preprocessingMinfiEwasWater(
   figureBaseDir = file.path(tmpDir, "figures"),
   lcRef = "FlowSorted.Blood.450k",
   crossReactivePath = file.path(preprocDir, "12864_2024_10027_MOESM8_ESM.csv"),
-  lcPhenoDir = preprocDir
+  lcPhenoDir = preprocDir,
+  saveOutputs = TRUE
 )
+
+inherits(preprocessResult, "dnaEPICO_preprocessingMinfiEwasWater")
 
 ```
 
@@ -1153,8 +1211,14 @@ file.exists(rgsetPath)
 ```
 
 ```{r}
-svaEnmix(
-  phenoFile = samplePath,
+phenoLCPath <- file.path(preprocDir, "phenoLC.csv")
+file.exists(phenoLCPath)
+
+```
+
+```{r}
+svaResult <- svaEnmix(
+  phenoFile = phenoLCPath,
   rgsetData = rgsetPath,
   sepType = "",
   outputLogs = file.path(tmpDir, "logs"),
@@ -1174,8 +1238,9 @@ svaEnmix(
   figureBaseDir = file.path(tmpDir, "figures"),
   rBaseDir = file.path(tmpDir, "rData"),
   saveOutputs = TRUE
-  
 )
+
+inherits(svaResult, "dnaEPICO_svaEnmix")
 
 ```
 
@@ -1226,8 +1291,8 @@ file.exists(cnPath)
 ```
 
 ```{r}
-preprocessingPheno(
-  phenoFile = samplePath,
+phenoResult <- preprocessingPheno(
+  phenoFile = phenoLCPath,
   sepType = "",
   betaPath = betaPath,
   mPath = mPath,
@@ -1245,14 +1310,18 @@ preprocessingPheno(
   saveOutputs = TRUE
 )
 
+inherits(phenoResult, "dnaEPICO_preprocessingPheno")
+
 ```
 
 ### Step 8: Generate a PDF report
 
-Finally, we generate a summary report that compiles figures and results from all previous steps.
+Finally, we prepare a summary report configuration that can be rendered once the
+full set of figures is available. This keeps the example in the in-memory-first
+style while still showing the report inputs that would be rendered later.
 
 ```{r}
-dnamReport(
+preparedReport <- prepareDnamReportInputs(
   output = "DNAm_Report.pdf",
   outputDir = file.path(tmpDir, "reports"),
 
@@ -1279,8 +1348,12 @@ dnamReport(
         ),
   reportTitle = "DNA methylation",
   author = "School of Biomedical Sciences",
-  date = format(Sys.Date(), "%B %d, %Y")
+  date = format(Sys.Date(), "%B %d, %Y"),
+  verbose = FALSE,
+  logs = FALSE
 )
+
+preparedReport$outputFile
 
 ```
 
@@ -1290,7 +1363,7 @@ For large studies or cluster environments, the same workflow can be executed via
 
 ```{r, message=TRUE, warning=FALSE, eval=FALSE}
 # Extract Makefile
-extractMake(destDir = tmpDir)
+makefilePath <- extractMake(destDir = tmpDir)
 
 oldWd <- getwd()
 setwd(tmpDir)
@@ -1397,7 +1470,7 @@ This vignette was generated using `r Biocpkg("BiocStyle")`, with `r CRANpkg("kni
 
 ## Required knowledge
 
-`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for high-dimensional genomic data, with a focus on Illumina DNA methylation arrays.
+`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for high-dimensional genomic data, with a focus on Illumina DNA methylation arrays. To read this vignette, we assume that you are already familiar with the general DNA methylation workflow. If not, we recommend first reading this [tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html), which provides a practical introduction to the main concepts and analysis steps.
 
 Preprocessing and quality control are performed using established Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`. Downstream statistical modelling relies on base R and CRAN frameworks, including
 generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures.

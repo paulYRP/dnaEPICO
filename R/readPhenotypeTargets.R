@@ -1,8 +1,8 @@
-#' Read phenotype targets for preprocessing
+#' Read phenotype targets for shared dnaEPICO workflows
 #'
-#' Read the phenotype table used by `preprocessingMinfiEwasWater()`, validate
-#' the sample identifier column, optionally subset the first `nSamples`, and
-#' return the targets as a base `data.frame`.
+#' Read the phenotype table used by shared `dnaEPICO` workflows, validate the
+#' sample identifier column, optionally subset the first `nSamples`, and return
+#' the targets as a base `data.frame`.
 #'
 #' @param phenoFile Character. Path to the phenotype table on disk.
 #' @param sepType Character. Field separator used in `phenoFile`. Use `""`
@@ -22,7 +22,7 @@
 #'   written when `logs = TRUE`. If `NULL`, the current working directory is
 #'   used.
 #' @param log_file Character. File name used when `logs = TRUE`. The default is
-#'   `"log_readTargetsMinfiEwasWater.txt"`.
+#'   `"log_readPhenotypeTargets.txt"`.
 #'
 #' @return A `data.frame` containing the phenotype targets.
 #'
@@ -35,7 +35,7 @@
 #' )
 #' pheno_file <- file.path(tmp, "pheno.csv")
 #' utils::write.csv(pheno, pheno_file, row.names = FALSE)
-#' targets <- readTargetsMinfiEwasWater(
+#' targets <- readPhenotypeTargets(
 #'   phenoFile = pheno_file,
 #'   SampleID = "Sample_Name"
 #' )
@@ -43,7 +43,7 @@
 #' stopifnot(nrow(targets) == 2L)
 #'
 #' @export
-readTargetsMinfiEwasWater <- function(
+readPhenotypeTargets <- function(
     phenoFile,
     sepType = "",
     nSamples = NA,
@@ -51,7 +51,7 @@ readTargetsMinfiEwasWater <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_readTargetsMinfiEwasWater.txt"
+    log_file = "log_readPhenotypeTargets.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(
     logs = logs,

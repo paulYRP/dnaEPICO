@@ -156,7 +156,7 @@ svaEnmix <- function(
     log_path = log_path
   )
 
-  targets <- readTargetsMinfiEwasWater(
+  targets <- readPhenotypeTargets(
     phenoFile = phenoFile,
     sepType = sepType,
     nSamples = nSamples,

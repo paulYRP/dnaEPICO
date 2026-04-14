@@ -41,10 +41,23 @@
 #'
 #' @export
 estimateLC <- function(meth, ref, constrained = FALSE) {
+    if (is.null(rownames(meth))) {
+      stop("meth must have probe identifiers in row names.", call. = FALSE)
+    }
+
+    ref_file <- system.file("extdata", paste0(ref, ".txt"), package = "dnaEPICO")
+    if (!nzchar(ref_file)) {
+      stop(
+        "Unsupported ref '",
+        ref,
+        "'. Supported values are 'saliva' and 'salivaEPIC'.",
+        call. = FALSE
+      )
+    }
 
     J <- ncol(meth)
 
-    coefs <- utils::read.table(system.file("extdata", paste0(ref, ".txt"), package = "dnaEPICO"))
+    coefs <- utils::read.table(ref_file)
 
     coefs <- as.matrix(coefs)
     n_celltypes <- ncol(coefs)
@@ -74,12 +87,12 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
 
           return(match(query, rownames))
 
-        } else if (query_type == "legacy" & row_type == "epicv2") {
+        } else if (query_type == "legacy" && row_type == "epicv2") {
           row_loci <- sub("_[TB][CO]\\d+$", "", rownames)
 
           return(match(query, row_loci))
 
-        } else if (query_type == "epicv2" & row_type == "legacy") {
+        } else if (query_type == "epicv2" && row_type == "legacy") {
 
           stop("Query contains EPICv2 probe IDs but dataset is of legacy type")
 
@@ -101,7 +114,7 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
       tmp <- meth[markers, j]
       i <- !is.na(tmp)
 
-      if (constrained == FALSE) {
+      if (!isTRUE(constrained)) {
 
         quadprog::solve.QP(
           t(coefs[i, ]) %*% coefs[i, ],
@@ -126,5 +139,5 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
     colnames(EST) <- colnames(coefs)
     EST <- data.table::data.table(EST)
 
-    return(EST)
+    EST
 }
