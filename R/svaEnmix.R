@@ -1,3 +1,79 @@
+#' Validate a loaded RGSet for svaEnmix
+#'
+#' @param RGSet Object loaded from `rgsetData`.
+#' @param rgsetData Character. Source file path used in validation messages.
+#' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
+#' @param logs Logical. If `TRUE`, write the same messages to a log file.
+#' @param log_dir Character or `NULL`. Directory used for the log file when
+#'   `logs = TRUE`.
+#' @param log_file Character. File name used when `logs = TRUE`.
+#'
+#' @return The validated `RGSet`.
+#'
+#' @description
+#' Internal helper that logs the class and dimensions of the loaded object and
+#' stops with a clearer error when the saved file does not contain a usable
+#' `RGChannelSet`-like object.
+#'
+#' @keywords internal
+#' @noRd
+svaEnmixValidateRGSet <- function(
+    RGSet,
+    rgsetData,
+    verbose = FALSE,
+    logs = FALSE,
+    log_dir = NULL,
+    log_file = "log_svaEnmix.txt"
+) {
+  log_path <- resolveLogPathMinfiEwasWater(
+    logs = logs,
+    log_dir = log_dir,
+    log_file = log_file
+  )
+  rgset_class <- paste(class(RGSet), collapse = ", ")
+  rgset_dims <- dim(RGSet)
+
+  emitLogMinfiEwasWater(
+    c(
+      paste("Loaded RGSet object class: ", rgset_class),
+      paste(
+        "Loaded RGSet dimensions:   ",
+        if (length(rgset_dims) == 2L) {
+          paste(rgset_dims, collapse = " x ")
+        } else {
+          "unavailable"
+        }
+      )
+    ),
+    verbose = verbose,
+    log_path = log_path
+  )
+
+  if (length(rgset_dims) != 2L) {
+    stop(
+      "The object loaded from ",
+      rgsetData,
+      " has class ",
+      rgset_class,
+      " and does not contain a usable RGSet with two dimensions.",
+      call. = FALSE
+    )
+  }
+
+  if (!methods::is(RGSet, "SummarizedExperiment")) {
+    stop(
+      "The object loaded from ",
+      rgsetData,
+      " has class ",
+      rgset_class,
+      " and is not compatible with SummarizedExperiment-based RGSet processing.",
+      call. = FALSE
+    )
+  }
+
+  RGSet
+}
+
 #' Estimate surrogate variables from ENmix control probes
 #'
 #' Read the phenotype table and a saved `RGChannelSet`, estimate surrogate
@@ -170,11 +246,20 @@ svaEnmix <- function(
         path = rgsetData,
         preferred_name = "RGSet"
       )
+      RGSet <- svaEnmixValidateRGSet(
+        RGSet = RGSet,
+        rgsetData = rgsetData,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
+      rgset_ncol <- ncol(RGSet)
 
-      if (ncol(RGSet) != nrow(targets)) {
+      if (rgset_ncol != nrow(targets)) {
         stop(
           "The saved RGSet contains ",
-          ncol(RGSet),
+          rgset_ncol,
           " samples but the phenotype table contains ",
           nrow(targets),
           ".",
@@ -190,7 +275,7 @@ svaEnmix <- function(
 
       emitLogMinfiEwasWater(
         c(
-          paste("RGSet loaded with          ", ncol(RGSet), " samples."),
+          paste("RGSet loaded with          ", rgset_ncol, " samples."),
           paste("Applied annotation:        ", paste(Biobase::annotation(RGSet), collapse = ", ")),
           "======================================================================="
         ),

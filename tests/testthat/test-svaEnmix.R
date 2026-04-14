@@ -175,3 +175,68 @@ test_that("svaEnmix accepts saved RGSet inputs", {
     expect_s3_class(result, "dnaEPICO_svaEnmix")
     expect_equal(nrow(result$targets), ncol(result$RGSet))
 })
+
+test_that("svaEnmix accepts wrapper files that contain an RGSet element", {
+    testthat::skip_if_not_installed("minfiData")
+
+    tmp <- withr::local_tempdir()
+    ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+    pheno_file <- file.path(tmp, "pheno.csv")
+    rgset_path <- file.path(tmp, "RGSet_wrapper.RData")
+    rgset_state <- list(
+        RGSet = ex$RGSet,
+        note = "wrapper object"
+    )
+    utils::write.csv(ex$targets, pheno_file, row.names = FALSE)
+    save(rgset_state, file = rgset_path)
+
+    result <- svaEnmix(
+        phenoFile = pheno_file,
+        rgsetData = rgset_path,
+        SampleID = "Sample_Name",
+        arrayType = "IlluminaHumanMethylation450k",
+        annotationVersion = "ilmn12.hg19",
+        SentrixIDColumn = "Sentrix_ID",
+        SentrixPositionColumn = "Sentrix_Position",
+        outputLogs = file.path(tmp, "logs"),
+        figureBaseDir = file.path(tmp, "figures"),
+        dataBaseDir = file.path(tmp, "data"),
+        rBaseDir = file.path(tmp, "rData"),
+        verbose = FALSE,
+        logs = FALSE,
+        saveOutputs = FALSE
+    )
+
+    expect_s3_class(result, "dnaEPICO_svaEnmix")
+    expect_equal(nrow(result$targets), ncol(result$RGSet))
+})
+
+test_that("svaEnmix reports invalid saved RGSet objects clearly", {
+    tmp <- withr::local_tempdir()
+    pheno_file <- file.path(tmp, "pheno.csv")
+    bad_path <- file.path(tmp, "bad_RGSet.RData")
+    bad_object <- list(not_rgset = 1)
+    pheno <- data.frame(
+        UID = "S1",
+        Sentrix_ID = "Chip1",
+        Sentrix_Position = "R01C01",
+        stringsAsFactors = FALSE
+    )
+    utils::write.csv(pheno, pheno_file, row.names = FALSE)
+    save(bad_object, file = bad_path)
+
+    expect_error(
+        svaEnmix(
+            phenoFile = pheno_file,
+            rgsetData = bad_path,
+            SampleID = "UID",
+            SentrixIDColumn = "Sentrix_ID",
+            SentrixPositionColumn = "Sentrix_Position",
+            outputLogs = file.path(tmp, "logs"),
+            logs = TRUE,
+            verbose = FALSE,
+            saveOutputs = FALSE
+        ),
+        "does not contain a usable RGSet"
+    )
+})

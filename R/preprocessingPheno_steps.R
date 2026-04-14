@@ -22,6 +22,35 @@ parseTimepointsPreprocessingPheno <- function(values, label = "timepoints") {
   parsed
 }
 
+#' Extract a preferred named element from a loaded object
+#'
+#' @param object Loaded object.
+#' @param preferred_name Character or `NULL`. Name of the preferred element to
+#'   extract when `object` is a named list.
+#'
+#' @return The original object or its preferred named element.
+#'
+#' @description
+#' Internal helper that unwraps legacy list-style saved objects used by
+#' `preprocessingPheno()` and downstream wrappers.
+#'
+#' @keywords internal
+#' @noRd
+extractPreferredObjectPreprocessingPheno <- function(
+    object,
+    preferred_name = NULL
+) {
+  if (is.null(preferred_name)) {
+    return(object)
+  }
+
+  if (is.list(object) && preferred_name %in% names(object)) {
+    return(object[[preferred_name]])
+  }
+
+  object
+}
+
 #' Load a saved object used by preprocessingPheno helpers
 #'
 #' @param path Character. Path to an `.RData` or `.rds` file.
@@ -43,18 +72,33 @@ loadSavedObjectPreprocessingPheno <- function(path, preferred_name = NULL) {
   }
 
   if (grepl("\\.rds$", path, ignore.case = TRUE)) {
-    return(readRDS(path))
+    return(
+      extractPreferredObjectPreprocessingPheno(
+        object = readRDS(path),
+        preferred_name = preferred_name
+      )
+    )
   }
 
   load_env <- new.env(parent = emptyenv())
   loaded_names <- load(path, envir = load_env)
 
   if (!is.null(preferred_name) && preferred_name %in% loaded_names) {
-    return(load_env[[preferred_name]])
+    return(
+      extractPreferredObjectPreprocessingPheno(
+        object = load_env[[preferred_name]],
+        preferred_name = preferred_name
+      )
+    )
   }
 
   if (length(loaded_names) == 1L) {
-    return(load_env[[loaded_names[[1L]]]])
+    return(
+      extractPreferredObjectPreprocessingPheno(
+        object = load_env[[loaded_names[[1L]]]],
+        preferred_name = preferred_name
+      )
+    )
   }
 
   stop(
