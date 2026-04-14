@@ -78,13 +78,6 @@ BiocManager::valid()
 library("dnaEPICO")
 ```
 
-Alternatively, install directly from GitHub:
-
-```{r, eval= FALSE, echo= TRUE}
-install.packages("devtools")
-devtools::install_github("paulYRP/dnaEPICO")
-```
-
 # Overview
 
 `r Biocpkg("dnaEPICO")` is a DNA methylation preprocessing and modelling pipeline for Illumina arrays. It wraps standard analysis steps into a consistent structure that:
