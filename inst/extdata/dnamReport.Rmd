@@ -4,7 +4,7 @@ author: "`r params$author`"
 date: "`r params$date`"
 subtitle: "Queensland University of Technology"
 abstract: |
- This document is an automatic output of the dnapipeR pipeline. Within this report, preprocessing, quality control, normalisation, surrogate variable analysis, clock estimation, cell-type deconvolution, as well as generalized linear and linear mixed-effects modeling are presented. This script is still under development, so please excuse any formatting issues. If you have suggestions, questions, or requests, feel free to contact me at ruizpint@qut.edu.au.
+ This document is an automatic output of the dnaEPICO pipeline. Within this report, preprocessing, quality control, normalisation, surrogate variable analysis, clock estimation, cell-type deconvolution, as well as generalized linear and linear mixed-effects modeling are presented. This script is still under development, so please excuse any formatting issues. If you have suggestions, questions, or requests, feel free to contact me at ruizpint@qut.edu.au.
 output:
   pdf_document: 
     toc: true
