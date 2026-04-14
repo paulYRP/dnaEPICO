@@ -60,6 +60,15 @@ This citation guidance is adapted from the vignettes and user guides of [minfi](
 - If you use `make f3lme MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @lme4.
 - If you use `make all MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @glm2; @lme4.
 
+## Required knowledge
+
+`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for high-dimensional genomic data, with a focus on Illumina DNA methylation arrays. To read this vignette, we assume that you are already familiar with the general DNA methylation workflow. If not, we recommend first reading this [tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html), which provides a practical introduction to the main concepts and analysis steps.
+
+Preprocessing and quality control are performed using established Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`. Downstream statistical modelling relies on base R and CRAN frameworks, including
+generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures.
+
+If you are asking yourself the question "Where do I start using Bioconductor?" you might be interested in [this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
+
 # Installation
 
 The `r Biocpkg("dnaEPICO")` package depends on `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`, among others. Install dependencies with BiocManager:
@@ -1432,15 +1441,6 @@ sessionInfo()
 This package was developed using `r BiocStyle::Biocpkg("biocthis")`.
 
 This vignette was generated using `r Biocpkg("BiocStyle")`, with `r CRANpkg("knitr")` and `r CRANpkg("rmarkdown")` running behind the scenes.
-
-## Required knowledge
-
-`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for high-dimensional genomic data, with a focus on Illumina DNA methylation arrays. To read this vignette, we assume that you are already familiar with the general DNA methylation workflow. If not, we recommend first reading this [tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html), which provides a practical introduction to the main concepts and analysis steps.
-
-Preprocessing and quality control are performed using established Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`. Downstream statistical modelling relies on base R and CRAN frameworks, including
-generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures. Downstream statistical modelling relies on base R and CRAN frameworks, including generalised linear models and linear mixed-effects models. Users are expected to have basic familiarity with R, command-line execution, and Illumina IDAT file structures.
-
-If you are asking yourself the question "Where do I start using Bioconductor?" you might be interested in [this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
 
 ## Asking for help
 
