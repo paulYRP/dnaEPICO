@@ -53,12 +53,12 @@ The `r Biocpkg("dnaEPICO")` package uses methods from several external packages.
 
 This citation guidance is adapted from the vignettes and user guides of [minfi](https://github.com/hansenlab/minfi/blob/devel/vignettes/minfi.Rmd), [ENmix](https://github.com/xuz1/ENmix/blob/master/vignettes/ENmix.Rmd), and [wateRmelon](https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/references.bib).
 
-- If you use `preprocessingMinfiEwasWater()`, please cite [@minfi; @minfiEPIC; @ENmix; @wateRmelon; @ewastools; @SWAN; @funnorm; @noob; @quantile].
-- If you use `svaEnmix()`, please cite [@minfi; @ENmix].
-- If you use `make f3 MODEL=model1`, please cite [@minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools].
-- If you use `make f4 MODEL=model1`, please cite [@minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @glm2].
-- If you use `make f3lme MODEL=model1`, please cite [@minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @lme4].
-- If you use `make all MODEL=model1`, please cite [@minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @glm2; @lme4].
+- If you use `preprocessingMinfiEwasWater()`, please cite @minfi; @minfiEPIC; @ENmix; @wateRmelon; @ewastools; @SWAN; @funnorm; @noob; @quantile.
+- If you use `svaEnmix()`, please cite @minfi; @ENmix.
+- If you use `make f3 MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools.
+- If you use `make f4 MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @glm2.
+- If you use `make f3lme MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @lme4.
+- If you use `make all MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @glm2; @lme4.
 
 # Installation
 
@@ -346,14 +346,14 @@ This wrapper coordinates the modular `preprocessingPheno()` helpers. It:
 -   `combineTimepoints`: list of timepoints to combine for longitudinal analysis.
 -   `outputPheno`: directory for cleaned phenotype tables.
 -   `outputRData`: directory for timepoint-specific methylation objects.
--   `outputRDataMerge`: directory for merged phenotypeâ€“methylation objects.
+-   `outputRDataMerge`: directory for merged phenotype-methylation objects.
 -   `sexColumn`: column used for biological sex.
 -   `outputLogs`: directory for logs.
 -   `outputDir`: base directory for exported files.
 -   `verbose`, `logs`: control message output and optional log files.
 -   `saveOutputs`: write pipeline-ready CSV, ZIP, and `.RData` outputs.
 
-This step produces analysis-ready phenotypeâ€“methylation objects for GLM and LME modelling and creates files compatible with the DNAmAge Clock Foundation platform.
+This step produces analysis-ready phenotype-methylation objects for GLM and LME modelling and creates files compatible with the DNAmAge Clock Foundation platform.
 
 # Cluster / HPC use
 
@@ -411,7 +411,7 @@ methylationGLM_T1(
 
 This function returns a structured in-memory analysis object. It:
 
-1.  Loads a merged phenotypeâ€“beta object from `inputPheno`.
+1.  Loads a merged phenotype-beta object from `inputPheno`.
 2.  Processes CpGs in chunks and fits a [generalised linear model](https://cran.r-project.org/web/packages/glm2/index.html) for each CpG.
 3.  Fits one model per phenotype and adjusts for covariates.
 4.  Handles interaction terms and PRS mappings when supplied.
@@ -420,7 +420,7 @@ This function returns a structured in-memory analysis object. It:
 
 ### Parameter guide:
 
--   `inputPheno`: merged phenotypeâ€“beta `.RData` input.
+-   `inputPheno`: merged phenotype-beta `.RData` input.
 -   `outputLogs`: directory for log files.
 -   `outputRData`: directory for model objects.
 -   `outputPlots`: directory for diagnostic and summary plots.
@@ -680,28 +680,28 @@ The example template `Makefile.model.pipeline` is copied and renamed to `Makefil
 
 Common grouped targets:
 
--   `f3`: Steps 1â€“3 (preprocessing + SVA + merge)
--   `f4`: Steps 1â€“4 (adds GLM)
--   `f3lme`: Steps 1â€“3 and 5 (adds LME4)
--   `all`: Steps 1â€“5
+-   `f3`: Steps 1-3 (preprocessing + SVA + merge)
+-   `f4`: Steps 1-4 (adds GLM)
+-   `f3lme`: Steps 1-3 and 5 (adds LME4)
+-   `all`: Steps 1-5
 
 ### Commands
 
 -   Show status of pipeline outputs
     -   make status MODEL=model1
--   Run steps 1â€“3 for one model
+-   Run steps 1-3 for one model
     -   make f3 MODEL=model1
--   Run steps 1â€“4 for one model
+-   Run steps 1-4 for one model
     -   make f4 MODEL=model1
--   Run steps 1â€“3 and 5 for one model
+-   Run steps 1-3 and 5 for one model
     -   make f3lme MODEL=model1
 -   Run the full pipeline
     -   make all MODEL=model1
 -   Run multiple models
     -   make models *(run the entire pipeline for all models in parallel.)*
-    -   make f3_models *(run Steps 1â€“3 in parallel for all models.)*
-    -   make f4_models *(run Steps 1â€“4 in parallel for all models.)*
-    -   make f3lme_models *(run Steps 1â€“3 + LME in parallel for all models.)*
+    -   make f3_models *(run Steps 1-3 in parallel for all models.)*
+    -   make f4_models *(run Steps 1-4 in parallel for all models.)*
+    -   make f3lme_models *(run Steps 1-3 + LME in parallel for all models.)*
 
 ## Makefile Modelling steps (HPC)
 
