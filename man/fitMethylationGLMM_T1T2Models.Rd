@@ -44,3 +44,14 @@ fits.
 Fit one linear mixed-effects model per CpG for each phenotype requested in the
 object returned by \code{prepareMethylationGLMM_T1T2Data()}.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+model_results <- fitMethylationGLMM_T1T2Models(
+  preparedData = ex$preparedData,
+  nCores = 1,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(model_results$fits)
+
+}

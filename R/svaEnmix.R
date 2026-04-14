@@ -57,15 +57,13 @@
 #' tmp <- tempdir()
 #' stopifnot(dir.exists(tmp))
 #'
-#' \donttest{
 #' if (requireNamespace("minfiData", quietly = TRUE)) {
-#'   base_dir <- system.file("extdata", package = "minfiData")
-#'   targets <- minfi::read.metharray.sheet(base_dir)
-#'   rgset <- minfi::read.metharray.exp(base = base_dir, targets = targets)
+#'   ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 #'   pheno_file <- file.path(tmp, "pheno.csv")
 #'   rgset_path <- file.path(tmp, "RGSet.RData")
-#'   utils::write.csv(targets, pheno_file, row.names = FALSE)
-#'   save(rgset, file = rgset_path)
+#'   RGSet <- ex$RGSet
+#'   utils::write.csv(ex$targets, pheno_file, row.names = FALSE)
+#'   save(RGSet, file = rgset_path)
 #'   sva_result <- svaEnmix(
 #'     phenoFile = pheno_file,
 #'     rgsetData = rgset_path,
@@ -81,7 +79,6 @@
 #'     saveOutputs = FALSE
 #'   )
 #'   stopifnot(inherits(sva_result, "dnaEPICO_svaEnmix"))
-#' }
 #' }
 #'
 #' @export

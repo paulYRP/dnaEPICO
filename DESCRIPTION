@@ -38,6 +38,7 @@ Imports:
     lmerTest,
     quadprog,
     rmarkdown,
+    SummarizedExperiment,
     utils,
     stats
 Suggests:
@@ -50,7 +51,6 @@ Suggests:
     minfiData,
     GenomicRanges,
     S4Vectors,
-    SummarizedExperiment,
     remotes,
     BiocManager,
     BiocStyle,

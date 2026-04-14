@@ -13,25 +13,25 @@
 #' @keywords internal
 #' @noRd
 emitLogMinfiEwasWater <- function(lines, verbose = FALSE, log_path = NULL) {
-  if (length(lines) == 0L) {
-    return(invisible(NULL))
-  }
-
-  lines <- as.character(lines)
-
-  if (!is.null(log_path)) {
-    con <- file(log_path, open = "at")
-    on.exit(close(con), add = TRUE)
-    writeLines(lines, con = con, sep = "\n", useBytes = TRUE)
-  }
-
-  if (isTRUE(verbose)) {
-    for (line in lines) {
-      message(line)
+    if (length(lines) == 0L) {
+        return(invisible(NULL))
     }
-  }
 
-  invisible(NULL)
+    lines <- as.character(lines)
+
+    if (!is.null(log_path)) {
+        con <- file(log_path, open = "at")
+        on.exit(close(con), add = TRUE)
+        writeLines(lines, con = con, sep = "\n", useBytes = TRUE)
+    }
+
+    if (isTRUE(verbose)) {
+        for (line in lines) {
+            message(line)
+        }
+    }
+
+    invisible(NULL)
 }
 
 #' Resolve the log file path for preprocessingMinfiEwasWater helpers
@@ -48,21 +48,22 @@ emitLogMinfiEwasWater <- function(lines, verbose = FALSE, log_path = NULL) {
 #' @keywords internal
 #' @noRd
 resolveLogPathMinfiEwasWater <- function(
-    logs = FALSE,
-    log_dir = NULL,
-    log_file = "log_preprocessingMinfiEwasWater.txt"
+  logs = FALSE,
+  log_dir = NULL,
+  log_file = "log_preprocessingMinfiEwasWater.txt"
 ) {
-  if (!isTRUE(logs)) {
-    return(NULL)
-  }
+    if (!isTRUE(logs)) {
+        return(NULL)
+    }
 
-  if (is.null(log_dir)) {
-    log_dir <- getwd()
-  }
+    if (is.null(log_dir)) {
+        log_dir <- getwd()
+    }
 
-  dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+    dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+    log_dir <- normalizePath(log_dir, winslash = "/", mustWork = FALSE)
 
-  file.path(log_dir, log_file)
+    file.path(log_dir, log_file)
 }
 
 #' Resolve the phenotype separator used in preprocessingMinfiEwasWater helpers
@@ -77,15 +78,15 @@ resolveLogPathMinfiEwasWater <- function(
 #' @keywords internal
 #' @noRd
 resolveSeparatorMinfiEwasWater <- function(sepType = "") {
-  if (identical(sepType, "\\t")) {
-    return("\t")
-  }
+    if (identical(sepType, "\\t")) {
+        return("\t")
+    }
 
-  if (identical(sepType, "")) {
-    return(NULL)
-  }
+    if (identical(sepType, "")) {
+        return(NULL)
+    }
 
-  sepType
+    sepType
 }
 
 #' Split character options used in preprocessingMinfiEwasWater helpers
@@ -100,18 +101,18 @@ resolveSeparatorMinfiEwasWater <- function(sepType = "") {
 #' @keywords internal
 #' @noRd
 splitOptionMinfiEwasWater <- function(x, sep = ",") {
-  if (length(x) == 0L || all(is.na(x))) {
-    return(character(0))
-  }
+    if (length(x) == 0L || all(is.na(x))) {
+        return(character(0))
+    }
 
-  if (length(x) == 1L) {
-    pieces <- strsplit(as.character(x), split = sep, fixed = TRUE)[[1]]
-  } else {
-    pieces <- as.character(x)
-  }
+    if (length(x) == 1L) {
+        pieces <- strsplit(as.character(x), split = sep, fixed = TRUE)[[1]]
+    } else {
+        pieces <- as.character(x)
+    }
 
-  pieces <- trimws(pieces)
-  pieces[nzchar(pieces)]
+    pieces <- trimws(pieces)
+    pieces[nzchar(pieces)]
 }
 
 #' Capture preview lines for logging
@@ -125,11 +126,40 @@ splitOptionMinfiEwasWater <- function(x, sep = ",") {
 #' @keywords internal
 #' @noRd
 previewLinesMinfiEwasWater <- function(x, n = 6L) {
-  if (is.matrix(x) || is.data.frame(x)) {
-    return(utils::capture.output(utils::head(x, n = n)))
-  }
+    if (is.matrix(x) || is.data.frame(x)) {
+        return(utils::capture.output(utils::head(x, n = n)))
+    }
 
-  utils::capture.output(print(x))
+    utils::capture.output(methods::show(x))
+}
+
+#' Draw a stored plot object for preprocessing helpers
+#'
+#' @param plot_object Plot object to draw.
+#'
+#' @return Invisibly returns `NULL`.
+#' @description
+#' Internal helper that draws stored ggplot or grid objects without relying on
+#' `print()` in package code.
+#' @keywords internal
+#' @noRd
+drawPlotObjectMinfiEwasWater <- function(plot_object) {
+    if (inherits(plot_object, "ggplot")) {
+        grid::grid.newpage()
+        grid::grid.draw(ggplot2::ggplotGrob(plot_object))
+        return(invisible(NULL))
+    }
+
+    if (grid::is.grob(plot_object)) {
+        grid::grid.newpage()
+        grid::grid.draw(plot_object)
+        return(invisible(NULL))
+    }
+
+    stop(
+        "plot_object must inherit from 'ggplot' or be a grid grob.",
+        call. = FALSE
+    )
 }
 
 #' Draw and optionally save a plot for preprocessingMinfiEwasWater helpers
@@ -147,35 +177,35 @@ previewLinesMinfiEwasWater <- function(x, n = 6L) {
 #' @keywords internal
 #' @noRd
 runPlotMinfiEwasWater <- function(
-    draw_fun,
-    display = FALSE,
-    file = NULL,
-    width = 2000L,
-    height = 1000L,
-    res = 150L
+  draw_fun,
+  display = FALSE,
+  file = NULL,
+  width = 2000L,
+  height = 1000L,
+  res = 150L
 ) {
-  if (is.null(file) && !isTRUE(display)) {
-    return(invisible(NULL))
-  }
+    if (is.null(file) && !isTRUE(display)) {
+        return(invisible(NULL))
+    }
 
-  if (!is.null(file)) {
-    dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
-    grDevices::tiff(
-      filename = file,
-      width = width,
-      height = height,
-      res = res,
-      type = "cairo"
-    )
-    on.exit(grDevices::dev.off(), add = TRUE)
-    draw_fun()
-  }
+    if (!is.null(file)) {
+        dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
+        grDevices::tiff(
+            filename = file,
+            width = width,
+            height = height,
+            res = res,
+            type = "cairo"
+        )
+        on.exit(grDevices::dev.off(), add = TRUE)
+        draw_fun()
+    }
 
-  if (isTRUE(display)) {
-    draw_fun()
-  }
+    if (isTRUE(display)) {
+        draw_fun()
+    }
 
-  invisible(file)
+    invisible(file)
 }
 
 #' Save a named object for legacy preprocessingMinfiEwasWater outputs
@@ -191,13 +221,13 @@ runPlotMinfiEwasWater <- function(
 #' @keywords internal
 #' @noRd
 saveNamedObjectMinfiEwasWater <- function(object, object_name, file) {
-  dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
+    dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
 
-  save_env <- list2env(
-    stats::setNames(list(object), object_name),
-    parent = emptyenv()
-  )
-  save(list = object_name, file = file, envir = save_env)
+    save_env <- list2env(
+        stats::setNames(list(object), object_name),
+        parent = emptyenv()
+    )
+    save(list = object_name, file = file, envir = save_env)
 
-  invisible(file)
+    invisible(file)
 }

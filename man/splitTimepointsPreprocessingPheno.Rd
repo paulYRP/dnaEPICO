@@ -46,3 +46,17 @@ Align phenotype rows and metric matrices for each requested timepoint, and
 precompute the per-timepoint phenotype-plus-beta objects used by downstream
 modeling functions.
 }
+\examples{
+ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
+timepoint_data <- splitTimepointsPreprocessingPheno(
+  pheno = ex$pheno,
+  metricsData = ex$metricsData,
+  SampleID = "Sample_Name",
+  timeVar = "Timepoint",
+  timepoints = "1,2",
+  verbose = FALSE,
+  logs = FALSE
+)
+timepoint_data$timepoints
+
+}

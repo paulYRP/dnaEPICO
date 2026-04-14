@@ -124,6 +124,8 @@ $(foreach m,$(MODELS),$(eval runf3lme-$(m):; \
 # =================================================================================================================================
 # Step 1: Minfi Preprocessing
 # =================================================================================================================================
+MODEL_LOG_DIR = $(abspath $(LOGS_DIR)/$(MODEL))
+
 step1:
 	@echo "Running Step 1 for $(MODEL)"
 	$(MAKE) preprocessingMinfiEwasWater MODEL=$(MODEL)
@@ -136,7 +138,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  phenoFile = '$(PHENO_FILE)', \
 	  sepType = '$(SEP_TYPE)', \
 	  idatFolder = '$(DATA_DIR)/$(STEP1)/$(IDAT_DIR)/', \
-	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  nSamples = $(N_SAMPLES), \
 	  SampleID = '$(SAMPLE_ID)', \
 	  arrayType = '$(ARRAY_TYPE)', \
@@ -171,7 +173,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
 	  rgsetData = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData', \
 	  sepType = '$(SEP_TYPE)', \
-	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  nSamples = $(N_SAMPLES), \
 	  SampleID = '$(SAMPLE_ID)', \
 	  arrayType = '$(ARRAY_TYPE)', \
@@ -209,7 +211,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv:
 	  outputPheno = '$(DATA_DIR)/$(MODEL)/$(STEP3)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(METRICS_DIR)', \
 	  outputRDataMerge = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)', \
-	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  sexColumn = '$(SEX_COLUMN)', \
 	  outputDir = '$(DATA_DIR)/$(MODEL)/$(STEP3)', \
 	  logs = TRUE, \
@@ -221,7 +223,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv:
 $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 	Rscript -e "library(dnaEPICO); methylationGLM_T1( \
 	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData', \
-	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
 	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)/', \
 	  phenotypes = '$(PHENOTYPES)', \
@@ -259,7 +261,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
 	Rscript -e "library(dnaEPICO); methylationGLMM_T1T2( \
 	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData', \
-	  outputLogs = '$(LOGS_DIR)/$(MODEL)', \
+	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP5)/$(MODEL_DIR)', \
 	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
 	  personVar = '$(PERSON_VAR)', \
@@ -300,7 +302,7 @@ REPORT_INPUTS = \
 	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv
 
 $(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
-	mkdir -p $(STEP6)/$(MODEL) $(LOGS_DIR)/$(MODEL)
+	mkdir -p $(STEP6)/$(MODEL) $(MODEL_LOG_DIR)
 	Rscript -e "library(dnaEPICO); dnamReport( \
 	  output = 'DNAm.pdf', \
 	  outputDir = '$(STEP6)/$(MODEL)', \
@@ -314,8 +316,8 @@ $(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
 	  author = 'School of Biomedical Sciences', \
 	  verbose = FALSE, \
 	  logs = TRUE, \
-	  logDir = '$(LOGS_DIR)/$(MODEL)' )" \
-	  > $(LOGS_DIR)/$(MODEL)/report.log 2>&1
+	  logDir = '$(MODEL_LOG_DIR)' )" \
+	  > $(MODEL_LOG_DIR)/report.log 2>&1
 	@echo "Report built: $(STEP6)/$(MODEL)/DNAm.pdf"
 
 # =================================================================================================================================

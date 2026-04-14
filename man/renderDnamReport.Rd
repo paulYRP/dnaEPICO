@@ -36,3 +36,13 @@ template using a prepared report object. The function returns a structured
 result instead of relying only on file-writing side effects, which makes it
 easier to inspect rendering status in scripts and tests.
 }
+\examples{
+ex <- dnaEPICO:::exampleDnamReportStateDnaEpico()
+render_result <- renderDnamReport(
+  preparedReport = ex$preparedReport,
+  verbose = FALSE,
+  logs = FALSE
+)
+render_result$status
+
+}

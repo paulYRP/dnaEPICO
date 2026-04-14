@@ -45,6 +45,13 @@ And the development version from [GitHub](https://github.com/paulYRP/dnaEPICO) w
 BiocManager::install("paulYRP/dnaEPICO")
 ```
 
+Alternatively, install directly from GitHub:
+
+```{r, eval= FALSE, echo= TRUE}
+install.packages('devtools')
+devtools::install_github('paulYRP/dnaEPICO')
+```
+
 ## Articles:
 - [**A Pilot Epigenome-Wide Study of Posttraumatic Growth: Identifying Novel Candidates for Future Research**](https://www.mdpi.com/2075-4655/9/4/39)
 
@@ -58,8 +65,7 @@ BiocManager::install("paulYRP/dnaEPICO")
 Below is the citation output from using `citation('dnaEPICO')` in R. Please run this yourself to check for any updates on how to cite __dnaEPICO__.
 
 ```{r 'citation', eval = requireNamespace('dnaEPICO')}
-print(citation('dnaEPICO'), bibtex = TRUE)
-
+print(citation("dnaEPICO"), bibtex = TRUE)
 ```
 
 Please note that the `dnaEPICO` was only made possible thanks to many other R and bioinformatics software authors, which are cited either in the vignettes and/or the paper(s) describing this package.

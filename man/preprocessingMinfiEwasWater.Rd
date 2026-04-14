@@ -145,45 +145,38 @@ now returns a structured result object containing the in-memory outputs from
 each stage. Legacy files are written only when \code{saveOutputs = TRUE}.
 }
 \examples{
-tmp <- tempdir()
-stopifnot(dir.exists(tmp))
-
-\donttest{
-preprocessingMinfiEwasWater(
-  phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
-  idatFolder = "data/preprocessingMinfiEwasWater/idats",
-  outputLogs = "logs",
-  nSamples = NA,
-  SampleID = "Sample_Name",
-  arrayType = "IlluminaHumanMethylationEPICv2",
-  annotationVersion = "20a1.hg38",
-  scriptLabel = "preprocessingMinfiEwasWater",
-  baseDataFolder = "rData",
-  figureBaseDir = "figures",
-  sepType = "",
-  tiffWidth = 2000,
-  tiffHeight = 1000,
-  tiffRes = 150,
-  qcCutoff = 10.5,
-  detPtype = "m+u",
-  detPThreshold = 0.05,
-  normMethods = "adjustedfunnorm",
-  sexColumn = "Sex",
-  pvalThreshold = 0.01,
-  chrToRemove = "chrX,chrY",
-  snpsToRemove = "SBE,CpG",
-  mafThreshold = 0.1,
-  crossReactivePath = system.file(
-    "extdata",
-    "12864_2024_10027_MOESM8_ESM.csv",
-    package = "dnaEPICO"
-  ),
-  plotGroupVar = "Sex",
-  lcRef = "salivaEPIC",
-  phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
-  lcPhenoDir = "data/preprocessingMinfiEwasWater",
-  saveOutputs = FALSE
-)
+if (requireNamespace("minfiData", quietly = TRUE) &&
+    requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
+    requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
+  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico()
+  result <- preprocessingMinfiEwasWater(
+    phenoFile = ex$phenoFile,
+    idatFolder = ex$idatFolder,
+    outputLogs = file.path(ex$tempDir, "logs"),
+    nSamples = 6,
+    SampleID = "Sample_Name",
+    arrayType = ex$arrayType,
+    annotationVersion = ex$annotationVersion,
+    scriptLabel = "preprocessingMinfiEwasWater",
+    baseDataFolder = file.path(ex$tempDir, "rData"),
+    figureBaseDir = file.path(ex$tempDir, "figures"),
+    detPThreshold = 1,
+    normMethods = "quantile",
+    sexColumn = "Sex",
+    pvalThreshold = 1,
+    chrToRemove = "",
+    snpsToRemove = "SBE",
+    mafThreshold = 1,
+    crossReactivePath = ex$crossReactivePath,
+    plotGroupVar = "Sex",
+    lcRef = "saliva",
+    phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
+    lcPhenoDir = ex$tempDir,
+    saveOutputs = FALSE,
+    verbose = FALSE,
+    logs = FALSE
+  )
+  inherits(result, "dnaEPICO_preprocessingMinfiEwasWater")
 }
 
 }

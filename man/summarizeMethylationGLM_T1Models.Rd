@@ -59,3 +59,17 @@ containing one CpG-level summary data frame per phenotype.
 Extract phenotype-specific CpG coefficient tables from the fitted model
 object returned by \code{fitMethylationGLM_T1Models()}.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+summary_results <- summarizeMethylationGLM_T1Models(
+  modelResults = ex$modelResults,
+  preparedData = ex$preparedData,
+  summaryResidualSD = TRUE,
+  summaryPval = NA,
+  nCores = 1,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(summary_results$summaries)
+
+}

@@ -43,3 +43,14 @@ fitted model lists, model formulas, and counts of failed CpG fits.
 Fit one Gaussian GLM per CpG for each phenotype requested in the object
 returned by \code{prepareMethylationGLM_T1Data()}.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+model_results <- fitMethylationGLM_T1Models(
+  preparedData = ex$preparedData,
+  nCores = 1,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(model_results$fits)
+
+}

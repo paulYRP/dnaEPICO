@@ -48,3 +48,17 @@ Write the legacy CSV, ZIP, and \code{.RData} outputs produced by
 \code{preprocessingPheno()}. This helper keeps file writing separate from the
 in-memory preprocessing steps.
 }
+\examples{
+ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
+output_paths <- writePreprocessingPhenoOutputs(
+  preprocessingData = ex$preprocessingData,
+  outputPheno = file.path(ex$tempDir, "pheno"),
+  outputRData = file.path(ex$tempDir, "metrics"),
+  outputRDataMerge = file.path(ex$tempDir, "merge"),
+  outputDir = file.path(ex$tempDir, "clock"),
+  verbose = FALSE,
+  logs = FALSE
+)
+names(output_paths)
+
+}

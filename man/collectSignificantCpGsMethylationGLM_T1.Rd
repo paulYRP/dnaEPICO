@@ -38,3 +38,14 @@ A list with class \code{"dnaEPICO_methylationGLM_T1_significant_cpgs"}.
 Collect the raw coefficient tables for CpGs whose phenotype main effect or
 interaction p-value passes the requested threshold.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+significant_cpgs <- collectSignificantCpGsMethylationGLM_T1(
+  modelResults = ex$modelResults,
+  pvalThreshold = 1,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(significant_cpgs)
+
+}

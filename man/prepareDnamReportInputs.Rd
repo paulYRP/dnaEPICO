@@ -77,3 +77,21 @@ and output paths, inventories the available figures for each report section,
 and returns a structured object that can later be passed to
 \code{renderDnamReport()}.
 }
+\examples{
+ex <- dnaEPICO:::exampleDnamReportStateDnaEpico()
+prepared_report <- prepareDnamReportInputs(
+  output = "DNAm_Report.pdf",
+  outputDir = ex$tempDir,
+  qcDir = file.path(ex$tempDir, "qc"),
+  preprocessingDir = file.path(ex$tempDir, "preprocessing"),
+  postprocessingDir = file.path(ex$tempDir, "postprocessing"),
+  svaDir = file.path(ex$tempDir, "sva"),
+  glmDir = file.path(ex$tempDir, "glm"),
+  glmmDir = file.path(ex$tempDir, "glmm"),
+  figDir = file.path(ex$tempDir, "report-figures"),
+  verbose = FALSE,
+  logs = FALSE
+)
+prepared_report$output
+
+}

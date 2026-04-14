@@ -46,6 +46,13 @@ And the development version from
 BiocManager::install("paulYRP/dnaEPICO")
 ```
 
+Alternatively, install directly from GitHub:
+
+``` r
+install.packages('devtools')
+devtools::install_github('paulYRP/dnaEPICO')
+```
+
 ## Articles:
 
 - [**A Pilot Epigenome-Wide Study of Posttraumatic Growth: Identifying
@@ -67,7 +74,7 @@ Please run this yourself to check for any updates on how to cite
 **dnaEPICO**.
 
 ``` r
-print(citation('dnaEPICO'), bibtex = TRUE)
+print(citation("dnaEPICO"), bibtex = TRUE)
 #> dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data,
 #> generated as part of 10.3390/epigenomes9040039
 #> 

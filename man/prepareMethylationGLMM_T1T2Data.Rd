@@ -68,3 +68,19 @@ identifier column is available, validate the requested modeling variables,
 convert selected variables to factors, and return a single in-memory object
 for downstream mixed-effects modeling helpers.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+prepared_data <- prepareMethylationGLMM_T1T2Data(
+  inputPheno = ex$inputPath,
+  personVar = "person",
+  timeVar = "Timepoint",
+  phenotypes = "score",
+  covariates = "sex",
+  factorVars = "sex,Timepoint",
+  cpgLimit = 2,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(prepared_data)
+
+}

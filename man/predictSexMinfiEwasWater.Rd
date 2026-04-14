@@ -44,3 +44,17 @@ Predict sample sex from a genome-mapped methylation object, align the
 predictions with phenotype data, and return a structured object that can be
 plotted or merged into downstream phenotype tables.
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+sex_data <- predictSexMinfiEwasWater(
+  rawData = ex$rawFiltered,
+  targets = ex$sampleData$targets,
+  SampleID = "Sample_Name",
+  sexColumn = "Sex",
+  verbose = FALSE,
+  logs = FALSE
+)
+names(sex_data)
+\dontshow{\}) # examplesIf}
+}

@@ -40,3 +40,15 @@ Summarize the requested phenotype variables by timepoint. Numeric phenotypes
 are reported with mean, standard deviation, and non-missing counts; non-numeric
 phenotypes are reported with non-missing counts and the observed levels.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+timepoint_summary <- summarizeTimepointsMethylationGLMM_T1T2(
+  data = ex$preparedData$data,
+  timeVar = "Timepoint",
+  phenotypes = "score",
+  verbose = FALSE,
+  logs = FALSE
+)
+nrow(timepoint_summary)
+
+}

@@ -51,3 +51,21 @@ written to disk.
 Write the legacy CSV, \code{.RData}, and text-summary outputs used by the original
 \code{svaEnmix()} workflow.
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
+temp_dir <- tempdir()
+output_paths <- writeSvaEnmixOutputs(
+  svaData = list(sva = ex$sva),
+  mergedPheno = ex$mergedPheno,
+  analysisData = ex$analysisData,
+  phenoFile = file.path(temp_dir, "phenoLC.csv"),
+  dataBaseDir = file.path(temp_dir, "data"),
+  rBaseDir = file.path(temp_dir, "rData"),
+  scriptLabel = "svaEnmixExample",
+  verbose = FALSE,
+  logs = FALSE
+)
+names(output_paths)
+\dontshow{\}) # examplesIf}
+}

@@ -49,3 +49,17 @@ sample identifiers.
 Compute minfi QC metrics and detection P values, identify failed samples
 using the requested threshold, and return the assessment as a single object.
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+raw_data <- buildRawMinfiEwasWater(ex$RGSet, verbose = FALSE, logs = FALSE)
+assessment <- assessSamplesMinfiEwasWater(
+  rawData = raw_data,
+  RGSet = ex$RGSet,
+  detPThreshold = 1,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(assessment)
+\dontshow{\}) # examplesIf}
+}

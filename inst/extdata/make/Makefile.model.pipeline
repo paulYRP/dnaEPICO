@@ -30,7 +30,7 @@ endif
 # ===============================================
 # DIRECTORIES
 # ===============================================
-LOGS_DIR = logs
+LOGS_DIR := $(abspath logs)
 DATA_DIR = data
 RDATA_DIR = rData
 RESULTS_DIR = results

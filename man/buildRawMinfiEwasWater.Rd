@@ -32,3 +32,14 @@ A list with class \code{"dnaEPICO_minfiEwasWater_raw"} containing \code{MSet},
 Create a raw \code{MethylSet}, \code{RatioSet}, and genome-mapped object from an
 \code{RGChannelSet}, and return them together in a single structured object.
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+raw_data <- buildRawMinfiEwasWater(
+  RGSet = ex$RGSet,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(raw_data)
+\dontshow{\}) # examplesIf}
+}

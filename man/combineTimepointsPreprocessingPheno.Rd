@@ -38,3 +38,14 @@ Combine selected timepoints that were already aligned by
 \code{splitTimepointsPreprocessingPheno()} into the wide phenotype-plus-beta
 objects used by downstream longitudinal models.
 }
+\examples{
+ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
+combined_data <- combineTimepointsPreprocessingPheno(
+  timepointData = ex$timepointData,
+  combineTimepoints = "1,2",
+  verbose = FALSE,
+  logs = FALSE
+)
+combined_data$suffix
+
+}

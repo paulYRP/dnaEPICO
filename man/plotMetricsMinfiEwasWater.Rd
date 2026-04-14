@@ -60,3 +60,18 @@ otherwise \code{NULL}.
 \description{
 Plot multidimensional scaling or density summaries from final metrics
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+plotMetricsMinfiEwasWater(
+  metricsData = ex$metricsData,
+  targets = ex$sampleData$targets,
+  plot = "density",
+  plotGroupVar = "Sex",
+  sexColumn = "Sex",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
+)
+\dontshow{\}) # examplesIf}
+}

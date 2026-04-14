@@ -66,3 +66,40 @@ containing the paths of the files written to disk.
 Write optional serialized outputs, summary tables, significant interaction
 tables, and annotated results from the longitudinal mixed-effects workflow.
 }
+\examples{
+if (requireNamespace(
+  "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+  quietly = TRUE
+)) {
+  ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+  annotation_data <- annotateMethylationGLMM_T1T2Summaries(
+    modelSummaries = ex$modelSummaries,
+    annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+    annotationCols = "Name,chr,pos",
+    verbose = FALSE,
+    logs = FALSE
+  )
+  significant_hits <- collectSignificantInteractionsMethylationGLMM_T1T2(
+    modelResults = ex$modelResults,
+    pvalThreshold = 1,
+    verbose = FALSE,
+    logs = FALSE
+  )
+  output_paths <- writeMethylationGLMM_T1T2Outputs(
+    modelResults = ex$modelResults,
+    modelSummaries = ex$modelSummaries,
+    annotatedResults = annotation_data,
+    significantInteractions = significant_hits,
+    outputRData = file.path(ex$tempDir, "models"),
+    summaryTxtDir = file.path(ex$tempDir, "summary"),
+    significantInteractionDir = file.path(ex$tempDir, "significant"),
+    annotatedLMEOut = file.path(ex$tempDir, "annotated"),
+    saveTxtSummaries = TRUE,
+    saveSignificantInteractions = TRUE,
+    verbose = FALSE,
+    logs = FALSE
+  )
+  names(output_paths)
+}
+
+}

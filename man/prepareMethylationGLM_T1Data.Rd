@@ -61,3 +61,17 @@ Load the merged phenotype-plus-beta input object, validate the requested
 modeling variables, convert selected variables to factors, and return a
 single in-memory object for downstream helpers.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+prepared_data <- prepareMethylationGLM_T1Data(
+  inputPheno = ex$inputPath,
+  phenotypes = "status",
+  covariates = "sex,age",
+  factorVars = "status,sex",
+  cpgLimit = 2,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(prepared_data)
+
+}

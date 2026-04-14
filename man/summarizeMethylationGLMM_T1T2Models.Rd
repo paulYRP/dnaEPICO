@@ -47,3 +47,16 @@ containing one CpG-level summary data frame per phenotype.
 Extract phenotype-specific fixed-effect tables from the fitted mixed-effects
 model object returned by \code{fitMethylationGLMM_T1T2Models()}.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+summary_results <- summarizeMethylationGLMM_T1T2Models(
+  modelResults = ex$modelResults,
+  preparedData = ex$preparedData,
+  summaryPval = NA,
+  nCores = 1,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(summary_results$summaries)
+
+}

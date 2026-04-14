@@ -23,6 +23,21 @@
 #'
 #' @return An annotated `RGChannelSet`.
 #'
+#' @examples
+#' if (requireNamespace("minfiData", quietly = TRUE) &&
+#'     requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
+#'     requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
+#'   ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico()
+#'   rgset <- readRGSetMinfiEwasWater(
+#'     idatFolder = ex$idatFolder,
+#'     targets = ex$targets,
+#'     SampleID = "Sample_Name",
+#'     arrayType = ex$arrayType,
+#'     annotationVersion = ex$annotationVersion
+#'   )
+#'   class(rgset)
+#' }
+#'
 #' @export
 readRGSetMinfiEwasWater <- function(
     idatFolder,
@@ -113,6 +128,15 @@ readRGSetMinfiEwasWater <- function(
 #' @return A list with class `"dnaEPICO_minfiEwasWater_raw"` containing `MSet`,
 #'   `RatioSet`, and `GSet`.
 #'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+#' raw_data <- buildRawMinfiEwasWater(
+#'   RGSet = ex$RGSet,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(raw_data)
+#'
 #' @export
 buildRawMinfiEwasWater <- function(
     RGSet,
@@ -198,6 +222,18 @@ buildRawMinfiEwasWater <- function(
 #'   the QC object, detection P matrix, mean detection P values, and failed
 #'   sample identifiers.
 #'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+#' raw_data <- buildRawMinfiEwasWater(ex$RGSet, verbose = FALSE, logs = FALSE)
+#' assessment <- assessSamplesMinfiEwasWater(
+#'   rawData = raw_data,
+#'   RGSet = ex$RGSet,
+#'   detPThreshold = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(assessment)
+#'
 #' @export
 assessSamplesMinfiEwasWater <- function(
     rawData,
@@ -277,6 +313,24 @@ assessSamplesMinfiEwasWater <- function(
 #'
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
+#'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+#' raw_data <- buildRawMinfiEwasWater(ex$RGSet, verbose = FALSE, logs = FALSE)
+#' assessment <- assessSamplesMinfiEwasWater(
+#'   rawData = raw_data,
+#'   RGSet = ex$RGSet,
+#'   detPThreshold = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' plotAssessmentMinfiEwasWater(
+#'   assessment = assessment,
+#'   plot = "qc",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
 #'
 #' @export
 plotAssessmentMinfiEwasWater <- function(
@@ -365,6 +419,18 @@ plotAssessmentMinfiEwasWater <- function(
 #' @return A list with class `"dnaEPICO_minfiEwasWater_samples"` containing the
 #'   filtered `RGSet`, aligned phenotype table, and failed sample identifiers.
 #'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+#' filtered_samples <- filterSamplesMinfiEwasWater(
+#'   RGSet = ex$RGSet,
+#'   targets = ex$targets,
+#'   failedSamples = ex$targets$Sample_Name[1],
+#'   SampleID = "Sample_Name",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' nrow(filtered_samples$targets)
+#'
 #' @export
 filterSamplesMinfiEwasWater <- function(
     RGSet,
@@ -430,6 +496,18 @@ filterSamplesMinfiEwasWater <- function(
 #' @return A list with class `"dnaEPICO_minfiEwasWater_sex"` containing the sex
 #'   prediction result, aligned phenotype data, plotting data, and mismatch
 #'   table.
+#'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' sex_data <- predictSexMinfiEwasWater(
+#'   rawData = ex$rawFiltered,
+#'   targets = ex$sampleData$targets,
+#'   SampleID = "Sample_Name",
+#'   sexColumn = "Sex",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(sex_data)
 #'
 #' @export
 predictSexMinfiEwasWater <- function(
@@ -561,6 +639,16 @@ predictSexMinfiEwasWater <- function(
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
 #'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' plotSexMinfiEwasWater(
+#'   sexData = ex$sexData,
+#'   type = "predicted",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#'
 #' @export
 plotSexMinfiEwasWater <- function(
     sexData,
@@ -683,6 +771,25 @@ plotSexMinfiEwasWater <- function(
 #' @return A list with class `"dnaEPICO_minfiEwasWater_norm"` containing the
 #'   requested normalized objects and the first method as `primary`.
 #'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+#' sample_data <- filterSamplesMinfiEwasWater(
+#'   RGSet = ex$RGSet,
+#'   targets = ex$targets,
+#'   failedSamples = character(0),
+#'   SampleID = "Sample_Name",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' norm_data <- normalizeMinfiEwasWater(
+#'   sampleData = sample_data,
+#'   sexColumn = "Sex",
+#'   normMethods = "quantile",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(norm_data$normalized)
+#'
 #' @export
 normalizeMinfiEwasWater <- function(
     sampleData,
@@ -703,10 +810,16 @@ normalizeMinfiEwasWater <- function(
   normalized <- vector("list", length(method_list))
   names(normalized) <- method_list
 
-  pdata <- Biobase::pData(sampleData$RGSet)
+  col_data <- SummarizedExperiment::colData(sampleData$RGSet)
   sex_vec <- NULL
-  if (!is.null(sexColumn) && sexColumn %in% colnames(pdata)) {
-    sex_vec <- pdata[[sexColumn]]
+  if (!is.null(sexColumn) && sexColumn %in% colnames(col_data)) {
+    sex_vec <- col_data[[sexColumn]]
+    sex_vec <- as.character(sex_vec)
+    sex_vec[sex_vec %in% c("0", "F", "Female", "female", "FEMALE")] <- "F"
+    sex_vec[sex_vec %in% c("1", "M", "Male", "male", "MALE")] <- "M"
+    if (!all(sex_vec %in% c("F", "M"))) {
+      sex_vec <- NULL
+    }
   }
 
   emitLogMinfiEwasWater(
@@ -783,6 +896,18 @@ normalizeMinfiEwasWater <- function(
 #'
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
+#'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' plotNormalizationMinfiEwasWater(
+#'   RGSet = ex$sampleData$RGSet,
+#'   normData = ex$normData,
+#'   targets = ex$sampleData$targets,
+#'   sexColumn = "Sex",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
 #'
 #' @export
 plotNormalizationMinfiEwasWater <- function(
@@ -882,6 +1007,17 @@ plotNormalizationMinfiEwasWater <- function(
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
 #'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' plotRawDensityMinfiEwasWater(
+#'   rawData = ex$rawFiltered,
+#'   targets = ex$sampleData$targets,
+#'   plotGroupVar = "Sex",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#'
 #' @export
 plotRawDensityMinfiEwasWater <- function(
     rawData,
@@ -966,6 +1102,22 @@ plotRawDensityMinfiEwasWater <- function(
 #'
 #' @return A list with class `"dnaEPICO_minfiEwasWater_filter"` containing the
 #'   filtered object and counts for each filtering stage.
+#'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' filtered_data <- filterProbesMinfiEwasWater(
+#'   normData = ex$normData,
+#'   RGSet = ex$sampleData$RGSet,
+#'   pvalThreshold = 1,
+#'   chrToRemove = "chrY",
+#'   snpsToRemove = "SBE",
+#'   mafThreshold = 1,
+#'   crossReactivePath = ex$crossReactivePath,
+#'   detPtype = "m+u",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' filtered_data$counts[["crossReactive"]]
 #'
 #' @export
 filterProbesMinfiEwasWater <- function(
@@ -1082,6 +1234,15 @@ filterProbesMinfiEwasWater <- function(
 #' @return A list with class `"dnaEPICO_minfiEwasWater_metrics"` containing
 #'   `beta`, `m`, and `cn`.
 #'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' metrics_data <- extractMetricsMinfiEwasWater(
+#'   filteredData = ex$filteredData,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(metrics_data)
+#'
 #' @export
 extractMetricsMinfiEwasWater <- function(
     filteredData,
@@ -1149,6 +1310,19 @@ extractMetricsMinfiEwasWater <- function(
 #'
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
+#'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' plotMetricsMinfiEwasWater(
+#'   metricsData = ex$metricsData,
+#'   targets = ex$sampleData$targets,
+#'   plot = "density",
+#'   plotGroupVar = "Sex",
+#'   sexColumn = "Sex",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
 #'
 #' @export
 plotMetricsMinfiEwasWater <- function(
@@ -1289,6 +1463,17 @@ plotMetricsMinfiEwasWater <- function(
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
 #' @return Invisibly returns `output_dir`.
+#'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+#' output_dir <- file.path(tempdir(), "enmix-control-plots")
+#' plotCtrlMinfiEwasWater(
+#'   RGSet = ex$RGSet,
+#'   output_dir = output_dir,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' dir.exists(output_dir)
 #'
 #' @export
 plotCtrlMinfiEwasWater <- function(

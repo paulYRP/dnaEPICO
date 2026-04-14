@@ -51,3 +51,23 @@ otherwise \code{NULL}.
 Draw either the minfi QC plot or the detection P-value plot from an
 assessment object returned by \code{assessSamplesMinfiEwasWater()}.
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+raw_data <- buildRawMinfiEwasWater(ex$RGSet, verbose = FALSE, logs = FALSE)
+assessment <- assessSamplesMinfiEwasWater(
+  rawData = raw_data,
+  RGSet = ex$RGSet,
+  detPThreshold = 1,
+  verbose = FALSE,
+  logs = FALSE
+)
+plotAssessmentMinfiEwasWater(
+  assessment = assessment,
+  plot = "qc",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
+)
+\dontshow{\}) # examplesIf}
+}

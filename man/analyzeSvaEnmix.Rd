@@ -21,10 +21,10 @@ analyzeSvaEnmix(
 \item{RGSet}{An \code{RGChannelSet} aligned with \code{sva}.}
 
 \item{SentrixIDColumn}{Character. Name of the chip identifier column in
-\code{Biobase::pData(RGSet)}.}
+\code{SummarizedExperiment::colData(RGSet)}.}
 
 \item{SentrixPositionColumn}{Character. Name of the chip position column in
-\code{Biobase::pData(RGSet)}.}
+\code{SummarizedExperiment::colData(RGSet)}.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -43,4 +43,18 @@ aligned Sentrix factors, full and reduced linear models, and ANOVA tables.
 Fit linear models for each surrogate variable against Sentrix chip and
 Sentrix position, perform backward elimination with \code{MASS::dropterm()}, and
 return the in-memory analysis objects.
+}
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
+analysis_data <- analyzeSvaEnmix(
+  sva = ex$sva,
+  RGSet = ex$RGSet,
+  SentrixIDColumn = "Sentrix_ID",
+  SentrixPositionColumn = "Sentrix_Position",
+  verbose = FALSE,
+  logs = FALSE
+)
+analysis_data$K
+\dontshow{\}) # examplesIf}
 }

@@ -62,3 +62,15 @@ any saved TIFF file paths.
 Create Q-Q and standard-error diagnostic plots from the mixed-effects summary
 tables returned by \code{summarizeMethylationGLMM_T1T2Models()}.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+diagnostic_plots <- plotMethylationGLMM_T1T2Diagnostics(
+  modelSummaries = ex$modelSummaries,
+  preparedData = ex$preparedData,
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(diagnostic_plots$plots)
+
+}

@@ -37,3 +37,16 @@ Call \code{ENmix::plotCtrl()} for a supplied \code{RGSet}. This function only wr
 files when \code{output_dir} is provided because \code{ENmix::plotCtrl()} produces JPG
 files on disk rather than returning a plot object.
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+output_dir <- file.path(tempdir(), "enmix-control-plots")
+plotCtrlMinfiEwasWater(
+  RGSet = ex$RGSet,
+  output_dir = output_dir,
+  verbose = FALSE,
+  logs = FALSE
+)
+dir.exists(output_dir)
+\dontshow{\}) # examplesIf}
+}

@@ -40,3 +40,14 @@ containing the retained coefficient tables for each phenotype.
 Collect raw coefficient tables for CpGs whose phenotype main effect or
 requested interaction p-value passes the chosen threshold.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+significant_hits <- collectSignificantInteractionsMethylationGLMM_T1T2(
+  modelResults = ex$modelResults,
+  pvalThreshold = 1,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(significant_hits)
+
+}

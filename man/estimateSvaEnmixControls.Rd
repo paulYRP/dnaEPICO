@@ -40,3 +40,16 @@ variable matrix and the parameters used to estimate it.
 Run \code{ENmix::ctrlsva()} on an \code{RGChannelSet} and return the surrogate variable
 matrix as an in-memory object.
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+sva_data <- estimateSvaEnmixControls(
+  RGSet = ex$RGSet,
+  ctrlSvaPercVar = 0.5,
+  ctrlSvaFlag = 1,
+  verbose = FALSE,
+  logs = FALSE
+)
+sva_data$K
+\dontshow{\}) # examplesIf}
+}

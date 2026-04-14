@@ -42,3 +42,16 @@ containing \code{betaCSV} and \code{phenoCF}.
 Prepare the beta and phenotype tables commonly exported for Clock Foundation
 style downstream workflows, without writing them to disk.
 }
+\examples{
+ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
+clock_inputs <- buildClockFoundationInputsPreprocessingPheno(
+  beta = ex$timepointData$data[["1"]]$beta,
+  pheno = ex$timepointData$data[["1"]]$pheno,
+  SampleID = "Sample_Name",
+  sexColumn = "Sex",
+  verbose = FALSE,
+  logs = FALSE
+)
+names(clock_inputs)
+
+}

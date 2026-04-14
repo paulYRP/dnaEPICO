@@ -373,30 +373,30 @@ resolveAnnotationObjectMethylationGLM_T1 <- function(annotationObject) {
     return(annotationObject)
   }
 
-  package_name <- annotationObject
-  search_name <- paste0("package:", package_name)
-
-  if (!(search_name %in% search())) {
-    if (!suppressPackageStartupMessages(
-      require(package_name, character.only = TRUE, quietly = TRUE)
-    )) {
-      stop("Annotation package is not installed: ", package_name, call. = FALSE)
+  if (requireNamespace(annotationObject, quietly = TRUE)) {
+    annotation_namespace <- asNamespace(annotationObject)
+    if (exists(annotationObject, envir = annotation_namespace, inherits = FALSE)) {
+      return(get(annotationObject, envir = annotation_namespace, inherits = FALSE))
     }
   }
 
-  if (exists(annotationObject, envir = as.environment(search_name), inherits = FALSE)) {
-    return(get(annotationObject, envir = as.environment(search_name), inherits = FALSE))
+  loaded_namespaces <- loadedNamespaces()
+  for (namespace_name in loaded_namespaces) {
+    namespace_env <- asNamespace(namespace_name)
+    if (exists(annotationObject, envir = namespace_env, inherits = FALSE)) {
+      return(get(annotationObject, envir = namespace_env, inherits = FALSE))
+    }
   }
 
   if (exists(annotationObject, inherits = TRUE)) {
     return(get(annotationObject, inherits = TRUE))
   }
 
-  if (!requireNamespace(annotationObject, quietly = TRUE)) {
-    stop("Annotation package is not installed: ", annotationObject, call. = FALSE)
-  }
-
-  getExportedValue(annotationObject, annotationObject)
+  stop(
+    "Annotation package or object was not found: ",
+    annotationObject,
+    call. = FALSE
+  )
 }
 
 #' Prepare phenotype-plus-beta data for one-timepoint GLM analyses
@@ -429,6 +429,19 @@ resolveAnnotationObjectMethylationGLM_T1 <- function(annotationObject) {
 #' Load the merged phenotype-plus-beta input object, validate the requested
 #' modeling variables, convert selected variables to factors, and return a
 #' single in-memory object for downstream helpers.
+#'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#' prepared_data <- prepareMethylationGLM_T1Data(
+#'   inputPheno = ex$inputPath,
+#'   phenotypes = "status",
+#'   covariates = "sex,age",
+#'   factorVars = "status,sex",
+#'   cpgLimit = 2,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(prepared_data)
 #'
 #' @export
 prepareMethylationGLM_T1Data <- function(
@@ -591,6 +604,16 @@ prepareMethylationGLM_T1Data <- function(
 #' Create phenotype, factor-variable, and numeric-covariate distribution plots
 #' from the object returned by `prepareMethylationGLM_T1Data()`.
 #'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#' distribution_plots <- plotMethylationGLM_T1Distributions(
+#'   preparedData = ex$preparedData,
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(distribution_plots)
+#'
 #' @export
 plotMethylationGLM_T1Distributions <- function(
     preparedData,
@@ -634,7 +657,7 @@ plotMethylationGLM_T1Distributions <- function(
     }
 
     runPlotMinfiEwasWater(
-      draw_fun = function() print(plot_object),
+      draw_fun = function() drawPlotObjectMinfiEwasWater(plot_object),
       display = display,
       file = file_path,
       width = plotWidth,
@@ -663,7 +686,7 @@ plotMethylationGLM_T1Distributions <- function(
     }
 
     runPlotMinfiEwasWater(
-      draw_fun = function() print(plot_object),
+      draw_fun = function() drawPlotObjectMinfiEwasWater(plot_object),
       display = display,
       file = file_path,
       width = plotWidth,
@@ -693,7 +716,7 @@ plotMethylationGLM_T1Distributions <- function(
     }
 
     runPlotMinfiEwasWater(
-      draw_fun = function() print(plot_object),
+      draw_fun = function() drawPlotObjectMinfiEwasWater(plot_object),
       display = display,
       file = file_path,
       width = plotWidth,
@@ -754,6 +777,16 @@ plotMethylationGLM_T1Distributions <- function(
 #' @description
 #' Fit one Gaussian GLM per CpG for each phenotype requested in the object
 #' returned by `prepareMethylationGLM_T1Data()`.
+#'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#' model_results <- fitMethylationGLM_T1Models(
+#'   preparedData = ex$preparedData,
+#'   nCores = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(model_results$fits)
 #'
 #' @export
 fitMethylationGLM_T1Models <- function(
@@ -841,7 +874,7 @@ fitMethylationGLM_T1Models <- function(
 
           for (pkg in glm_lib_list) {
             if (!requireNamespace(pkg, quietly = TRUE)) {
-              stop(paste("Failed to load package:", pkg))
+              stop("Failed to load package: ", pkg, call. = FALSE)
             }
           }
 
@@ -950,6 +983,19 @@ fitMethylationGLM_T1Models <- function(
 #' Extract phenotype-specific CpG coefficient tables from the fitted model
 #' object returned by `fitMethylationGLM_T1Models()`.
 #'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#' summary_results <- summarizeMethylationGLM_T1Models(
+#'   modelResults = ex$modelResults,
+#'   preparedData = ex$preparedData,
+#'   summaryResidualSD = TRUE,
+#'   summaryPval = NA,
+#'   nCores = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(summary_results$summaries)
+#'
 #' @export
 summarizeMethylationGLM_T1Models <- function(
     modelResults,
@@ -1024,7 +1070,7 @@ summarizeMethylationGLM_T1Models <- function(
 
           for (pkg in glm_lib_list) {
             if (!requireNamespace(pkg, quietly = TRUE)) {
-              stop(paste("Failed to load package:", pkg))
+              stop("Failed to load package: ", pkg, call. = FALSE)
             }
           }
 
@@ -1156,6 +1202,16 @@ summarizeMethylationGLM_T1Models <- function(
 #' Collect the raw coefficient tables for CpGs whose phenotype main effect or
 #' interaction p-value passes the requested threshold.
 #'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#' significant_cpgs <- collectSignificantCpGsMethylationGLM_T1(
+#'   modelResults = ex$modelResults,
+#'   pvalThreshold = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(significant_cpgs)
+#'
 #' @export
 collectSignificantCpGsMethylationGLM_T1 <- function(
     modelResults,
@@ -1246,6 +1302,17 @@ collectSignificantCpGsMethylationGLM_T1 <- function(
 #' @description
 #' Create Q-Q and residual-diagnostic plots from the CpG summary tables returned
 #' by `summarizeMethylationGLM_T1Models()`.
+#'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#' diagnostic_plots <- plotMethylationGLM_T1Diagnostics(
+#'   modelSummaries = ex$modelSummaries,
+#'   preparedData = ex$preparedData,
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(diagnostic_plots$plots)
 #'
 #' @export
 plotMethylationGLM_T1Diagnostics <- function(
@@ -1363,7 +1430,7 @@ plotMethylationGLM_T1Diagnostics <- function(
     }
 
     runPlotMinfiEwasWater(
-      draw_fun = function() print(qq_plot),
+      draw_fun = function() drawPlotObjectMinfiEwasWater(qq_plot),
       display = display,
       file = qq_file,
       width = plotWidth,
@@ -1373,7 +1440,7 @@ plotMethylationGLM_T1Diagnostics <- function(
 
     if (!is.null(residual_plot)) {
       runPlotMinfiEwasWater(
-        draw_fun = function() print(residual_plot),
+        draw_fun = function() drawPlotObjectMinfiEwasWater(residual_plot),
         display = display,
         file = residual_file,
         width = plotWidth,
@@ -1384,7 +1451,7 @@ plotMethylationGLM_T1Diagnostics <- function(
 
     if (!is.null(residual_significance_plot)) {
       runPlotMinfiEwasWater(
-        draw_fun = function() print(residual_significance_plot),
+        draw_fun = function() drawPlotObjectMinfiEwasWater(residual_significance_plot),
         display = display,
         file = significance_file,
         width = plotWidth,
@@ -1451,6 +1518,22 @@ plotMethylationGLM_T1Diagnostics <- function(
 #' @description
 #' Merge phenotype-specific CpG summary tables with probe annotation metadata and
 #' return a single annotated result table.
+#'
+#' @examples
+#' if (requireNamespace(
+#'   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'   quietly = TRUE
+#' )) {
+#'   ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#'   annotation_data <- annotateMethylationGLM_T1Summaries(
+#'     modelSummaries = ex$modelSummaries,
+#'     annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'     annotationCols = "Name,chr,pos",
+#'     verbose = FALSE,
+#'     logs = FALSE
+#'   )
+#'   names(annotation_data)
+#' }
 #'
 #' @export
 annotateMethylationGLM_T1Summaries <- function(
@@ -1591,6 +1674,42 @@ annotateMethylationGLM_T1Summaries <- function(
 #' @description
 #' Write optional serialized outputs, summary tables, significant-CpG tables,
 #' and annotated results from the one-timepoint GLM workflow.
+#'
+#' @examples
+#' if (requireNamespace(
+#'   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'   quietly = TRUE
+#' )) {
+#'   ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#'   annotation_data <- annotateMethylationGLM_T1Summaries(
+#'     modelSummaries = ex$modelSummaries,
+#'     annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'     annotationCols = "Name,chr,pos",
+#'     verbose = FALSE,
+#'     logs = FALSE
+#'   )
+#'   significant_cpgs <- collectSignificantCpGsMethylationGLM_T1(
+#'     modelResults = ex$modelResults,
+#'     pvalThreshold = 1,
+#'     verbose = FALSE,
+#'     logs = FALSE
+#'   )
+#'   output_paths <- writeMethylationGLM_T1Outputs(
+#'     modelResults = ex$modelResults,
+#'     modelSummaries = ex$modelSummaries,
+#'     annotatedResults = annotation_data,
+#'     significantCpGs = significant_cpgs,
+#'     outputRData = file.path(ex$tempDir, "models"),
+#'     summaryTxtDir = file.path(ex$tempDir, "summary"),
+#'     significantCpGDir = file.path(ex$tempDir, "significant"),
+#'     annotatedGLMOut = file.path(ex$tempDir, "annotated"),
+#'     saveTxtSummaries = TRUE,
+#'     saveSignificantCpGs = TRUE,
+#'     verbose = FALSE,
+#'     logs = FALSE
+#'   )
+#'   names(output_paths)
+#' }
 #'
 #' @export
 writeMethylationGLM_T1Outputs <- function(

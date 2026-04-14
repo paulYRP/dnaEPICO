@@ -282,6 +282,17 @@ summarizeCpGFitMethylationGLMM_T1T2 <- function(
 #' are reported with mean, standard deviation, and non-missing counts; non-numeric
 #' phenotypes are reported with non-missing counts and the observed levels.
 #'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#' timepoint_summary <- summarizeTimepointsMethylationGLMM_T1T2(
+#'   data = ex$preparedData$data,
+#'   timeVar = "Timepoint",
+#'   phenotypes = "score",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' nrow(timepoint_summary)
+#'
 #' @export
 summarizeTimepointsMethylationGLMM_T1T2 <- function(
     data,
@@ -381,6 +392,21 @@ summarizeTimepointsMethylationGLMM_T1T2 <- function(
 #' identifier column is available, validate the requested modeling variables,
 #' convert selected variables to factors, and return a single in-memory object
 #' for downstream mixed-effects modeling helpers.
+#'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#' prepared_data <- prepareMethylationGLMM_T1T2Data(
+#'   inputPheno = ex$inputPath,
+#'   personVar = "person",
+#'   timeVar = "Timepoint",
+#'   phenotypes = "score",
+#'   covariates = "sex",
+#'   factorVars = "sex,Timepoint",
+#'   cpgLimit = 2,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(prepared_data)
 #'
 #' @export
 prepareMethylationGLMM_T1T2Data <- function(
@@ -569,6 +595,16 @@ prepareMethylationGLMM_T1T2Data <- function(
 #' Fit one linear mixed-effects model per CpG for each phenotype requested in the
 #' object returned by `prepareMethylationGLMM_T1T2Data()`.
 #'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#' model_results <- fitMethylationGLMM_T1T2Models(
+#'   preparedData = ex$preparedData,
+#'   nCores = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(model_results$fits)
+#'
 #' @export
 fitMethylationGLMM_T1T2Models <- function(
     preparedData,
@@ -665,7 +701,7 @@ fitMethylationGLMM_T1T2Models <- function(
 
           for (pkg in lme_lib_list) {
             if (!requireNamespace(pkg, quietly = TRUE)) {
-              stop(paste("Package not installed:", pkg))
+              stop("Package not installed: ", pkg, call. = FALSE)
             }
           }
 
@@ -769,6 +805,18 @@ fitMethylationGLMM_T1T2Models <- function(
 #' @description
 #' Extract phenotype-specific fixed-effect tables from the fitted mixed-effects
 #' model object returned by `fitMethylationGLMM_T1T2Models()`.
+#'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#' summary_results <- summarizeMethylationGLMM_T1T2Models(
+#'   modelResults = ex$modelResults,
+#'   preparedData = ex$preparedData,
+#'   summaryPval = NA,
+#'   nCores = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(summary_results$summaries)
 #'
 #' @export
 summarizeMethylationGLMM_T1T2Models <- function(
@@ -933,6 +981,16 @@ summarizeMethylationGLMM_T1T2Models <- function(
 #' Collect raw coefficient tables for CpGs whose phenotype main effect or
 #' requested interaction p-value passes the chosen threshold.
 #'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#' significant_hits <- collectSignificantInteractionsMethylationGLMM_T1T2(
+#'   modelResults = ex$modelResults,
+#'   pvalThreshold = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(significant_hits)
+#'
 #' @export
 collectSignificantInteractionsMethylationGLMM_T1T2 <- function(
     modelResults,
@@ -1023,6 +1081,17 @@ collectSignificantInteractionsMethylationGLMM_T1T2 <- function(
 #' @description
 #' Create Q-Q and standard-error diagnostic plots from the mixed-effects summary
 #' tables returned by `summarizeMethylationGLMM_T1T2Models()`.
+#'
+#' @examples
+#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#' diagnostic_plots <- plotMethylationGLMM_T1T2Diagnostics(
+#'   modelSummaries = ex$modelSummaries,
+#'   preparedData = ex$preparedData,
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(diagnostic_plots$plots)
 #'
 #' @export
 plotMethylationGLMM_T1T2Diagnostics <- function(
@@ -1135,7 +1204,7 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
     }
 
     runPlotMinfiEwasWater(
-      draw_fun = function() print(qq_plot),
+      draw_fun = function() drawPlotObjectMinfiEwasWater(qq_plot),
       display = display,
       file = qq_file,
       width = plotWidth,
@@ -1143,7 +1212,7 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
       res = plotDPI
     )
     runPlotMinfiEwasWater(
-      draw_fun = function() print(residual_plot),
+      draw_fun = function() drawPlotObjectMinfiEwasWater(residual_plot),
       display = display,
       file = residual_file,
       width = plotWidth,
@@ -1151,7 +1220,7 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
       res = plotDPI
     )
     runPlotMinfiEwasWater(
-      draw_fun = function() print(residual_significance_plot),
+      draw_fun = function() drawPlotObjectMinfiEwasWater(residual_significance_plot),
       display = display,
       file = significance_file,
       width = plotWidth,
@@ -1218,6 +1287,22 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
 #' @description
 #' Merge phenotype-specific longitudinal summary tables with probe annotation
 #' metadata and return a single annotated result table.
+#'
+#' @examples
+#' if (requireNamespace(
+#'   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'   quietly = TRUE
+#' )) {
+#'   ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#'   annotation_data <- annotateMethylationGLMM_T1T2Summaries(
+#'     modelSummaries = ex$modelSummaries,
+#'     annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'     annotationCols = "Name,chr,pos",
+#'     verbose = FALSE,
+#'     logs = FALSE
+#'   )
+#'   names(annotation_data)
+#' }
 #'
 #' @export
 annotateMethylationGLMM_T1T2Summaries <- function(
@@ -1361,6 +1446,42 @@ annotateMethylationGLMM_T1T2Summaries <- function(
 #' @description
 #' Write optional serialized outputs, summary tables, significant interaction
 #' tables, and annotated results from the longitudinal mixed-effects workflow.
+#'
+#' @examples
+#' if (requireNamespace(
+#'   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'   quietly = TRUE
+#' )) {
+#'   ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#'   annotation_data <- annotateMethylationGLMM_T1T2Summaries(
+#'     modelSummaries = ex$modelSummaries,
+#'     annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'     annotationCols = "Name,chr,pos",
+#'     verbose = FALSE,
+#'     logs = FALSE
+#'   )
+#'   significant_hits <- collectSignificantInteractionsMethylationGLMM_T1T2(
+#'     modelResults = ex$modelResults,
+#'     pvalThreshold = 1,
+#'     verbose = FALSE,
+#'     logs = FALSE
+#'   )
+#'   output_paths <- writeMethylationGLMM_T1T2Outputs(
+#'     modelResults = ex$modelResults,
+#'     modelSummaries = ex$modelSummaries,
+#'     annotatedResults = annotation_data,
+#'     significantInteractions = significant_hits,
+#'     outputRData = file.path(ex$tempDir, "models"),
+#'     summaryTxtDir = file.path(ex$tempDir, "summary"),
+#'     significantInteractionDir = file.path(ex$tempDir, "significant"),
+#'     annotatedLMEOut = file.path(ex$tempDir, "annotated"),
+#'     saveTxtSummaries = TRUE,
+#'     saveSignificantInteractions = TRUE,
+#'     verbose = FALSE,
+#'     logs = FALSE
+#'   )
+#'   names(output_paths)
+#' }
 #'
 #' @export
 writeMethylationGLMM_T1T2Outputs <- function(

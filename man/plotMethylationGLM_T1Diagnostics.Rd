@@ -62,3 +62,15 @@ any saved TIFF file paths.
 Create Q-Q and residual-diagnostic plots from the CpG summary tables returned
 by \code{summarizeMethylationGLM_T1Models()}.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+diagnostic_plots <- plotMethylationGLM_T1Diagnostics(
+  modelSummaries = ex$modelSummaries,
+  preparedData = ex$preparedData,
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(diagnostic_plots$plots)
+
+}

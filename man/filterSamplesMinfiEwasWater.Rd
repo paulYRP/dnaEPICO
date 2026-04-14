@@ -41,3 +41,17 @@ filtered \code{RGSet}, aligned phenotype table, and failed sample identifiers.
 Remove failed samples identified during sample assessment and return the
 filtered \code{RGChannelSet} together with the aligned phenotype table.
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+filtered_samples <- filterSamplesMinfiEwasWater(
+  RGSet = ex$RGSet,
+  targets = ex$targets,
+  failedSamples = ex$targets$Sample_Name[1],
+  SampleID = "Sample_Name",
+  verbose = FALSE,
+  logs = FALSE
+)
+nrow(filtered_samples$targets)
+\dontshow{\}) # examplesIf}
+}

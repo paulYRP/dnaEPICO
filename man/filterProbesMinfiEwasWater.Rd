@@ -60,3 +60,21 @@ filtered object and counts for each filtering stage.
 Apply detection P-value, chromosome, SNP, and cross-reactive probe filters
 to the primary normalized object and return the filtered result.
 }
+\examples{
+\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+filtered_data <- filterProbesMinfiEwasWater(
+  normData = ex$normData,
+  RGSet = ex$sampleData$RGSet,
+  pvalThreshold = 1,
+  chrToRemove = "chrY",
+  snpsToRemove = "SBE",
+  mafThreshold = 1,
+  crossReactivePath = ex$crossReactivePath,
+  detPtype = "m+u",
+  verbose = FALSE,
+  logs = FALSE
+)
+filtered_data$counts[["crossReactive"]]
+\dontshow{\}) # examplesIf}
+}

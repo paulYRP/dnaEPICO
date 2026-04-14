@@ -50,3 +50,14 @@ containing the generated \code{ggplot2} objects and any saved TIFF file paths.
 Create phenotype, factor-variable, and numeric-covariate distribution plots
 from the object returned by \code{prepareMethylationGLM_T1Data()}.
 }
+\examples{
+ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+distribution_plots <- plotMethylationGLM_T1Distributions(
+  preparedData = ex$preparedData,
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
+)
+names(distribution_plots)
+
+}

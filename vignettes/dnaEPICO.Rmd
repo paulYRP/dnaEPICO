@@ -1,4 +1,4 @@
-﻿---
+---
 title: "The dnaEPICO User's Guide"
 shorttitle: "dnaEPICO guide"
 author: 
@@ -66,7 +66,7 @@ The `r Biocpkg("dnaEPICO")` package depends on `r Biocpkg("minfi")`, `r Biocpkg(
 
 ```{r "install", eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
-      install.packages("BiocManager")
+    install.packages("BiocManager")
 }
 
 BiocManager::install("dnaEPICO")
@@ -81,8 +81,8 @@ library("dnaEPICO")
 Alternatively, install directly from GitHub:
 
 ```{r, eval= FALSE, echo= TRUE}
-install.packages('devtools')
-devtools::install_github('paulYRP/dnaEPICO')
+install.packages("devtools")
+devtools::install_github("paulYRP/dnaEPICO")
 ```
 
 # Overview
@@ -137,8 +137,8 @@ You can extract the example Makefile with:
 
 ```{r, eval=FALSE}
 makefilePath <- extractMake(
-  destDir = getwd(),
-  overwrite = FALSE
+    destDir = getwd(),
+    overwrite = FALSE
 )
 ```
 
@@ -211,7 +211,7 @@ preprocessResult <- preprocessingMinfiEwasWater(
     snpsToRemove = "SBE,CpG",
     mafThreshold = 0.1,
     crossReactivePath =
-      "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
+        "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
     plotGroupVar = "Sex",
     lcRef = "salivaEPIC",
     phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
@@ -311,11 +311,11 @@ phenoResult <- preprocessingPheno(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     sepType = "",
     betaPath =
-      "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+        "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
     mPath =
-      "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+        "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
     cnPath =
-      "rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+        "rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
     SampleID = "Sample_Name",
     timeVar = "Timepoint",
     timepoints = "1,2",
@@ -411,7 +411,7 @@ methylationGLM_T1(
     annotatedGLMOut = "data/methylationGLM_T1",
     logs = TRUE,
     saveOutputs = TRUE
-) 
+)
 ```
 
 ### What it does:
@@ -921,42 +921,42 @@ For troubleshooting LaTeX-related issues, see the [TinyTeX](https://yihui.org/ti
 
 ```{r, eval=FALSE}
 preparedReport <- prepareDnamReportInputs(
-  output = "DNAm_Report.pdf",
-  outputDir = "reports",
-  qcDir = "figures/preprocessingMinfiEwasWater/enMix",
-  preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
-  postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
-  svaDir = "figures/svaEnmix/sva",
-  glmDir = "figures/methylationGLM_T1",
-  glmmDir = "figures/methylationGLMM_T1T2",
-  reportTitle = "DNA methylation",
-  author = "School of Biomedical Sciences",
-  date = format(Sys.Date(), "%B %d, %Y"),
-  verbose = FALSE,
-  logs = FALSE
+    output = "DNAm_Report.pdf",
+    outputDir = "reports",
+    qcDir = "figures/preprocessingMinfiEwasWater/enMix",
+    preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
+    postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
+    svaDir = "figures/svaEnmix/sva",
+    glmDir = "figures/methylationGLM_T1",
+    glmmDir = "figures/methylationGLMM_T1T2",
+    reportTitle = "DNA methylation",
+    author = "School of Biomedical Sciences",
+    date = format(Sys.Date(), "%B %d, %Y"),
+    verbose = FALSE,
+    logs = FALSE
 )
 
 reportRender <- renderDnamReport(
-  preparedReport = preparedReport,
-  verbose = FALSE,
-  logs = FALSE
+    preparedReport = preparedReport,
+    verbose = FALSE,
+    logs = FALSE
 )
 
 reportInfo <- dnamReport(
-  output = "DNAm_Report.pdf",
-  outputDir = "reports",
-  qcDir = "figures/preprocessingMinfiEwasWater/enMix",
-  preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
-  postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
-  svaDir = "figures/svaEnmix/sva",
-  glmDir = "figures/methylationGLM_T1",
-  glmmDir = "figures/methylationGLMM_T1T2",
-  reportTitle = "DNA methylation",
-  author = "School of Biomedical Sciences",
-  date = format(Sys.Date(), "%B %d, %Y"),
-  render = TRUE,
-  verbose = FALSE,
-  logs = FALSE
+    output = "DNAm_Report.pdf",
+    outputDir = "reports",
+    qcDir = "figures/preprocessingMinfiEwasWater/enMix",
+    preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
+    postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
+    svaDir = "figures/svaEnmix/sva",
+    glmDir = "figures/methylationGLM_T1",
+    glmmDir = "figures/methylationGLMM_T1T2",
+    reportTitle = "DNA methylation",
+    author = "School of Biomedical Sciences",
+    date = format(Sys.Date(), "%B %d, %Y"),
+    render = TRUE,
+    verbose = FALSE,
+    logs = FALSE
 )
 ```
 
@@ -974,13 +974,11 @@ This example has the following dependencies:
 
 ```{r dependencies, warning=FALSE, message=FALSE}
 library(dnaEPICO)
-
 ```
 
 ```{r, warning=FALSE, message=FALSE}
 library(minfiData)
 library(minfi)
-
 ```
 
 ## Example 1: Local Test
@@ -1012,10 +1010,9 @@ In this example, the pipeline performs the following steps:
 We first create a temporary directory that will hold **all input files and outputs** for this example.
 
 ```{r, message=FALSE, warning=FALSE, include=TRUE}
-# Temporary directory 
-tmpDir  <- file.path(tempdir(), "dnaEPICO_Test")
+# Temporary directory
+tmpDir <- file.path(tempdir(), "dnaEPICO_Test")
 dir.create(tmpDir, showWarnings = FALSE, recursive = TRUE)
-
 ```
 
 ```{r, message=FALSE, warning=FALSE, include=TRUE}
@@ -1026,7 +1023,6 @@ dir.create(preprocDir, showWarnings = FALSE, recursive = TRUE)
 on.exit(unlink(tmpDir, recursive = TRUE, force = TRUE), add = TRUE)
 
 tmpDir
-
 ```
 
 **Important:**
@@ -1042,20 +1038,18 @@ The `minfiData` package contains a small set of Illumina 450K IDAT files from bl
 ```{r download-raw, message=FALSE, warning=FALSE }
 # Locate minfiData extdata directory
 baseDir_minfi <- system.file("extdata", package = "minfiData")
-
 ```
 
 ```{r, message=FALSE, warning=FALSE }
 # Find all IDAT files
 idatFiles <- list.files(
-  baseDir_minfi,
-  pattern = "\\.idat$",
-  recursive = TRUE,
-  full.names = TRUE
+    baseDir_minfi,
+    pattern = "\\.idat$",
+    recursive = TRUE,
+    full.names = TRUE
 )
 
 length(idatFiles)
-
 ```
 
 We now copy these IDAT files into the directory structure expected by `dnaEPICO`.
@@ -1064,7 +1058,6 @@ We now copy these IDAT files into the directory structure expected by `dnaEPICO`
 # Create IDAT directory
 idatDir <- file.path(preprocDir, "idats")
 dir.create(idatDir, showWarnings = FALSE, recursive = TRUE)
-
 ```
 
 ```{r}
@@ -1072,7 +1065,6 @@ dir.create(idatDir, showWarnings = FALSE, recursive = TRUE)
 file.copy(idatFiles, idatDir, overwrite = TRUE)
 
 length(list.files(idatDir, pattern = "\\.idat$"))
-
 ```
 
 ### Step 3: Copy the cross-reactive probe annotation file
@@ -1084,26 +1076,22 @@ The pipeline requires a file listing cross-reactive probes. This file is distrib
 ```{r}
 # Locate dnaEPICO extdata directory
 baseDir_dnaEPICO <- system.file("extdata", package = "dnaEPICO")
-
 ```
 
 ```{r}
 # Source cross-reactive probe file
 crossReactiveSrc <- file.path(baseDir_dnaEPICO, "12864_2024_10027_MOESM8_ESM.csv")
-
 ```
 
 ```{r}
 # Destination path inside tmpDir/data/preprocessingMinfiEwasWater/
 crossReactivePath <- file.path(preprocDir, "12864_2024_10027_MOESM8_ESM.csv")
-
 ```
 
 ```{r}
 # Copy into the target folder
 file.copy(crossReactiveSrc, crossReactivePath, overwrite = TRUE)
 file.exists(crossReactivePath)
-
 ```
 
 ### Step 4: Create a phenotype file
@@ -1113,27 +1101,24 @@ Next, we create a phenotype file using the sample sheet provided by `minfiData`.
 ```{r}
 # Read SampleSheet from minfiData
 targets <- read.csv(
-  file.path(baseDir_minfi, "SampleSheet.csv"),
-  stringsAsFactors = FALSE,
-  skip = 7
+    file.path(baseDir_minfi, "SampleSheet.csv"),
+    stringsAsFactors = FALSE,
+    skip = 7
 )
-
 ```
 
 ```{r}
-# Create Basename column 
+# Create Basename column
 targets$Basename <- paste0(
-  targets$Sentrix_ID,
-  "_",
-  targets$Sentrix_Position
+    targets$Sentrix_ID,
+    "_",
+    targets$Sentrix_Position
 )
-
 ```
 
 ```{r}
 # Create Timepoint column
 targets$Timepoint <- 1
-
 ```
 
 ```{r}
@@ -1142,7 +1127,6 @@ samplePath <- file.path(preprocDir, "sample_minfi.csv")
 write.csv(targets, samplePath, row.names = FALSE)
 
 file.exists(samplePath)
-
 ```
 
 This phenotype file will be used throughout the pipeline.
@@ -1160,37 +1144,36 @@ We now run the first pipeline stage, which performs:
 ```{r}
 set.seed(123)
 preprocessResult <- preprocessingMinfiEwasWater(
-  phenoFile = samplePath,
-  idatFolder = file.path(preprocDir, "idats"),
-  nSamples = NA,
-  SampleID = "Sample_Name",
-  phenoOrder = "Sample_Name;sex;Basename;Sentrix_ID;Sentrix_Position",
-  arrayType = "IlluminaHumanMethylation450k",
-  annotationVersion = "ilmn12.hg19",
-  sexColumn = "sex",
-  plotGroupVar = "sex",
-  tiffWidth = 2000,
-  tiffHeight = 1000,
-  tiffRes = 150,
-  qcCutoff = 10.5,
-  detPtype = "m+u",
-  detPThreshold = 0.05,
-  normMethods = "adjustedfunnorm",
-  pvalThreshold = 0.01,
-  chrToRemove = "chrX,chrY",
-  snpsToRemove = "SBE,CpG",
-  mafThreshold = 0.1,
-  outputLogs = file.path(tmpDir, "logs"),
-  baseDataFolder = file.path(tmpDir, "rData"),
-  figureBaseDir = file.path(tmpDir, "figures"),
-  lcRef = "FlowSorted.Blood.450k",
-  crossReactivePath = file.path(preprocDir, "12864_2024_10027_MOESM8_ESM.csv"),
-  lcPhenoDir = preprocDir,
-  saveOutputs = TRUE
+    phenoFile = samplePath,
+    idatFolder = file.path(preprocDir, "idats"),
+    nSamples = NA,
+    SampleID = "Sample_Name",
+    phenoOrder = "Sample_Name;sex;Basename;Sentrix_ID;Sentrix_Position",
+    arrayType = "IlluminaHumanMethylation450k",
+    annotationVersion = "ilmn12.hg19",
+    sexColumn = "sex",
+    plotGroupVar = "sex",
+    tiffWidth = 2000,
+    tiffHeight = 1000,
+    tiffRes = 150,
+    qcCutoff = 10.5,
+    detPtype = "m+u",
+    detPThreshold = 0.05,
+    normMethods = "adjustedfunnorm",
+    pvalThreshold = 0.01,
+    chrToRemove = "chrX,chrY",
+    snpsToRemove = "SBE,CpG",
+    mafThreshold = 0.1,
+    outputLogs = file.path(tmpDir, "logs"),
+    baseDataFolder = file.path(tmpDir, "rData"),
+    figureBaseDir = file.path(tmpDir, "figures"),
+    lcRef = "FlowSorted.Blood.450k",
+    crossReactivePath = file.path(preprocDir, "12864_2024_10027_MOESM8_ESM.csv"),
+    lcPhenoDir = preprocDir,
+    saveOutputs = TRUE
 )
 
 inherits(preprocessResult, "dnaEPICO_preprocessingMinfiEwasWater")
-
 ```
 
 ### Step 6: Surrogate variable analysis (SVA)
@@ -1199,49 +1182,46 @@ Next, we estimate surrogate variables to capture technical variation such as chi
 
 ```{r}
 rgsetPath <- file.path(
-  tmpDir,
-  "rData",
-  "preprocessingMinfiEwasWater",
-  "objects",
-  "RGSet.RData"
+    tmpDir,
+    "rData",
+    "preprocessingMinfiEwasWater",
+    "objects",
+    "RGSet.RData"
 )
 
 file.exists(rgsetPath)
-
 ```
 
 ```{r}
 phenoLCPath <- file.path(preprocDir, "phenoLC.csv")
 file.exists(phenoLCPath)
-
 ```
 
 ```{r}
 svaResult <- svaEnmix(
-  phenoFile = phenoLCPath,
-  rgsetData = rgsetPath,
-  sepType = "",
-  outputLogs = file.path(tmpDir, "logs"),
-  nSamples = NA,
-  SampleID = "Sample_Name",
-  arrayType = "IlluminaHumanMethylation450k",
-  annotationVersion = "ilmn12.hg19",
-  SentrixIDColumn = "Sentrix_ID",
-  SentrixPositionColumn = "Sentrix_Position",
-  ctrlSvaPercVar = 0.90,
-  ctrlSvaFlag = 1,
-  scriptLabel = "svaEnmix",
-  tiffWidth = 2000,
-  tiffHeight = 1000,
-  tiffRes = 150,
-  dataBaseDir = file.path(tmpDir, "data") ,
-  figureBaseDir = file.path(tmpDir, "figures"),
-  rBaseDir = file.path(tmpDir, "rData"),
-  saveOutputs = TRUE
+    phenoFile = phenoLCPath,
+    rgsetData = rgsetPath,
+    sepType = "",
+    outputLogs = file.path(tmpDir, "logs"),
+    nSamples = NA,
+    SampleID = "Sample_Name",
+    arrayType = "IlluminaHumanMethylation450k",
+    annotationVersion = "ilmn12.hg19",
+    SentrixIDColumn = "Sentrix_ID",
+    SentrixPositionColumn = "Sentrix_Position",
+    ctrlSvaPercVar = 0.90,
+    ctrlSvaFlag = 1,
+    scriptLabel = "svaEnmix",
+    tiffWidth = 2000,
+    tiffHeight = 1000,
+    tiffRes = 150,
+    dataBaseDir = file.path(tmpDir, "data"),
+    figureBaseDir = file.path(tmpDir, "figures"),
+    rBaseDir = file.path(tmpDir, "rData"),
+    saveOutputs = TRUE
 )
 
 inherits(svaResult, "dnaEPICO_svaEnmix")
-
 ```
 
 ### Step 7: Phenotype preprocessing
@@ -1251,35 +1231,32 @@ This step aligns phenotype data with the processed methylation matrices.
 ```{r}
 # Metric paths produced by preprocessingMinfiEwasWater
 betaPath <- file.path(
-  tmpDir,
-  "rData",
-  "preprocessingMinfiEwasWater",
-  "metrics",
-  "beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+    tmpDir,
+    "rData",
+    "preprocessingMinfiEwasWater",
+    "metrics",
+    "beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
 )
-
 ```
 
 ```{r}
 mPath <- file.path(
-  tmpDir,
-  "rData",
-  "preprocessingMinfiEwasWater",
-  "metrics",
-  "m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+    tmpDir,
+    "rData",
+    "preprocessingMinfiEwasWater",
+    "metrics",
+    "m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
 )
-
 ```
 
 ```{r}
 cnPath <- file.path(
-  tmpDir,
-  "rData",
-  "preprocessingMinfiEwasWater",
-  "metrics",
-  "cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+    tmpDir,
+    "rData",
+    "preprocessingMinfiEwasWater",
+    "metrics",
+    "cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
 )
-
 ```
 
 ```{r}
@@ -1287,31 +1264,29 @@ cnPath <- file.path(
 file.exists(betaPath)
 file.exists(mPath)
 file.exists(cnPath)
-
 ```
 
 ```{r}
 phenoResult <- preprocessingPheno(
-  phenoFile = phenoLCPath,
-  sepType = "",
-  betaPath = betaPath,
-  mPath = mPath,
-  cnPath = cnPath,
-  SampleID = "Sample_Name",
-  timeVar = "Timepoint",
-  timepoints = "1",
-  combineTimepoints = "1",
-  sexColumn = "sex",
-  outputPheno = file.path(tmpDir, "data", "preprocessingPheno"),
-  outputRData = file.path(tmpDir, "rData", "preprocessingPheno", "metrics"),
-  outputRDataMerge = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData"),
-  outputLogs = file.path(tmpDir, "logs"),
-  outputDir = file.path(tmpDir, "data", "preprocessingPheno"),
-  saveOutputs = TRUE
+    phenoFile = phenoLCPath,
+    sepType = "",
+    betaPath = betaPath,
+    mPath = mPath,
+    cnPath = cnPath,
+    SampleID = "Sample_Name",
+    timeVar = "Timepoint",
+    timepoints = "1",
+    combineTimepoints = "1",
+    sexColumn = "sex",
+    outputPheno = file.path(tmpDir, "data", "preprocessingPheno"),
+    outputRData = file.path(tmpDir, "rData", "preprocessingPheno", "metrics"),
+    outputRDataMerge = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData"),
+    outputLogs = file.path(tmpDir, "logs"),
+    outputDir = file.path(tmpDir, "data", "preprocessingPheno"),
+    saveOutputs = TRUE
 )
 
 inherits(phenoResult, "dnaEPICO_preprocessingPheno")
-
 ```
 
 ### Step 8: Generate a PDF report
@@ -1322,39 +1297,37 @@ style while still showing the report inputs that would be rendered later.
 
 ```{r}
 preparedReport <- prepareDnamReportInputs(
-  output = "DNAm_Report.pdf",
-  outputDir = file.path(tmpDir, "reports"),
-
-  qcDir = file.path(
-    tmpDir, "figures", "preprocessingMinfiEwasWater", "enMix"
-  ),
-  preprocessingDir = file.path(
-    tmpDir, "figures", "preprocessingMinfiEwasWater", "qc"
-  ),
-  postprocessingDir = file.path(
-    tmpDir, "figures", "preprocessingMinfiEwasWater", "metrics"
-  ),
-  svaDir = file.path(
-    tmpDir, "figures", "svaEnmix"
-  ),
-  glmDir = file.path(
-    tmpDir, "figures", "methylationGLM_T1"
-  ),
-  glmmDir = file.path(
-    tmpDir, "figures", "methylationGLMM_T1T2"
-  ),
-  figDir = file.path(
-          tmpDir, "reports", "figures"
-        ),
-  reportTitle = "DNA methylation",
-  author = "School of Biomedical Sciences",
-  date = format(Sys.Date(), "%B %d, %Y"),
-  verbose = FALSE,
-  logs = FALSE
+    output = "DNAm_Report.pdf",
+    outputDir = file.path(tmpDir, "reports"),
+    qcDir = file.path(
+        tmpDir, "figures", "preprocessingMinfiEwasWater", "enMix"
+    ),
+    preprocessingDir = file.path(
+        tmpDir, "figures", "preprocessingMinfiEwasWater", "qc"
+    ),
+    postprocessingDir = file.path(
+        tmpDir, "figures", "preprocessingMinfiEwasWater", "metrics"
+    ),
+    svaDir = file.path(
+        tmpDir, "figures", "svaEnmix"
+    ),
+    glmDir = file.path(
+        tmpDir, "figures", "methylationGLM_T1"
+    ),
+    glmmDir = file.path(
+        tmpDir, "figures", "methylationGLMM_T1T2"
+    ),
+    figDir = file.path(
+        tmpDir, "reports", "figures"
+    ),
+    reportTitle = "DNA methylation",
+    author = "School of Biomedical Sciences",
+    date = format(Sys.Date(), "%B %d, %Y"),
+    verbose = FALSE,
+    logs = FALSE
 )
 
 preparedReport$outputFile
-
 ```
 
 ## Example 2: Cluster Test
@@ -1370,21 +1343,20 @@ setwd(tmpDir)
 on.exit(setwd(oldWd), add = TRUE)
 
 system(paste(
-  "make f3",
-  "MODEL=model1",
-  "PHENO_FILE=data/preprocessingMinfiEwasWater/sample_minfi.csv",
-  "ARRAY_TYPE=IlluminaHumanMethylation450k",
-  "ANNOTATION_VERSION=ilmn12.hg19",
-  "SEX_COLUMN=sex",
-  "PLOT_GROUP_VAR=sex",
-  "LC_REF=FlowSorted.Blood.450k",
-  "TIMEPOINTS=1",
-  "COMBINE_TIMEPOINTS=1",
-  "R_DIR=NULL",
-  "N_SAMPLES=NA",        
-  "N_CORES=1"         
+    "make f3",
+    "MODEL=model1",
+    "PHENO_FILE=data/preprocessingMinfiEwasWater/sample_minfi.csv",
+    "ARRAY_TYPE=IlluminaHumanMethylation450k",
+    "ANNOTATION_VERSION=ilmn12.hg19",
+    "SEX_COLUMN=sex",
+    "PLOT_GROUP_VAR=sex",
+    "LC_REF=FlowSorted.Blood.450k",
+    "TIMEPOINTS=1",
+    "COMBINE_TIMEPOINTS=1",
+    "R_DIR=NULL",
+    "N_SAMPLES=NA",
+    "N_CORES=1"
 ))
-
 ```
 
 ### Step 1: Selecting a single test model

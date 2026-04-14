@@ -67,3 +67,40 @@ the paths of the files written to disk.
 Write optional serialized outputs, summary tables, significant-CpG tables,
 and annotated results from the one-timepoint GLM workflow.
 }
+\examples{
+if (requireNamespace(
+  "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+  quietly = TRUE
+)) {
+  ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+  annotation_data <- annotateMethylationGLM_T1Summaries(
+    modelSummaries = ex$modelSummaries,
+    annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+    annotationCols = "Name,chr,pos",
+    verbose = FALSE,
+    logs = FALSE
+  )
+  significant_cpgs <- collectSignificantCpGsMethylationGLM_T1(
+    modelResults = ex$modelResults,
+    pvalThreshold = 1,
+    verbose = FALSE,
+    logs = FALSE
+  )
+  output_paths <- writeMethylationGLM_T1Outputs(
+    modelResults = ex$modelResults,
+    modelSummaries = ex$modelSummaries,
+    annotatedResults = annotation_data,
+    significantCpGs = significant_cpgs,
+    outputRData = file.path(ex$tempDir, "models"),
+    summaryTxtDir = file.path(ex$tempDir, "summary"),
+    significantCpGDir = file.path(ex$tempDir, "significant"),
+    annotatedGLMOut = file.path(ex$tempDir, "annotated"),
+    saveTxtSummaries = TRUE,
+    saveSignificantCpGs = TRUE,
+    verbose = FALSE,
+    logs = FALSE
+  )
+  names(output_paths)
+}
+
+}

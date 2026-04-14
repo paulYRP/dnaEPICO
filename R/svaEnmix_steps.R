@@ -18,6 +18,17 @@
 #' Run `ENmix::ctrlsva()` on an `RGChannelSet` and return the surrogate variable
 #' matrix as an in-memory object.
 #'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+#' sva_data <- estimateSvaEnmixControls(
+#'   RGSet = ex$RGSet,
+#'   ctrlSvaPercVar = 0.5,
+#'   ctrlSvaFlag = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' sva_data$K
+#'
 #' @export
 estimateSvaEnmixControls <- function(
     RGSet,
@@ -82,6 +93,17 @@ estimateSvaEnmixControls <- function(
 #' Merge the surrogate variable matrix back into the phenotype table while
 #' preserving the original row order of `targets`.
 #'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
+#' merged_pheno <- mergeSvaTargetsEnmix(
+#'   targets = ex$targets,
+#'   sva = ex$sva,
+#'   SampleID = "Sample_Name",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' colnames(merged_pheno)[seq_len(4)]
+#'
 #' @export
 mergeSvaTargetsEnmix <- function(
     targets,
@@ -139,9 +161,9 @@ mergeSvaTargetsEnmix <- function(
 #' @param sva Numeric matrix of surrogate variables with samples in rows.
 #' @param RGSet An `RGChannelSet` aligned with `sva`.
 #' @param SentrixIDColumn Character. Name of the chip identifier column in
-#'   `Biobase::pData(RGSet)`.
+#'   `SummarizedExperiment::colData(RGSet)`.
 #' @param SentrixPositionColumn Character. Name of the chip position column in
-#'   `Biobase::pData(RGSet)`.
+#'   `SummarizedExperiment::colData(RGSet)`.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
@@ -155,6 +177,18 @@ mergeSvaTargetsEnmix <- function(
 #' Fit linear models for each surrogate variable against Sentrix chip and
 #' Sentrix position, perform backward elimination with `MASS::dropterm()`, and
 #' return the in-memory analysis objects.
+#'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
+#' analysis_data <- analyzeSvaEnmix(
+#'   sva = ex$sva,
+#'   RGSet = ex$RGSet,
+#'   SentrixIDColumn = "Sentrix_ID",
+#'   SentrixPositionColumn = "Sentrix_Position",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' analysis_data$K
 #'
 #' @export
 analyzeSvaEnmix <- function(
@@ -181,8 +215,9 @@ analyzeSvaEnmix <- function(
   }
 
   sva <- sva[match_idx, , drop = FALSE]
-  sentrix_id <- as.factor(Biobase::pData(RGSet)[[SentrixIDColumn]])
-  sentrix_position <- as.factor(Biobase::pData(RGSet)[[SentrixPositionColumn]])
+  col_data <- SummarizedExperiment::colData(RGSet)
+  sentrix_id <- as.factor(col_data[[SentrixIDColumn]])
+  sentrix_position <- as.factor(col_data[[SentrixPositionColumn]])
   K <- ncol(sva)
 
   full_models <- lapply(
@@ -252,7 +287,7 @@ analyzeSvaEnmix <- function(
         paste(rownames(sva)[seq_len(min(5L, nrow(sva)))], collapse = ", ")
       ),
       paste(
-        "Sample names in pData(RGSet):",
+        "Sample names in colData(RGSet):",
         paste(sample_names[seq_len(min(5L, length(sample_names)))], collapse = ", ")
       ),
       "======================================================================="
@@ -298,6 +333,16 @@ analyzeSvaEnmix <- function(
 #'
 #' @description
 #' Draw one of the standard surrogate-variable plots used by `svaEnmix()`.
+#'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
+#' plotSvaEnmix(
+#'   analysisData = ex$analysisData,
+#'   plot = "sentrix_id",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
 #'
 #' @export
 plotSvaEnmix <- function(
@@ -458,6 +503,22 @@ plotSvaEnmix <- function(
 #' @description
 #' Write the legacy CSV, `.RData`, and text-summary outputs used by the original
 #' `svaEnmix()` workflow.
+#'
+#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
+#' temp_dir <- tempdir()
+#' output_paths <- writeSvaEnmixOutputs(
+#'   svaData = list(sva = ex$sva),
+#'   mergedPheno = ex$mergedPheno,
+#'   analysisData = ex$analysisData,
+#'   phenoFile = file.path(temp_dir, "phenoLC.csv"),
+#'   dataBaseDir = file.path(temp_dir, "data"),
+#'   rBaseDir = file.path(temp_dir, "rData"),
+#'   scriptLabel = "svaEnmixExample",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(output_paths)
 #'
 #' @export
 writeSvaEnmixOutputs <- function(

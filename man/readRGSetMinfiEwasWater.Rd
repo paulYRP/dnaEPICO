@@ -50,3 +50,19 @@ Read methylation-array IDAT files with \code{minfi::read.metharray.exp()}, set
 sample names from the phenotype table, apply the requested annotation, and
 return the resulting \code{RGChannelSet}.
 }
+\examples{
+if (requireNamespace("minfiData", quietly = TRUE) &&
+    requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
+    requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
+  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico()
+  rgset <- readRGSetMinfiEwasWater(
+    idatFolder = ex$idatFolder,
+    targets = ex$targets,
+    SampleID = "Sample_Name",
+    arrayType = ex$arrayType,
+    annotationVersion = ex$annotationVersion
+  )
+  class(rgset)
+}
+
+}
