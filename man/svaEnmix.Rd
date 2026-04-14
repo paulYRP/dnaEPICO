@@ -2,7 +2,7 @@
 % Please edit documentation in R/svaEnmix.R
 \name{svaEnmix}
 \alias{svaEnmix}
-\title{Run svaEnmix.R}
+\title{Estimate surrogate variables from ENmix control probes}
 \usage{
 svaEnmix(
   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
@@ -23,82 +23,120 @@ svaEnmix(
   tiffRes = 150,
   figureBaseDir = "figures",
   dataBaseDir = "data",
-  rBaseDir = "rData"
+  rBaseDir = "rData",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = FALSE
 )
 }
 \arguments{
-\item{phenoFile}{Character. Path to phenotype file with cell composition data.}
+\item{phenoFile}{Character. Path to the phenotype file with cell-composition
+data.}
 
-\item{rgsetData}{Character. Path to RGSet RData file.}
+\item{rgsetData}{Character. Path to a saved \code{RGChannelSet} object. Both
+\code{.RData} and \code{.rds} files are supported.}
 
-\item{sepType}{Character. Field separator for phenotype file.}
+\item{sepType}{Character. Field separator used in \code{phenoFile}. Use \code{""} for
+a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or another
+separator accepted by \code{utils::read.csv()}.}
 
-\item{outputLogs}{Character. Directory for log files.}
+\item{outputLogs}{Character. Directory used for log files when \code{logs = TRUE}.}
 
-\item{nSamples}{Integer or NA. Number of samples to subset for testing.}
+\item{nSamples}{Integer or \code{NA}. Number of rows to keep from the phenotype
+table. Use \code{NA} to keep all samples.}
 
-\item{SampleID}{Character. Sample identifier column name.}
+\item{SampleID}{Character. Name of the phenotype column containing sample
+identifiers.}
 
-\item{arrayType}{Character. Illumina array type.}
+\item{arrayType}{Character. Illumina array identifier assigned to
+\code{Biobase::annotation(RGSet)}.}
 
-\item{annotationVersion}{Character. Annotation version.}
+\item{annotationVersion}{Character. Annotation build assigned to
+\code{Biobase::annotation(RGSet)}.}
 
-\item{SentrixIDColumn}{Character. Sentrix ID column name.}
+\item{SentrixIDColumn}{Character. Name of the chip identifier column in the
+phenotype data.}
 
-\item{SentrixPositionColumn}{Character. Sentrix position column name.}
+\item{SentrixPositionColumn}{Character. Name of the chip position column in
+the phenotype data.}
 
-\item{ctrlSvaPercVar}{Numeric. Proportion of variance explained by control probes.}
+\item{ctrlSvaPercVar}{Numeric. Proportion of control-probe variance explained
+when running \code{ENmix::ctrlsva()}.}
 
-\item{ctrlSvaFlag}{Integer. Flag indicating use of control probes.}
+\item{ctrlSvaFlag}{Integer. Control-probe flag passed to \code{ENmix::ctrlsva()}.}
 
-\item{scriptLabel}{Character. Label used in output naming.}
+\item{scriptLabel}{Character. Label used to name output folders when
+\code{saveOutputs = TRUE}.}
 
-\item{tiffWidth}{Integer. Width of TIFF plots in pixels.}
+\item{tiffWidth}{Integer. Width of saved TIFF plots in pixels.}
 
-\item{tiffHeight}{Integer. Height of TIFF plots in pixels.}
+\item{tiffHeight}{Integer. Height of saved TIFF plots in pixels.}
 
-\item{tiffRes}{Integer. Resolution (DPI) for TIFF plots.}
+\item{tiffRes}{Integer. Resolution in DPI for saved TIFF plots.}
 
-\item{figureBaseDir}{Character. Base directory for Figures outputs.}
+\item{figureBaseDir}{Character. Base directory used for saved figure outputs
+when \code{saveOutputs = TRUE}.}
 
-\item{dataBaseDir}{Character. Base directory for Data outputs.}
+\item{dataBaseDir}{Character. Base directory used for saved CSV and text
+outputs when \code{saveOutputs = TRUE}.}
 
-\item{rBaseDir}{Character. Base directory for RData outputs.}
+\item{rBaseDir}{Character. Base directory used for saved \code{.RData} outputs
+when \code{saveOutputs = TRUE}.}
+
+\item{display}{Logical. If \code{TRUE}, draw plots on the active graphics device.}
+
+\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.
+The default is \code{FALSE}.}
+
+\item{logs}{Logical. If \code{TRUE}, write the same progress messages to
+\code{outputLogs}. The default is \code{FALSE}.}
+
+\item{saveOutputs}{Logical. If \code{TRUE}, write the legacy CSV, \code{.RData}, text,
+and TIFF outputs to disk. The default is \code{FALSE}.}
 }
 \value{
-Invisibly returns \code{NULL}. This function is called for its side effects,
-executing the external \code{svaEnmix.R} script and writing results, figures,
-and logs to disk.
+A list with class \code{"dnaEPICO_svaEnmix"} containing the phenotype
+data, loaded \code{RGChannelSet}, surrogate-variable matrix, merged phenotype,
+association-analysis objects, optional saved-file paths, and the resolved
+log file path.
 }
 \description{
-Run svaEnmix.R
+Read the phenotype table and a saved \code{RGChannelSet}, estimate surrogate
+variables from ENmix control probes, analyze their association with Sentrix
+chip and position factors, and return a structured in-memory result. Legacy
+CSV, \code{.RData}, text-summary, and figure outputs are written only when
+\code{saveOutputs = TRUE}.
 }
 \examples{
 tmp <- tempdir()
 stopifnot(dir.exists(tmp))
 
 \donttest{
-svaEnmix(
-  phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
-  rgsetData = "rData/preprocessingMinfiEwasWater/objects/RGSet.RData",
-  sepType = "",
-  outputLogs = "logs",
-  nSamples = 5,
-  SampleID = "Sample_Name",
-  arrayType = "IlluminaHumanMethylationEPICv2",
-  annotationVersion = "20a1.hg38",
-  SentrixIDColumn = "Sentrix_ID",
-  SentrixPositionColumn = "Sentrix_Position",
-  ctrlSvaPercVar = 0.90,
-  ctrlSvaFlag = 1,
-  scriptLabel = "svaEnmix",
-  tiffWidth = 2000,
-  tiffHeight = 1000,
-  tiffRes = 150,
-  figureBaseDir = "figures",
-  dataBaseDir = "data",
-  rBaseDir = "rData"
-)
+if (requireNamespace("minfiData", quietly = TRUE)) {
+  base_dir <- system.file("extdata", package = "minfiData")
+  targets <- minfi::read.metharray.sheet(base_dir)
+  rgset <- minfi::read.metharray.exp(base = base_dir, targets = targets)
+  pheno_file <- file.path(tmp, "pheno.csv")
+  rgset_path <- file.path(tmp, "RGSet.RData")
+  utils::write.csv(targets, pheno_file, row.names = FALSE)
+  save(rgset, file = rgset_path)
+  sva_result <- svaEnmix(
+    phenoFile = pheno_file,
+    rgsetData = rgset_path,
+    SampleID = "Sample_Name",
+    arrayType = "IlluminaHumanMethylation450k",
+    annotationVersion = "ilmn12.hg19",
+    SentrixIDColumn = "Sentrix_ID",
+    SentrixPositionColumn = "Sentrix_Position",
+    outputLogs = file.path(tmp, "logs"),
+    figureBaseDir = file.path(tmp, "figures"),
+    dataBaseDir = file.path(tmp, "data"),
+    rBaseDir = file.path(tmp, "rData"),
+    saveOutputs = FALSE
+  )
+  stopifnot(inherits(sva_result, "dnaEPICO_svaEnmix"))
+}
 }
 
 }

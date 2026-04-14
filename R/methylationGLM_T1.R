@@ -1,84 +1,124 @@
-#' Run methylationGLM_T1.R
+#' Fit CpG-wise GLMs for one-timepoint methylation analyses
 #'
-#' @param inputPheno Character. Path to merged phenotype and beta-value RData file.
-#' @param outputLogs Character. Directory for log files.
-#' @param outputRData Character. Directory for model RData outputs.
-#' @param outputPlots Character. Directory for output plots.
+#' @param inputPheno Character. Path to the merged phenotype-plus-beta `.RData`
+#'   or `.rds` object created by `preprocessingPheno()`. The default points to
+#'   the timepoint-1 object produced by the package workflow.
+#' @param outputLogs Character. Directory used for optional log files.
+#' @param outputRData Character. Directory used for optional serialized model and
+#'   summary outputs.
+#' @param outputPlots Character. Directory used for optional TIFF plots.
 #' @param phenotypes Character. Comma-separated phenotype variables to model.
-#' @param covariates Character. Comma-separated covariate variables.
-#' @param factorVars Character. Comma-separated factor variables.
-#' @param cpgPrefix Character. CpG identifier prefix.
-#' @param cpgLimit Integer or NA. Maximum number of CpGs to analyse.
-#' @param nCores Integer. Number of CPU cores to use.
-#' @param plotWidth Integer. Plot width in pixels.
-#' @param plotHeight Integer. Plot height in pixels.
-#' @param plotDPI Integer. Plot resolution in DPI.
-#' @param interactionTerm Character or NULL. Optional interaction term.
-#' @param libPath Character or NULL. Optional library path.
-#' @param glmLibs Character. GLM libraries to use.
-#' @param prsMap Character or NULL. Optional PRS mapping file.
-#' @param summaryPval Numeric or NA. P-value threshold for summaries.
-#' @param summaryResidualSD Logical. Whether to summarise residual SD.
-#' @param saveSignificantCpGs Logical. Save significant CpGs.
-#' @param significantCpGDir Character. Directory for significant CpGs.
-#' @param significantCpGPval Numeric. P-value threshold for significant CpGs.
-#' @param saveTxtSummaries Logical. Save text summaries.
-#' @param chunkSize Integer. Number of CpGs processed per chunk.
-#' @param summaryTxtDir Character. Directory for summary text files.
-#' @param fdrThreshold Numeric. FDR threshold.
-#' @param padjmethod Character. P-value adjustment method.
-#' @param annotationPackage Character. Annotation package name.
-#' @param annotationCols Character. Annotation columns to extract.
-#' @param annotatedGLMOut Character. Output directory for annotated results.
+#' @param covariates Character. Comma-separated covariate variables included in
+#'   each GLM.
+#' @param factorVars Character. Comma-separated variables that should be treated
+#'   as factors before modeling.
+#' @param cpgPrefix Character. Prefix used to identify methylation columns in the
+#'   merged phenotype-plus-beta input object. The default is `"cg"`.
+#' @param cpgLimit Integer or `NA`. Maximum number of CpGs to analyse. Use `NA`
+#'   to keep all CpGs matching `cpgPrefix`.
+#' @param nCores Integer. Number of worker processes to use while fitting models
+#'   and extracting summaries.
+#' @param plotWidth Integer. TIFF width in pixels when plots are written to disk.
+#' @param plotHeight Integer. TIFF height in pixels when plots are written to
+#'   disk.
+#' @param plotDPI Integer. TIFF resolution in DPI when plots are written to
+#'   disk.
+#' @param interactionTerm Character or `NULL`. Optional interaction term. When
+#'   supplied and present in the input data, the phenotype is modeled together
+#'   with its interaction against this variable.
+#' @param libPath Character vector or `NULL`. Optional library paths forwarded to
+#'   worker processes. By default, the current `.libPaths()` are used.
+#' @param glmLibs Character. Comma-separated package names to validate on worker
+#'   processes. The default is `"glm2"`.
+#' @param prsMap Character or `NULL`. Optional phenotype-to-PRS mapping in the
+#'   form `"Phenotype1:PRS_1,Phenotype2:PRS_2"`.
+#' @param summaryPval Numeric or `NA`. Optional p-value threshold applied to the
+#'   returned CpG summary tables. Use `NA` to keep all summary rows.
+#' @param summaryResidualSD Logical. If `TRUE`, append residual standard
+#'   deviations to the CpG summary tables and residual diagnostic plots.
+#' @param saveSignificantCpGs Logical. If `TRUE`, collect significant CpG
+#'   coefficient tables in the returned object and optionally write them to disk
+#'   when `saveOutputs = TRUE`.
+#' @param significantCpGDir Character. Directory used for optional significant
+#'   CpG coefficient tables.
+#' @param significantCpGPval Numeric. P-value threshold used to collect or write
+#'   significant CpG coefficient tables.
+#' @param saveTxtSummaries Logical. If `TRUE` and `saveOutputs = TRUE`, write
+#'   tab-delimited summary tables to `summaryTxtDir`.
+#' @param chunkSize Integer or `NULL`. Number of CpGs processed per summary
+#'   extraction chunk. `NULL` chooses a value automatically.
+#' @param summaryTxtDir Character. Directory used for optional tab-delimited GLM
+#'   summary tables.
+#' @param fdrThreshold Numeric. False-discovery-rate threshold used to highlight
+#'   CpGs in the residual-significance diagnostic plots.
+#' @param padjmethod Character. P-value adjustment method passed to
+#'   `stats::p.adjust()`. The default is `"fdr"`.
+#' @param annotationPackage Character. Annotation package or object name passed
+#'   to `minfi::getAnnotation()`, for example
+#'   `"IlluminaHumanMethylationEPICv2anno.20a1.hg38"`.
+#' @param annotationCols Character. Comma-separated annotation columns to append
+#'   to the combined GLM summary table. Available columns depend on the selected
+#'   annotation package.
+#' @param annotatedGLMOut Character. Directory used for the optional annotated
+#'   GLM summary CSV file.
+#' @param display Logical. If `TRUE`, draw exploratory and diagnostic plots on
+#'   the active graphics device.
+#' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
+#'   The default is `FALSE`, so the function is quiet unless requested.
+#' @param logs Logical. If `TRUE`, write the same progress messages to
+#'   `file.path(outputLogs, "log_methylationGLM_T1.txt")`.
+#' @param saveOutputs Logical. If `TRUE`, write optional serialized model files,
+#'   summary tables, significant-CpG tables, annotated results, and TIFF plots to
+#'   the requested output directories. The default is `FALSE`, so the function
+#'   returns in-memory results without writing files.
 #'
-#' @return
-#' Invisibly returns \code{NULL}. This function is called for its side effects,
-#' running CpG-level GLM analyses and writing model results, summaries,
-#' plots, and annotated tables to disk.
+#' @return A list with class `"dnaEPICO_methylationGLM_T1"` containing the
+#'   prepared input object, exploratory plot objects, fitted GLMs, CpG summary
+#'   tables, optional significant-CpG tables, diagnostic plot objects,
+#'   annotation results, and any saved file paths.
+#'
+#' @description
+#' `methylationGLM_T1()` is the high-level coordinator for the one-timepoint GLM
+#' stage of the `dnaEPICO` workflow. It prepares the merged phenotype-plus-beta
+#' input, optionally creates exploratory plots, fits one Gaussian GLM per CpG for
+#' each requested phenotype, extracts CpG-level summaries, optionally collects
+#' significant CpG coefficient tables, generates diagnostic plots, annotates the
+#' combined summary table, and optionally writes legacy-style outputs to disk.
+#' The default behavior is now in-memory and quiet, which makes the function
+#' easier to compose with other package functions and more aligned with typical
+#' Bioconductor usage.
 #'
 #' @examples
-#' tmp <- tempdir()
-#' stopifnot(dir.exists(tmp))
+#' if (requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
+#'   tmp <- tempdir()
+#'   toy_path <- file.path(tmp, "phenoBetaT1.RData")
+#'   phenoBT1 <- data.frame(
+#'     Sample_Name = c("S1", "S2", "S3", "S4"),
+#'     status = factor(c("Case", "Case", "Control", "Control")),
+#'     sex = factor(c("F", "M", "F", "M")),
+#'     cg00000029 = c(0.20, 0.25, 0.22, 0.27),
+#'     cg00000108 = c(0.60, 0.55, 0.52, 0.58),
+#'     check.names = FALSE
+#'   )
+#'   save(phenoBT1, file = toy_path)
 #'
-#' \donttest{
-#' methylationGLM_T1(
-#'   inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1.RData",
-#'   outputLogs = "logs",
-#'   outputRData = "rData/methylationGLM_T1/models",
-#'   outputPlots = "figures/methylationGLM_T1",
-#'   phenotypes = "DASS_Depression,DASS_Anxiety,DASS_Stress,
-#'                 PCL5_TotalScore,MHCSF_TotalScore,BRS_TotalScore",
-#'   covariates = "Sex,Age,Ethnicity,TraumaDefinition,
-#'                 Leukocytes,Epithelial.cells",
-#'   factorVars = "Sex,Ethnicity,TraumaDefinition",
-#'   cpgPrefix = "cg",
-#'   cpgLimit = NA,
-#'   nCores = 4,
-#'   plotWidth = 2000,
-#'   plotHeight = 1000,
-#'   plotDPI = 150,
-#'   interactionTerm = NULL,
-#'   libPath = NULL,
-#'   glmLibs = "glm2",
-#'   prsMap = NULL,
-#'   summaryPval = NA,
-#'   summaryResidualSD = TRUE,
-#'   saveSignificantCpGs = FALSE,
-#'   significantCpGDir = "preliminaryResults/cpgs/methylationGLM_T1",
-#'   significantCpGPval = 0.05,
-#'   saveTxtSummaries = TRUE,
-#'   chunkSize = 10000,
-#'   summaryTxtDir = "preliminaryResults/summary/methylationGLM_T1/glm",
-#'   fdrThreshold = 0.05,
-#'   padjmethod = "fdr",
-#'   annotationPackage =
-#'     "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
-#'   annotationCols =
-#'     "Name,chr,pos,UCSC_RefGene_Group,
-#'      UCSC_RefGene_Name,Relation_to_Island,
-#'      GencodeV41_Group",
-#'   annotatedGLMOut = "data/methylationGLM_T1"
-#' )
+#'   result <- methylationGLM_T1(
+#'     inputPheno = toy_path,
+#'     phenotypes = "status",
+#'     covariates = "sex",
+#'     factorVars = "status,sex",
+#'     cpgLimit = 2,
+#'     nCores = 1,
+#'     summaryPval = 1,
+#'     annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'     annotationCols = "Name,chr,pos",
+#'     display = FALSE,
+#'     verbose = FALSE,
+#'     logs = FALSE,
+#'     saveOutputs = FALSE
+#'   )
+#'
+#'   class(result)
 #' }
 #'
 #' @export
@@ -87,8 +127,7 @@ methylationGLM_T1 <- function(
     outputLogs = "logs",
     outputRData = "rData/methylationGLM_T1/models",
     outputPlots = "figures/methylationGLM_T1",
-    phenotypes = "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,
-                  MHCSF_TotalScore,BRS_TotalScore",
+    phenotypes = "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,MHCSF_TotalScore,BRS_TotalScore",
     covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
     factorVars = "Sex,Ethnicity,TraumaDefinition",
     cpgPrefix = "cg",
@@ -112,869 +151,198 @@ methylationGLM_T1 <- function(
     fdrThreshold = 0.05,
     padjmethod = "fdr",
     annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
-    annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,
-                      Relation_to_Island,GencodeV41_Group",
-    annotatedGLMOut = "data/methylationGLM_T1"
+    annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group",
+    annotatedGLMOut = "data/methylationGLM_T1",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE,
+    saveOutputs = FALSE
 ) {
+  cpgLimit <- normalizeOptionalNumericMethylationGLM_T1(cpgLimit)
+  summaryPval <- normalizeOptionalNumericMethylationGLM_T1(summaryPval)
+  chunkSize <- normalizeChunkSizeMethylationGLM_T1(chunkSize)
 
-# Set default values for optional arguments
-if (is.character(cpgLimit) && tolower(cpgLimit) == "na") {
-        cpgLimit <- NA
-}
-
-if (is.character(summaryPval) && tolower(summaryPval) == "na") {
-        summaryPval <- NA
-}
-
-if (is.null(libPath)) {
-        libPath <- .libPaths()
-}
-
-if (!is.null(prsMap)) {
-        prsMapList <- stats::setNames(
-                sapply(strsplit(unlist(strsplit(prsMap, ",")), ":"), `[`, 2),
-                sapply(strsplit(unlist(strsplit(prsMap, ",")), ":"), `[`, 1)
-        )
-} else {
-        prsMapList <- list()
-}
-
-
-dir.create(annotatedGLMOut, recursive = TRUE, showWarnings = FALSE)
-dir.create(summaryTxtDir, recursive = TRUE, showWarnings = FALSE)
-dir.create(significantCpGDir, recursive = TRUE, showWarnings = FALSE)
-dir.create(outputRData, recursive = TRUE, showWarnings = FALSE)
-dir.create(outputPlots, recursive = TRUE, showWarnings = FALSE)
-
-glmLibList   <- strsplit(glmLibs, ",")[[1]]
-covariateList <- strsplit(covariates, ",")[[1]]
-phenotypeList <- strsplit(phenotypes, ",")[[1]]
-factorVarsList <- strsplit(factorVars, ",")[[1]]
-# ==============================================================================
-
-# ----------- Setup Logging -----------
-dir.create(outputLogs, recursive = TRUE, showWarnings = FALSE)
-logFilePath <- file.path(outputLogs, "log_methylationGLM_T1.txt")
-logCon <- file(logFilePath, open = "wt")
-sink(logCon, split = TRUE)
-sink(logCon, type = "message")
-# ==============================================================================
-
-# ----------- Logging Start Info -----------
-cat("==== Starting DNAm GLM Analysis (Timepoint 1) ====\n")
-cat("Start time: ", format(Sys.time()), "\n")
-cat("Input phenotype + beta file: ", inputPheno, "\n")
-cat("Output RData folder: ", outputRData, "\n")
-cat("Output logs folder: ", outputLogs, "\n")
-cat("Output plots folder: ", outputPlots, "\n")
-cat("Phenotypes: ", phenotypes, "\n")
-cat("Covariates: ", covariates, "\n")
-cat("Factor variables: ", factorVars, "\n")
-cat("CpG column prefix: ", cpgPrefix, "\n")
-cat("CpG limit: ", ifelse(is.na(cpgLimit), "All", cpgLimit), "\n")
-cat("Number of cores: ", nCores, "\n")
-cat("Interaction term: ", interactionTerm, "\n")
-cat("Library path: ", libPath, "\n")
-cat("GLM libraries: ", glmLibs, "\n")
-cat("PRS mapping: ", ifelse(is.null(prsMap), "None", paste(prsMap, collapse = ", ")), "\n")
-cat("Include Residual SD in summary: ", summaryResidualSD, "\n")
-cat("Summary p-value filter: ", ifelse(is.na(summaryPval), "None", summaryPval), "\n")
-cat("Save summary tables: ", saveTxtSummaries, "\n")
-cat("Chunk size for parallel processing: ", ifelse(is.null(chunkSize), "Auto", chunkSize), "\n")
-cat("Summary output folder: ", summaryTxtDir, "\n")
-cat("FDR threshold: ", fdrThreshold, "\n")
-cat("P-value adjustment method: ", padjmethod, "\n")
-cat("Save significant CpGs: ", saveSignificantCpGs, "\n")
-cat("Significant CpG output folder: ", significantCpGDir, "\n")
-cat("Significance p-value cutoff: ", significantCpGPval, "\n")
-cat("Annotation package: ", annotationPackage, "\n")
-cat("Annotation columns: ", annotationCols, "\n")
-cat("Annotated output CSV: ", annotatedGLMOut, "\n")
-cat("=======================================================================\n")
-
-# ----------- Load Data -----------
-inpt <- load(inputPheno)
-phenoBT1 <- get(inpt)
-
-cat("Loaded phenotype + beta data from:", inputPheno, "\n")
-phenotypes <- strsplit(phenotypes, ",")[[1]]
-covariates <- strsplit(covariates, ",")[[1]]
-factorVars <- strsplit(factorVars, ",")[[1]]
-
-# ----------- Analysis Info -----------
-cat("phenoBT1 dimensions:", dim(phenoBT1), "\n")
-cgCount <- sum(grepl("^cg", colnames(phenoBT1)))
-chCount <- sum(grepl("^ch", colnames(phenoBT1)))
-cat("Number of CpG columns (cg):", cgCount, "\n")
-cat("Number of CpG columns (ch):", chCount, "\n")
-
-cat("Checking structure of the dataset...\n")
-if (!is.null(interactionTerm) && interactionTerm != "") {
-  if (interactionTerm %in% names(phenoBT1)) {
-    print(table(phenoBT1[[interactionTerm]], useNA = "ifany"))
-  } else {
-    cat("Warning: interactionTerm not found in phenoBT1 columns.\n")
-  }
-} else {
-  cat("No interaction term specified; skipping table summary.\n")
-}
-cat("=======================================================================\n")
-
-# ----------- Convert Factors -----------
-for (var in factorVars) {
-        if (var %in% colnames(phenoBT1)) {
-                phenoBT1[[var]] <- as.factor(phenoBT1[[var]])
-        }
-}
-
-# ----------- Missing Summary & Distribution -----------
-cat("Missing summary:\n")
-print(sapply(phenoBT1[, c(phenotypes, covariates)], function(x) sum(is.na(x))))
-cat("=======================================================================\n")
-
-cat("Summary statistics:\n")
-print(summary(phenoBT1[, c(phenotypes, covariates)]))
-
-for (var in phenotypes) {
-
-        if (is.numeric(phenoBT1[[var]])) {
-          p <- ggplot2::ggplot(phenoBT1, ggplot2::aes_string(x = var)) +
-            ggplot2::geom_histogram(bins = 30, fill = "steelblue", color = "white") +
-            ggplot2::labs(title = paste("Distribution of", var),
-                 x = var, y = "Frequency") +
-            ggplot2::theme_minimal()
-
-        } else {
-          p <- ggplot2::ggplot(phenoBT1, ggplot2::aes_string(x = var)) +
-            ggplot2::geom_bar(fill = "steelblue") +
-            ggplot2::labs(title = paste("Distribution of", var), x = var, y = "Count") +
-            ggplot2::theme_minimal()
-        }
-
-        grDevices::tiff(filename = file.path(outputPlots, paste0("hist_", var, ".tiff")),
-             width = plotWidth,
-             height = plotHeight,
-             res = plotDPI, type = "cairo")
-
-        print(p)
-        grDevices::dev.off()
-}
-
-catVars <- intersect(factorVars, colnames(phenoBT1))
-for (var in catVars) {
-        p <- ggplot2::ggplot(phenoBT1, ggplot2::aes_string(x = var)) +
-                ggplot2::geom_bar(fill = "darkorange") +
-                ggplot2::labs(title = paste("Distribution of",
-                                   var), x = var, y = "Count") +
-                ggplot2::theme_minimal()
-        grDevices::tiff(filename = file.path(outputPlots, paste0("bar_", var, ".tiff")),
-             width = plotWidth,
-             height = plotHeight,
-             res = plotDPI, type = "cairo")
-        print(p)
-        grDevices::dev.off()
-}
-
-numVars <- setdiff(covariates, factorVars)
-numVars <- intersect(numVars, colnames(phenoBT1))
-
-for (var in numVars) {
-        p <- ggplot2::ggplot(phenoBT1, ggplot2::aes_string(x = var)) +
-                ggplot2::geom_histogram(bins = 30, fill = "darkgreen", color = "white") +
-                ggplot2::labs(title = paste("Distribution of", var),
-                     x = var, y = "Frequency") +
-                ggplot2::theme_minimal()
-
-        grDevices::tiff(filename = file.path(outputPlots, paste0("hist_", var, ".tiff")),
-             width = plotWidth,
-             height = plotHeight,
-             res = plotDPI, type = "cairo")
-        print(p)
-        grDevices::dev.off()
-}
-
-cat("Plots saved to:", outputPlots, "\n")
-cat("=======================================================================\n")
-
-# ----------- GLM Function -----------
-glm <- function(
-                phenoScore,
-                merge,
-                covariates = covariateList,
-                factorVars = factorVarsList,
-                cpgPrefix = cpgPrefix,
-                cpgLimit = cpgLimit,
-                nCore = nCores,
-                libPath = libPath,
-                glmLibList = glmLibList,
-                interactionTerm = NULL
-
-) {
-        if (!phenoScore %in% colnames(merge)) {
-                stop(paste("Phenotype", phenoScore, "not found in the dataset"))
-        }
-
-        if (!is.null(interactionTerm) && interactionTerm != "" && interactionTerm %in% colnames(merge)) {
-          interactionPart <- paste(phenoScore, "*", interactionTerm)
-          fixedTerms <- setdiff(c(covariates), c(phenoScore, interactionTerm))
-          fullFormula <- paste("~", paste(c(interactionPart, fixedTerms), collapse = " + "))
-        } else {
-          fullFormula <- paste("~", paste(c(phenoScore, covariates), collapse = " + "))
-        }
-
-        cpgCol <- grep(paste0("^", cpgPrefix), colnames(merge), value = TRUE)
-        if (!is.na(cpgLimit)) {
-                cpgCol <- utils::head(cpgCol, as.numeric(cpgLimit))
-        }
-        cl <- parallel::makeCluster(nCore)
-        parallel::clusterExport(
-                cl,
-                varlist = c("phenoScore", "interactionTerm",
-                            "covariates",
-                            "factorVars",
-                            "libPath",
-                            "glmLibList", "fullFormula", "chunkSize"),
-                envir = environment()
-        )
-
-        # clusterEvalQ(cl, {
-        #         if (!is.null(libPath)) {
-        #                 .libPaths(libPath)
-        #         }
-        #         sapply(glmLibList, function(pkg) {
-        #                 if (!require(pkg, character.only = TRUE)) {
-        #                         stop(paste("Failed to load package:", pkg))
-        #                 }
-        #         })
-        # })
-
-        parallel::clusterEvalQ(cl, {
-                if (!is.null(libPath)) {
-                        .libPaths(unique(c(libPath, .libPaths())))
-                }
-
-                for (pkg in glmLibList) {
-                        if (!requireNamespace(pkg, quietly = TRUE)) {
-                        stop(paste("Failed to load package:", pkg))
-                        }
-                }
-
-                NULL
-        })
-
-
-        fit <- function(cpg) {
-                tryCatch({
-                        vars <- unique(c(phenoScore,
-                                                 covariates,
-                                                 cpg,
-                                                 if (!is.null(interactionTerm) && interactionTerm != "") interactionTerm))
-
-                        model <- merge[, vars, drop = FALSE]
-                        colnames(model)[ncol(model)] <- "beta"
-
-                        for (var in factorVars) {
-                                if (var %in% colnames(model)) {
-                                        model[[var]] <- as.factor(model[[var]])
-                                }
-                        }
-
-                        fit <- glm2::glm2(
-                                formula = stats::as.formula(paste("beta", fullFormula)),
-                                data = model,
-                                family = stats::gaussian(),
-                                na.action = stats::na.exclude
-                        )
-
-                        return(list(
-                                coef = summary(fit)$coefficients,
-                                residuals = stats::residuals(fit),
-                                fitted = stats::fitted(fit)
-                        ))
-                }, error = function(e) NULL)
-        }
-
-        fitList <- parallel::parLapply(cl, cpgCol, fit)
-        names(fitList) <- cpgCol
-        parallel::stopCluster(cl)
-
-        return(fitList)
-}
-
-# ----------- Run GLMs -----------
-cat("Running GLMs for all phenotypes...\n")
-for (pheno in phenotypeList) {
-        outputFile <- file.path(outputRData, paste0(pheno, "GLM.RData"))
-
-        if (file.exists(outputFile)) {
-                cat("Loading existing GLM for:", pheno, "\n")
-                load(outputFile)
-                assign(paste0(pheno, "GLM"), fitResult, envir = .GlobalEnv)
-                next
-        }
-
-        cat("Running GLM for:", pheno, "\n")
-
-        # Include PRS if defined for this phenotype
-        prsVar <- if (pheno %in% names(prsMapList)) prsMapList[[pheno]] else NULL
-        allCovariates <- if (!is.null(prsVar)) c(covariateList, prsVar) else covariateList
-
-        # Interaction
-        modelFormula <- if (!is.null(interactionTerm) && interactionTerm != "") {
-          paste("~", paste(c(paste0(pheno, "*", interactionTerm), allCovariates), collapse = " + "))
-        } else {
-          paste("~", paste(c(pheno, allCovariates), collapse = " + "))
-        }
-        cat("Formula:", modelFormula, "\n")
-
-        fitResult <- glm(
-                phenoScore = pheno,
-                merge = phenoBT1,
-                covariates = allCovariates,
-                factorVars = factorVarsList,
-                cpgPrefix = cpgPrefix,
-                cpgLimit = cpgLimit,
-                nCore = nCores,
-                libPath = libPath,
-                glmLibList = glmLibList,
-                interactionTerm = interactionTerm
-        )
-
-        save(fitResult, file = outputFile)
-
-        assign(paste0(pheno, "GLM"), fitResult, envir = .GlobalEnv)
-
-}
-cat("Finished running GLMs for all phenotypes.\n")
-cat("=======================================================================\n")
-
-# ----------- Extract GLM Summary in Parallel -----------
-cpgsGLM <- function(
-                fitList,
-                variable,
-                interactionTerm = NULL,
-                includeResidualSD = summaryResidualSD,
-                pValue = summaryPval,
-                nCore = nCores,
-                libPath = libPath,
-                glmLibList = glmLibList,
-                chunkSize = NULL
-
-) {
-
-  cat("Starting extraction for variable:", variable, "\n")
-  cpgNames <- names(fitList)
-  if (is.null(chunkSize)) {
-    chunkSize <- max(10, floor(length(cpgNames) / (nCore * 4)))
-  }
-  cat("Total CpGs:", length(cpgNames), "| Using chunkSize:", chunkSize, "\n")
-
-  splitIntoChunks <- function(x, size) {
-    split(x, ceiling(seq_along(x) / size))
+  if (is.null(libPath)) {
+    libPath <- .libPaths()
   }
 
-  cpgNames <- names(fitList)
-  cpgChunks <- splitIntoChunks(cpgNames, chunkSize)
-
-  cl <- parallel::makeCluster(nCore)
-  parallel::clusterExport(
-    cl,
-    varlist = c("fitList",
-                "variable",
-                "interactionTerm",
-                "includeResidualSD",
-                "pValue",
-                "libPath",
-                "glmLibList"),
-    envir = environment()
+  log_path <- resolveLogPathMinfiEwasWater(
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = "log_methylationGLM_T1.txt"
   )
 
-  parallel::clusterEvalQ(cl, {
-    if (!is.null(libPath)) {
-        .libPaths(unique(c(libPath, .libPaths())))
-    }
+  emitLogMinfiEwasWater(
+    c(
+      "==== Starting DNAm GLM Analysis (Timepoint 1) ====",
+      paste("Start time:                ", format(Sys.time())),
+      paste("Input phenotype + beta:    ", inputPheno),
+      paste("Output RData folder:       ", outputRData),
+      paste("Output logs folder:        ", outputLogs),
+      paste("Output plots folder:       ", outputPlots),
+      paste("Phenotypes:                ", phenotypes),
+      paste("Covariates:                ", covariates),
+      paste("Factor variables:          ", factorVars),
+      paste("CpG column prefix:         ", cpgPrefix),
+      paste("CpG limit:                 ", if (is.na(cpgLimit)) "All" else cpgLimit),
+      paste("Number of cores:           ", as.integer(nCores)),
+      paste("Interaction term:          ", if (is.null(interactionTerm)) "None" else interactionTerm),
+      paste("GLM libraries:             ", glmLibs),
+      paste("PRS mapping:               ", if (is.null(prsMap)) "None" else prsMap),
+      paste("Summary p-value filter:    ", if (is.na(summaryPval)) "None" else summaryPval),
+      paste("Include Residual SD:       ", isTRUE(summaryResidualSD)),
+      paste("Chunk size:                ", if (is.null(chunkSize)) "Auto" else chunkSize),
+      paste("FDR threshold:             ", fdrThreshold),
+      paste("P-value adjustment method: ", padjmethod),
+      paste("Display plots:             ", isTRUE(display)),
+      paste("Verbose messages:          ", isTRUE(verbose)),
+      paste("Write logs:                ", isTRUE(logs)),
+      paste("Save outputs:              ", isTRUE(saveOutputs)),
+      "======================================================================="
+    ),
+    verbose = verbose,
+    log_path = log_path
+  )
 
-    for (pkg in glmLibList) {
-        if (!requireNamespace(pkg, quietly = TRUE)) {
-            stop(paste("Failed to load package:", pkg))
-        }
-    }
+  preparedData <- prepareMethylationGLM_T1Data(
+    inputPheno = inputPheno,
+    phenotypes = phenotypes,
+    covariates = covariates,
+    factorVars = factorVars,
+    cpgPrefix = cpgPrefix,
+    cpgLimit = cpgLimit,
+    interactionTerm = interactionTerm,
+    prsMap = prsMap,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = "log_methylationGLM_T1.txt"
+  )
 
-    NULL
-  })
- 
+  distributionPlots <- plotMethylationGLM_T1Distributions(
+    preparedData = preparedData,
+    plotWidth = plotWidth,
+    plotHeight = plotHeight,
+    plotDPI = plotDPI,
+    outputDir = if (isTRUE(saveOutputs)) outputPlots else NULL,
+    display = display,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = "log_methylationGLM_T1.txt"
+  )
 
-  results <- parallel::parLapplyLB(cl, cpgChunks, function(chunk) {
-    outList <- vector("list", length(chunk))
-    idx <- 1
-    for (cpg in chunk) {
-      modelObj <- fitList[[cpg]]
-      if (is.null(modelObj) || is.null(modelObj$coef)) next
+  modelFits <- fitMethylationGLM_T1Models(
+    preparedData = preparedData,
+    nCores = nCores,
+    libPath = libPath,
+    glmLibs = glmLibs,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = "log_methylationGLM_T1.txt"
+  )
 
-      coefTable <- modelObj$coef
-      if (!is.null(interactionTerm) && interactionTerm != "") {
-        pattern <- paste0("^",
-                          variable, ".*:", interactionTerm)
-        matchedRows <- grep(pattern, rownames(coefTable), value = TRUE)
+  modelSummaries <- summarizeMethylationGLM_T1Models(
+    modelResults = modelFits,
+    preparedData = preparedData,
+    summaryResidualSD = summaryResidualSD,
+    summaryPval = summaryPval,
+    nCores = nCores,
+    libPath = libPath,
+    glmLibs = glmLibs,
+    chunkSize = chunkSize,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = "log_methylationGLM_T1.txt"
+  )
 
-        if (length(matchedRows) == 0) {
-          matchedRows <- grep(paste0("^", variable),
-                              rownames(coefTable), value = TRUE)
-        }
+  significantCpGs <- NULL
+  if (isTRUE(saveSignificantCpGs)) {
+    significantCpGs <- collectSignificantCpGsMethylationGLM_T1(
+      modelResults = modelFits,
+      pvalThreshold = significantCpGPval,
+      interactionTerm = preparedData$interactionTerm,
+      verbose = verbose,
+      logs = logs,
+      log_dir = outputLogs,
+      log_file = "log_methylationGLM_T1.txt"
+    )
+  }
+
+  diagnosticPlots <- plotMethylationGLM_T1Diagnostics(
+    modelSummaries = modelSummaries,
+    preparedData = preparedData,
+    fdrThreshold = fdrThreshold,
+    padjmethod = padjmethod,
+    outputDir = if (isTRUE(saveOutputs)) outputPlots else NULL,
+    plotWidth = plotWidth,
+    plotHeight = plotHeight,
+    plotDPI = plotDPI,
+    display = display,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = "log_methylationGLM_T1.txt"
+  )
+
+  annotation <- annotateMethylationGLM_T1Summaries(
+    modelSummaries = modelSummaries,
+    annotationObject = annotationPackage,
+    annotationCols = annotationCols,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = "log_methylationGLM_T1.txt"
+  )
+
+  savedFiles <- NULL
+  if (isTRUE(saveOutputs)) {
+    savedFiles <- writeMethylationGLM_T1Outputs(
+      modelResults = modelFits,
+      modelSummaries = modelSummaries,
+      annotatedResults = annotation,
+      significantCpGs = significantCpGs,
+      outputRData = outputRData,
+      summaryTxtDir = summaryTxtDir,
+      significantCpGDir = significantCpGDir,
+      annotatedGLMOut = annotatedGLMOut,
+      saveTxtSummaries = saveTxtSummaries,
+      saveSignificantCpGs = saveSignificantCpGs,
+      verbose = verbose,
+      logs = logs,
+      log_dir = outputLogs,
+      log_file = "log_methylationGLM_T1.txt"
+    )
+  }
+
+  emitLogMinfiEwasWater(
+    c(
+      "=======================================================================",
+      paste("Finished DNAm GLM Analysis (Timepoint 1):", format(Sys.time())),
+      if (isTRUE(saveOutputs)) {
+        paste("Annotated GLM output:         ", savedFiles$annotatedGLM)
       } else {
-        matchedRows <- grep(paste0("^", variable),
-                            rownames(coefTable), value = TRUE)
-      }
-
-      if (length(matchedRows) == 0) next
-
-      tmp <- coefTable[matchedRows, , drop = FALSE]
-      tmp <- as.data.frame(tmp)
-      tmp$CpG <- cpg
-      tmp$Coefficient <- rownames(tmp)
-
-      if (includeResidualSD && !is.null(modelObj$residuals)) {
-        tmp$ResidualSD <- stats::sd(modelObj$residuals, na.rm = TRUE)
-      }
-
-      if (!is.null(tmp)) {
-        outList[[idx]] <- tmp
-        idx <- idx + 1
-      }
-    }
-    do.call(rbind, outList)
-  })
-
-  parallel::stopCluster(cl)
-
-  summary <- do.call(rbind, results)
-
-  if (is.null(summary) || nrow(summary) == 0) {
-    warning("No CpG-level results extracted for variable:", variable)
-    return(NULL)
-  }
-
-  cols <- c("CpG", "Coefficient", "Estimate", "Std. Error", "t value",
-            "Pr(>|t|)")
-  if (includeResidualSD) cols <- c(cols, "ResidualSD")
-  summary <- summary[, cols, drop = FALSE]
-
-  if (!is.na(pValue)) {
-    summary <- subset(summary, `Pr(>|t|)` < pValue)
-  }
-
-  rownames(summary) <- NULL
-
-  cat("Completed GLM summary extraction for:", variable, "\n")
-  return(summary)
-}
-
-cat("=======================================================================\n")
-phenotypeList <- strsplit(phenotypes, ",")[[1]]
-
-# ----------- Run and Save GLM Summaries -----------
-for (pheno in phenotypeList) {
-        summaryFile <- file.path(outputRData, paste0(pheno,
-                                                         "SummaryGLM.RData"))
-
-        if (file.exists(summaryFile)) {
-                cat("Loading existing summary for:", pheno, "\n")
-                load(summaryFile)
-                assign(paste0(pheno, "SummaryGLM"), fitResult,
-                       envir = .GlobalEnv)
-                next
-        }
-
-        cat("Running GLM summary extraction for:", pheno, "\n")
-
-        fitObjectName <- paste0(pheno, "GLM")
-        fitObject <- get(fitObjectName)
-
-        fitResult <- cpgsGLM(
-                fitList = fitObject,
-                variable = pheno,
-                includeResidualSD = summaryResidualSD,
-                pValue = summaryPval,
-                nCore = nCores,
-                libPath = libPath,
-                glmLibList = glmLibList,
-                chunkSize = chunkSize
-        )
-
-        save(fitResult, file = summaryFile)
-
-        assign(paste0(pheno, "SummaryGLM"), fitResult, envir = .GlobalEnv)
-
-        cat("Saved:", paste0(pheno, "SummaryGLM.RData"), "\n")
-}
-cat("=======================================================================\n")
-
-# ----------- Save Significant CpGs -----------
-saveSignificantCpGs <- function(
-                resultList,
-                resultName,
-                baseDir = significantCpGDir,
-                pvalThreshold = significantCpGPval,
-                interactionTerm = NULL
-) {
-  resultDir <- file.path(baseDir, resultName)
-  if (!dir.exists(resultDir)) dir.create(resultDir, recursive = TRUE)
-
-  for (i in seq_along(resultList)) {
-    coefTable <- resultList[[i]]$coef
-    cpgName <- names(resultList)[i]
-
-    if (!is.null(interactionTerm) && interactionTerm != "") {
-      pattern <- paste0("^", resultName, ".*:", interactionTerm)
-      matchedRows <- grep(pattern, rownames(coefTable), value = TRUE)
-
-      if (length(matchedRows) == 0) {
-        matchedRows <- grep(paste0("^", resultName),
-                            rownames(coefTable), value = TRUE)
-        if (length(matchedRows) > 0) {
-          cat("Interaction term", interactionTerm, "dropped for CpG", cpgName,
-              "- extracting main effect for", resultName, "\n")
-        }
-      }
-    } else {
-      matchedRows <- grep(paste0("^", resultName),
-                          rownames(coefTable), value = TRUE)
-    }
-
-    if (length(matchedRows) > 0) {
-      matchedPvals <- coefTable[matchedRows, "Pr(>|t|)"]
-
-      if (any(matchedPvals < pvalThreshold, na.rm = TRUE)) {
-        cpgDir <- file.path(resultDir, cpgName)
-        if (!dir.exists(cpgDir)) dir.create(cpgDir)
-        outputFile <- file.path(cpgDir, paste0(cpgName, ".txt"))
-        utils::write.table(coefTable, file = outputFile, sep = "\t", quote = FALSE)
-      }
-    }
-  }
-}
-
-# ---------- Save Significant CpGs to Directory -----------
-if (isTRUE(saveSignificantCpGs)) {
-        cat("Saving significant CpGs to:", significantCpGDir, "\n")
-
-        for (pheno in strsplit(phenotypes, ",")[[1]]) {
-                modelObjName <- paste0(pheno, "GLM")
-                if (exists(modelObjName)) {
-                        resultObj <- get(modelObjName)
-                        saveSignificantCpGs(
-                                resultList = resultObj,
-                                resultName = pheno
-                        )
-                }
-        }
-
-        cat("Finished saving significant CpG model outputs.\n")
-}
-cat("=======================================================================\n")
-
-# ----------- Save GLM Summary Tables -----------
-saveSummaryToTxt <- function(
-                summaryDF,
-                outputFile,
-                sortByPval = TRUE
-) {
-        if (sortByPval) {
-                if ("P.value" %in% colnames(summaryDF)) {
-                        summaryDF <- summaryDF[order(summaryDF$P.value), ]
-                } else if ("Pr(>|t|)" %in% colnames(summaryDF)) {
-                        summaryDF <- summaryDF[order(summaryDF[["Pr(>|t|)"]]), ]
-                }
-        }
-
-        dir.create(dirname(outputFile), recursive = TRUE, showWarnings = FALSE)
-
-        utils::write.table(
-                summaryDF,
-                file = outputFile,
-                sep = "\t",
-                row.names = FALSE,
-                quote = FALSE
-        )
-
-        cat("Saved summary table to:", outputFile, "\n")
-}
-
-# ----------- Save All Summaries from Phenotype List -----------
-
-if (saveTxtSummaries) {
-        cat("Saving summaries to TXT files...\n")
-
-        phenoList <- strsplit(phenotypes, ",")[[1]]
-
-        for (pheno in phenoList) {
-
-                outputFile <- file.path(
-                        summaryTxtDir,
-                        paste0(pheno, "SummaryGLM.txt")
-                )
-
-                summaryObjName <- paste0(pheno, "SummaryGLM")
-
-                if (exists(summaryObjName)) {
-                        summaryObj <- get(summaryObjName)
-
-                        saveSummaryToTxt(
-                                summaryDF = summaryObj,
-                                outputFile = outputFile
-                        )
-                }
-        }
-
-        cat("Finished writing all GLM summaries to TXT files.\n")
-}
-cat("=======================================================================\n")
-
-# ----------- Diagnostic Plot Function -----------
-diagnosticPlots <- function(
-                summary,
-                betaMatrix,
-                variable,
-                cpgPrefix = cpgPrefix,
-                padjmethod = padjmethod,
-                fdrThreshold = fdrThreshold,
-                outputDir = outputPlots,
-                plotWidth = plotWidth,
-                plotHeight = plotHeight,
-                plotDPI = plotDPI
-) {
-        cat("Generating diagnostic plots for:", variable, "\n")
-
-        dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
-
-        summary$FDR <- stats::p.adjust(summary$`Pr(>|t|)`, method = padjmethod)
-
-        chisq <- stats::qchisq(1 - summary$`Pr(>|t|)`, df = 1)
-        lambda <- round(stats::median(chisq, na.rm = TRUE) / stats::qchisq(0.5, df = 1), 3)
-        message("Genomic inflation factor: ", lambda)
-
-        # -- Q-Q Plot of P-values --
-        pvals <- summary$`Pr(>|t|)`
-        pvals <- pvals[!is.na(pvals)]
-        grDevices::tiff(filename = file.path(outputDir,
-                                  paste0("qqplot_", variable, ".tiff")),
-             width = plotWidth,
-             height = plotHeight,
-             res = plotDPI, type = "cairo")
-        stats::qqplot(
-                -log10(stats::ppoints(length(pvals))),
-                -log10(sort(pvals)),
-                main = paste("Q-Q Plot of p-values for", variable,
-                             "\nGenomic Inflation Factor= ", lambda),
-                xlab = "Expected -log10(p)",
-                ylab = "Observed -log10(p)",
-                pch = 16,
-                col = "black"
-        )
-        graphics::abline(0, 1, col = "red")
-        grDevices::dev.off()
-
-        # -- Residual SD vs log2(mean Beta) --
-        cpgCols <- grep(paste0("^", cpgPrefix),
-                        colnames(betaMatrix), value = TRUE)
-        betaMat <- betaMatrix[, cpgCols, drop = FALSE]
-        meanBeta <- colMeans(betaMat, na.rm = TRUE)
-        meanBetaLog <- log2(meanBeta)
-        summary$log2meanBeta <- meanBetaLog[summary$CpG]
-        summary <- summary[!is.na(summary$log2meanBeta), ]
-
-        grDevices::tiff(filename = file.path(outputDir,
-                                  paste0("residualSD_", variable, ".tiff")),
-             width = plotWidth,
-             height = plotHeight,
-             res = plotDPI, type = "cairo")
-        graphics::plot(summary$log2meanBeta,
-             summary$ResidualSD,
-             pch = 20,
-             col = grDevices::rgb(0, 0, 0, 0.4),
-             xlab = "log2(Average Beta)",
-             ylab = "Residual Standard Deviation",
-             main = "plotSA-style: Residual SD vs Average Beta")
-        graphics::lines(stats::lowess(summary$log2meanBeta, summary$ResidualSD),
-              col = "red", lwd = 2)
-        grDevices::dev.off()
-
-        # -- Residual SD vs Significance --
-        p <- ggplot2::ggplot(summary,
-                    ggplot2::aes(x = -log10(`Pr(>|t|)`),
-                        y = ResidualSD,
-                        color = FDR < fdrThreshold)) +
-                ggplot2::geom_point(alpha = 0.6) +
-                ggrepel::geom_text_repel(data = subset(summary,
-                                              FDR < fdrThreshold),
-                                ggplot2::aes(label = CpG)) +
-                ggplot2::scale_color_manual(values = c("FALSE" = "grey50",
-                                              "TRUE" = "firebrick")) +
-                ggplot2::labs(
-                        title = paste("Residual SD vs Significance for",
-                                      variable),
-                        x = "-log10(p-value)",
-                        y = "Residual SD",
-                        color = paste("FDR <", fdrThreshold)
-                ) +
-                ggplot2::theme_minimal()
-
-        # Save as TIFF using tiff() + print() + dev.off()
-        grDevices::tiff(filename = file.path(outputDir,
-                                     paste0("residualSignificance_",
-                                            variable, ".tiff")),
-                width = plotWidth,
-                height = plotHeight,
-                res = plotDPI, type = "cairo"
-        )
-        print(p)
-        grDevices::dev.off()
-
-
-}
-
-# ----------- Generate Diagnostic Plots -----------
-cat("Generating diagnostic plots for all phenotypes...\n")
-for (pheno in strsplit(phenotypes, ",")[[1]]) {
-        summaryName <- paste0(pheno, "SummaryGLM")
-        if (exists(summaryName)) {
-                diagnosticPlots(
-                        summary = get(summaryName),
-                        betaMatrix = phenoBT1,
-                        variable = pheno,
-                        fdrThreshold = fdrThreshold,
-                        cpgPrefix = cpgPrefix,
-                        padjmethod = padjmethod,
-                        outputDir = outputPlots,
-                        plotWidth = plotWidth,
-                        plotHeight = plotHeight,
-                        plotDPI = plotDPI
-                )
-        }
-}
-cat("Finished generating all diagnostic plots.\n")
-cat("Plots saved to:", outputPlots, "\n")
-cat("=======================================================================\n")
-
-# ----------- Load Annotation Data -----------
-cat("Loading annotation object:", annotationPackage, "\n")
-annotationObject <- minfi::getAnnotation(get(annotationPackage))
-
-cat("Annotation loaded with", nrow(annotationObject), "probes\n")
-cat("Annotation columns available:\n")
-print(colnames(annotationObject))
-cat("=======================================================================\n")
-
-# ----------- Apply Annotation -----------
-annotateGLM <- function(
-                summaryList,
-                annotationObject,
-                annotationCols = strsplit(annotationCols, ",")[[1]]
-) {
-        cat("Starting annotation of GLM summaries...\n")
-        print(annotationCols)
-        annotationCols <- trimws(annotationCols)
-        annotationCols <- gsub("\n", "", annotationCols)
-        cat("\nCorrected annotation columns:\n")
-        print(annotationCols)
-
-        modelNames <- names(summaryList)
-
-        cat("Merging GLM summaries...\n")
-        cleanedSummaries <- lapply(modelNames, function(modelName) {
-          df <- summaryList[[modelName]]
-
-          coefNames <- unique(df$Coefficient)
-          dfList <- lapply(coefNames, function(coefName) {
-            subdf <- df[df$Coefficient == coefName, ]
-            subdf[[paste0(coefName, "P.Value")]] <- subdf$`Pr(>|t|)`
-            subdf <- subdf[, c("CpG", paste0(coefName, "P.Value"))]
-            return(subdf)
-          })
-
-        # Merge multiple coefficient data.frames by CpG
-        mergedCoef <- Reduce(function(x, y) merge(x, y, by = "CpG", all = TRUE),
-                             dfList)
-        return(mergedCoef)
-
-        })
-
-        mergedSummary <- Reduce(function(x, y) merge(x,
-                                                     y,
-                                                     by = "CpG",
-                                                     all = TRUE),
-                                cleanedSummaries)
-
-        annDF <- as.data.frame(annotationObject)
-        annDF$CpG <- rownames(annDF)
-
-        cat("Merging annotation with GLM summary...\n")
-        annotatedResults <- merge(mergedSummary,
-                                  annDF, by = "CpG", all.x = TRUE) 
-
-        if (is.null(annotatedResults) || nrow(annotatedResults) == 0) {
-                stop("Annotation merge produced empty result")
-                }
-                                 
-        finalCols <- c("CpG",
-                       unlist(lapply(cleanedSummaries, function(df) colnames(df)[-1])),
-                       annotationCols)
-
-        cat("\nColumns in annotatedResults:\n")
-        print(colnames(annotatedResults))
-
-        cat("\nRequested finalCols:\n")
-        print(finalCols)
-
-        missingCols <- setdiff(finalCols, colnames(annotatedResults))
-        cat("\nMissing columns:\n")
-        print(missingCols)
-
-        annotatedResults <- annotatedResults[, finalCols]
-        colnames(annotatedResults)[1] <- "IlmnID"
-
-        cat("Annotation completed. Annotated CpGs:",
-            nrow(annotatedResults), "\n")
-        return(annotatedResults)
-}
-
-# ----------- Execute Annotation and Save Results -----------
-
-cat("Running annotation of GLM summary results...\n")
-
-# Split phenotype names and fetch each corresponding summary object
-phenotypeNames <- strsplit(phenotypes, ",")[[1]]
-summaryList <- stats::setNames(
-        lapply(phenotypeNames, function(pheno) {
-                get(paste0(pheno, "SummaryGLM"))
-        }),
-        phenotypeNames
-)
-
-# Convert annotationCols from comma-separated string to vector
-annotationColsVec <- strsplit(annotationCols, ",")[[1]]
-
-# Run the annotation function
-annotatedGLM <- annotateGLM(
-        summaryList = summaryList,
-        annotationObject = minfi::getAnnotation(get(annotationPackage)),
-        annotationCols = annotationColsVec
-)
-
-# Save annotated results
-cat("Saving annotated GLM summary to:", annotatedGLMOut, "\n")
-utils::write.csv(
-        annotatedGLM,
-        file = file.path(annotatedGLMOut, "annotatedGLM.csv"),
-        row.names = FALSE)
-cat("=======================================================================\n")
-
-cat("Session info:\n")
-print(utils::sessionInfo())
-# ==============================================================================
-
-# ----------- Close Logging -----------
-sink(type = "message")
-sink()
-close(logCon)
+        "Outputs were returned in memory only."
+      },
+      "======================================================================="
+    ),
+    verbose = verbose,
+    log_path = log_path
+  )
+
+  structure(
+    list(
+      preparedData = preparedData,
+      distributionPlots = distributionPlots,
+      modelFits = modelFits,
+      modelSummaries = modelSummaries,
+      significantCpGs = significantCpGs,
+      diagnosticPlots = diagnosticPlots,
+      annotation = annotation,
+      savedFiles = savedFiles
+    ),
+    class = "dnaEPICO_methylationGLM_T1"
+  )
 }

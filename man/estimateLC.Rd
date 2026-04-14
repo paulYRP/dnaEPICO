@@ -2,34 +2,41 @@
 % Please edit documentation in R/estimateLC.R
 \name{estimateLC}
 \alias{estimateLC}
-\title{Run estimateLC.R}
+\title{Estimate saliva cell proportions from DNA methylation beta values}
 \usage{
 estimateLC(meth, ref, constrained = FALSE)
 }
 \arguments{
-\item{meth}{Matrix of beta values}
+\item{meth}{Numeric matrix of beta values with CpGs in rows and samples in
+columns. Row names must contain probe identifiers compatible with the
+selected reference.}
 
-\item{ref}{Choice of reference dataset: available options are \code{saliva} and \code{salivaEPIC}. The functions are extracted from \verb{ewastools (Murat, K, et al. 2020)} and adapted to work onloy with the saliva reference panel of \verb{Middleton et al. 2020}.}
+\item{ref}{Character. Reference panel name. Supported values are \code{"saliva"}
+and \code{"salivaEPIC"}.}
 
-\item{constrained}{Force that all cell proportions sum up to 1.}
+\item{constrained}{Logical. If \code{TRUE}, estimated cell proportions are
+constrained to sum to one.}
 }
 \value{
-A data.table containing estimated cell proportions for each sample.
+A \code{data.table} with one row per sample and one column per estimated
+cell type.
 }
 \description{
-Run estimateLC.R
+Estimate cell-type proportions with the saliva reference panels bundled in
+\code{dnaEPICO}. This function keeps the original \code{estimateLC()} interface used by
+the package while using the internal reference files distributed in
+\code{inst/extdata}.
 }
 \examples{
-tmp <- tempdir()
-stopifnot(dir.exists(tmp))
-
-\dontrun{
+ref_file <- system.file("extdata", "saliva.txt", package = "dnaEPICO")
+ref_panel <- as.matrix(utils::read.table(ref_file))
+meth <- ref_panel[1:20, , drop = FALSE]
+colnames(meth) <- c("sample1", "sample2")
 estimateLC(
- meth = beta, 
- ref = "saliva",
- constrained = FALSE
+  meth = meth,
+  ref = "saliva",
+  constrained = FALSE
 )
-}
 
 }
 \references{

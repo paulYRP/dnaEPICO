@@ -2,17 +2,17 @@
 % Please edit documentation in R/methylationGLMM_T1T2.R
 \name{methylationGLMM_T1T2}
 \alias{methylationGLMM_T1T2}
-\title{Run methylationGLMM_T1T2.R}
+\title{Fit CpG-wise linear mixed-effects models for longitudinal methylation analyses}
 \usage{
 methylationGLMM_T1T2(
   inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
-  outputLogs = "logs/",
+  outputLogs = "logs",
   outputRData = "rData/methylationGLMM_T1T2/models",
   outputPlots = "figures/methylationGLMM_T1T2",
   personVar = "person",
   timeVar = "Timepoint",
   phenotypes =
-    "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,\\n                  MHCSF_TotalScore,BRS_TotalScore",
+    "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,MHCSF_TotalScore,BRS_TotalScore",
   covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
   factorVars = "Sex,Ethnicity,TraumaDefinition,Timepoint",
   lmeLibs = "lme4,lmerTest",
@@ -36,127 +36,176 @@ methylationGLMM_T1T2(
   padjmethod = "fdr",
   annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
   annotationCols =
-    "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,\\n                      Relation_to_Island,GencodeV41_Group",
-  annotatedLMEOut = "data/methylationGLMM_T1T2"
+    "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group",
+  annotatedLMEOut = "data/methylationGLMM_T1T2",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = FALSE
 )
 }
 \arguments{
-\item{inputPheno}{Character. Path to merged longitudinal phenotype and beta-value RData file.}
+\item{inputPheno}{Character. Path to the merged longitudinal phenotype-plus-beta
+\code{.RData} or \code{.rds} object created by \code{preprocessingPheno()}. The default
+points to the combined timepoint object produced by the package workflow.}
 
-\item{outputLogs}{Character. Directory for log files.}
+\item{outputLogs}{Character. Directory used for optional log files.}
 
-\item{outputRData}{Character. Directory for model RData outputs.}
+\item{outputRData}{Character. Directory used for optional serialized mixed-model
+and summary outputs.}
 
-\item{outputPlots}{Character. Directory for output plots.}
+\item{outputPlots}{Character. Directory used for optional TIFF diagnostic plots.}
 
-\item{personVar}{Character. Subject identifier variable.}
+\item{personVar}{Character. Subject identifier variable used for the random
+intercept. When this column is missing, it is derived from \code{SID} using the
+package's existing sample naming convention.}
 
-\item{timeVar}{Character. Time variable name.}
+\item{timeVar}{Character. Name of the longitudinal time variable included as a
+fixed effect in every model.}
 
 \item{phenotypes}{Character. Comma-separated phenotype variables to model.}
 
-\item{covariates}{Character. Comma-separated covariate variables.}
+\item{covariates}{Character. Comma-separated fixed-effect covariates included
+in every mixed model.}
 
-\item{factorVars}{Character. Comma-separated factor variables.}
+\item{factorVars}{Character. Comma-separated variables that should be coerced
+to factors before modeling. This usually includes categorical covariates and
+\code{timeVar}.}
 
-\item{lmeLibs}{Character. Mixed-effects modelling libraries.}
+\item{lmeLibs}{Character. Comma-separated package names to validate on worker
+processes. The default is \code{"lme4,lmerTest"}.}
 
-\item{prsMap}{Character or NULL. Optional PRS mapping file.}
+\item{prsMap}{Character or \code{NULL}. Optional phenotype-to-PRS mapping in the
+form \code{"Phenotype1:PRS_1,Phenotype2:PRS_2"}.}
 
-\item{libPath}{Character or NULL. Optional library path.}
+\item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded to
+worker processes. By default, the current \code{.libPaths()} are used.}
 
-\item{cpgPrefix}{Character. CpG identifier prefix.}
+\item{cpgPrefix}{Character. Prefix used to identify methylation columns in the
+merged phenotype-plus-beta input object. The default is \code{"cg"}.}
 
-\item{cpgLimit}{Integer or NA. Maximum number of CpGs to analyse.}
+\item{cpgLimit}{Integer or \code{NA}. Maximum number of CpGs to analyse. Use \code{NA}
+to keep all CpGs matching \code{cpgPrefix}.}
 
-\item{nCores}{Integer. Number of CPU cores to use.}
+\item{nCores}{Integer. Number of worker processes to use while fitting models
+and extracting summaries.}
 
-\item{summaryPval}{Numeric or NA. P-value threshold for summaries.}
+\item{summaryPval}{Numeric or \code{NA}. Optional p-value threshold applied to the
+returned longitudinal CpG summary tables. Use \code{NA} to keep all summary rows.}
 
-\item{plotWidth}{Integer. Plot width in pixels.}
+\item{plotWidth}{Integer. TIFF width in pixels when plots are written to disk.}
 
-\item{plotHeight}{Integer. Plot height in pixels.}
+\item{plotHeight}{Integer. TIFF height in pixels when plots are written to disk.}
 
-\item{plotDPI}{Integer. Plot resolution in DPI.}
+\item{plotDPI}{Integer. TIFF resolution in DPI when plots are written to disk.}
 
-\item{interactionTerm}{Character or NULL. Optional interaction term.}
+\item{interactionTerm}{Character or \code{NULL}. Optional interaction term. When
+supplied and present in the input data, the phenotype is modeled together
+with its interaction against this variable.}
 
-\item{saveSignificantInteractions}{Logical. Save significant interaction results.}
+\item{saveSignificantInteractions}{Logical. If \code{TRUE}, collect coefficient
+tables for CpGs passing \code{significantInteractionPval} in the returned object
+and optionally write them to disk when \code{saveOutputs = TRUE}.}
 
-\item{significantInteractionDir}{Character. Directory for significant interactions.}
+\item{significantInteractionDir}{Character. Directory used for optional
+significant-interaction coefficient tables.}
 
-\item{significantInteractionPval}{Numeric. P-value threshold for significant interactions.}
+\item{significantInteractionPval}{Numeric. P-value threshold used to collect or
+write significant interaction coefficient tables.}
 
-\item{saveTxtSummaries}{Logical. Save text summaries.}
+\item{saveTxtSummaries}{Logical. If \code{TRUE} and \code{saveOutputs = TRUE}, write
+tab-delimited summary tables to \code{summaryTxtDir}.}
 
-\item{chunkSize}{Integer. Number of CpGs processed per chunk.}
+\item{chunkSize}{Integer or \code{NULL}. Number of CpGs processed per summary
+extraction chunk. \code{NULL} chooses a value automatically.}
 
-\item{summaryTxtDir}{Character. Directory for summary text files.}
+\item{summaryTxtDir}{Character. Directory used for optional tab-delimited LME
+summary tables.}
 
-\item{fdrThreshold}{Numeric. FDR threshold.}
+\item{fdrThreshold}{Numeric. False-discovery-rate threshold used to highlight
+CpGs in the residual-significance diagnostic plots.}
 
-\item{padjmethod}{Character. P-value adjustment method.}
+\item{padjmethod}{Character. P-value adjustment method passed to
+\code{stats::p.adjust()}. The default is \code{"fdr"}.}
 
-\item{annotationPackage}{Character. Annotation package name.}
+\item{annotationPackage}{Character. Annotation package or object name passed to
+\code{minfi::getAnnotation()}, for example
+\code{"IlluminaHumanMethylationEPICv2anno.20a1.hg38"}.}
 
-\item{annotationCols}{Character. Annotation columns to extract.}
+\item{annotationCols}{Character. Comma-separated annotation columns to append
+to the combined LME summary table. Available columns depend on the selected
+annotation package.}
 
-\item{annotatedLMEOut}{Character. Output directory for annotated results.}
+\item{annotatedLMEOut}{Character. Directory used for the optional annotated LME
+summary CSV file.}
+
+\item{display}{Logical. If \code{TRUE}, draw diagnostic plots on the active
+graphics device.}
+
+\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}. The
+default is \code{FALSE}, so the function is quiet unless requested.}
+
+\item{logs}{Logical. If \code{TRUE}, write the same progress messages to
+\code{file.path(outputLogs, "log_methylationGLMM_T1T2.txt")}.}
+
+\item{saveOutputs}{Logical. If \code{TRUE}, write optional serialized model files,
+summary tables, significant-interaction tables, annotated results, and TIFF
+plots to the requested output directories. The default is \code{FALSE}, so the
+function returns in-memory results without writing files.}
 }
 \value{
-Invisibly returns \code{NULL}. This function is called for its side effects,
-running CpG-level longitudinal mixed-effects models and writing model
-results, interaction summaries, plots, and annotated tables to disk.
+A list with class \code{"dnaEPICO_methylationGLMM_T1T2"} containing the
+prepared input object, fitted mixed models, CpG summary tables, optional
+significant-interaction tables, diagnostic plot objects, annotation results,
+and any saved file paths.
 }
 \description{
-Run methylationGLMM_T1T2.R
+\code{methylationGLMM_T1T2()} is the high-level coordinator for the longitudinal
+linear mixed-effects stage of the \code{dnaEPICO} workflow. It prepares the merged
+phenotype-plus-beta input, fits one mixed-effects model per CpG for each
+requested phenotype, extracts phenotype-specific coefficient summaries,
+optionally collects significant interaction tables, generates diagnostic plots,
+annotates the combined summary table, and optionally writes legacy-style
+outputs to disk. The default behavior is now in-memory and quiet, which makes
+the function easier to compose with other package functions and more aligned
+with typical Bioconductor usage.
 }
 \examples{
-tmp <- tempdir()
-stopifnot(dir.exists(tmp))
+if (
+  requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE) &&
+    requireNamespace("lmerTest", quietly = TRUE)
+) {
+  tmp <- tempdir()
+  toy_path <- file.path(tmp, "phenoBetaT1T2.RData")
+  phenoBT1T2 <- data.frame(
+    SID = c("P1A", "P1B", "P2A", "P2B", "P3A", "P3B", "P4A", "P4B"),
+    person = c(1, 1, 2, 2, 3, 3, 4, 4),
+    Timepoint = factor(c("1", "2", "1", "2", "1", "2", "1", "2")),
+    score = c(10, 12, 9, 11, 13, 14, 8, 9),
+    sex = factor(c("F", "F", "M", "M", "F", "F", "M", "M")),
+    cg00000029 = c(0.25, 0.27, 0.20, 0.22, 0.30, 0.31, 0.18, 0.20),
+    cg00000108 = c(0.50, 0.53, 0.55, 0.57, 0.48, 0.49, 0.60, 0.61),
+    check.names = FALSE
+  )
+  save(phenoBT1T2, file = toy_path)
 
-\donttest{
-methylationGLMM_T1T2(
-  inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
-  outputLogs = "logs",
-  outputRData = "rData/methylationGLMM_T1T2/models",
-  outputPlots = "figures/methylationGLMM_T1T2",
-  personVar = "person",
-  timeVar = "Timepoint",
-  phenotypes = "DASS_Depression,DASS_Anxiety,DASS_Stress,
-                PCL5_TotalScore,MHCSF_TotalScore,BRS_TotalScore",
-  covariates = "Sex,Age,Ethnicity,TraumaDefinition,
-                Leukocytes,Epithelial.cells",
-  factorVars = "Sex,Ethnicity,TraumaDefinition,Timepoint",
-  lmeLibs = "lme4,lmerTest",
-  prsMap = NULL,
-  libPath = NULL,
-  cpgPrefix = "cg",
-  cpgLimit = NA,
-  nCores = 4,
-  summaryPval = NA,
-  plotWidth = 2000,
-  plotHeight = 1000,
-  plotDPI = 150,
-  interactionTerm = "TreatvControl_Time1_vs_Time2",
-  saveSignificantInteractions = TRUE,
-  significantInteractionDir =
-    "preliminaryResults/cpgs/methylationGLMM_T1T2",
-  significantInteractionPval = 0.05,
-  saveTxtSummaries = TRUE,
-  chunkSize = 10000,
-  summaryTxtDir =
-    "preliminaryResults/summary/methylationGLMM_T1T2/lmer",
-  fdrThreshold = 0.05,
-  padjmethod = "fdr",
-  annotationPackage =
-    "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
-  annotationCols =
-    "Name,chr,pos,UCSC_RefGene_Group,
-     UCSC_RefGene_Name,Relation_to_Island,
-     GencodeV41_Group",
-  annotatedLMEOut = "data/methylationGLMM_T1T2"
-)
+  result <- methylationGLMM_T1T2(
+    inputPheno = toy_path,
+    phenotypes = "score",
+    covariates = "sex",
+    factorVars = "sex,Timepoint",
+    cpgLimit = 2,
+    nCores = 1,
+    summaryPval = 1,
+    annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+    annotationCols = "Name,chr,pos",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE,
+    saveOutputs = FALSE
+  )
+
+  class(result)
 }
 
 }

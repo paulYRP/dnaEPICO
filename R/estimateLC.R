@@ -1,10 +1,20 @@
-#' Run estimateLC.R
+#' Estimate saliva cell proportions from DNA methylation beta values
 #'
-#' @param meth Matrix of beta values
-#' @param ref Choice of reference dataset: available options are `saliva` and `salivaEPIC`. The functions are extracted from `ewastools (Murat, K, et al. 2020)` and adapted to work onloy with the saliva reference panel of `Middleton et al. 2020`.
-#' @param constrained Force that all cell proportions sum up to 1.
+#' Estimate cell-type proportions with the saliva reference panels bundled in
+#' `dnaEPICO`. This function keeps the original `estimateLC()` interface used by
+#' the package while using the internal reference files distributed in
+#' `inst/extdata`.
 #'
-#' @return A data.table containing estimated cell proportions for each sample. 
+#' @param meth Numeric matrix of beta values with CpGs in rows and samples in
+#'   columns. Row names must contain probe identifiers compatible with the
+#'   selected reference.
+#' @param ref Character. Reference panel name. Supported values are `"saliva"`
+#'   and `"salivaEPIC"`.
+#' @param constrained Logical. If `TRUE`, estimated cell proportions are
+#'   constrained to sum to one.
+#'
+#' @return A `data.table` with one row per sample and one column per estimated
+#'   cell type.
 #'
 #' @references
 #' Murat K, et al. Ewastools: Infinium Human Methylation BeadChip pipeline for population epigenetics integrated into Galaxy. *GigaScience*. 2020;9(5):giaa049.
@@ -19,16 +29,15 @@
 #' Middleton LYM, Dou J, Mill J, et al. Saliva cell type DNA methylation reference panel for epidemiology studies in children. 2020.
 
 #' @examples
-#' tmp <- tempdir()
-#' stopifnot(dir.exists(tmp))
-#'
-#' \dontrun{
+#' ref_file <- system.file("extdata", "saliva.txt", package = "dnaEPICO")
+#' ref_panel <- as.matrix(utils::read.table(ref_file))
+#' meth <- ref_panel[1:20, , drop = FALSE]
+#' colnames(meth) <- c("sample1", "sample2")
 #' estimateLC(
-#'  meth = beta, 
-#'  ref = "saliva",
-#'  constrained = FALSE
+#'   meth = meth,
+#'   ref = "saliva",
+#'   constrained = FALSE
 #' )
-#' }
 #'
 #' @export
 estimateLC <- function(meth, ref, constrained = FALSE) {
@@ -42,14 +51,14 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
 
 
     detect_probe_id_type <- function(x, label) {
-      legacy_regex <- stringr::regex("^cg\\d{8}$|^rs\\d+$|^ch\\.\\w+\\.\\d+[FR]$")
-      epicv2_regex <- stringr::regex("^[cg|ch|rs|nv].*_[TB][CO]\\d+$")
+      legacy_regex <- "^cg[0-9]{8}$|^rs[0-9]+$|^ch\\.[[:alnum:]_]+\\.\\d+[FR]$"
+      epicv2_regex <- "^(cg|ch|rs|nv).+_[TB][CO][0-9]+$"
 
-      if (all(stringr::str_detect(x, pattern = legacy_regex))) {
+      if (all(grepl(legacy_regex, x))) {
         return("legacy")
       }
 
-      if (all(stringr::str_detect(x, pattern = epicv2_regex))) {
+      if (all(grepl(epicv2_regex, x))) {
         return("epicv2")
       }
 
@@ -87,7 +96,7 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
       markers <- stats::na.omit(markers)
     }
 
-    EST <- sapply(1:J, function(j) {
+    EST <- vapply(seq_len(J), function(j) {
 
       tmp <- meth[markers, j]
       i <- !is.na(tmp)
@@ -111,7 +120,7 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
           meq = 1
         )$solution
       }
-    })
+    }, FUN.VALUE = numeric(n_celltypes))
 
     EST <- t(EST)
     colnames(EST) <- colnames(coefs)

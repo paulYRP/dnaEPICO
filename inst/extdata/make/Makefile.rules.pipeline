@@ -243,7 +243,9 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 	  padjmethod = '$(PADJ_METHOD)', \
 	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
 	  annotationCols = '$(ANNOTATION_COLS)', \
-	  annotatedGLMOut = '$(DATA_DIR)/$(MODEL)/$(STEP4)' ) "
+	  annotatedGLMOut = '$(DATA_DIR)/$(MODEL)/$(STEP4)', \
+	  logs = TRUE, \
+	  saveOutputs = TRUE ) "
 
 # =================================================================================================================================
 # Step 5: LME for T1 vs T2 (Longitudinal Analysis)
@@ -280,7 +282,9 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
 	  padjmethod = '$(PADJ_METHOD)', \
 	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
 	  annotationCols = '$(ANNOTATION_COLS)', \
-	  annotatedLMEOut = '$(DATA_DIR)/$(MODEL)/$(STEP5)' )"
+	  annotatedLMEOut = '$(DATA_DIR)/$(MODEL)/$(STEP5)', \
+	  logs = TRUE, \
+	  saveOutputs = TRUE )"
 
 # =================================================================================================================================
 # Step 6: Final Report

@@ -1,56 +1,87 @@
-#' Run svaEnmix.R
+#' Estimate surrogate variables from ENmix control probes
 #'
-#' @param phenoFile Character. Path to phenotype file with cell composition data.
-#' @param rgsetData Character. Path to RGSet RData file.
-#' @param sepType Character. Field separator for phenotype file.
-#' @param outputLogs Character. Directory for log files.
-#' @param nSamples Integer or NA. Number of samples to subset for testing.
-#' @param SampleID Character. Sample identifier column name.
-#' @param arrayType Character. Illumina array type.
-#' @param annotationVersion Character. Annotation version.
-#' @param SentrixIDColumn Character. Sentrix ID column name.
-#' @param SentrixPositionColumn Character. Sentrix position column name.
-#' @param ctrlSvaPercVar Numeric. Proportion of variance explained by control probes.
-#' @param ctrlSvaFlag Integer. Flag indicating use of control probes.
-#' @param scriptLabel Character. Label used in output naming.
-#' @param tiffWidth Integer. Width of TIFF plots in pixels.
-#' @param tiffHeight Integer. Height of TIFF plots in pixels.
-#' @param tiffRes Integer. Resolution (DPI) for TIFF plots.
-#' @param figureBaseDir Character. Base directory for Figures outputs.
-#' @param dataBaseDir Character. Base directory for Data outputs.
-#' @param rBaseDir Character. Base directory for RData outputs.
+#' Read the phenotype table and a saved `RGChannelSet`, estimate surrogate
+#' variables from ENmix control probes, analyze their association with Sentrix
+#' chip and position factors, and return a structured in-memory result. Legacy
+#' CSV, `.RData`, text-summary, and figure outputs are written only when
+#' `saveOutputs = TRUE`.
 #'
-#' @return
-#' Invisibly returns \code{NULL}. This function is called for its side effects,
-#' executing the external \code{svaEnmix.R} script and writing results, figures,
-#' and logs to disk.
+#' @param phenoFile Character. Path to the phenotype file with cell-composition
+#'   data.
+#' @param rgsetData Character. Path to a saved `RGChannelSet` object. Both
+#'   `.RData` and `.rds` files are supported.
+#' @param sepType Character. Field separator used in `phenoFile`. Use `""` for
+#'   a comma-separated file, `"\\t"` for a tab-delimited file, or another
+#'   separator accepted by `utils::read.csv()`.
+#' @param outputLogs Character. Directory used for log files when `logs = TRUE`.
+#' @param nSamples Integer or `NA`. Number of rows to keep from the phenotype
+#'   table. Use `NA` to keep all samples.
+#' @param SampleID Character. Name of the phenotype column containing sample
+#'   identifiers.
+#' @param arrayType Character. Illumina array identifier assigned to
+#'   `Biobase::annotation(RGSet)`.
+#' @param annotationVersion Character. Annotation build assigned to
+#'   `Biobase::annotation(RGSet)`.
+#' @param SentrixIDColumn Character. Name of the chip identifier column in the
+#'   phenotype data.
+#' @param SentrixPositionColumn Character. Name of the chip position column in
+#'   the phenotype data.
+#' @param ctrlSvaPercVar Numeric. Proportion of control-probe variance explained
+#'   when running `ENmix::ctrlsva()`.
+#' @param ctrlSvaFlag Integer. Control-probe flag passed to `ENmix::ctrlsva()`.
+#' @param scriptLabel Character. Label used to name output folders when
+#'   `saveOutputs = TRUE`.
+#' @param tiffWidth Integer. Width of saved TIFF plots in pixels.
+#' @param tiffHeight Integer. Height of saved TIFF plots in pixels.
+#' @param tiffRes Integer. Resolution in DPI for saved TIFF plots.
+#' @param figureBaseDir Character. Base directory used for saved figure outputs
+#'   when `saveOutputs = TRUE`.
+#' @param dataBaseDir Character. Base directory used for saved CSV and text
+#'   outputs when `saveOutputs = TRUE`.
+#' @param rBaseDir Character. Base directory used for saved `.RData` outputs
+#'   when `saveOutputs = TRUE`.
+#' @param display Logical. If `TRUE`, draw plots on the active graphics device.
+#' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
+#'   The default is `FALSE`.
+#' @param logs Logical. If `TRUE`, write the same progress messages to
+#'   `outputLogs`. The default is `FALSE`.
+#' @param saveOutputs Logical. If `TRUE`, write the legacy CSV, `.RData`, text,
+#'   and TIFF outputs to disk. The default is `FALSE`.
+#'
+#' @return A list with class `"dnaEPICO_svaEnmix"` containing the phenotype
+#'   data, loaded `RGChannelSet`, surrogate-variable matrix, merged phenotype,
+#'   association-analysis objects, optional saved-file paths, and the resolved
+#'   log file path.
 #'
 #' @examples
 #' tmp <- tempdir()
 #' stopifnot(dir.exists(tmp))
 #'
 #' \donttest{
-#' svaEnmix(
-#'   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
-#'   rgsetData = "rData/preprocessingMinfiEwasWater/objects/RGSet.RData",
-#'   sepType = "",
-#'   outputLogs = "logs",
-#'   nSamples = 5,
-#'   SampleID = "Sample_Name",
-#'   arrayType = "IlluminaHumanMethylationEPICv2",
-#'   annotationVersion = "20a1.hg38",
-#'   SentrixIDColumn = "Sentrix_ID",
-#'   SentrixPositionColumn = "Sentrix_Position",
-#'   ctrlSvaPercVar = 0.90,
-#'   ctrlSvaFlag = 1,
-#'   scriptLabel = "svaEnmix",
-#'   tiffWidth = 2000,
-#'   tiffHeight = 1000,
-#'   tiffRes = 150,
-#'   figureBaseDir = "figures",
-#'   dataBaseDir = "data",
-#'   rBaseDir = "rData"
-#' )
+#' if (requireNamespace("minfiData", quietly = TRUE)) {
+#'   base_dir <- system.file("extdata", package = "minfiData")
+#'   targets <- minfi::read.metharray.sheet(base_dir)
+#'   rgset <- minfi::read.metharray.exp(base = base_dir, targets = targets)
+#'   pheno_file <- file.path(tmp, "pheno.csv")
+#'   rgset_path <- file.path(tmp, "RGSet.RData")
+#'   utils::write.csv(targets, pheno_file, row.names = FALSE)
+#'   save(rgset, file = rgset_path)
+#'   sva_result <- svaEnmix(
+#'     phenoFile = pheno_file,
+#'     rgsetData = rgset_path,
+#'     SampleID = "Sample_Name",
+#'     arrayType = "IlluminaHumanMethylation450k",
+#'     annotationVersion = "ilmn12.hg19",
+#'     SentrixIDColumn = "Sentrix_ID",
+#'     SentrixPositionColumn = "Sentrix_Position",
+#'     outputLogs = file.path(tmp, "logs"),
+#'     figureBaseDir = file.path(tmp, "figures"),
+#'     dataBaseDir = file.path(tmp, "data"),
+#'     rBaseDir = file.path(tmp, "rData"),
+#'     saveOutputs = FALSE
+#'   )
+#'   stopifnot(inherits(sva_result, "dnaEPICO_svaEnmix"))
+#' }
 #' }
 #'
 #' @export
@@ -73,299 +104,210 @@ svaEnmix <- function(
     tiffRes = 150,
     figureBaseDir = "figures",
     dataBaseDir = "data",
-    rBaseDir = "rData"
+    rBaseDir = "rData",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE,
+    saveOutputs = FALSE
 ) {
+  log_file <- "log_svaEnmix.txt"
+  log_path <- resolveLogPathMinfiEwasWater(
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = log_file
+  )
+  figure_dir <- file.path(figureBaseDir, scriptLabel)
 
-# ----------- Logging Setup -----------
-dir.create(outputLogs, recursive = TRUE, showWarnings = FALSE)
+  emitLogMinfiEwasWater(
+    c(
+      "==== Starting SVA Estimation with Enmix ====",
+      paste("Start time:               ", format(Sys.time())),
+      paste(
+        "Log file path:            ",
+        if (is.null(log_path)) "disabled" else log_path
+      ),
+      paste("Pheno file:               ", phenoFile),
+      paste("RGSet path:               ", rgsetData),
+      paste(
+        "Separator type:           ",
+        if (is.null(resolveSeparatorMinfiEwasWater(sepType))) {
+          "default (',')"
+        } else {
+          sepType
+        }
+      ),
+      paste("Sample limit:             ", if (is.na(nSamples)) "all" else nSamples),
+      paste("SampleID column:          ", SampleID),
+      paste("Array type:               ", arrayType),
+      paste("Annotation version:       ", annotationVersion),
+      paste("Sentrix ID column:        ", SentrixIDColumn),
+      paste("Sentrix position column:  ", SentrixPositionColumn),
+      paste("ctrlSva percvar:          ", ctrlSvaPercVar),
+      paste("ctrlSva flag:             ", ctrlSvaFlag),
+      paste("Script label:             ", scriptLabel),
+      paste("TIFF dimensions (WxH):    ", tiffWidth, " x ", tiffHeight, " @ ", tiffRes),
+      paste("Display plots:            ", display),
+      paste("Verbose messages:         ", verbose),
+      paste("Write logs:               ", logs),
+      paste("Save outputs:             ", saveOutputs),
+      "======================================================================="
+    ),
+    verbose = verbose,
+    log_path = log_path
+  )
 
-logFilePath <- file.path(outputLogs,"log_svaEnmix.txt")
-logCon <- file(logFilePath, open = "wt")
+  targets <- readTargetsMinfiEwasWater(
+    phenoFile = phenoFile,
+    sepType = sepType,
+    nSamples = nSamples,
+    SampleID = SampleID,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = log_file
+  )
 
-sink(logCon, split = TRUE)
-sink(logCon, type = "message")
-# ==============================================================================
+  RGSet <- loadSavedObjectPreprocessingPheno(
+    path = rgsetData,
+    preferred_name = "RGSet"
+  )
 
-# ----------- Logging Start Info -----------
-cat("==== Starting SVA Estimation with Enmix ====\n")
-cat("Start time: ", format(Sys.time()), "\n\n")
-cat("Log file path: ", logFilePath, "\n\n")
-cat("Pheno file: ", phenoFile, "\n")
-cat("Separator type: ", ifelse(is.null(sepType), "default, No separator", sepType), "\n")
-cat("Log directory: ", outputLogs, "\n")
-cat("Sample limit: ", ifelse(is.na(nSamples), "All", nSamples), "\n")
-cat("SampleID column: ", SampleID, "\n")
-cat("Sentrix ID column: ", SentrixIDColumn, "\n")
-cat("Sentrix Position column: ", SentrixPositionColumn, "\n")
-cat("Script label: ", scriptLabel, "\n")
-cat("ctrlSva percvar: ", ctrlSvaPercVar, "\n")
-cat("ctrlSva flag: ", ctrlSvaFlag, "\n")
-cat("TIFF dimensions (WxH): ", tiffWidth, "x", tiffHeight, " at", tiffRes, "dpi\n")
-# =============================================================================
-
-# ----------- Directory Setup for Figures and Data -----------
-dir.create(file.path(figureBaseDir, scriptLabel), showWarnings = FALSE,
-           recursive = TRUE)
-dir.create(file.path(dataBaseDir, scriptLabel), showWarnings = FALSE,
-           recursive = TRUE)
-dir.create(file.path(rBaseDir, scriptLabel), showWarnings = FALSE,
-           recursive = TRUE)
-cat("=======================================================================\n")
-
-# ----------- Read Phenotype File -----------
-if (sepType == "\\t") {
-  sepChar <- "\t"
-} else if (sepType == "") {
-  sepChar <- NULL
-} else {
-  sepChar <- sepType
-}
-
-# Now read the phenotype file
-if (!is.null(sepChar)) {
-  targets <- utils::read.csv(phenoFile, sep = sepChar)
-} else {
-  targets <- utils::read.csv(phenoFile)
-}
-
-if (!is.na(nSamples) && nSamples < nrow(targets)) {
-  targets <- targets[1:nSamples, ]
-  cat("Subsetting to", nSamples, "samples for testing.\n")
-} else {
-  cat("Using all", nrow(targets), "samples.\n")
-}
-
-cat("Phenotype file loaded with",
-    nrow(targets), "samples and", ncol(targets), "columns.\n")
-cat("Preview of targets:\n")
-print(utils::head(targets[, 1:6]))
-cat("=======================================================================\n")
-
-# ----------- Load IDAT Files into RGSet -----------
-load(rgsetData)
-
-# Assign custom sample names
-Biobase::sampleNames(RGSet) <- targets[[SampleID]]
-cat("RGSet loaded with", length(Biobase::sampleNames(RGSet)), "samples.\n")
-cat("=======================================================================\n")
-
-# ----------- Estimate Surrogate Variables from Control Probes -----------
-sva <- ENmix::ctrlsva(
-  rgSet = RGSet,
-  percvar = ctrlSvaPercVar,
-  flag = ctrlSvaFlag
-)
-cat("Surrogate variables matrix (first few rows):\n")
-print(utils::head(sva))
-
-# ---- Save SVA matrix ----
-svaSentrixRDataPath <- file.path(rBaseDir,
-                                 scriptLabel, "svaMatrix.RData")
-save(sva, file = svaSentrixRDataPath)
-cat("SVA Matrix RData saved to: ", svaSentrixRDataPath, "\n")
-
-svaSentrixRDataCSV <- file.path(dataBaseDir,
-                                scriptLabel, "svaMatrix.csv")
-utils::write.csv(sva, svaSentrixRDataCSV, row.names = TRUE)
-cat("SVA Matrix CSV saved to: ", svaSentrixRDataCSV, "\n")
-
-# ---- Prepare SVA for merge ----
-svaD <- data.frame(SID = rownames(sva), sva, row.names = NULL)
-names(svaD)[1] <- SampleID
-
-# ---- Merge with phenotype ----
-pheno <- merge(targets, svaD, by = SampleID, all.x = TRUE)
-
-utils::write.csv(pheno,
-          file = phenoFile,
-          row.names = FALSE)
-cat("Saved phenoLC + SVA:", phenoFile, "\n")
-
-# ----------- Plot SVA Colored by SentrixID -----------
-sentrixID <- as.factor(Biobase::pData(RGSet)[[SentrixIDColumn]])
-
-# Create TIFF output
-svaSentrixPath <- file.path(figureBaseDir,
-                        scriptLabel, "sva_SentrixID.tiff")
-grDevices::tiff(filename = svaSentrixPath,
-     width = tiffWidth,
-     height = tiffHeight,
-     res = tiffRes, type = "cairo")
-
-graphics::plot(sva[, 1], sva[, 2],
-     col = grDevices::rainbow(length(levels(sentrixID)))[sentrixID],
-     pch = 16,
-     xlab = "Surrogate Variable 1 (PC1)",
-     ylab = "Surrogate Variable 2 (PC2)",
-     main = "Surrogate Variables Colored by Chip (SentrixID)")
-graphics::legend("topright", legend = levels(sentrixID),
-       col = grDevices::rainbow(length(levels(sentrixID))),
-       pch = 16, title = "SentrixID", cex = 0.6)
-
-grDevices::dev.off()
-
-cat("SVA Sentrix plot saved to: ", svaSentrixPath, "\n")
-
-# ----------- Plot SVA Colored by SentrixPosition -----------
-sentrixPos <- as.factor(Biobase::pData(RGSet)[[SentrixPositionColumn]])
-
-svaPositionpath <- file.path(figureBaseDir, scriptLabel, "sva_SentrixPosition.tiff")
-
-grDevices::tiff(filename = svaPositionpath,
-     width = tiffWidth,
-     height = tiffHeight,
-     res = tiffRes, type = "cairo")
-
-graphics::plot(sva[, 1], sva[, 2],
-     col = grDevices::rainbow(length(levels(sentrixPos)))[sentrixPos],
-     pch = 16,
-     xlab = "Surrogate Variable 1 (PC1)",
-     ylab = "Surrogate Variable 2 (PC2)",
-     main = "Surrogate Variables Colored by Sentrix Position")
-graphics::legend("topright", legend = levels(sentrixPos),
-       col = grDevices::rainbow(length(levels(sentrixPos))),
-       pch = 16, title = "SentrixPosition", cex = 0.6)
-
-grDevices::dev.off()
-
-cat("SVA Position plot saved to: ", svaPositionpath, "\n")
-cat("=======================================================================\n")
-
-# ----------- Linear Models for Surrogate Variables (ANOVA) -----------
-K <- ncol(sva)
-cat("Number of surrogate variables (K):", K, "\n")
-
-# Print class and levels of SentrixID
-cat("SentrixID class:", class(sentrixID), "\n")
-cat("SentrixID unique levels:", length(unique(sentrixID)), "\n")
-print(table(sentrixID))
-
-# Print class and levels of SentrixPosition
-cat("SentrixPosition class:", class(sentrixPos), "\n")
-cat("SentrixPosition unique levels:", length(unique(sentrixPos)), "\n")
-print(table(sentrixPos))
-
-# Print example row of SVA matrix
-cat("First row of SVA matrix:\n")
-print(sva[1, ])
-
-# Confirm if sample names align
-cat("Sample names in SVA matrix:",
-    paste(rownames(sva)[1:5], collapse = ", "), "\n")
-cat("Sample names in pData(RGSet):",
-    paste(rownames(Biobase::pData(RGSet))[1:5], collapse = ", "), "\n")
-
-# Fit linear models for each surrogate variable
-lmsvaFull <- lapply(1:K, function(i)
-  stats::lm(sva[, i] ~ SentrixID + SentrixPosition,
-     data.frame("SentrixID" = sentrixID,
-                "SentrixPosition" = sentrixPos))
-)
-
-lmsvaRed <- vector("list", K)
-
-# ----------- Save summaries of full models -----------
-  utils::capture.output(summary(lmsvaFull[[1]]),
-               file = file.path(dataBaseDir, scriptLabel, "summary_full_sva1.txt"))
-
-if (K >= 2) {
-  utils::capture.output(summary(lmsvaFull[[2]]),
-                 file = file.path(dataBaseDir, scriptLabel, "summary_full_sva2.txt"))
-}
-
-# Perform backward elimination and write ANOVA output
-for(i in 1:K){
-  lmtmp = lmsvaFull[[i]]
-  while(1){
-    dttmp = MASS::dropterm(lmtmp, test = "F")
-    if(max(dttmp$`Pr(F)`, na.rm = TRUE) > (0.05))
-      ttmp = rownames(dttmp)[which.max(dttmp$`Pr(F)`)]
-    else break
-    lmtmp = stats::update(lmtmp, paste(".~. - ", ttmp) )
-    utils::capture.output(dttmp,
-                   file = file.path(dataBaseDir,
-                                    scriptLabel, paste0("dropterm_step_sva", i, ".txt")),
-                   append = TRUE)
-    utils::capture.output(summary(lmtmp),
-                   file = file.path(dataBaseDir,
-                                    scriptLabel, paste0("dropterm_model_sva", i, ".txt")),
-                   append = TRUE)
+  if (length(Biobase::sampleNames(RGSet)) != nrow(targets)) {
+    stop(
+      "The saved RGSet contains ",
+      length(Biobase::sampleNames(RGSet)),
+      " samples but the phenotype table contains ",
+      nrow(targets),
+      ".",
+      call. = FALSE
+    )
   }
 
-  lmsvaRed[[i]] = lmtmp
-}
+  Biobase::sampleNames(RGSet) <- targets[[SampleID]]
+  Biobase::annotation(RGSet) <- c(
+    array = arrayType,
+    annotation = annotationVersion
+  )
 
-# ----------- Save ANOVA summaries for full and reduced models -----------
-for (i in 1:K) {
-  utils::capture.output(stats::anova(lmsvaFull[[i]]),
-                 file = file.path(dataBaseDir,
-                                  scriptLabel, paste0("anova_full_sva", i, ".txt")))
+  emitLogMinfiEwasWater(
+    c(
+      paste("RGSet loaded with          ", length(Biobase::sampleNames(RGSet)), " samples."),
+      paste("Applied annotation:        ", paste(Biobase::annotation(RGSet), collapse = ", ")),
+      "======================================================================="
+    ),
+    verbose = verbose,
+    log_path = log_path
+  )
 
-  utils::capture.output(stats::anova(lmsvaRed[[i]]),
-                 file = file.path(dataBaseDir,
-                                  scriptLabel, paste0("anova_reduced_sva", i, ".txt")))
-}
-cat("=======================================================================\n")
+  svaData <- estimateSvaEnmixControls(
+    RGSet = RGSet,
+    ctrlSvaPercVar = ctrlSvaPercVar,
+    ctrlSvaFlag = ctrlSvaFlag,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = log_file
+  )
+  mergedPheno <- mergeSvaTargetsEnmix(
+    targets = targets,
+    sva = svaData$sva,
+    SampleID = SampleID,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = log_file
+  )
+  analysisData <- analyzeSvaEnmix(
+    sva = svaData$sva,
+    RGSet = RGSet,
+    SentrixIDColumn = SentrixIDColumn,
+    SentrixPositionColumn = SentrixPositionColumn,
+    verbose = verbose,
+    logs = logs,
+    log_dir = outputLogs,
+    log_file = log_file
+  )
 
-# ----------- Plot Matrix of Surrogate Variables Colored by SentrixID and Shape by Position -----------
+  plot_files <- list(
+    sentrixID = plotSvaEnmix(
+      analysisData = analysisData,
+      plot = "sentrix_id",
+      display = display,
+      file = if (isTRUE(saveOutputs)) file.path(figure_dir, "sva_SentrixID.tiff") else NULL,
+      width = tiffWidth,
+      height = tiffHeight,
+      res = tiffRes,
+      verbose = verbose,
+      logs = logs,
+      log_dir = outputLogs,
+      log_file = log_file
+    ),
+    sentrixPosition = plotSvaEnmix(
+      analysisData = analysisData,
+      plot = "sentrix_position",
+      display = display,
+      file = if (isTRUE(saveOutputs)) file.path(figure_dir, "sva_SentrixPosition.tiff") else NULL,
+      width = tiffWidth,
+      height = tiffHeight,
+      res = tiffRes,
+      verbose = verbose,
+      logs = logs,
+      log_dir = outputLogs,
+      log_file = log_file
+    ),
+    matrix = plotSvaEnmix(
+      analysisData = analysisData,
+      plot = "matrix",
+      display = display,
+      file = if (isTRUE(saveOutputs)) file.path(figure_dir, "sva_SentrixIDPosition.tiff") else NULL,
+      width = tiffWidth,
+      height = tiffHeight,
+      res = tiffRes,
+      verbose = verbose,
+      logs = logs,
+      log_dir = outputLogs,
+      log_file = log_file
+    )
+  )
 
-# Prepare output TIFF file
-
-svaSentrixPositionPath <- file.path(figureBaseDir,
-                                    scriptLabel, "sva_SentrixIDPosition.tiff")
-
-grDevices::tiff(filename = svaSentrixPositionPath,
-     width = tiffWidth,
-     height = tiffHeight,
-     res = tiffRes,
-     type = "cairo")
-
-# Prepare plotting layout
-graphics::par(mfrow = c(K, K), family = "Times", las = 1)
-
-# Extract and map IDs/positions
-colorMap <- grDevices::rainbow(length(levels(sentrixID)))
-pchMap <- 1:length(levels(sentrixPos))
-
-# Plot matrix
-for (i in 1:K) {
-  for (j in 1:K) {
-    graphics::plot(sva[, j], sva[, i],
-         col = colorMap[sentrixID],
-         pch = pchMap[sentrixPos],
-         xlab = paste("SV", j),
-         ylab = paste("SV", i),
-         main = "Effects of Sentrix ID (color) & Sentrix Position (shape)")
-
-    # Legend only in top-left panel
-    if (i == 1 && j == 1) {
-      graphics::legend("topright",
-             legend = levels(sentrixID),
-             col = colorMap,
-             pch = 15,
-             title = "SentrixID",
-             cex = 0.6)
-      graphics::legend("bottomright",
-             legend = levels(sentrixPos),
-             pch = pchMap,
-             title = "SentrixPosition",
-             cex = 0.6)
-    }
+  savedFiles <- NULL
+  if (isTRUE(saveOutputs)) {
+    savedFiles <- writeSvaEnmixOutputs(
+      svaData = svaData,
+      mergedPheno = mergedPheno,
+      analysisData = analysisData,
+      phenoFile = phenoFile,
+      dataBaseDir = dataBaseDir,
+      rBaseDir = rBaseDir,
+      scriptLabel = scriptLabel,
+      verbose = verbose,
+      logs = logs,
+      log_dir = outputLogs,
+      log_file = log_file
+    )
   }
-}
 
-# Close plotting device
-grDevices::dev.off()
+  emitLogMinfiEwasWater(
+    c(
+      "==== Finished SVA Estimation with Enmix ====",
+      paste("End time:                 ", format(Sys.time())),
+      "======================================================================="
+    ),
+    verbose = verbose,
+    log_path = log_path
+  )
 
-cat("SVA Sentrix/Position plot saved to: ", svaSentrixPositionPath, "\n")
-cat("=======================================================================\n")
-
-cat("Session info:\n")
-print(utils::sessionInfo())
-# ==============================================================================
-
-# ----------- Close Logging -----------
-sink(type = "message")
-sink()
-close(logCon)
+  structure(
+    list(
+      targets = targets,
+      RGSet = RGSet,
+      svaData = svaData,
+      mergedPheno = mergedPheno,
+      analysisData = analysisData,
+      plotFiles = plot_files,
+      savedFiles = savedFiles,
+      logFile = log_path
+    ),
+    class = "dnaEPICO_svaEnmix"
+  )
 }

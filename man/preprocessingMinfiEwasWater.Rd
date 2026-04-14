@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocessingMinfiEwasWater.R
 \name{preprocessingMinfiEwasWater}
 \alias{preprocessingMinfiEwasWater}
-\title{Run preprocessingMinfiEwasWater.R}
+\title{Convenience preprocessing pipeline for Illumina methylation arrays}
 \usage{
 preprocessingMinfiEwasWater(
   phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
@@ -32,74 +32,117 @@ preprocessingMinfiEwasWater(
   plotGroupVar = "Sex",
   lcRef = "salivaEPIC",
   phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
-  lcPhenoDir = "data/preprocessingMinfiEwasWater"
+  lcPhenoDir = "data/preprocessingMinfiEwasWater",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = FALSE
 )
 }
 \arguments{
-\item{phenoFile}{Character. Path to phenotype CSV file.}
+\item{phenoFile}{Character. Path to the phenotype CSV file.}
 
-\item{idatFolder}{Character. Path to IDAT files directory.}
+\item{idatFolder}{Character. Directory containing the IDAT files.}
 
-\item{outputLogs}{Character. Directory for log files.}
+\item{outputLogs}{Character. Directory used for log files when \code{logs = TRUE}.}
 
-\item{nSamples}{Integer or NA. Number of samples to subset for testing.}
+\item{nSamples}{Integer or \code{NA}. Number of rows to keep from the phenotype
+table. Use \code{NA} to keep all samples.}
 
-\item{SampleID}{Character. Sample identifier column name.}
+\item{SampleID}{Character. Name of the phenotype column containing sample
+identifiers.}
 
-\item{arrayType}{Character. Illumina array type.}
+\item{arrayType}{Character. Illumina array identifier passed to
+\code{Biobase::annotation()}, for example \code{"IlluminaHumanMethylationEPICv2"}.}
 
-\item{annotationVersion}{Character. Annotation version.}
+\item{annotationVersion}{Character. Annotation build passed to
+\code{Biobase::annotation()}, for example \code{"20a1.hg38"} or \code{"ilmn12.hg19"}.}
 
-\item{scriptLabel}{Character. Label used in output naming.}
+\item{scriptLabel}{Character. Label used to name output folders when
+\code{saveOutputs = TRUE}.}
 
-\item{baseDataFolder}{Character. Base directory for RData outputs.}
+\item{baseDataFolder}{Character. Base directory used for saved \code{.RData}
+outputs when \code{saveOutputs = TRUE}.}
 
-\item{figureBaseDir}{Character. Base directory for Figures outputs.}
+\item{figureBaseDir}{Character. Base directory used for saved figure outputs
+when \code{saveOutputs = TRUE}.}
 
-\item{sepType}{Character. Field separator for phenotype file.}
+\item{sepType}{Character. Field separator used in \code{phenoFile}. Use \code{""} for
+a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or another
+separator accepted by \code{utils::read.csv()}.}
 
-\item{tiffWidth}{Integer. Width of TIFF plots in pixels.}
+\item{tiffWidth}{Integer. Width of saved TIFF plots in pixels.}
 
-\item{tiffHeight}{Integer. Height of TIFF plots in pixels.}
+\item{tiffHeight}{Integer. Height of saved TIFF plots in pixels.}
 
-\item{tiffRes}{Integer. Resolution (DPI) for TIFF plots.}
+\item{tiffRes}{Integer. Resolution in DPI for saved TIFF plots.}
 
-\item{qcCutoff}{Numeric. Quality-control cutoff threshold.}
+\item{qcCutoff}{Numeric. QC cutoff passed to \code{minfi::plotQC()}.}
 
-\item{detPtype}{Character. Detection p-value calculation type.}
+\item{detPtype}{Character. Detection P-value mode passed to
+\code{minfi::detectionP()}. Common values in minfi workflows are \code{"m+u"} and
+\code{"negative"}. The default here is \code{"m+u"}.}
 
-\item{detPThreshold}{Numeric. Detection p-value threshold.}
+\item{detPThreshold}{Numeric. Samples with mean detection P value above this
+threshold are removed.}
 
-\item{normMethods}{Character. Normalization method(s).}
+\item{normMethods}{Character vector or semicolon-separated string of
+normalization methods. Supported values are \code{"adjustedfunnorm"},
+\code{"funnorm"}, \code{"illumina"}, \code{"quantile"}, and \code{"swan"}.}
 
-\item{sexColumn}{Character. Sex column name in phenotype data.}
+\item{sexColumn}{Character. Name of the phenotype column containing reported
+sex.}
 
-\item{pvalThreshold}{Numeric. Probe-level p-value threshold.}
+\item{pvalThreshold}{Numeric. Probe-level detection P-value threshold used in
+the probe filter.}
 
-\item{chrToRemove}{Character. Chromosomes to remove.}
+\item{chrToRemove}{Character vector or comma-separated string of chromosome
+names to remove, for example \code{"chrX,chrY"}.}
 
-\item{snpsToRemove}{Character. SNP probe types to remove.}
+\item{snpsToRemove}{Character vector or comma-separated string of SNP probe
+types to remove, for example \code{"SBE,CpG"}.}
 
-\item{mafThreshold}{Numeric. Minor allele frequency threshold.}
+\item{mafThreshold}{Numeric. Minor allele frequency threshold passed to
+\code{minfi::dropLociWithSnps()}.}
 
-\item{crossReactivePath}{Character. Path to cross-reactive probe file.}
+\item{crossReactivePath}{Character. Path to a CSV file containing a \code{ProbeID}
+column of cross-reactive probes to remove.}
 
-\item{plotGroupVar}{Character. Variable used for grouping plots.}
+\item{plotGroupVar}{Character. Phenotype column used for density and MDS
+grouping plots.}
 
-\item{lcRef}{Character. Reference panel for cell composition.}
+\item{lcRef}{Character. Reference panel used for cell composition estimation.
+\code{"saliva"} and \code{"salivaEPIC"} use \code{estimateLC()}. Other values are passed
+to \code{ENmix::estimateCellProp()}.}
 
-\item{phenoOrder}{Character. Semicolon-separated phenotype column order.}
+\item{phenoOrder}{Character vector or semicolon-separated string describing
+which phenotype columns should appear first in the merged \code{phenoLC} table.}
 
-\item{lcPhenoDir}{Character. Output directory for cell composition phenotype.}
+\item{lcPhenoDir}{Character. Directory used for the saved \code{phenoLC.csv} file
+when \code{saveOutputs = TRUE}.}
+
+\item{display}{Logical. If \code{TRUE}, draw plots on the active graphics device.}
+
+\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.
+The default is \code{FALSE}.}
+
+\item{logs}{Logical. If \code{TRUE}, write log messages to \code{outputLogs}. The
+default is \code{FALSE}.}
+
+\item{saveOutputs}{Logical. If \code{TRUE}, write the legacy \code{.RData}, figure, and
+\code{phenoLC.csv} outputs to disk. The default is \code{FALSE}, so the function can
+be used in the more traditional in-memory Bioconductor style.}
 }
 \value{
-Invisibly returns \code{NULL}. This function is called for its side effects,
-performing Illumina EPICv2 preprocessing, quality control, normalisation,
-probe filtering, cell composition estimation, and writing plots, logs,
-and RData objects to disk.
+A list with class \code{"dnaEPICO_preprocessingMinfiEwasWater"}
+containing the filtered phenotype table, preprocessing objects, metrics, and
+cell-composition results.
 }
 \description{
-Run preprocessingMinfiEwasWater.R
+Run the \code{dnaEPICO} preprocessing workflow as a convenience wrapper around the
+smaller minfi/ENmix/wateRmelon helper functions in this package. The wrapper
+now returns a structured result object containing the in-memory outputs from
+each stage. Legacy files are written only when \code{saveOutputs = TRUE}.
 }
 \examples{
 tmp <- tempdir()
@@ -130,11 +173,16 @@ preprocessingMinfiEwasWater(
   chrToRemove = "chrX,chrY",
   snpsToRemove = "SBE,CpG",
   mafThreshold = 0.1,
-  crossReactivePath = "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
+  crossReactivePath = system.file(
+    "extdata",
+    "12864_2024_10027_MOESM8_ESM.csv",
+    package = "dnaEPICO"
+  ),
   plotGroupVar = "Sex",
   lcRef = "salivaEPIC",
   phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
-  lcPhenoDir = "data/preprocessingMinfiEwasWater"
+  lcPhenoDir = "data/preprocessingMinfiEwasWater",
+  saveOutputs = FALSE
 )
 }
 

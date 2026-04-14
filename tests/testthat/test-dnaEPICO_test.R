@@ -190,7 +190,8 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
       outputLogs = file.path(tmpDir, "logs"),
       baseDataFolder = file.path(tmpDir, "rData"),
       crossReactivePath = crossReactivePath,
-      lcPhenoDir = tmpDir
+      lcPhenoDir = tmpDir,
+      saveOutputs = TRUE
     ),
     NA
   )
@@ -229,7 +230,8 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
         tiffRes = 150,
         dataBaseDir = file.path(tmpDir, "data") ,
         figureBaseDir = file.path(tmpDir, "figures"),
-        rBaseDir = file.path(tmpDir, "rData")
+        rBaseDir = file.path(tmpDir, "rData"),
+        saveOutputs = TRUE
 
       ),
       NA
@@ -283,7 +285,8 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
           outputRData = file.path(tmpDir, "rData", "preprocessingPheno", "metrics"),
           outputRDataMerge = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData"),
           outputLogs = file.path(tmpDir, "logs"),
-          outputDir = file.path(tmpDir, "data", "preprocessingPheno")
+          outputDir = file.path(tmpDir, "data", "preprocessingPheno"),
+          saveOutputs = TRUE
         ),
         NA
       )
@@ -367,7 +370,9 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
         annotatedGLMOut = file.path(tmpDir, "data", "methylationGLM_T1"),
         annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
         chunkSize = 1,
-        significantCpGPval = 1
+        significantCpGPval = 1,
+        logs = TRUE,
+        saveOutputs = TRUE
       ),
         NA
       )
@@ -396,7 +401,9 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
         chunkSize = 1,
         significantInteractionPval = 1,
         saveSignificantInteractions = FALSE,
-        annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island"
+        annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island",
+        logs = TRUE,
+        saveOutputs = TRUE
 
       ),
         NA

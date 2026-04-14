@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocessingPheno.R
 \name{preprocessingPheno}
 \alias{preprocessingPheno}
-\title{Run preprocessingPheno.R}
+\title{Prepare phenotype and methylation matrices for downstream modeling}
 \usage{
 preprocessingPheno(
   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
@@ -21,71 +21,120 @@ preprocessingPheno(
   outputRDataMerge = "rData/preprocessingPheno/mergeData",
   sexColumn = "Sex",
   outputLogs = "logs",
-  outputDir = "data/preprocessingPheno"
+  outputDir = "data/preprocessingPheno",
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = FALSE
 )
 }
 \arguments{
-\item{phenoFile}{Character. Path to phenotype file.}
+\item{phenoFile}{Character. Path to the phenotype CSV file.}
 
-\item{sepType}{Character. Field separator for phenotype file.}
+\item{sepType}{Character. Field separator used in \code{phenoFile}. Use \code{""} for
+a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or another
+separator accepted by \code{utils::read.csv()}.}
 
-\item{betaPath}{Character. Path to beta-values RData file.}
+\item{betaPath}{Character. Path to the saved beta-value object. Both \code{.RData}
+and \code{.rds} files are supported.}
 
-\item{mPath}{Character. Path to M-values RData file.}
+\item{mPath}{Character. Path to the saved M-value object. Both \code{.RData} and
+\code{.rds} files are supported.}
 
-\item{cnPath}{Character. Path to copy number RData file.}
+\item{cnPath}{Character. Path to the saved copy-number object. Both \code{.RData}
+and \code{.rds} files are supported.}
 
-\item{SampleID}{Character. Sample identifier column name.}
+\item{SampleID}{Character. Name of the phenotype column containing sample
+identifiers used to align phenotype and methylation data.}
 
-\item{timeVar}{Character. Time variable column name.}
+\item{timeVar}{Character. Name of the phenotype column containing timepoint
+labels.}
 
-\item{timepoints}{Character. Timepoints to retain.}
+\item{timepoints}{Character vector or comma-separated string of timepoints to
+retain and split into separate in-memory subsets.}
 
-\item{combineTimepoints}{Character. Timepoints to combine.}
+\item{combineTimepoints}{Character vector or comma-separated string of
+timepoints to combine into the longitudinal phenotype-plus-beta object.}
 
-\item{outputPheno}{Character. Output directory for processed phenotype files.}
+\item{outputPheno}{Character. Directory used for saved phenotype CSV files
+when \code{saveOutputs = TRUE}.}
 
-\item{outputRData}{Character. Output directory for metric RData files.}
+\item{outputRData}{Character. Directory used for saved metric \code{.RData} files
+when \code{saveOutputs = TRUE}.}
 
-\item{outputRDataMerge}{Character. Output directory for merged RData files.}
+\item{outputRDataMerge}{Character. Directory used for saved merged
+phenotype-plus-beta \code{.RData} files when \code{saveOutputs = TRUE}.}
 
-\item{sexColumn}{Character. Sex column name.}
+\item{sexColumn}{Character. Name of the phenotype sex column used when
+building Clock Foundation exports.}
 
-\item{outputLogs}{Character. Directory for log files.}
+\item{outputLogs}{Character. Directory used for log files when \code{logs = TRUE}.}
 
-\item{outputDir}{Character. Base output directory.}
+\item{outputDir}{Character. Directory used for Clock Foundation export files
+when \code{saveOutputs = TRUE}.}
+
+\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.
+The default is \code{FALSE}.}
+
+\item{logs}{Logical. If \code{TRUE}, write the same progress messages to
+\code{outputLogs}. The default is \code{FALSE}.}
+
+\item{saveOutputs}{Logical. If \code{TRUE}, write the legacy CSV, ZIP, and \code{.RData}
+outputs to disk. The default is \code{FALSE}, so the function can be used in the
+more traditional in-memory Bioconductor style.}
 }
 \value{
-Invisibly returns \code{NULL}. This function is called for its side effects,
-preparing analysis-ready phenotype-methylation datasets by subsetting,
-merging timepoints, aligning samples with beta, M, and CN matrices, and
-writing processed phenotype tables and RData objects to disk.
+A list with class \code{"dnaEPICO_preprocessingPheno"} containing the
+phenotype data, loaded metric matrices, per-timepoint subsets, combined
+longitudinal data, Clock Foundation inputs, optional saved-file paths, and
+the resolved log file path.
 }
 \description{
-Run preprocessingPheno.R
+Read the phenotype table and the preprocessed beta, M-value, and copy-number
+matrices; align them by sample identifier; split them by timepoint; prepare
+combined longitudinal objects; and build Clock Foundation export tables. The
+function returns a structured in-memory result, while legacy files are
+written only when \code{saveOutputs = TRUE}.
 }
 \examples{
 tmp <- tempdir()
-stopifnot(dir.exists(tmp))
-
-\donttest{
-preprocessingPheno(
-  phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
-  sepType = "",
-  betaPath = "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
-  mPath = "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
-  cnPath = "rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+pheno <- data.frame(
+  Sample_Name = c("S1", "S2", "S3"),
+  Timepoint = c("1", "1", "2"),
+  Sex = c(0, 1, 0),
+  stringsAsFactors = FALSE
+)
+beta <- matrix(
+  c(0.10, 0.20, 0.30, 0.40, 0.50, 0.60),
+  nrow = 2,
+  dimnames = list(c("cg1", "cg2"), pheno$Sample_Name)
+)
+m <- beta * 10
+cn <- beta * 100
+pheno_file <- file.path(tmp, "pheno.csv")
+beta_path <- file.path(tmp, "beta.RData")
+m_path <- file.path(tmp, "m.RData")
+cn_path <- file.path(tmp, "cn.RData")
+utils::write.csv(pheno, pheno_file, row.names = FALSE)
+save(beta, file = beta_path)
+save(m, file = m_path)
+save(cn, file = cn_path)
+result <- preprocessingPheno(
+  phenoFile = pheno_file,
+  betaPath = beta_path,
+  mPath = m_path,
+  cnPath = cn_path,
   SampleID = "Sample_Name",
   timeVar = "Timepoint",
   timepoints = "1,2",
   combineTimepoints = "1,2",
-  outputPheno = "data/preprocessingPheno",
-  outputRData = "rData/preprocessingPheno/metrics",
-  outputRDataMerge = "rData/preprocessingPheno/mergeData",
+  outputPheno = file.path(tmp, "data", "preprocessingPheno"),
+  outputRData = file.path(tmp, "rData", "preprocessingPheno", "metrics"),
+  outputRDataMerge = file.path(tmp, "rData", "preprocessingPheno", "mergeData"),
   sexColumn = "Sex",
-  outputLogs = "logs",
-  outputDir = "data/preprocessingPheno"
+  outputLogs = file.path(tmp, "logs"),
+  outputDir = file.path(tmp, "clockFoundation"),
+  saveOutputs = FALSE
 )
-}
+stopifnot(inherits(result, "dnaEPICO_preprocessingPheno"))
 
 }

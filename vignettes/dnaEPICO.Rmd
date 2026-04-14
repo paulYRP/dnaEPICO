@@ -1,4 +1,4 @@
----
+﻿---
 title: "The dnaEPICO User's Guide"
 shorttitle: "dnaEPICO guide"
 author: 
@@ -119,12 +119,12 @@ Each step writes its outputs to a dedicated folder. This design lets you run ste
 `r Biocpkg("dnaEPICO")` expects a project layout like this:
 
 ``` make
-├── data/                                   # Processed data outputs (per model)
-│   ├── preprocessingMinfiEwasWater/
-│   │   ├── idats/                          # Folder containing raw IDAT files
-│   │   ├── pheno.csv                       # Phenotype file with sample metadata
-│   │   └── 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
-│   ├── Makefile                            # Arguments
+â”œâ”€â”€ data/                                   # Processed data outputs (per model)
+â”‚   â”œâ”€â”€ preprocessingMinfiEwasWater/
+â”‚   â”‚   â”œâ”€â”€ idats/                          # Folder containing raw IDAT files
+â”‚   â”‚   â”œâ”€â”€ pheno.csv                       # Phenotype file with sample metadata
+â”‚   â”‚   â””â”€â”€ 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
+â”‚   â”œâ”€â”€ Makefile                            # Arguments
 ```
 
 - **Phenotype file**: a `CSV` with sample identifiers and covariates.
@@ -144,25 +144,25 @@ extractMake(
 `r Biocpkg("dnaEPICO")` produces:
 
 ``` make
-├── data/                                   # Processed data outputs (per model)
-│   ├── preprocessingMinfiEwasWater/
-│   │   ├── idats/                          # Folder containing raw IDAT files
-│   │   ├── pheno.csv                       # Phenotype file with sample metadata
-│   │   └── 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
-│   ├── model1/                             # Outputs specific to the first model
-│   │   ├── preprocessingMinfiEwasWater/    # Preprocessed phenotype + QC from Minfi
-│   │   ├── svaEnmix/                       # Surrogate variable analysis 
-│   │   ├── preprocessingPheno/             # Cleaned and merged phenotype files 
-│   │   ├── methylationGLM_T1/              # CpG-level GLM results (single timepoint)
-│   │   ├── methylationGLMM_T1T2/           # Longitudinal LME results (T1 vs T2)
-│   │   └── ...                             # Additional subfolders by model
-│   ├── model2/
-│   └── model3/
-├── rData/                                  # Processed R objects (MSet, Beta, CN matrices, etc.)
-├── logs/                                   # Logging output from script runs
-├── figures/                                # QC plots and visualization output
-├── results/                                # Output tables and summary statistics
-├── reports/                                # Rendered reports (PDF)
+â”œâ”€â”€ data/                                   # Processed data outputs (per model)
+â”‚   â”œâ”€â”€ preprocessingMinfiEwasWater/
+â”‚   â”‚   â”œâ”€â”€ idats/                          # Folder containing raw IDAT files
+â”‚   â”‚   â”œâ”€â”€ pheno.csv                       # Phenotype file with sample metadata
+â”‚   â”‚   â””â”€â”€ 12864_2024_10027_MOESM8_ESM.csv # Cross-reactivity comparison reference
+â”‚   â”œâ”€â”€ model1/                             # Outputs specific to the first model
+â”‚   â”‚   â”œâ”€â”€ preprocessingMinfiEwasWater/    # Preprocessed phenotype + QC from Minfi
+â”‚   â”‚   â”œâ”€â”€ svaEnmix/                       # Surrogate variable analysis 
+â”‚   â”‚   â”œâ”€â”€ preprocessingPheno/             # Cleaned and merged phenotype files 
+â”‚   â”‚   â”œâ”€â”€ methylationGLM_T1/              # CpG-level GLM results (single timepoint)
+â”‚   â”‚   â”œâ”€â”€ methylationGLMM_T1T2/           # Longitudinal LME results (T1 vs T2)
+â”‚   â”‚   â””â”€â”€ ...                             # Additional subfolders by model
+â”‚   â”œâ”€â”€ model2/
+â”‚   â””â”€â”€ model3/
+â”œâ”€â”€ rData/                                  # Processed R objects (MSet, Beta, CN matrices, etc.)
+â”œâ”€â”€ logs/                                   # Logging output from script runs
+â”œâ”€â”€ figures/                                # QC plots and visualization output
+â”œâ”€â”€ results/                                # Output tables and summary statistics
+â”œâ”€â”€ reports/                                # Rendered reports (PDF)
 ```
 
 Each step writes:
@@ -265,18 +265,19 @@ svaEnmix(
     scriptLabel = "svaEnmix",
     tiffWidth = 2000,
     tiffHeight = 1000,
-    tiffRes = 150
+    tiffRes = 150,
+    saveOutputs = TRUE
 )
 ```
 
 ### What it does:
 
-This wrapper runs `inst/scripts/svaEnmix.R`. It:
+This wrapper coordinates the modular `svaEnmix()` helpers. It:
 
 1.  Loads the `RGSet` object from `rgsetData` and phenotype data from `phenoFile`.
 2.  Uses ENmix control probes to derive control-based surrogate variables.
 3.  Selects the number of surrogate components needed to explain `ctrlSvaPercVar` of variance.
-4.  Writes summary outputs, plots, and updated objects.
+4.  Optionally writes summary outputs, plots, and updated objects when `saveOutputs = TRUE`.
 
 ### Parameter guide:
 
@@ -306,19 +307,20 @@ preprocessingPheno(
     outputRDataMerge = "rData/preprocessingPheno/mergeData",
     sexColumn = "Sex",
     outputLogs = "logs",
-    outputDir = "data/preprocessingPheno"
+    outputDir = "data/preprocessingPheno",
+    saveOutputs = TRUE
 )
 ```
 
 ### What it does:
 
-This wrapper runs `inst/scripts/preprocessingPheno.R`. It:
+This wrapper coordinates the modular `preprocessingPheno()` helpers. It:
 
 1.  Loads phenotype data and methylation matrices (Beta, M, CN).
 2.  Aligns samples using `SampleID`.
 3.  Creates timepoint-specific subsets based on `timepoints`.
 4.  Combines timepoints for longitudinal analysis using `combineTimepoints`.
-5.  Writes cleaned phenotype tables to `outputPheno`, metric objects to `outputRData`, and merged objects to `outputRDataMerge`.
+5.  Optionally writes cleaned phenotype tables to `outputPheno`, metric objects to `outputRData`, and merged objects to `outputRDataMerge` when `saveOutputs = TRUE`.
 
 ### Parameter guide:
 
@@ -330,12 +332,12 @@ This wrapper runs `inst/scripts/preprocessingPheno.R`. It:
 -   `combineTimepoints`: list of timepoints to combine for longitudinal analysis.
 -   `outputPheno`: directory for cleaned phenotype tables.
 -   `outputRData`: directory for timepoint-specific methylation objects.
--   `outputRDataMerge`: directory for merged phenotype–methylation objects.
+-   `outputRDataMerge`: directory for merged phenotypeâ€“methylation objects.
 -   `sexColumn`: column used for biological sex.
 -   `outputLogs`: directory for logs.
 -   `outputDir`: base directory for exported files.
 
-This step produces analysis-ready phenotype–methylation objects for GLM and LME modelling and creates files compatible with the DNAmAge Clock Foundation platform.
+This step produces analysis-ready phenotypeâ€“methylation objects for GLM and LME modelling and creates files compatible with the DNAmAge Clock Foundation platform.
 
 # Cluster / HPC use
 
@@ -383,24 +385,26 @@ methylationGLM_T1(
     annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
     annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,
                       Relation_to_Island,GencodeV41_Group",
-    annotatedGLMOut = "data/methylationGLM_T1"
+    annotatedGLMOut = "data/methylationGLM_T1",
+    logs = TRUE,
+    saveOutputs = TRUE
 ) 
 ```
 
 ### What it does:
 
-This wrapper runs `inst/scripts/methylationGLM_T1.R`. It:
+This function returns a structured in-memory analysis object. It:
 
-1.  Loads a merged phenotype–beta object from `inputPheno`.
+1.  Loads a merged phenotypeâ€“beta object from `inputPheno`.
 2.  Processes CpGs in chunks and fits a [generalised linear model](https://cran.r-project.org/web/packages/glm2/index.html) for each CpG.
 3.  Fits one model per phenotype and adjusts for covariates.
 4.  Handles interaction terms and PRS mappings when supplied.
 5.  Applies multiple-testing correction.
-6.  Saves fitted model objects, plots, logs, summaries, and annotated results.
+6.  Optionally writes serialized model objects, plots, logs, summaries, and annotated results when `saveOutputs = TRUE`.
 
 ### Parameter guide:
 
--   `inputPheno`: merged phenotype–beta `.RData` input.
+-   `inputPheno`: merged phenotypeâ€“beta `.RData` input.
 -   `outputLogs`: directory for log files.
 -   `outputRData`: directory for model objects.
 -   `outputPlots`: directory for diagnostic and summary plots.
@@ -428,6 +432,10 @@ This wrapper runs `inst/scripts/methylationGLM_T1.R`. It:
 -   `annotationPackage`: annotation package for CpGs.
 -   `annotationCols`: annotation fields to include.
 -   `annotatedGLMOut`: directory for annotated results.
+-   `display`: draw exploratory and diagnostic plots on the active device.
+-   `verbose`: print progress messages with `message()`.
+-   `logs`: write the same progress messages to `outputLogs`.
+-   `saveOutputs`: write optional files to disk; otherwise return results in memory only.
 
 ### GLM structure used in dnaEPICO (`glm2`):
 
@@ -498,7 +506,7 @@ $$
 
 ### Interaction term
 
-If an interaction is specified (for example phenotype × timepoint):
+If an interaction is specified (for example phenotype Ã— timepoint):
 
 $$
 \text{Methylation}_{CpG_i} =
@@ -515,7 +523,7 @@ This step is typically executed on **HPC systems** because it is also computatio
 ```{r, eval=FALSE}
 methylationGLMM_T1T2(
     inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
-    outputLogs = "logs/",
+    outputLogs = "logs",
     outputRData = "rData/methylationGLMM_T1T2/models",
     outputPlots = "figures/methylationGLMM_T1T2",
     personVar = "person",
@@ -545,25 +553,29 @@ methylationGLMM_T1T2(
     annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
     annotationCols = "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,
                       Relation_to_Island,GencodeV41_Group",
-    annotatedLMEOut = "data/methylationGLMM_T1T2"
+    annotatedLMEOut = "data/methylationGLMM_T1T2",
+    display = FALSE,
+    verbose = FALSE,
+    logs = TRUE,
+    saveOutputs = TRUE
 )
 ```
 
 ### What it does:
 
-This wrapper runs `inst/scripts/methylationGLMM_T1T2.R`. It:
+This function returns a structured in-memory longitudinal methylation analysis object. It:
 
-1.  Loads a merged longitudinal phenotype–methylation object from `inputPheno`.
+1.  Loads a merged longitudinal phenotype-methylation object from `inputPheno`.
 2.  Processes CpGs in chunks and fits a linear mixed-effects model.
 3.  Fits one model per phenotype and uses a subject-level random effect.
 4.  Includes fixed effects for phenotype, time, covariates, and optional interactions.
 5.  Adds phenotype-specific PRS terms based on `prsMap`.
 6.  Applies multiple-testing correction.
-7.  Saves model objects, figures, logs, summaries, significant interaction results, and annotated tables.
+7.  Optionally writes model objects, figures, logs, summaries, significant interaction results, and annotated tables when `saveOutputs = TRUE`.
 
 ### Parameter guide:
 
--   `inputPheno`: merged longitudinal phenotype–methylation `.RData` input.
+-   `inputPheno`: merged longitudinal phenotype-methylation `.RData` or `.rds` input.
 -   `outputLogs`: directory for logs.
 -   `outputRData`: directory for mixed-effects model objects.
 -   `outputPlots`: directory for plots.
@@ -592,6 +604,10 @@ This wrapper runs `inst/scripts/methylationGLMM_T1T2.R`. It:
 -   `annotationPackage`: annotation package.
 -   `annotationCols`: annotation fields.
 -   `annotatedLMEOut`: directory for annotated results.
+-   `display`: draw diagnostic plots on the active device.
+-   `verbose`: emit progress messages with `message()`.
+-   `logs`: save the same progress messages in `outputLogs`.
+-   `saveOutputs`: write files to the requested output folders; otherwise results stay in memory.
 
 ### LMEM structure used in dnaEPICO (`lme4`):
 
@@ -648,28 +664,28 @@ The example template `Makefile.model.pipeline` is copied and renamed to `Makefil
 
 Common grouped targets:
 
--   `f3`: Steps 1–3 (preprocessing + SVA + merge)
--   `f4`: Steps 1–4 (adds GLM)
--   `f3lme`: Steps 1–3 and 5 (adds LME4)
--   `all`: Steps 1–5
+-   `f3`: Steps 1â€“3 (preprocessing + SVA + merge)
+-   `f4`: Steps 1â€“4 (adds GLM)
+-   `f3lme`: Steps 1â€“3 and 5 (adds LME4)
+-   `all`: Steps 1â€“5
 
 ### Commands
 
 -   Show status of pipeline outputs
     -   make status MODEL=model1
--   Run steps 1–3 for one model
+-   Run steps 1â€“3 for one model
     -   make f3 MODEL=model1
--   Run steps 1–4 for one model
+-   Run steps 1â€“4 for one model
     -   make f4 MODEL=model1
--   Run steps 1–3 and 5 for one model
+-   Run steps 1â€“3 and 5 for one model
     -   make f3lme MODEL=model1
 -   Run the full pipeline
     -   make all MODEL=model1
 -   Run multiple models
     -   make models *(run the entire pipeline for all models in parallel.)*
-    -   make f3_models *(run Steps 1–3 in parallel for all models.)*
-    -   make f4_models *(run Steps 1–4 in parallel for all models.)*
-    -   make f3lme_models *(run Steps 1–3 + LME in parallel for all models.)*
+    -   make f3_models *(run Steps 1â€“3 in parallel for all models.)*
+    -   make f4_models *(run Steps 1â€“4 in parallel for all models.)*
+    -   make f3lme_models *(run Steps 1â€“3 + LME in parallel for all models.)*
 
 ## Makefile Modelling steps (HPC)
 
@@ -891,7 +907,7 @@ dnamReport(
 
 # Troubleshooting
 
-- If a step “fails”, check logs in `logs/`
+- If a step â€œfailsâ€, check logs in `logs/`
 - If Make targets are missing, confirm:
   - your working directory contains a valid `Makefile`
 
@@ -922,7 +938,7 @@ This example is designed to:
 - demonstrate how data and results are organised on disk,
 - and provide a safe, reproducible way to test the pipeline
 
-To avoid creating permanent files on the user’s computer, **all steps are run inside a temporary directory**.
+To avoid creating permanent files on the userâ€™s computer, **all steps are run inside a temporary directory**.
 
 When analysing real data, users can simply replace the temporary directory with their own project folder.
 
@@ -1156,7 +1172,8 @@ svaEnmix(
   tiffRes = 150,
   dataBaseDir = file.path(tmpDir, "data") ,
   figureBaseDir = file.path(tmpDir, "figures"),
-  rBaseDir = file.path(tmpDir, "rData")
+  rBaseDir = file.path(tmpDir, "rData"),
+  saveOutputs = TRUE
   
 )
 
@@ -1224,7 +1241,8 @@ preprocessingPheno(
   outputRData = file.path(tmpDir, "rData", "preprocessingPheno", "metrics"),
   outputRDataMerge = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData"),
   outputLogs = file.path(tmpDir, "logs"),
-  outputDir = file.path(tmpDir, "data", "preprocessingPheno")
+  outputDir = file.path(tmpDir, "data", "preprocessingPheno"),
+  saveOutputs = TRUE
 )
 
 ```
@@ -1391,4 +1409,5 @@ If you are asking yourself the question "Where do I start using Bioconductor?" y
 As package developers, we try to explain clearly how to use our packages and in which order to use the functions. But `R` and `Bioconductor` have a steep learning curve so it is critical to learn where to ask for help. The blog post quoted above mentions some but we would like to highlight the [Bioconductor support site](https://support.bioconductor.org/) as the main resource for getting help: remember to use the `dnaEPICO` tag and check [the older posts](https://support.bioconductor.org/tag/dnaEPICO/). Other alternatives are available such as creating GitHub issues and tweeting. However, please note that if you want to receive help you should adhere to the [posting guidelines](http://www.bioconductor.org/help/support/posting-guide/). It is particularly critical that you provide a small reproducible example and your session information so package developers can track down the source of the error.
 
 # References
+
 
