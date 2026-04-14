@@ -54,45 +54,217 @@
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
+          <p><code><a href="analyzeSvaEnmix.html">analyzeSvaEnmix()</a></code> </p>
+        </td>
+        <td><p>Analyze surrogate variables against Sentrix chip and position factors</p></td>
+      </tr><tr><td>
+          <p><code><a href="annotateMethylationGLMM_T1T2Summaries.html">annotateMethylationGLMM_T1T2Summaries()</a></code> </p>
+        </td>
+        <td><p>Annotate longitudinal mixed-effects summary tables with array annotation metadata</p></td>
+      </tr><tr><td>
+          <p><code><a href="annotateMethylationGLM_T1Summaries.html">annotateMethylationGLM_T1Summaries()</a></code> </p>
+        </td>
+        <td><p>Annotate one-timepoint GLM summary tables with array annotation metadata</p></td>
+      </tr><tr><td>
+          <p><code><a href="assessSamplesMinfiEwasWater.html">assessSamplesMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Assess sample quality before sample filtering</p></td>
+      </tr><tr><td>
+          <p><code><a href="buildClockFoundationInputsPreprocessingPheno.html">buildClockFoundationInputsPreprocessingPheno()</a></code> </p>
+        </td>
+        <td><p>Build Clock Foundation input tables from preprocessingPheno data</p></td>
+      </tr><tr><td>
+          <p><code><a href="buildRawMinfiEwasWater.html">buildRawMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Build raw minfi preprocessing objects</p></td>
+      </tr><tr><td>
+          <p><code><a href="collectSignificantCpGsMethylationGLM_T1.html">collectSignificantCpGsMethylationGLM_T1()</a></code> </p>
+        </td>
+        <td><p>Collect significant CpG coefficient tables from fitted one-timepoint GLMs</p></td>
+      </tr><tr><td>
+          <p><code><a href="collectSignificantInteractionsMethylationGLMM_T1T2.html">collectSignificantInteractionsMethylationGLMM_T1T2()</a></code> </p>
+        </td>
+        <td><p>Collect significant longitudinal model terms from fitted mixed-effects models</p></td>
+      </tr><tr><td>
+          <p><code><a href="combineTimepointsPreprocessingPheno.html">combineTimepointsPreprocessingPheno()</a></code> </p>
+        </td>
+        <td><p>Combine selected timepoints for downstream longitudinal modeling</p></td>
+      </tr><tr><td>
           <p><code><a href="dnamReport.html">dnamReport()</a></code> </p>
         </td>
-        <td><p>Generate a DNA methylation PDF report</p></td>
+        <td><p>Prepare and optionally render a DNA methylation PDF report</p></td>
       </tr><tr><td>
           <p><code><a href="estimateLC.html">estimateLC()</a></code> </p>
         </td>
-        <td><p>Estimate reference-based cell composition from beta values</p></td>
+        <td><p>Estimate saliva cell proportions from DNA methylation beta values</p></td>
+      </tr><tr><td>
+          <p><code><a href="estimateLCMinfiEwasWater.html">estimateLCMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Estimate cell composition for preprocessingMinfiEwasWater</p></td>
+      </tr><tr><td>
+          <p><code><a href="estimateSvaEnmixControls.html">estimateSvaEnmixControls()</a></code> </p>
+        </td>
+        <td><p>Estimate surrogate variables from ENmix control probes</p></td>
       </tr><tr><td>
           <p><code><a href="extractMake.html">extractMake()</a></code> </p>
         </td>
         <td><p>Copy dnaEPICO Makefile to a user directory</p></td>
       </tr><tr><td>
+          <p><code><a href="extractMetricsMinfiEwasWater.html">extractMetricsMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Extract beta, M, and copy-number matrices from a filtered object</p></td>
+      </tr><tr><td>
+          <p><code><a href="filterProbesMinfiEwasWater.html">filterProbesMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Filter probes from a normalized methylation object</p></td>
+      </tr><tr><td>
+          <p><code><a href="filterSamplesMinfiEwasWater.html">filterSamplesMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Filter failed samples from an RGSet and phenotype table</p></td>
+      </tr><tr><td>
+          <p><code><a href="fitMethylationGLMM_T1T2Models.html">fitMethylationGLMM_T1T2Models()</a></code> </p>
+        </td>
+        <td><p>Fit CpG-wise mixed-effects models for longitudinal methylation analyses</p></td>
+      </tr><tr><td>
+          <p><code><a href="fitMethylationGLM_T1Models.html">fitMethylationGLM_T1Models()</a></code> </p>
+        </td>
+        <td><p>Fit CpG-wise Gaussian GLMs for one-timepoint methylation analyses</p></td>
+      </tr><tr><td>
+          <p><code><a href="loadMetricsPreprocessingPheno.html">loadMetricsPreprocessingPheno()</a></code> </p>
+        </td>
+        <td><p>Load methylation metric matrices for preprocessingPheno</p></td>
+      </tr><tr><td>
+          <p><code><a href="mergeSvaTargetsEnmix.html">mergeSvaTargetsEnmix()</a></code> </p>
+        </td>
+        <td><p>Merge surrogate variables into the phenotype table</p></td>
+      </tr><tr><td>
           <p><code><a href="methylationGLMM_T1T2.html">methylationGLMM_T1T2()</a></code> </p>
         </td>
-        <td><p>Fit longitudinal CpG-level mixed-effects models across combined timepoints</p></td>
+        <td><p>Fit CpG-wise linear mixed-effects models for longitudinal methylation analyses</p></td>
       </tr><tr><td>
           <p><code><a href="methylationGLM_T1.html">methylationGLM_T1()</a></code> </p>
         </td>
-        <td><p>Fit CpG-level GLMs for a single timepoint</p></td>
+        <td><p>Fit CpG-wise GLMs for one-timepoint methylation analyses</p></td>
       </tr><tr><td>
-          <p><code><a href="plotPreprocessingMinfiEwasWater.html">plotPreprocessingMinfiEwasWater()</a></code> </p>
+          <p><code><a href="normalizeMinfiEwasWater.html">normalizeMinfiEwasWater()</a></code> </p>
         </td>
-        <td><p>Plot one preprocessing diagnostic from a step-1 preprocessing object</p></td>
+        <td><p>Normalize filtered samples with minfi and wateRmelon methods</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotAssessmentMinfiEwasWater.html">plotAssessmentMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Plot quality-assessment outputs for preprocessingMinfiEwasWater</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotCtrlMinfiEwasWater.html">plotCtrlMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Plot ENmix control images from an RGSet</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotMethylationGLMM_T1T2Diagnostics.html">plotMethylationGLMM_T1T2Diagnostics()</a></code> </p>
+        </td>
+        <td><p>Plot longitudinal mixed-effects model diagnostics</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotMethylationGLM_T1Diagnostics.html">plotMethylationGLM_T1Diagnostics()</a></code> </p>
+        </td>
+        <td><p>Plot diagnostic summaries for one-timepoint methylation GLMs</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotMethylationGLM_T1Distributions.html">plotMethylationGLM_T1Distributions()</a></code> </p>
+        </td>
+        <td><p>Plot phenotype and covariate distributions for one-timepoint GLM analyses</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotMetricsMinfiEwasWater.html">plotMetricsMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Plot multidimensional scaling or density summaries from final metrics</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotNormalizationMinfiEwasWater.html">plotNormalizationMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Plot raw and normalized methylation distributions</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotRawDensityMinfiEwasWater.html">plotRawDensityMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Plot raw beta-value density from a raw preprocessing object</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotSexMinfiEwasWater.html">plotSexMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Plot predicted or clinical sex from <code><a href="../reference/predictSexMinfiEwasWater.html">predictSexMinfiEwasWater()</a></code></p></td>
+      </tr><tr><td>
+          <p><code><a href="plotSvaEnmix.html">plotSvaEnmix()</a></code> </p>
+        </td>
+        <td><p>Plot surrogate variables for svaEnmix</p></td>
+      </tr><tr><td>
+          <p><code><a href="predictSexMinfiEwasWater.html">predictSexMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Predict biological sex from a filtered raw-data object</p></td>
+      </tr><tr><td>
+          <p><code><a href="prepareDnamReportInputs.html">prepareDnamReportInputs()</a></code> </p>
+        </td>
+        <td><p>Prepare inputs for a DNA methylation report</p></td>
+      </tr><tr><td>
+          <p><code><a href="prepareMethylationGLMM_T1T2Data.html">prepareMethylationGLMM_T1T2Data()</a></code> </p>
+        </td>
+        <td><p>Prepare longitudinal phenotype-plus-beta data for mixed-effects analyses</p></td>
+      </tr><tr><td>
+          <p><code><a href="prepareMethylationGLM_T1Data.html">prepareMethylationGLM_T1Data()</a></code> </p>
+        </td>
+        <td><p>Prepare phenotype-plus-beta data for one-timepoint GLM analyses</p></td>
       </tr><tr><td>
           <p><code><a href="preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater()</a></code> </p>
         </td>
-        <td><p>Preprocess Illumina methylation array data for interactive use</p></td>
+        <td><p>Convenience preprocessing pipeline for Illumina methylation arrays</p></td>
       </tr><tr><td>
           <p><code><a href="preprocessingPheno.html">preprocessingPheno()</a></code> </p>
         </td>
-        <td><p>Prepare phenotype-aligned methylation datasets</p></td>
+        <td><p>Prepare phenotype and methylation matrices for downstream modeling</p></td>
+      </tr><tr><td>
+          <p><code><a href="readPhenotypeTargets.html">readPhenotypeTargets()</a></code> </p>
+        </td>
+        <td><p>Read phenotype targets for shared dnaEPICO workflows</p></td>
+      </tr><tr><td>
+          <p><code><a href="readRGSetMinfiEwasWater.html">readRGSetMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Read IDAT files into an annotated RGChannelSet</p></td>
+      </tr><tr><td>
+          <p><code><a href="renderDnamReport.html">renderDnamReport()</a></code> </p>
+        </td>
+        <td><p>Render a prepared DNA methylation report</p></td>
+      </tr><tr><td>
+          <p><code><a href="splitTimepointsPreprocessingPheno.html">splitTimepointsPreprocessingPheno()</a></code> </p>
+        </td>
+        <td><p>Split phenotype and methylation data by timepoint</p></td>
+      </tr><tr><td>
+          <p><code><a href="summarizeMethylationGLMM_T1T2Models.html">summarizeMethylationGLMM_T1T2Models()</a></code> </p>
+        </td>
+        <td><p>Summarize CpG-wise mixed-effects model fits for longitudinal analyses</p></td>
+      </tr><tr><td>
+          <p><code><a href="summarizeMethylationGLM_T1Models.html">summarizeMethylationGLM_T1Models()</a></code> </p>
+        </td>
+        <td><p>Summarize CpG-wise Gaussian GLM fits for one-timepoint analyses</p></td>
+      </tr><tr><td>
+          <p><code><a href="summarizeTimepointsMethylationGLMM_T1T2.html">summarizeTimepointsMethylationGLMM_T1T2()</a></code> </p>
+        </td>
+        <td><p>Summarize phenotype values by timepoint for longitudinal methylation analyses</p></td>
       </tr><tr><td>
           <p><code><a href="svaEnmix.html">svaEnmix()</a></code> </p>
         </td>
-        <td><p>Run ENmix control-probe surrogate variable analysis</p></td>
+        <td><p>Estimate surrogate variables from ENmix control probes</p></td>
       </tr><tr><td>
-          <p><code><a href="writePreprocessingMinfiEwasWater.html">writePreprocessingMinfiEwasWater()</a></code> </p>
+          <p><code><a href="writeMethylationGLMM_T1T2Outputs.html">writeMethylationGLMM_T1T2Outputs()</a></code> </p>
         </td>
-        <td><p>Write legacy dnaEPICO step-1 outputs from a preprocessing object</p></td>
+        <td><p>Write optional disk outputs for longitudinal mixed-effects analyses</p></td>
+      </tr><tr><td>
+          <p><code><a href="writeMethylationGLM_T1Outputs.html">writeMethylationGLM_T1Outputs()</a></code> </p>
+        </td>
+        <td><p>Write optional disk outputs for one-timepoint GLM analyses</p></td>
+      </tr><tr><td>
+          <p><code><a href="writePhenoLCMinfiEwasWater.html">writePhenoLCMinfiEwasWater()</a></code> </p>
+        </td>
+        <td><p>Write the merged phenotype plus cell-composition table</p></td>
+      </tr><tr><td>
+          <p><code><a href="writePreprocessingPhenoOutputs.html">writePreprocessingPhenoOutputs()</a></code> </p>
+        </td>
+        <td><p>Write legacy preprocessingPheno outputs to disk</p></td>
+      </tr><tr><td>
+          <p><code><a href="writeSvaEnmixOutputs.html">writeSvaEnmixOutputs()</a></code> </p>
+        </td>
+        <td><p>Write svaEnmix outputs to disk</p></td>
       </tr></tbody></table></div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
