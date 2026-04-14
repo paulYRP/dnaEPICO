@@ -169,35 +169,39 @@ svaEnmixValidateRGSet <- function(
   rgset_dims <- dim(RGSet)
   rgset_ncol <- svaEnmixGetRGSetSampleCount(RGSet)
   slots <- if (isS4(RGSet)) methods::slotNames(RGSet) else character(0)
+  log_lines <- c(
+    paste("Loaded RGSet object class: ", rgset_class)
+  )
+
+  if (length(rgset_dims) == 2L) {
+    log_lines <- c(
+      log_lines,
+      paste("Loaded RGSet dimensions:   ", paste(rgset_dims, collapse = " x "))
+    )
+  }
+
+  log_lines <- c(
+    log_lines,
+    paste(
+      "Loaded RGSet sample count:  ",
+      if (length(rgset_ncol) == 1L && !is.na(rgset_ncol)) {
+        rgset_ncol
+      } else {
+        "unavailable"
+      }
+    ),
+    paste(
+      "Loaded RGSet slots:         ",
+      if (length(slots) > 0L) {
+        paste(slots, collapse = ", ")
+      } else {
+        "unavailable"
+      }
+    )
+  )
 
   emitLogMinfiEwasWater(
-    c(
-      paste("Loaded RGSet object class: ", rgset_class),
-      paste(
-        "Loaded RGSet dimensions:   ",
-        if (length(rgset_dims) == 2L) {
-          paste(rgset_dims, collapse = " x ")
-        } else {
-          "unavailable"
-        }
-      ),
-      paste(
-        "Loaded RGSet sample count:  ",
-        if (length(rgset_ncol) == 1L && !is.na(rgset_ncol)) {
-          rgset_ncol
-        } else {
-          "unavailable"
-        }
-      ),
-      paste(
-        "Loaded RGSet slots:         ",
-        if (length(slots) > 0L) {
-          paste(slots, collapse = ", ")
-        } else {
-          "unavailable"
-        }
-      )
-    ),
+    log_lines,
     verbose = verbose,
     log_path = log_path
   )
