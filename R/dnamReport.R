@@ -513,70 +513,77 @@ dnamReport <- function(
     log_path = log_path
   )
 
-  prepared_report <- prepareDnamReportInputs(
-    output = output,
-    outputDir = outputDir,
-    qcDir = qcDir,
-    preprocessingDir = preprocessingDir,
-    postprocessingDir = postprocessingDir,
-    svaDir = svaDir,
-    glmDir = glmDir,
-    glmmDir = glmmDir,
-    figDir = figDir,
-    reportTitle = reportTitle,
-    author = author,
-    date = date,
+  withLoggedErrorsMinfiEwasWater(
+    expr = {
+      prepared_report <- prepareDnamReportInputs(
+        output = output,
+        outputDir = outputDir,
+        qcDir = qcDir,
+        preprocessingDir = preprocessingDir,
+        postprocessingDir = postprocessingDir,
+        svaDir = svaDir,
+        glmDir = glmDir,
+        glmmDir = glmmDir,
+        figDir = figDir,
+        reportTitle = reportTitle,
+        author = author,
+        date = date,
+        verbose = verbose,
+        logs = logs,
+        logDir = logDir,
+        templatePath = templatePath
+      )
+
+      render_result <- NULL
+      status <- "prepared"
+      error_message <- NULL
+      output_file <- prepared_report$outputFile
+
+      if (isTRUE(render)) {
+        render_result <- renderDnamReport(
+          preparedReport = prepared_report,
+          verbose = verbose,
+          logs = logs,
+          logDir = logDir
+        )
+        status <- render_result$status
+        error_message <- render_result$errorMessage
+        if (!is.null(render_result$renderedFile)) {
+          output_file <- render_result$renderedFile
+        }
+      }
+
+      emitLogMinfiEwasWater(
+        c(
+          "=======================================================================",
+          paste("Finished DNA methylation report step:", format(Sys.time())),
+          paste("Final status:                   ", status),
+          paste("Output file:                    ", output_file),
+          if (is.null(error_message)) {
+            "Final message:                  none"
+          } else {
+            paste("Final message:                  ", error_message)
+          },
+          "======================================================================="
+        ),
+        verbose = verbose,
+        log_path = log_path
+      )
+
+      structure(
+        list(
+          preparedReport = prepared_report,
+          renderResult = render_result,
+          status = status,
+          outputFile = output_file,
+          errorMessage = error_message,
+          logFile = log_path
+        ),
+        class = "dnaEPICO_dnamReport"
+      )
+    },
+    log_path = log_path,
     verbose = verbose,
-    logs = logs,
-    logDir = logDir,
-    templatePath = templatePath
-  )
-
-  render_result <- NULL
-  status <- "prepared"
-  error_message <- NULL
-  output_file <- prepared_report$outputFile
-
-  if (isTRUE(render)) {
-    render_result <- renderDnamReport(
-      preparedReport = prepared_report,
-      verbose = verbose,
-      logs = logs,
-      logDir = logDir
-    )
-    status <- render_result$status
-    error_message <- render_result$errorMessage
-    if (!is.null(render_result$renderedFile)) {
-      output_file <- render_result$renderedFile
-    }
-  }
-
-  emitLogMinfiEwasWater(
-    c(
-      "=======================================================================",
-      paste("Finished DNA methylation report step:", format(Sys.time())),
-      paste("Final status:                   ", status),
-      paste("Output file:                    ", output_file),
-      if (is.null(error_message)) {
-        "Final message:                  none"
-      } else {
-        paste("Final message:                  ", error_message)
-      },
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
-
-  structure(
-    list(
-      preparedReport = prepared_report,
-      renderResult = render_result,
-      status = status,
-      outputFile = output_file,
-      errorMessage = error_message,
-      logFile = log_path
-    ),
-    class = "dnaEPICO_dnamReport"
+    context = "dnamReport"
   )
 }

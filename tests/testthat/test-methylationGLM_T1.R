@@ -103,3 +103,20 @@ test_that("methylationGLM_T1 can write outputs and logs on request", {
     expect_true(length(result$savedFiles$significantCpGFiles$status) >= 1)
     expect_true(all(file.exists(result$savedFiles$significantCpGFiles$status)))
 })
+
+test_that("annotateMethylationGLM_T1Summaries accepts annotation package names", {
+    testthat::skip_if_not_installed("IlluminaHumanMethylation450kanno.ilmn12.hg19")
+
+    ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+
+    annotation_data <- annotateMethylationGLM_T1Summaries(
+        modelSummaries = ex$modelSummaries,
+        annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+        annotationCols = "Name,chr,pos",
+        verbose = FALSE,
+        logs = FALSE
+    )
+
+    expect_s3_class(annotation_data, "dnaEPICO_methylationGLM_T1_annotation")
+    expect_true("IlmnID" %in% colnames(annotation_data$data))
+})

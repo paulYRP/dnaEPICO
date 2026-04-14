@@ -153,158 +153,165 @@ svaEnmix <- function(
     log_path = log_path
   )
 
-  targets <- readPhenotypeTargets(
-    phenoFile = phenoFile,
-    sepType = sepType,
-    nSamples = nSamples,
-    SampleID = SampleID,
+  withLoggedErrorsMinfiEwasWater(
+    expr = {
+      targets <- readPhenotypeTargets(
+        phenoFile = phenoFile,
+        sepType = sepType,
+        nSamples = nSamples,
+        SampleID = SampleID,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
+
+      RGSet <- loadSavedObjectPreprocessingPheno(
+        path = rgsetData,
+        preferred_name = "RGSet"
+      )
+
+      if (ncol(RGSet) != nrow(targets)) {
+        stop(
+          "The saved RGSet contains ",
+          ncol(RGSet),
+          " samples but the phenotype table contains ",
+          nrow(targets),
+          ".",
+          call. = FALSE
+        )
+      }
+
+      colnames(RGSet) <- targets[[SampleID]]
+      Biobase::annotation(RGSet) <- c(
+        array = arrayType,
+        annotation = annotationVersion
+      )
+
+      emitLogMinfiEwasWater(
+        c(
+          paste("RGSet loaded with          ", ncol(RGSet), " samples."),
+          paste("Applied annotation:        ", paste(Biobase::annotation(RGSet), collapse = ", ")),
+          "======================================================================="
+        ),
+        verbose = verbose,
+        log_path = log_path
+      )
+
+      svaData <- estimateSvaEnmixControls(
+        RGSet = RGSet,
+        ctrlSvaPercVar = ctrlSvaPercVar,
+        ctrlSvaFlag = ctrlSvaFlag,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
+      mergedPheno <- mergeSvaTargetsEnmix(
+        targets = targets,
+        sva = svaData$sva,
+        SampleID = SampleID,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
+      analysisData <- analyzeSvaEnmix(
+        sva = svaData$sva,
+        RGSet = RGSet,
+        SentrixIDColumn = SentrixIDColumn,
+        SentrixPositionColumn = SentrixPositionColumn,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
+
+      plot_files <- list(
+        sentrixID = plotSvaEnmix(
+          analysisData = analysisData,
+          plot = "sentrix_id",
+          display = display,
+          file = if (isTRUE(saveOutputs)) file.path(figure_dir, "sva_SentrixID.tiff") else NULL,
+          width = tiffWidth,
+          height = tiffHeight,
+          res = tiffRes,
+          verbose = verbose,
+          logs = logs,
+          log_dir = outputLogs,
+          log_file = log_file
+        ),
+        sentrixPosition = plotSvaEnmix(
+          analysisData = analysisData,
+          plot = "sentrix_position",
+          display = display,
+          file = if (isTRUE(saveOutputs)) file.path(figure_dir, "sva_SentrixPosition.tiff") else NULL,
+          width = tiffWidth,
+          height = tiffHeight,
+          res = tiffRes,
+          verbose = verbose,
+          logs = logs,
+          log_dir = outputLogs,
+          log_file = log_file
+        ),
+        matrix = plotSvaEnmix(
+          analysisData = analysisData,
+          plot = "matrix",
+          display = display,
+          file = if (isTRUE(saveOutputs)) file.path(figure_dir, "sva_SentrixIDPosition.tiff") else NULL,
+          width = tiffWidth,
+          height = tiffHeight,
+          res = tiffRes,
+          verbose = verbose,
+          logs = logs,
+          log_dir = outputLogs,
+          log_file = log_file
+        )
+      )
+
+      savedFiles <- NULL
+      if (isTRUE(saveOutputs)) {
+        savedFiles <- writeSvaEnmixOutputs(
+          svaData = svaData,
+          mergedPheno = mergedPheno,
+          analysisData = analysisData,
+          phenoFile = phenoFile,
+          dataBaseDir = dataBaseDir,
+          rBaseDir = rBaseDir,
+          scriptLabel = scriptLabel,
+          verbose = verbose,
+          logs = logs,
+          log_dir = outputLogs,
+          log_file = log_file
+        )
+      }
+
+      emitLogMinfiEwasWater(
+        c(
+          "==== Finished SVA Estimation with Enmix ====",
+          paste("End time:                 ", format(Sys.time())),
+          "======================================================================="
+        ),
+        verbose = verbose,
+        log_path = log_path
+      )
+
+      structure(
+        list(
+          targets = targets,
+          RGSet = RGSet,
+          svaData = svaData,
+          mergedPheno = mergedPheno,
+          analysisData = analysisData,
+          plotFiles = plot_files,
+          savedFiles = savedFiles,
+          logFile = log_path
+        ),
+        class = "dnaEPICO_svaEnmix"
+      )
+    },
+    log_path = log_path,
     verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = log_file
-  )
-
-  RGSet <- loadSavedObjectPreprocessingPheno(
-    path = rgsetData,
-    preferred_name = "RGSet"
-  )
-
-  if (length(Biobase::sampleNames(RGSet)) != nrow(targets)) {
-    stop(
-      "The saved RGSet contains ",
-      length(Biobase::sampleNames(RGSet)),
-      " samples but the phenotype table contains ",
-      nrow(targets),
-      ".",
-      call. = FALSE
-    )
-  }
-
-  Biobase::sampleNames(RGSet) <- targets[[SampleID]]
-  Biobase::annotation(RGSet) <- c(
-    array = arrayType,
-    annotation = annotationVersion
-  )
-
-  emitLogMinfiEwasWater(
-    c(
-      paste("RGSet loaded with          ", length(Biobase::sampleNames(RGSet)), " samples."),
-      paste("Applied annotation:        ", paste(Biobase::annotation(RGSet), collapse = ", ")),
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
-
-  svaData <- estimateSvaEnmixControls(
-    RGSet = RGSet,
-    ctrlSvaPercVar = ctrlSvaPercVar,
-    ctrlSvaFlag = ctrlSvaFlag,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = log_file
-  )
-  mergedPheno <- mergeSvaTargetsEnmix(
-    targets = targets,
-    sva = svaData$sva,
-    SampleID = SampleID,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = log_file
-  )
-  analysisData <- analyzeSvaEnmix(
-    sva = svaData$sva,
-    RGSet = RGSet,
-    SentrixIDColumn = SentrixIDColumn,
-    SentrixPositionColumn = SentrixPositionColumn,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = log_file
-  )
-
-  plot_files <- list(
-    sentrixID = plotSvaEnmix(
-      analysisData = analysisData,
-      plot = "sentrix_id",
-      display = display,
-      file = if (isTRUE(saveOutputs)) file.path(figure_dir, "sva_SentrixID.tiff") else NULL,
-      width = tiffWidth,
-      height = tiffHeight,
-      res = tiffRes,
-      verbose = verbose,
-      logs = logs,
-      log_dir = outputLogs,
-      log_file = log_file
-    ),
-    sentrixPosition = plotSvaEnmix(
-      analysisData = analysisData,
-      plot = "sentrix_position",
-      display = display,
-      file = if (isTRUE(saveOutputs)) file.path(figure_dir, "sva_SentrixPosition.tiff") else NULL,
-      width = tiffWidth,
-      height = tiffHeight,
-      res = tiffRes,
-      verbose = verbose,
-      logs = logs,
-      log_dir = outputLogs,
-      log_file = log_file
-    ),
-    matrix = plotSvaEnmix(
-      analysisData = analysisData,
-      plot = "matrix",
-      display = display,
-      file = if (isTRUE(saveOutputs)) file.path(figure_dir, "sva_SentrixIDPosition.tiff") else NULL,
-      width = tiffWidth,
-      height = tiffHeight,
-      res = tiffRes,
-      verbose = verbose,
-      logs = logs,
-      log_dir = outputLogs,
-      log_file = log_file
-    )
-  )
-
-  savedFiles <- NULL
-  if (isTRUE(saveOutputs)) {
-    savedFiles <- writeSvaEnmixOutputs(
-      svaData = svaData,
-      mergedPheno = mergedPheno,
-      analysisData = analysisData,
-      phenoFile = phenoFile,
-      dataBaseDir = dataBaseDir,
-      rBaseDir = rBaseDir,
-      scriptLabel = scriptLabel,
-      verbose = verbose,
-      logs = logs,
-      log_dir = outputLogs,
-      log_file = log_file
-    )
-  }
-
-  emitLogMinfiEwasWater(
-    c(
-      "==== Finished SVA Estimation with Enmix ====",
-      paste("End time:                 ", format(Sys.time())),
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
-
-  structure(
-    list(
-      targets = targets,
-      RGSet = RGSet,
-      svaData = svaData,
-      mergedPheno = mergedPheno,
-      analysisData = analysisData,
-      plotFiles = plot_files,
-      savedFiles = savedFiles,
-      logFile = log_path
-    ),
-    class = "dnaEPICO_svaEnmix"
+    context = "svaEnmix"
   )
 }

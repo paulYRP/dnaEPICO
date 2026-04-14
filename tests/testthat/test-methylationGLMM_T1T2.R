@@ -113,3 +113,21 @@ test_that("methylationGLMM_T1T2 can write outputs and derive person IDs on reque
     expect_true(length(result$savedFiles$significantInteractionFiles$score) >= 1)
     expect_true(all(file.exists(result$savedFiles$significantInteractionFiles$score)))
 })
+
+test_that("annotateMethylationGLMM_T1T2Summaries accepts annotation package names", {
+    testthat::skip_if_not_installed("IlluminaHumanMethylation450kanno.ilmn12.hg19")
+    testthat::skip_if_not_installed("lmerTest")
+
+    ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+
+    annotation_data <- annotateMethylationGLMM_T1T2Summaries(
+        modelSummaries = ex$modelSummaries,
+        annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+        annotationCols = "Name,chr,pos",
+        verbose = FALSE,
+        logs = FALSE
+    )
+
+    expect_s3_class(annotation_data, "dnaEPICO_methylationGLMM_T1T2_annotation")
+    expect_true("IlmnID" %in% colnames(annotation_data$data))
+})

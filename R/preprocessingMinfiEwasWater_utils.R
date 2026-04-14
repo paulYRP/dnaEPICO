@@ -34,6 +34,92 @@ emitLogMinfiEwasWater <- function(lines, verbose = FALSE, log_path = NULL) {
     invisible(NULL)
 }
 
+#' Format call-stack lines for dnaEPICO workflow error logs
+#'
+#' @param calls List of calls, typically from `sys.calls()`.
+#'
+#' @return Character vector of formatted stack-trace lines.
+#' @description
+#' Internal helper that converts R calls into readable log lines while dropping
+#' the noisier `tryCatch()` bookkeeping frames.
+#' @keywords internal
+#' @noRd
+formatCallStackMinfiEwasWater <- function(calls) {
+    if (length(calls) == 0L) {
+        return("Call stack: unavailable")
+    }
+
+    call_text <- vapply(
+        calls,
+        function(call) paste(deparse(call, width.cutoff = 500L), collapse = " "),
+        character(1)
+    )
+
+    keep <- !grepl(
+        "^(tryCatch|tryCatchList|tryCatchOne|doTryCatch|withCallingHandlers)\\b",
+        call_text
+    )
+    keep <- keep & !grepl("^withLoggedErrorsMinfiEwasWater\\b", call_text)
+
+    filtered_calls <- call_text[keep]
+    if (length(filtered_calls) == 0L) {
+        filtered_calls <- call_text
+    }
+
+    c(
+        "Call stack:",
+        paste0("  ", seq_along(filtered_calls), ": ", filtered_calls)
+    )
+}
+
+#' Wrap a workflow block and log any error before rethrowing
+#'
+#' @param expr Expression to evaluate.
+#' @param log_path Character or `NULL`. Path to the log file.
+#' @param verbose Logical. If `TRUE`, mirror the error message with `message()`.
+#' @param context Character. Short label describing where the error happened.
+#'
+#' @return Returns the value of `expr` when successful.
+#' @description
+#' Internal helper that ensures top-level workflow wrappers record fatal errors in
+#' their log files before the error is rethrown to the caller.
+#' @keywords internal
+#' @noRd
+withLoggedErrorsMinfiEwasWater <- function(
+  expr,
+  log_path = NULL,
+  verbose = FALSE,
+  context = "dnaEPICO workflow"
+) {
+    tryCatch(
+        expr,
+        error = function(e) {
+            failing_call <- conditionCall(e)
+            call_lines <- formatCallStackMinfiEwasWater(sys.calls())
+            emitLogMinfiEwasWater(
+                c(
+                    "=======================================================================",
+                    paste("ERROR in", context, ":"),
+                    conditionMessage(e),
+                    if (is.null(failing_call)) {
+                        "Failing call: unavailable"
+                    } else {
+                        paste(
+                            "Failing call:",
+                            paste(deparse(failing_call, width.cutoff = 500L), collapse = " ")
+                        )
+                    },
+                    call_lines,
+                    "======================================================================="
+                ),
+                verbose = verbose,
+                log_path = log_path
+            )
+            stop(e)
+        }
+    )
+}
+
 #' Resolve the log file path for preprocessingMinfiEwasWater helpers
 #'
 #' @param logs Logical. If `TRUE`, create a log file path.

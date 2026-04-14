@@ -204,145 +204,152 @@ methylationGLM_T1 <- function(
     log_path = log_path
   )
 
-  preparedData <- prepareMethylationGLM_T1Data(
-    inputPheno = inputPheno,
-    phenotypes = phenotypes,
-    covariates = covariates,
-    factorVars = factorVars,
-    cpgPrefix = cpgPrefix,
-    cpgLimit = cpgLimit,
-    interactionTerm = interactionTerm,
-    prsMap = prsMap,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLM_T1.txt"
-  )
+  withLoggedErrorsMinfiEwasWater(
+    expr = {
+      preparedData <- prepareMethylationGLM_T1Data(
+        inputPheno = inputPheno,
+        phenotypes = phenotypes,
+        covariates = covariates,
+        factorVars = factorVars,
+        cpgPrefix = cpgPrefix,
+        cpgLimit = cpgLimit,
+        interactionTerm = interactionTerm,
+        prsMap = prsMap,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLM_T1.txt"
+      )
 
-  distributionPlots <- plotMethylationGLM_T1Distributions(
-    preparedData = preparedData,
-    plotWidth = plotWidth,
-    plotHeight = plotHeight,
-    plotDPI = plotDPI,
-    outputDir = if (isTRUE(saveOutputs)) outputPlots else NULL,
-    display = display,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLM_T1.txt"
-  )
+      distributionPlots <- plotMethylationGLM_T1Distributions(
+        preparedData = preparedData,
+        plotWidth = plotWidth,
+        plotHeight = plotHeight,
+        plotDPI = plotDPI,
+        outputDir = if (isTRUE(saveOutputs)) outputPlots else NULL,
+        display = display,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLM_T1.txt"
+      )
 
-  modelFits <- fitMethylationGLM_T1Models(
-    preparedData = preparedData,
-    nCores = nCores,
-    libPath = libPath,
-    glmLibs = glmLibs,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLM_T1.txt"
-  )
+      modelFits <- fitMethylationGLM_T1Models(
+        preparedData = preparedData,
+        nCores = nCores,
+        libPath = libPath,
+        glmLibs = glmLibs,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLM_T1.txt"
+      )
 
-  modelSummaries <- summarizeMethylationGLM_T1Models(
-    modelResults = modelFits,
-    preparedData = preparedData,
-    summaryResidualSD = summaryResidualSD,
-    summaryPval = summaryPval,
-    nCores = nCores,
-    libPath = libPath,
-    glmLibs = glmLibs,
-    chunkSize = chunkSize,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLM_T1.txt"
-  )
+      modelSummaries <- summarizeMethylationGLM_T1Models(
+        modelResults = modelFits,
+        preparedData = preparedData,
+        summaryResidualSD = summaryResidualSD,
+        summaryPval = summaryPval,
+        nCores = nCores,
+        libPath = libPath,
+        glmLibs = glmLibs,
+        chunkSize = chunkSize,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLM_T1.txt"
+      )
 
-  significantCpGs <- NULL
-  if (isTRUE(saveSignificantCpGs)) {
-    significantCpGs <- collectSignificantCpGsMethylationGLM_T1(
-      modelResults = modelFits,
-      pvalThreshold = significantCpGPval,
-      interactionTerm = preparedData$interactionTerm,
-      verbose = verbose,
-      logs = logs,
-      log_dir = outputLogs,
-      log_file = "log_methylationGLM_T1.txt"
-    )
-  }
+      significantCpGs <- NULL
+      if (isTRUE(saveSignificantCpGs)) {
+        significantCpGs <- collectSignificantCpGsMethylationGLM_T1(
+          modelResults = modelFits,
+          pvalThreshold = significantCpGPval,
+          interactionTerm = preparedData$interactionTerm,
+          verbose = verbose,
+          logs = logs,
+          log_dir = outputLogs,
+          log_file = "log_methylationGLM_T1.txt"
+        )
+      }
 
-  diagnosticPlots <- plotMethylationGLM_T1Diagnostics(
-    modelSummaries = modelSummaries,
-    preparedData = preparedData,
-    fdrThreshold = fdrThreshold,
-    padjmethod = padjmethod,
-    outputDir = if (isTRUE(saveOutputs)) outputPlots else NULL,
-    plotWidth = plotWidth,
-    plotHeight = plotHeight,
-    plotDPI = plotDPI,
-    display = display,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLM_T1.txt"
-  )
+      diagnosticPlots <- plotMethylationGLM_T1Diagnostics(
+        modelSummaries = modelSummaries,
+        preparedData = preparedData,
+        fdrThreshold = fdrThreshold,
+        padjmethod = padjmethod,
+        outputDir = if (isTRUE(saveOutputs)) outputPlots else NULL,
+        plotWidth = plotWidth,
+        plotHeight = plotHeight,
+        plotDPI = plotDPI,
+        display = display,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLM_T1.txt"
+      )
 
-  annotation <- annotateMethylationGLM_T1Summaries(
-    modelSummaries = modelSummaries,
-    annotationObject = annotationPackage,
-    annotationCols = annotationCols,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLM_T1.txt"
-  )
+      annotation <- annotateMethylationGLM_T1Summaries(
+        modelSummaries = modelSummaries,
+        annotationObject = annotationPackage,
+        annotationCols = annotationCols,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLM_T1.txt"
+      )
 
-  savedFiles <- NULL
-  if (isTRUE(saveOutputs)) {
-    savedFiles <- writeMethylationGLM_T1Outputs(
-      modelResults = modelFits,
-      modelSummaries = modelSummaries,
-      annotatedResults = annotation,
-      significantCpGs = significantCpGs,
-      outputRData = outputRData,
-      summaryTxtDir = summaryTxtDir,
-      significantCpGDir = significantCpGDir,
-      annotatedGLMOut = annotatedGLMOut,
-      saveTxtSummaries = saveTxtSummaries,
-      saveSignificantCpGs = saveSignificantCpGs,
-      verbose = verbose,
-      logs = logs,
-      log_dir = outputLogs,
-      log_file = "log_methylationGLM_T1.txt"
-    )
-  }
-
-  emitLogMinfiEwasWater(
-    c(
-      "=======================================================================",
-      paste("Finished DNAm GLM Analysis (Timepoint 1):", format(Sys.time())),
+      savedFiles <- NULL
       if (isTRUE(saveOutputs)) {
-        paste("Annotated GLM output:         ", savedFiles$annotatedGLM)
-      } else {
-        "Outputs were returned in memory only."
-      },
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
+        savedFiles <- writeMethylationGLM_T1Outputs(
+          modelResults = modelFits,
+          modelSummaries = modelSummaries,
+          annotatedResults = annotation,
+          significantCpGs = significantCpGs,
+          outputRData = outputRData,
+          summaryTxtDir = summaryTxtDir,
+          significantCpGDir = significantCpGDir,
+          annotatedGLMOut = annotatedGLMOut,
+          saveTxtSummaries = saveTxtSummaries,
+          saveSignificantCpGs = saveSignificantCpGs,
+          verbose = verbose,
+          logs = logs,
+          log_dir = outputLogs,
+          log_file = "log_methylationGLM_T1.txt"
+        )
+      }
 
-  structure(
-    list(
-      preparedData = preparedData,
-      distributionPlots = distributionPlots,
-      modelFits = modelFits,
-      modelSummaries = modelSummaries,
-      significantCpGs = significantCpGs,
-      diagnosticPlots = diagnosticPlots,
-      annotation = annotation,
-      savedFiles = savedFiles
-    ),
-    class = "dnaEPICO_methylationGLM_T1"
+      emitLogMinfiEwasWater(
+        c(
+          "=======================================================================",
+          paste("Finished DNAm GLM Analysis (Timepoint 1):", format(Sys.time())),
+          if (isTRUE(saveOutputs)) {
+            paste("Annotated GLM output:         ", savedFiles$annotatedGLM)
+          } else {
+            "Outputs were returned in memory only."
+          },
+          "======================================================================="
+        ),
+        verbose = verbose,
+        log_path = log_path
+      )
+
+      structure(
+        list(
+          preparedData = preparedData,
+          distributionPlots = distributionPlots,
+          modelFits = modelFits,
+          modelSummaries = modelSummaries,
+          significantCpGs = significantCpGs,
+          diagnosticPlots = diagnosticPlots,
+          annotation = annotation,
+          savedFiles = savedFiles
+        ),
+        class = "dnaEPICO_methylationGLM_T1"
+      )
+    },
+    log_path = log_path,
+    verbose = verbose,
+    context = "methylationGLM_T1"
   )
 }

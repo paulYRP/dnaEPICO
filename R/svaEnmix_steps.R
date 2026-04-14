@@ -207,7 +207,7 @@ analyzeSvaEnmix <- function(
     log_file = log_file
   )
 
-  sample_names <- Biobase::sampleNames(RGSet)
+  sample_names <- colnames(RGSet)
   match_idx <- match(sample_names, rownames(sva))
 
   if (anyNA(match_idx)) {

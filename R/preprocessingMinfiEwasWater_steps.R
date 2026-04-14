@@ -83,7 +83,7 @@ readRGSetMinfiEwasWater <- function(
     verbose = FALSE
   )
 
-  Biobase::sampleNames(RGSet) <- targets[[SampleID]]
+  colnames(RGSet) <- targets[[SampleID]]
   Biobase::annotation(RGSet) <- c(
     array = arrayType,
     annotation = annotationVersion
@@ -95,7 +95,7 @@ readRGSetMinfiEwasWater <- function(
     c(
       paste(
         "RGSet loaded with",
-        length(Biobase::sampleNames(RGSet)),
+        ncol(RGSet),
         "samples."
       ),
       paste(
@@ -448,10 +448,10 @@ filterSamplesMinfiEwasWater <- function(
     log_file = log_file
   )
 
-  keep_samples <- !(Biobase::sampleNames(RGSet) %in% failedSamples)
+  keep_samples <- !(colnames(RGSet) %in% failedSamples)
   RGSet_filtered <- RGSet[, keep_samples]
 
-  sample_names <- Biobase::sampleNames(RGSet_filtered)
+  sample_names <- colnames(RGSet_filtered)
   matched <- match(sample_names, targets[[SampleID]])
   targets_filtered <- targets[matched, , drop = FALSE]
   rownames(targets_filtered) <- NULL

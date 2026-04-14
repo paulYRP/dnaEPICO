@@ -57,7 +57,7 @@ exampleMinfiBaseDataDnaEpico <- function() {
             targets <- as.data.frame(SummarizedExperiment::colData(rgset))
 
             if (!("Sample_Name" %in% colnames(targets))) {
-                targets$Sample_Name <- Biobase::sampleNames(rgset)
+                targets$Sample_Name <- colnames(rgset)
             }
 
             if (!("Sex" %in% colnames(targets))) {
@@ -359,7 +359,7 @@ exampleSvaAnalysisStateDnaEpico <- function() {
         key = "sva_analysis",
         builder = function() {
             example_data <- exampleMinfiBaseDataDnaEpico()
-            sample_names <- Biobase::sampleNames(example_data$RGSet)
+            sample_names <- colnames(example_data$RGSet)
 
             sva <- cbind(
                 sva1 = seq_along(sample_names) / 10,

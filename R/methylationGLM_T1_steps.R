@@ -374,6 +374,16 @@ resolveAnnotationObjectMethylationGLM_T1 <- function(annotationObject) {
   }
 
   if (requireNamespace(annotationObject, quietly = TRUE)) {
+    annotation_lookup <- suppressPackageStartupMessages(
+      tryCatch(
+        minfi::getAnnotation(annotationObject),
+        error = function(e) NULL
+      )
+    )
+    if (!is.null(annotation_lookup)) {
+      return(annotationObject)
+    }
+
     annotation_namespace <- asNamespace(annotationObject)
     if (exists(annotationObject, envir = annotation_namespace, inherits = FALSE)) {
       return(get(annotationObject, envir = annotation_namespace, inherits = FALSE))

@@ -216,130 +216,137 @@ methylationGLMM_T1T2 <- function(
     log_path = log_path
   )
 
-  preparedData <- prepareMethylationGLMM_T1T2Data(
-    inputPheno = inputPheno,
-    personVar = personVar,
-    timeVar = timeVar,
-    phenotypes = phenotypes,
-    covariates = covariates,
-    factorVars = factorVars,
-    prsMap = prsMap,
-    cpgPrefix = cpgPrefix,
-    cpgLimit = cpgLimit,
-    interactionTerm = interactionTerm,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLMM_T1T2.txt"
-  )
+  withLoggedErrorsMinfiEwasWater(
+    expr = {
+      preparedData <- prepareMethylationGLMM_T1T2Data(
+        inputPheno = inputPheno,
+        personVar = personVar,
+        timeVar = timeVar,
+        phenotypes = phenotypes,
+        covariates = covariates,
+        factorVars = factorVars,
+        prsMap = prsMap,
+        cpgPrefix = cpgPrefix,
+        cpgLimit = cpgLimit,
+        interactionTerm = interactionTerm,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLMM_T1T2.txt"
+      )
 
-  modelFits <- fitMethylationGLMM_T1T2Models(
-    preparedData = preparedData,
-    nCores = nCores,
-    libPath = libPath,
-    lmeLibs = lmeLibs,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLMM_T1T2.txt"
-  )
+      modelFits <- fitMethylationGLMM_T1T2Models(
+        preparedData = preparedData,
+        nCores = nCores,
+        libPath = libPath,
+        lmeLibs = lmeLibs,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLMM_T1T2.txt"
+      )
 
-  modelSummaries <- summarizeMethylationGLMM_T1T2Models(
-    modelResults = modelFits,
-    preparedData = preparedData,
-    summaryPval = summaryPval,
-    nCores = nCores,
-    chunkSize = chunkSize,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLMM_T1T2.txt"
-  )
+      modelSummaries <- summarizeMethylationGLMM_T1T2Models(
+        modelResults = modelFits,
+        preparedData = preparedData,
+        summaryPval = summaryPval,
+        nCores = nCores,
+        chunkSize = chunkSize,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLMM_T1T2.txt"
+      )
 
-  significantInteractions <- NULL
-  if (isTRUE(saveSignificantInteractions)) {
-    significantInteractions <- collectSignificantInteractionsMethylationGLMM_T1T2(
-      modelResults = modelFits,
-      pvalThreshold = significantInteractionPval,
-      interactionTerm = preparedData$interactionTerm,
-      verbose = verbose,
-      logs = logs,
-      log_dir = outputLogs,
-      log_file = "log_methylationGLMM_T1T2.txt"
-    )
-  }
+      significantInteractions <- NULL
+      if (isTRUE(saveSignificantInteractions)) {
+        significantInteractions <- collectSignificantInteractionsMethylationGLMM_T1T2(
+          modelResults = modelFits,
+          pvalThreshold = significantInteractionPval,
+          interactionTerm = preparedData$interactionTerm,
+          verbose = verbose,
+          logs = logs,
+          log_dir = outputLogs,
+          log_file = "log_methylationGLMM_T1T2.txt"
+        )
+      }
 
-  diagnosticPlots <- plotMethylationGLMM_T1T2Diagnostics(
-    modelSummaries = modelSummaries,
-    preparedData = preparedData,
-    fdrThreshold = fdrThreshold,
-    padjmethod = padjmethod,
-    outputDir = if (isTRUE(saveOutputs)) outputPlots else NULL,
-    plotWidth = plotWidth,
-    plotHeight = plotHeight,
-    plotDPI = plotDPI,
-    display = display,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLMM_T1T2.txt"
-  )
+      diagnosticPlots <- plotMethylationGLMM_T1T2Diagnostics(
+        modelSummaries = modelSummaries,
+        preparedData = preparedData,
+        fdrThreshold = fdrThreshold,
+        padjmethod = padjmethod,
+        outputDir = if (isTRUE(saveOutputs)) outputPlots else NULL,
+        plotWidth = plotWidth,
+        plotHeight = plotHeight,
+        plotDPI = plotDPI,
+        display = display,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLMM_T1T2.txt"
+      )
 
-  annotation <- annotateMethylationGLMM_T1T2Summaries(
-    modelSummaries = modelSummaries,
-    annotationObject = annotationPackage,
-    annotationCols = annotationCols,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = "log_methylationGLMM_T1T2.txt"
-  )
+      annotation <- annotateMethylationGLMM_T1T2Summaries(
+        modelSummaries = modelSummaries,
+        annotationObject = annotationPackage,
+        annotationCols = annotationCols,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = "log_methylationGLMM_T1T2.txt"
+      )
 
-  savedFiles <- NULL
-  if (isTRUE(saveOutputs)) {
-    savedFiles <- writeMethylationGLMM_T1T2Outputs(
-      modelResults = modelFits,
-      modelSummaries = modelSummaries,
-      annotatedResults = annotation,
-      significantInteractions = significantInteractions,
-      outputRData = outputRData,
-      summaryTxtDir = summaryTxtDir,
-      significantInteractionDir = significantInteractionDir,
-      annotatedLMEOut = annotatedLMEOut,
-      saveTxtSummaries = saveTxtSummaries,
-      saveSignificantInteractions = saveSignificantInteractions,
-      verbose = verbose,
-      logs = logs,
-      log_dir = outputLogs,
-      log_file = "log_methylationGLMM_T1T2.txt"
-    )
-  }
-
-  emitLogMinfiEwasWater(
-    c(
-      "=======================================================================",
-      paste("Finished DNAm LME Analysis (Timepoint 1 vs 2):", format(Sys.time())),
+      savedFiles <- NULL
       if (isTRUE(saveOutputs)) {
-        paste("Annotated LME output:          ", savedFiles$annotatedLME)
-      } else {
-        "Outputs were returned in memory only."
-      },
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
+        savedFiles <- writeMethylationGLMM_T1T2Outputs(
+          modelResults = modelFits,
+          modelSummaries = modelSummaries,
+          annotatedResults = annotation,
+          significantInteractions = significantInteractions,
+          outputRData = outputRData,
+          summaryTxtDir = summaryTxtDir,
+          significantInteractionDir = significantInteractionDir,
+          annotatedLMEOut = annotatedLMEOut,
+          saveTxtSummaries = saveTxtSummaries,
+          saveSignificantInteractions = saveSignificantInteractions,
+          verbose = verbose,
+          logs = logs,
+          log_dir = outputLogs,
+          log_file = "log_methylationGLMM_T1T2.txt"
+        )
+      }
 
-  structure(
-    list(
-      preparedData = preparedData,
-      modelFits = modelFits,
-      modelSummaries = modelSummaries,
-      significantInteractions = significantInteractions,
-      diagnosticPlots = diagnosticPlots,
-      annotation = annotation,
-      savedFiles = savedFiles
-    ),
-    class = "dnaEPICO_methylationGLMM_T1T2"
+      emitLogMinfiEwasWater(
+        c(
+          "=======================================================================",
+          paste("Finished DNAm LME Analysis (Timepoint 1 vs 2):", format(Sys.time())),
+          if (isTRUE(saveOutputs)) {
+            paste("Annotated LME output:          ", savedFiles$annotatedLME)
+          } else {
+            "Outputs were returned in memory only."
+          },
+          "======================================================================="
+        ),
+        verbose = verbose,
+        log_path = log_path
+      )
+
+      structure(
+        list(
+          preparedData = preparedData,
+          modelFits = modelFits,
+          modelSummaries = modelSummaries,
+          significantInteractions = significantInteractions,
+          diagnosticPlots = diagnosticPlots,
+          annotation = annotation,
+          savedFiles = savedFiles
+        ),
+        class = "dnaEPICO_methylationGLMM_T1T2"
+      )
+    },
+    log_path = log_path,
+    verbose = verbose,
+    context = "methylationGLMM_T1T2"
   )
 }

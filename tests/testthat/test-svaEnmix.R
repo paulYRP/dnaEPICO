@@ -106,3 +106,72 @@ test_that("writeSvaEnmixOutputs writes matrix and summary files", {
     expect_true(file.exists(file.path(paths$dataDir, "summary_full_sva1.txt")))
     expect_true(file.exists(file.path(paths$dataDir, "anova_full_sva1.txt")))
 })
+
+test_that("svaEnmix logs fatal errors before stopping", {
+    tmp <- withr::local_tempdir()
+    pheno_file <- file.path(tmp, "pheno.csv")
+    log_dir <- file.path(tmp, "logs")
+    pheno <- data.frame(
+        UID = "S1",
+        Sentrix_ID = "Chip1",
+        Sentrix_Position = "R01C01",
+        stringsAsFactors = FALSE
+    )
+    utils::write.csv(pheno, pheno_file, row.names = FALSE)
+
+    expect_error(
+        svaEnmix(
+            phenoFile = pheno_file,
+            rgsetData = file.path(tmp, "missing_RGSet.RData"),
+            SampleID = "UID",
+            SentrixIDColumn = "Sentrix_ID",
+            SentrixPositionColumn = "Sentrix_Position",
+            outputLogs = log_dir,
+            logs = TRUE,
+            verbose = FALSE,
+            saveOutputs = FALSE
+        ),
+        "Input file does not exist"
+    )
+
+    log_file <- file.path(log_dir, "log_svaEnmix.txt")
+    expect_true(file.exists(log_file))
+    log_lines <- readLines(log_file, warn = FALSE)
+    expect_true(any(grepl("ERROR in svaEnmix", log_lines, fixed = TRUE)))
+    expect_true(any(grepl("Input file does not exist", log_lines, fixed = TRUE)))
+    expect_true(any(grepl("Failing call:", log_lines, fixed = TRUE)))
+    expect_true(any(grepl("Call stack:", log_lines, fixed = TRUE)))
+    expect_true(any(grepl("svaEnmix", log_lines, fixed = TRUE)))
+})
+
+test_that("svaEnmix accepts saved RGSet inputs", {
+    testthat::skip_if_not_installed("minfiData")
+
+    tmp <- withr::local_tempdir()
+    ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+    pheno_file <- file.path(tmp, "pheno.csv")
+    rgset_path <- file.path(tmp, "RGSet.RData")
+    RGSet <- ex$RGSet
+    utils::write.csv(ex$targets, pheno_file, row.names = FALSE)
+    save(RGSet, file = rgset_path)
+
+    result <- svaEnmix(
+        phenoFile = pheno_file,
+        rgsetData = rgset_path,
+        SampleID = "Sample_Name",
+        arrayType = "IlluminaHumanMethylation450k",
+        annotationVersion = "ilmn12.hg19",
+        SentrixIDColumn = "Sentrix_ID",
+        SentrixPositionColumn = "Sentrix_Position",
+        outputLogs = file.path(tmp, "logs"),
+        figureBaseDir = file.path(tmp, "figures"),
+        dataBaseDir = file.path(tmp, "data"),
+        rBaseDir = file.path(tmp, "rData"),
+        verbose = FALSE,
+        logs = FALSE,
+        saveOutputs = FALSE
+    )
+
+    expect_s3_class(result, "dnaEPICO_svaEnmix")
+    expect_equal(nrow(result$targets), ncol(result$RGSet))
+})

@@ -159,87 +159,94 @@ preprocessingPheno <- function(
     log_path = log_path
   )
 
-  pheno <- readPhenotypeTargets(
-    phenoFile = phenoFile,
-    sepType = sepType,
-    SampleID = SampleID,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = log_file
-  )
-  metricsData <- loadMetricsPreprocessingPheno(
-    betaPath = betaPath,
-    mPath = mPath,
-    cnPath = cnPath,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = log_file
-  )
-  timepointData <- splitTimepointsPreprocessingPheno(
-    pheno = pheno,
-    metricsData = metricsData,
-    SampleID = SampleID,
-    timeVar = timeVar,
-    timepoints = timepoints,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = log_file
-  )
-  combinedData <- combineTimepointsPreprocessingPheno(
-    timepointData = timepointData,
-    combineTimepoints = combineTimepoints,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = log_file
-  )
-  clockFoundation <- buildClockFoundationInputsPreprocessingPheno(
-    beta = metricsData$beta,
-    pheno = pheno,
-    SampleID = SampleID,
-    sexColumn = sexColumn,
-    verbose = verbose,
-    logs = logs,
-    log_dir = outputLogs,
-    log_file = log_file
-  )
+  withLoggedErrorsMinfiEwasWater(
+    expr = {
+      pheno <- readPhenotypeTargets(
+        phenoFile = phenoFile,
+        sepType = sepType,
+        SampleID = SampleID,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
+      metricsData <- loadMetricsPreprocessingPheno(
+        betaPath = betaPath,
+        mPath = mPath,
+        cnPath = cnPath,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
+      timepointData <- splitTimepointsPreprocessingPheno(
+        pheno = pheno,
+        metricsData = metricsData,
+        SampleID = SampleID,
+        timeVar = timeVar,
+        timepoints = timepoints,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
+      combinedData <- combineTimepointsPreprocessingPheno(
+        timepointData = timepointData,
+        combineTimepoints = combineTimepoints,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
+      clockFoundation <- buildClockFoundationInputsPreprocessingPheno(
+        beta = metricsData$beta,
+        pheno = pheno,
+        SampleID = SampleID,
+        sexColumn = sexColumn,
+        verbose = verbose,
+        logs = logs,
+        log_dir = outputLogs,
+        log_file = log_file
+      )
 
-  result <- list(
-    pheno = pheno,
-    metricsData = metricsData,
-    timepointData = timepointData,
-    combinedData = combinedData,
-    clockFoundation = clockFoundation,
-    savedFiles = NULL,
-    logFile = log_path
-  )
+      result <- list(
+        pheno = pheno,
+        metricsData = metricsData,
+        timepointData = timepointData,
+        combinedData = combinedData,
+        clockFoundation = clockFoundation,
+        savedFiles = NULL,
+        logFile = log_path
+      )
 
-  if (isTRUE(saveOutputs)) {
-    result$savedFiles <- writePreprocessingPhenoOutputs(
-      preprocessingData = result,
-      outputPheno = outputPheno,
-      outputRData = outputRData,
-      outputRDataMerge = outputRDataMerge,
-      outputDir = outputDir,
-      verbose = verbose,
-      logs = logs,
-      log_dir = outputLogs,
-      log_file = log_file
-    )
-  }
+      if (isTRUE(saveOutputs)) {
+        result$savedFiles <- writePreprocessingPhenoOutputs(
+          preprocessingData = result,
+          outputPheno = outputPheno,
+          outputRData = outputRData,
+          outputRDataMerge = outputRDataMerge,
+          outputDir = outputDir,
+          verbose = verbose,
+          logs = logs,
+          log_dir = outputLogs,
+          log_file = log_file
+        )
+      }
 
-  emitLogMinfiEwasWater(
-    c(
-      "==== Finished preprocessingPheno ====",
-      paste("End Time:                 ", format(Sys.time())),
-      "======================================================================="
-    ),
+      emitLogMinfiEwasWater(
+        c(
+          "==== Finished preprocessingPheno ====",
+          paste("End Time:                 ", format(Sys.time())),
+          "======================================================================="
+        ),
+        verbose = verbose,
+        log_path = log_path
+      )
+
+      structure(result, class = "dnaEPICO_preprocessingPheno")
+    },
+    log_path = log_path,
     verbose = verbose,
-    log_path = log_path
+    context = "preprocessingPheno"
   )
-
-  structure(result, class = "dnaEPICO_preprocessingPheno")
 }

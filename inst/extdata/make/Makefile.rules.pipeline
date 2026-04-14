@@ -134,7 +134,7 @@ $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RDat
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
-	Rscript -e "set.seed($(SEED)); library(dnaEPICO); preprocessingMinfiEwasWater( \
+	@Rscript -e "set.seed($(SEED)); suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingMinfiEwasWater( \
 	  phenoFile = '$(PHENO_FILE)', \
 	  sepType = '$(SEP_TYPE)', \
 	  idatFolder = '$(DATA_DIR)/$(STEP1)/$(IDAT_DIR)/', \
@@ -163,13 +163,13 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  phenoOrder = '$(PHENO_ORDER)', \
 	  lcPhenoDir = '$(DATA_DIR)/$(MODEL)/$(STEP1)', \
 	  logs = TRUE, \
-	  saveOutputs = TRUE )"
+	  saveOutputs = TRUE ))"
 
 # =================================================================================================================================
 # Step 2: Surrogate Variable Analysis
 # =================================================================================================================================
 $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
-	Rscript -e "library(dnaEPICO); svaEnmix( \
+	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(svaEnmix( \
 	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
 	  rgsetData = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData', \
 	  sepType = '$(SEP_TYPE)', \
@@ -190,7 +190,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 	  tiffHeight = $(TIFF_HEIGHT), \
 	  tiffRes = $(TIFF_RES), \
 	  logs = TRUE, \
-	  saveOutputs = TRUE )"
+	  saveOutputs = TRUE ))"
 
 # =================================================================================================================================
 # Step 3: Merge Phenotype
@@ -198,7 +198,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
 $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
 $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv: 
-	Rscript -e "library(dnaEPICO); preprocessingPheno( \
+	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingPheno( \
 	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
 	  sepType = '$(SEP_TYPE)', \
 	  betaPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
@@ -215,13 +215,13 @@ $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv:
 	  sexColumn = '$(SEX_COLUMN)', \
 	  outputDir = '$(DATA_DIR)/$(MODEL)/$(STEP3)', \
 	  logs = TRUE, \
-	  saveOutputs = TRUE )"  
+	  saveOutputs = TRUE ))"  
 	  
 # =================================================================================================================================
 # Step 4: GLM for T1
 # =================================================================================================================================
 $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
-	Rscript -e "library(dnaEPICO); methylationGLM_T1( \
+	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationGLM_T1( \
 	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
@@ -253,13 +253,13 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 	  annotationCols = '$(ANNOTATION_COLS)', \
 	  annotatedGLMOut = '$(DATA_DIR)/$(MODEL)/$(STEP4)', \
 	  logs = TRUE, \
-	  saveOutputs = TRUE ) "
+	  saveOutputs = TRUE )) "
 
 # =================================================================================================================================
 # Step 5: LME for T1 vs T2 (Longitudinal Analysis)
 # =================================================================================================================================
 $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
-	Rscript -e "library(dnaEPICO); methylationGLMM_T1T2( \
+	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationGLMM_T1T2( \
 	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP5)/$(MODEL_DIR)', \
@@ -292,7 +292,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
 	  annotationCols = '$(ANNOTATION_COLS)', \
 	  annotatedLMEOut = '$(DATA_DIR)/$(MODEL)/$(STEP5)', \
 	  logs = TRUE, \
-	  saveOutputs = TRUE )"
+	  saveOutputs = TRUE ))"
 
 # =================================================================================================================================
 # Step 6: Final Report
@@ -303,7 +303,7 @@ REPORT_INPUTS = \
 
 $(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
 	mkdir -p $(STEP6)/$(MODEL) $(MODEL_LOG_DIR)
-	Rscript -e "library(dnaEPICO); dnamReport( \
+	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(dnamReport( \
 	  output = 'DNAm.pdf', \
 	  outputDir = '$(STEP6)/$(MODEL)', \
 	  qcDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
@@ -316,7 +316,7 @@ $(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
 	  author = 'School of Biomedical Sciences', \
 	  verbose = FALSE, \
 	  logs = TRUE, \
-	  logDir = '$(MODEL_LOG_DIR)' )" \
+	  logDir = '$(MODEL_LOG_DIR)' ))" \
 	  > $(MODEL_LOG_DIR)/report.log 2>&1
 	@echo "Report built: $(STEP6)/$(MODEL)/DNAm.pdf"
 

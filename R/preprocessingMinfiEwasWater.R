@@ -211,6 +211,8 @@ preprocessingMinfiEwasWater <- function(
     log_path = log_path
   )
 
+  withLoggedErrorsMinfiEwasWater(
+    expr = {
   objectDir <- file.path(baseDataFolder, scriptLabel, "objects")
   normDir <- file.path(baseDataFolder, scriptLabel, "normObjects")
   metricsDir <- file.path(baseDataFolder, scriptLabel, "metrics")
@@ -639,5 +641,10 @@ preprocessingMinfiEwasWater <- function(
       logFile = log_path
     ),
     class = "dnaEPICO_preprocessingMinfiEwasWater"
+  )
+    },
+    log_path = log_path,
+    verbose = verbose,
+    context = "preprocessingMinfiEwasWater"
   )
 }
