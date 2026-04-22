@@ -1,0 +1,465 @@
+---
+title: "File-Based and Pipeline Use of dnaEPICO"
+author:
+  - name: Paul Ruiz
+    affiliation:
+      - Queensland University of Technology
+    email: ruizpint@qut.edu.au
+output:
+  BiocStyle::html_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+date: "`r Sys.Date()`"
+package: dnaEPICO
+bibliography: dnaEPICO.bib
+vignette: >
+  %\VignetteIndexEntry{File-Based and Pipeline Use of dnaEPICO}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, include = FALSE}
+startTime <- Sys.time()
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  crop = NULL
+)
+
+library(dnaEPICO)
+
+pheno_inputs <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
+glm_inputs <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+
+can_run_sva <- requireNamespace("minfiData", quietly = TRUE)
+can_run_glm <- requireNamespace(
+  "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+  quietly = TRUE
+)
+sva_targets_file <- NULL
+sva_rgset_file <- NULL
+if (isTRUE(can_run_sva)) {
+  sva_inputs <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+  sva_temp_dir <- tempdir()
+  sva_targets_file <- file.path(sva_temp_dir, "pipeline_sva_targets.csv")
+  sva_rgset_file <- file.path(sva_temp_dir, "pipeline_sva_RGSet.RData")
+  utils::write.csv(sva_inputs$targets, sva_targets_file, row.names = FALSE)
+  RGSet <- sva_inputs$RGSet
+  save(RGSet, file = sva_rgset_file)
+}
+```
+
+# Introduction
+
+This vignette describes the file-based route in `dnaEPICO`. In this mode, the
+same wrapper functions still return structured result objects, but they also
+write files to disk when `saveOutputs = TRUE`. This route is appropriate when
+you want a reproducible folder structure, Makefile-driven execution, or a
+pipeline that can be resumed on a local workstation or an HPC system.
+
+# Citation
+
+The `r Biocpkg("dnaEPICO")` package uses methods from several external
+packages. Because no single manuscript describes all components, the guidance
+below explains how to cite `dnaEPICO` depending on the functions you use.
+
+This citation guidance is adapted from the vignettes and user guides of
+[minfi](https://github.com/hansenlab/minfi/blob/devel/vignettes/minfi.Rmd),
+[ENmix](https://github.com/xuz1/ENmix/blob/master/vignettes/ENmix.Rmd), and
+[wateRmelon](https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/references.bib).
+
+- If you use `make f3 MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix;
+  @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools.
+- If you use `make f4 MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix;
+  @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @glm2.
+- If you use `make f3lme MODEL=model1`, please cite @minfi; @minfiEPIC;
+  @ENmix; @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @lme4.
+- If you use `make all MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix;
+  @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools; @glm2; @lme4.
+
+# Required knowledge
+
+`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for
+high-dimensional genomic data, with a focus on Illumina DNA methylation arrays.
+To read this vignette, we assume that you are already familiar with the general
+DNA methylation workflow. If not, we recommend first reading
+[this tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html),
+which provides a practical introduction to the main concepts and analysis steps.
+
+Preprocessing and quality control are performed using established Bioconductor
+tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and
+`r Biocpkg("wateRmelon")`. Downstream statistical modelling relies on base R
+and CRAN frameworks, including generalised linear models and linear
+mixed-effects models. Users are expected to have basic familiarity with R,
+command-line execution, and Illumina IDAT file structures.
+
+If you are asking yourself the question "Where do I start using
+Bioconductor?", you might be interested in
+[this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
+
+# Installation
+
+The `r Biocpkg("dnaEPICO")` package depends on `r Biocpkg("minfi")`,
+`r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`, among others. Install
+dependencies with BiocManager:
+
+```{r, eval = FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
+
+BiocManager::install("dnaEPICO")
+
+BiocManager::valid()
+```
+
+```{r, eval = FALSE, message = FALSE}
+library("dnaEPICO")
+```
+
+# Extract the example Makefile
+
+The package includes a template Makefile that can be copied into a project
+directory and adapted to local paths and model definitions.
+
+```{r makefile-example}
+makefilePath <- extractMake(destDir = tempdir(), overwrite = TRUE)
+basename(makefilePath)
+```
+
+After extraction, the file should be edited so that the project-specific paths,
+model labels, and cluster settings match the target analysis environment.
+
+Arguments used in this example:
+
+- `destDir = tempdir()` writes the template to a temporary directory so the
+  example does not modify the working tree.
+- `overwrite = TRUE` allows the template to be replaced if it already exists in
+  that temporary location.
+
+# Write SVA outputs to disk
+
+The next example shows `svaEnmix()` in file-writing mode. The function still
+returns a structured result object, but the `savedFiles` element now records the
+main output files written to disk.
+
+```{r sva-pipeline, eval = can_run_sva, message = FALSE, warning = FALSE}
+svaPipelineResult <- svaEnmix(
+  phenoFile = sva_targets_file,
+  rgsetData = sva_rgset_file,
+  outputLogs = file.path(tempdir(), "logs"),
+  SampleID = "Sample_Name",
+  arrayType = "IlluminaHumanMethylation450k",
+  annotationVersion = "ilmn12.hg19",
+  SentrixIDColumn = "Sentrix_ID",
+  SentrixPositionColumn = "Sentrix_Position",
+  ctrlSvaPercVar = 0.90,
+  ctrlSvaFlag = 1,
+  scriptLabel = "svaEnmix",
+  dataBaseDir = file.path(tempdir(), "data"),
+  rBaseDir = file.path(tempdir(), "rData"),
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = TRUE
+)
+
+class(svaPipelineResult$savedFiles)
+names(svaPipelineResult$savedFiles)
+basename(unlist(svaPipelineResult$savedFiles, use.names = FALSE))
+```
+
+The file outputs from this step include the surrogate-variable matrix, the
+phenotype table with appended SVA columns, and the serialized SVA object used in
+later stages.
+
+Arguments used in this example:
+
+- `phenoFile` and `rgsetData` identify the phenotype table and saved `RGSet`
+  produced by the earlier preprocessing step.
+- `SampleID`, `SentrixIDColumn`, and `SentrixPositionColumn` specify how
+  samples and array positions are identified in the phenotype table.
+- `ctrlSvaPercVar = 0.90` keeps enough control-derived surrogate variables to
+  explain 90% of the control-probe variance.
+- `ctrlSvaFlag = 1` enables the ENmix control-based SVA workflow.
+- `dataBaseDir` and `rBaseDir` define where file outputs are written when
+  `saveOutputs = TRUE`.
+- `display = FALSE`, `verbose = FALSE`, and `logs = FALSE` keep the example
+  quiet while still demonstrating file creation.
+
+# Write preprocessingPheno outputs to disk
+
+`preprocessingPheno()` is the step that usually prepares the largest number of
+pipeline-ready files because it writes timepoint-specific tables, combined
+longitudinal tables, and the Clock Foundation export inputs.
+
+```{r preprocessingPheno-pipeline, message = FALSE, warning = FALSE}
+phenoPipelineResult <- preprocessingPheno(
+  phenoFile = pheno_inputs$phenoPath,
+  betaPath = pheno_inputs$betaPath,
+  mPath = pheno_inputs$mPath,
+  cnPath = pheno_inputs$cnPath,
+  SampleID = "Sample_Name",
+  timeVar = "Timepoint",
+  timepoints = "1,2",
+  combineTimepoints = "1,2",
+  outputPheno = file.path(pheno_inputs$tempDir, "data", "preprocessingPheno"),
+  outputRData = file.path(
+    pheno_inputs$tempDir,
+    "rData",
+    "preprocessingPheno",
+    "metrics"
+  ),
+  outputRDataMerge = file.path(
+    pheno_inputs$tempDir,
+    "rData",
+    "preprocessingPheno",
+    "mergeData"
+  ),
+  sexColumn = "Sex",
+  outputLogs = file.path(pheno_inputs$tempDir, "logs"),
+  outputDir = file.path(pheno_inputs$tempDir, "clockFoundation"),
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = TRUE
+)
+
+names(phenoPipelineResult$savedFiles)
+names(phenoPipelineResult$savedFiles$timepoints)
+basename(unlist(phenoPipelineResult$savedFiles$timepoints[["1"]]))
+basename(unlist(phenoPipelineResult$savedFiles[c(
+  "combinedPheno",
+  "combinedPhenoBeta",
+  "betaCSV",
+  "phenoCF"
+)]))
+```
+
+These outputs are the files most commonly consumed by downstream modeling
+functions. The combined phenotype-plus-beta object is particularly important
+because it becomes the direct input to the GLM and GLMM wrappers.
+
+Arguments used in this example:
+
+- `phenoFile`, `betaPath`, `mPath`, and `cnPath` point to the phenotype table
+  and the aligned methylation matrices from the previous workflow stages.
+- `SampleID = "Sample_Name"` defines the sample key used during alignment.
+- `timeVar = "Timepoint"`, `timepoints = "1,2"`, and
+  `combineTimepoints = "1,2"` determine the timepoint-specific outputs and the
+  combined longitudinal object.
+- `outputPheno`, `outputRData`, `outputRDataMerge`, and `outputDir` define the
+  directories used for phenotype exports, metric objects, merged objects, and
+  Clock Foundation inputs.
+- `saveOutputs = TRUE` is what makes this step useful in a file-based pipeline,
+  because later modeling steps consume these written files.
+
+# Write model outputs to disk
+
+The modeling wrappers also separate in-memory results from file outputs. The
+next example runs a small GLM analysis and prints the names of the files written
+to disk.
+
+```{r glm-pipeline, eval = can_run_glm, message = FALSE, warning = FALSE}
+glmPipelineResult <- methylationGLM_T1(
+  inputPheno = glm_inputs$inputPath,
+  phenotypes = "status",
+  covariates = "sex,age",
+  factorVars = "status,sex",
+  cpgLimit = 2,
+  nCores = 1,
+  outputLogs = file.path(glm_inputs$tempDir, "logs"),
+  outputRData = file.path(glm_inputs$tempDir, "rData", "models"),
+  outputPlots = file.path(glm_inputs$tempDir, "figures"),
+  significantCpGDir = file.path(glm_inputs$tempDir, "significant"),
+  summaryTxtDir = file.path(glm_inputs$tempDir, "summaries"),
+  summaryPval = 1,
+  significantCpGPval = 1,
+  annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+  annotationCols = "Name,chr,pos",
+  annotatedGLMOut = file.path(glm_inputs$tempDir, "annotated"),
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = TRUE
+)
+
+class(glmPipelineResult$savedFiles)
+names(glmPipelineResult$savedFiles)
+```
+
+At this stage, the most important saved outputs are the annotated summary table,
+the serialized model objects, and the optional text summaries used for
+inspection outside R.
+
+Arguments used in this example:
+
+- `inputPheno` points to the merged phenotype-plus-beta object generated by
+  `preprocessingPheno()`.
+- `phenotypes` lists the outcome variables that will be modeled one at a time.
+- `covariates` lists the adjustment variables included in every model.
+- `factorVars` identifies the categorical variables that should be treated as
+  factors before model fitting.
+- `cpgLimit = 2` keeps the example fast by fitting only two CpG models.
+- `nCores = 1` keeps the example deterministic and lightweight; production HPC
+  runs typically use higher values.
+- `annotationPackage` and `annotationCols` control which array annotation is
+  merged into the final summary tables.
+- `outputRData`, `outputPlots`, `significantCpGDir`, `summaryTxtDir`, and
+  `annotatedGLMOut` define where model objects, plots, summaries, and annotated
+  results are written.
+- `saveOutputs = TRUE` enables the file-based pipeline behaviour expected by
+  Makefile and HPC use.
+
+## Model structure and PRS terms
+
+For each CpG, `methylationGLM_T1()` fits a regression model of the form:
+
+$$
+\text{Methylation}_{CpG_i} =
+\beta_0 +
+\beta_1 \cdot \text{Phenotype} +
+\sum_{k = 1}^{K} \beta_{k + 1} \cdot \text{Covariate}_k +
+\varepsilon
+$$
+
+where $\text{Methylation}_{CpG_i}$ is the methylation value at CpG $i$,
+$\beta_0$ is the intercept, the phenotype term is the variable of interest, and
+the remaining fixed effects represent the listed covariates.
+
+If no polygenic risk score is included, a model can be read schematically as:
+
+$$
+\begin{aligned}
+\text{Methylation}_{CpG_i} =\;&
+\beta_0 +
+\beta_1 \cdot \text{Phenotype} +
+\beta_2 \cdot \text{Age} +
+\beta_3 \cdot \text{Sex} +
+\beta_4 \cdot \text{Ethnicity} \\
+&+
+\varepsilon
+\end{aligned}
+$$
+
+When `prsMap` is supplied, a phenotype-specific PRS term is appended only for
+the matching phenotype. For example, the mapping
+`"Pheno1:PRS_1,Pheno2:PRS_2"` means that:
+
+- models for `Pheno1` include `PRS_1`
+- models for `Pheno2` include `PRS_2`
+- phenotypes without a mapping are fit without a PRS term
+
+For a phenotype mapped to a PRS, the model becomes:
+
+$$
+\text{Methylation}_{CpG_i} =
+\beta_0 +
+\beta_1 \cdot \text{Phenotype} +
+\sum_{k = 1}^{K} \beta_{k + 1} \cdot \text{Covariate}_k +
+\beta_{\text{PRS}} \cdot \text{PRS} +
+\varepsilon
+$$
+
+If `interactionTerm` is supplied, the same framework is extended by adding the
+requested interaction to the fixed-effect portion of the model.
+
+## Longitudinal mixed-effects structure
+
+The longitudinal wrapper `methylationGLMM_T1T2()` follows the same file-based
+pattern, but uses a mixed-effects model with a participant-level random
+intercept. In schematic form:
+
+$$
+\begin{aligned}
+\text{Methylation}_{CpG_i} =\;&
+\beta_0 +
+\beta_1 \cdot \text{Phenotype} +
+\beta_2 \cdot \text{Timepoint} +
+\beta_3 \cdot (\text{Phenotype} \times \text{Timepoint}) \\
+&+
+\sum_{k = 1}^{K} \beta_{k + 3} \cdot \text{Covariate}_k +
+\beta_{\text{PRS}} \cdot \text{PRS} +
+b_{\text{person}} +
+\varepsilon
+\end{aligned}
+$$
+
+where $b_{\text{person}}$ is the subject-specific random intercept. As in the
+GLM workflow, the PRS term is included only when the current phenotype is
+matched in `prsMap`.
+
+Common arguments in this longitudinal stage are:
+
+- `inputPheno` for the combined longitudinal phenotype-plus-beta object
+- `personVar` for the participant identifier used in the random effect
+- `timeVar` for the repeated-measures variable
+- `phenotypes`, `covariates`, and `factorVars` for the fixed-effect structure
+- `prsMap` for phenotype-specific PRS terms
+- `cpgLimit` and `nCores` for computational control
+- `annotationPackage` and `annotationCols` for annotated summaries
+
+# Typical Makefile use
+
+In a project directory, the Makefile route is usually simpler than calling each
+wrapper by hand. Typical commands look like this:
+
+```{r, eval = FALSE}
+make f1 MODEL=model1
+make f2 MODEL=model1
+make f3 MODEL=model1
+make f3lme MODEL=model1
+make all MODEL=model1
+```
+
+The exact target names and variables depend on the Makefile settings extracted
+for the project. In practice, `saveOutputs = TRUE` is what makes the individual
+steps compatible with this route because later steps consume the files written by
+earlier ones.
+
+# Summary
+
+The file-based route is the correct choice when you need:
+
+- a reproducible folder structure,
+- files that can be reused by later workflow stages,
+- Makefile execution, or
+- HPC submission.
+
+The interactive route and the file-based route are therefore complementary:
+local use is best for understanding the returned objects, while pipeline use is
+best for reproducible multi-step execution.
+
+# Basics
+
+Date the vignette was generated.
+
+```{r, echo = FALSE}
+Sys.time()
+```
+
+Wallclock time spent generating the vignette.
+
+```{r, echo = FALSE}
+totalTime <- diff(c(startTime, Sys.time()))
+round(totalTime, digits = 3)
+```
+
+`R` session information.
+
+```{r, echo = FALSE}
+sessionInfo()
+```
+
+## Asking for help
+
+As package developers, we try to explain clearly how to use our packages and in
+which order to use the functions. But `R` and `Bioconductor` have a steep
+learning curve, so it is critical to learn where to ask for help. We would like
+to highlight the [Bioconductor support site](https://support.bioconductor.org/)
+as the main resource for getting help. Please remember to use the `dnaEPICO`
+tag and check the
+[older posts](https://support.bioconductor.org/tag/dnaEPICO/). If you want to
+receive help, please provide a small reproducible example and your session
+information so the source of the problem can be tracked efficiently.

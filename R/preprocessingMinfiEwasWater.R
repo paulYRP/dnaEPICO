@@ -67,9 +67,31 @@
 #'   `phenoLC.csv` outputs to disk. The default is `FALSE`, so the function can
 #'   be used in the more traditional in-memory Bioconductor style.
 #'
-#' @return A list with class `"dnaEPICO_preprocessingMinfiEwasWater"`
-#' containing the filtered phenotype table, preprocessing objects, metrics, and
-#' cell-composition results.
+#' @return A list with class `"dnaEPICO_preprocessingMinfiEwasWater"`.
+#' \describe{
+#'   \item{targets}{Filtered phenotype table aligned to the retained samples.}
+#'   \item{RGSet}{Filtered `RGChannelSet` used in downstream preprocessing and
+#'   available for direct interactive inspection.}
+#'   \item{rawData}{Object returned by [buildRawMinfiEwasWater()] containing the
+#'   raw `MSet`, `RatioSet`, and genome-mapped object derived from `RGSet`.}
+#'   \item{assessment}{Object returned by [assessSamplesMinfiEwasWater()]
+#'   containing detection P values, QC summaries, and failed-sample tracking.}
+#'   \item{sexData}{Object returned by [predictSexMinfiEwasWater()] containing
+#'   predicted sex labels, mismatch summaries, and plotting data.}
+#'   \item{normData}{Object returned by [normalizeMinfiEwasWater()] containing
+#'   the requested normalized objects and metadata on the methods that were run.}
+#'   \item{filterData}{Object returned by [filterProbesMinfiEwasWater()]
+#'   containing the probe-filtered methylation objects at each filtering stage.}
+#'   \item{metricsData}{Object returned by [extractMetricsMinfiEwasWater()]
+#'   containing the beta-value, M-value, and copy-number matrices used by later
+#'   workflow steps.}
+#'   \item{lcData}{Object returned by [estimateLCMinfiEwasWater()] containing
+#'   the estimated cell-type proportions and the phenotype table augmented with
+#'   those proportions.}
+#'   \item{logFile}{Resolved path to the optional log file, or `NULL` when
+#'   logging was disabled.}
+#' }
+#' See [dnaEPICO_preprocessingMinfiEwasWater-class] for a class-level overview.
 #'
 #' @examples
 #' if (requireNamespace("minfiData", quietly = TRUE) &&
@@ -105,6 +127,8 @@
 #'   )
 #'   inherits(result, "dnaEPICO_preprocessingMinfiEwasWater")
 #' }
+#'
+#' @seealso [dnaEPICO_preprocessingMinfiEwasWater-class]
 #'
 #' @export
 preprocessingMinfiEwasWater <- function(

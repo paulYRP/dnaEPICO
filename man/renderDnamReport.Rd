@@ -26,9 +26,20 @@ renderDnamReport(
 files after rendering.}
 }
 \value{
-A list with class \code{"dnaEPICO_dnamReport_render"} describing whether
-the PDF report was rendered, skipped, or failed, together with the output
-path and any error message.
+A list with class \code{"dnaEPICO_dnamReport_render"}.
+\describe{
+\item{preparedReport}{The prepared input object supplied to
+\code{renderDnamReport()}.}
+\item{status}{Render status string such as \code{"rendered"}, \code{"skipped"}, or
+\code{"failed"}.}
+\item{renderedFile}{Normalized path to the rendered PDF file when rendering
+succeeded, otherwise \code{NULL}.}
+\item{errorMessage}{Render error or skip message when available, otherwise
+\code{NULL}.}
+\item{logFile}{Resolved path to the optional log file, or \code{NULL} when
+logging was disabled.}
+}
+See \linkS4class{dnaEPICO_dnamReport_render} for a class-level overview.
 }
 \description{
 \code{renderDnamReport()} renders the packaged or custom DNA methylation report

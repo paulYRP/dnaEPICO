@@ -83,10 +83,26 @@ outputs to disk. The default is \code{FALSE}, so the function can be used in the
 more traditional in-memory Bioconductor style.}
 }
 \value{
-A list with class \code{"dnaEPICO_preprocessingPheno"} containing the
-phenotype data, loaded metric matrices, per-timepoint subsets, combined
-longitudinal data, Clock Foundation inputs, optional saved-file paths, and
-the resolved log file path.
+A list with class \code{"dnaEPICO_preprocessingPheno"}.
+\describe{
+\item{pheno}{Phenotype table read from \code{phenoFile}.}
+\item{metricsData}{Object returned by \code{\link[=loadMetricsPreprocessingPheno]{loadMetricsPreprocessingPheno()}}
+containing the beta-value, M-value, and copy-number matrices loaded from
+\code{betaPath}, \code{mPath}, and \code{cnPath}.}
+\item{timepointData}{Object returned by \code{\link[=splitTimepointsPreprocessingPheno]{splitTimepointsPreprocessingPheno()}}
+containing per-timepoint phenotype tables and methylation matrices.}
+\item{combinedData}{Object returned by
+\code{\link[=combineTimepointsPreprocessingPheno]{combineTimepointsPreprocessingPheno()}} containing the merged longitudinal
+phenotype-plus-beta object and the timepoint combination metadata.}
+\item{clockFoundation}{Object returned by
+\code{\link[=buildClockFoundationInputsPreprocessingPheno]{buildClockFoundationInputsPreprocessingPheno()}} containing the beta table
+and phenotype table prepared for Clock Foundation export.}
+\item{savedFiles}{Object returned by \code{\link[=writePreprocessingPhenoOutputs]{writePreprocessingPhenoOutputs()}} when
+\code{saveOutputs = TRUE}, otherwise \code{NULL}.}
+\item{logFile}{Resolved path to the optional log file, or \code{NULL} when
+logging was disabled.}
+}
+See \linkS4class{dnaEPICO_preprocessingPheno} for a class-level overview.
 }
 \description{
 Read the phenotype table and the preprocessed beta, M-value, and copy-number
@@ -137,4 +153,7 @@ result <- preprocessingPheno(
 )
 stopifnot(inherits(result, "dnaEPICO_preprocessingPheno"))
 
+}
+\seealso{
+\linkS4class{dnaEPICO_preprocessingPheno}
 }

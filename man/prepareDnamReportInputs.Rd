@@ -67,9 +67,23 @@ default is \code{FALSE}.}
 template. When \code{NULL}, the packaged \code{dnamReport.Rmd} template is used.}
 }
 \value{
-A list with class \code{"dnaEPICO_dnamReport_prepared"} containing the
-normalized output paths, report parameters, template path, and an inventory
-of the available report figures.
+A list with class \code{"dnaEPICO_dnamReport_prepared"}.
+\describe{
+\item{output}{Requested output file name.}
+\item{outputDir}{Normalized directory where the report would be written.}
+\item{outputFile}{Normalized full path to the intended output file.}
+\item{figDir}{Normalized directory used by the template for figure copies.}
+\item{templatePath}{Resolved path to the packaged or custom report
+template.}
+\item{params}{Named list of parameters passed to \code{rmarkdown::render()}.}
+\item{figureInventory}{Named list describing the available figures for each
+report section.}
+\item{missingFigureDirectories}{Character vector of expected figure
+directories that were not present at preparation time.}
+\item{logFile}{Resolved path to the optional log file, or \code{NULL} when
+logging was disabled.}
+}
+See \linkS4class{dnaEPICO_dnamReport_prepared} for a class-level overview.
 }
 \description{
 \code{prepareDnamReportInputs()} resolves the report template, normalizes the input

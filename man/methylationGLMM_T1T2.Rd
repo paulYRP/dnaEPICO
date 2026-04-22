@@ -154,10 +154,30 @@ plots to the requested output directories. The default is \code{FALSE}, so the
 function returns in-memory results without writing files.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLMM_T1T2"} containing the
-prepared input object, fitted mixed models, CpG summary tables, optional
-significant-interaction tables, diagnostic plot objects, annotation results,
-and any saved file paths.
+A list with class \code{"dnaEPICO_methylationGLMM_T1T2"}.
+\describe{
+\item{preparedData}{Object returned by \code{\link[=prepareMethylationGLMM_T1T2Data]{prepareMethylationGLMM_T1T2Data()}}
+containing the merged longitudinal phenotype-plus-beta analysis table and
+modeling metadata.}
+\item{modelFits}{Object returned by \code{\link[=fitMethylationGLMM_T1T2Models]{fitMethylationGLMM_T1T2Models()}}
+containing the per-phenotype CpG mixed-effects model fits.}
+\item{modelSummaries}{Object returned by
+\code{\link[=summarizeMethylationGLMM_T1T2Models]{summarizeMethylationGLMM_T1T2Models()}} containing the combined CpG summary
+tables used for reporting and annotation.}
+\item{significantInteractions}{Object returned by
+\code{\link[=collectSignificantInteractionsMethylationGLMM_T1T2]{collectSignificantInteractionsMethylationGLMM_T1T2()}} containing optional
+phenotype-specific significant-interaction tables.}
+\item{diagnosticPlots}{Object returned by
+\code{\link[=plotMethylationGLMM_T1T2Diagnostics]{plotMethylationGLMM_T1T2Diagnostics()}} describing the diagnostic plot
+objects and any written TIFF files.}
+\item{annotation}{Object returned by
+\code{\link[=annotateMethylationGLMM_T1T2Summaries]{annotateMethylationGLMM_T1T2Summaries()}} containing the annotated combined
+summary table.}
+\item{savedFiles}{Object returned by
+\code{\link[=writeMethylationGLMM_T1T2Outputs]{writeMethylationGLMM_T1T2Outputs()}} when \code{saveOutputs = TRUE}, otherwise
+\code{NULL}.}
+}
+See \linkS4class{dnaEPICO_methylationGLMM_T1T2} for a class-level overview.
 }
 \description{
 \code{methylationGLMM_T1T2()} is the high-level coordinator for the longitudinal
@@ -208,4 +228,7 @@ if (
   class(result)
 }
 
+}
+\seealso{
+\linkS4class{dnaEPICO_methylationGLMM_T1T2}
 }

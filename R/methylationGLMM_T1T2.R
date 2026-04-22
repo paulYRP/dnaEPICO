@@ -74,10 +74,30 @@
 #'   plots to the requested output directories. The default is `FALSE`, so the
 #'   function returns in-memory results without writing files.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2"` containing the
-#'   prepared input object, fitted mixed models, CpG summary tables, optional
-#'   significant-interaction tables, diagnostic plot objects, annotation results,
-#'   and any saved file paths.
+#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2"`.
+#' \describe{
+#'   \item{preparedData}{Object returned by [prepareMethylationGLMM_T1T2Data()]
+#'   containing the merged longitudinal phenotype-plus-beta analysis table and
+#'   modeling metadata.}
+#'   \item{modelFits}{Object returned by [fitMethylationGLMM_T1T2Models()]
+#'   containing the per-phenotype CpG mixed-effects model fits.}
+#'   \item{modelSummaries}{Object returned by
+#'   [summarizeMethylationGLMM_T1T2Models()] containing the combined CpG summary
+#'   tables used for reporting and annotation.}
+#'   \item{significantInteractions}{Object returned by
+#'   [collectSignificantInteractionsMethylationGLMM_T1T2()] containing optional
+#'   phenotype-specific significant-interaction tables.}
+#'   \item{diagnosticPlots}{Object returned by
+#'   [plotMethylationGLMM_T1T2Diagnostics()] describing the diagnostic plot
+#'   objects and any written TIFF files.}
+#'   \item{annotation}{Object returned by
+#'   [annotateMethylationGLMM_T1T2Summaries()] containing the annotated combined
+#'   summary table.}
+#'   \item{savedFiles}{Object returned by
+#'   [writeMethylationGLMM_T1T2Outputs()] when `saveOutputs = TRUE`, otherwise
+#'   `NULL`.}
+#' }
+#' See [dnaEPICO_methylationGLMM_T1T2-class] for a class-level overview.
 #'
 #' @description
 #' `methylationGLMM_T1T2()` is the high-level coordinator for the longitudinal
@@ -127,6 +147,8 @@
 #'
 #'   class(result)
 #' }
+#'
+#' @seealso [dnaEPICO_methylationGLMM_T1T2-class]
 #'
 #' @export
 methylationGLMM_T1T2 <- function(

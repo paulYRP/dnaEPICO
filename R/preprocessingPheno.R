@@ -43,10 +43,26 @@
 #'   outputs to disk. The default is `FALSE`, so the function can be used in the
 #'   more traditional in-memory Bioconductor style.
 #'
-#' @return A list with class `"dnaEPICO_preprocessingPheno"` containing the
-#'   phenotype data, loaded metric matrices, per-timepoint subsets, combined
-#'   longitudinal data, Clock Foundation inputs, optional saved-file paths, and
-#'   the resolved log file path.
+#' @return A list with class `"dnaEPICO_preprocessingPheno"`.
+#' \describe{
+#'   \item{pheno}{Phenotype table read from `phenoFile`.}
+#'   \item{metricsData}{Object returned by [loadMetricsPreprocessingPheno()]
+#'   containing the beta-value, M-value, and copy-number matrices loaded from
+#'   `betaPath`, `mPath`, and `cnPath`.}
+#'   \item{timepointData}{Object returned by [splitTimepointsPreprocessingPheno()]
+#'   containing per-timepoint phenotype tables and methylation matrices.}
+#'   \item{combinedData}{Object returned by
+#'   [combineTimepointsPreprocessingPheno()] containing the merged longitudinal
+#'   phenotype-plus-beta object and the timepoint combination metadata.}
+#'   \item{clockFoundation}{Object returned by
+#'   [buildClockFoundationInputsPreprocessingPheno()] containing the beta table
+#'   and phenotype table prepared for Clock Foundation export.}
+#'   \item{savedFiles}{Object returned by [writePreprocessingPhenoOutputs()] when
+#'   `saveOutputs = TRUE`, otherwise `NULL`.}
+#'   \item{logFile}{Resolved path to the optional log file, or `NULL` when
+#'   logging was disabled.}
+#' }
+#' See [dnaEPICO_preprocessingPheno-class] for a class-level overview.
 #'
 #' @examples
 #' tmp <- tempdir()
@@ -89,6 +105,8 @@
 #'   saveOutputs = FALSE
 #' )
 #' stopifnot(inherits(result, "dnaEPICO_preprocessingPheno"))
+#'
+#' @seealso [dnaEPICO_preprocessingPheno-class]
 #'
 #' @export
 preprocessingPheno <- function(

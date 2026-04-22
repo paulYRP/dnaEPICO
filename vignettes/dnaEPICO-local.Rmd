@@ -1,0 +1,400 @@
+---
+title: "Interactive Local Use of dnaEPICO"
+author:
+  - name: Paul Ruiz
+    affiliation:
+      - Queensland University of Technology
+    email: ruizpint@qut.edu.au
+output:
+  BiocStyle::html_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+date: "`r Sys.Date()`"
+package: dnaEPICO
+bibliography: dnaEPICO.bib
+vignette: >
+  %\VignetteIndexEntry{Interactive Local Use of dnaEPICO}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, include = FALSE}
+startTime <- Sys.time()
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  crop = NULL
+)
+
+library(dnaEPICO)
+
+can_run_preprocessing <- requireNamespace("minfiData", quietly = TRUE) &&
+  requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
+  requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)
+
+can_run_sva <- requireNamespace("minfiData", quietly = TRUE)
+
+preprocessing_inputs <- NULL
+if (isTRUE(can_run_preprocessing)) {
+  preprocessing_inputs <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 6L)
+}
+
+sva_targets_file <- NULL
+sva_rgset_file <- NULL
+if (isTRUE(can_run_sva)) {
+  sva_inputs <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+  sva_temp_dir <- tempdir()
+  sva_targets_file <- file.path(sva_temp_dir, "sva_targets.csv")
+  sva_rgset_file <- file.path(sva_temp_dir, "sva_RGSet.RData")
+  utils::write.csv(sva_inputs$targets, sva_targets_file, row.names = FALSE)
+  RGSet <- sva_inputs$RGSet
+  save(RGSet, file = sva_rgset_file)
+}
+
+pheno_inputs <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
+```
+
+# Introduction
+
+This vignette demonstrates the local, interactive use of `dnaEPICO`. In this
+mode, the main functions return structured in-memory result objects that can be
+inspected directly in the R session. This is the recommended route when you are
+checking inputs, reviewing quality-control outputs, or learning the structure of
+the package results before moving to larger analyses.
+
+The examples below focus on the first three workflow stages:
+
+1. `preprocessingMinfiEwasWater()`
+2. `svaEnmix()`
+3. `preprocessingPheno()`
+
+All examples use `saveOutputs = FALSE`, which keeps the workflow in memory and
+avoids writing the legacy file outputs.
+
+# Citation
+
+The `r Biocpkg("dnaEPICO")` package uses methods from several external
+packages. Because no single manuscript describes all components, the guidance
+below explains how to cite `dnaEPICO` depending on the functions you use.
+
+This citation guidance is adapted from the vignettes and user guides of
+[minfi](https://github.com/hansenlab/minfi/blob/devel/vignettes/minfi.Rmd),
+[ENmix](https://github.com/xuz1/ENmix/blob/master/vignettes/ENmix.Rmd), and
+[wateRmelon](https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/references.bib).
+
+- If you use `preprocessingMinfiEwasWater()`, please cite @minfi; @minfiEPIC;
+  @ENmix; @wateRmelon; @ewastools; @SWAN; @funnorm; @noob; @quantile.
+- If you use `svaEnmix()`, please cite @minfi; @ENmix.
+
+
+# Required knowledge
+
+`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for
+high-dimensional genomic data, with a focus on Illumina DNA methylation arrays.
+To read this vignette, we assume that you are already familiar with the general
+DNA methylation workflow. If not, we recommend first reading
+[this tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html),
+which provides a practical introduction to the main concepts and analysis steps.
+
+Preprocessing and quality control are performed using established Bioconductor
+tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and
+`r Biocpkg("wateRmelon")`. Users are expected to have basic familiarity with R,
+Bioconductor workflows, and Illumina IDAT file structures.
+
+If you are asking yourself the question "Where do I start using
+Bioconductor?", you might be interested in
+[this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
+
+# Installation
+
+The `r Biocpkg("dnaEPICO")` package depends on `r Biocpkg("minfi")`,
+`r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`, among others. Install
+dependencies with BiocManager:
+
+```{r, eval = FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
+
+BiocManager::install("dnaEPICO")
+
+BiocManager::valid()
+```
+
+```{r, eval = FALSE, message = FALSE}
+library("dnaEPICO")
+```
+
+# Step 1: preprocessingMinfiEwasWater
+
+The preprocessing wrapper reads a phenotype table and IDAT files, performs
+quality control, normalisation, filtering, and cell-composition estimation, and
+returns a list-based result object. The next chunk runs the function on a small
+example input and prints the class, element names, and a preview of the
+filtered phenotype table.
+
+```{r preprocessing-local, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
+preprocessResult <- preprocessingMinfiEwasWater(
+  phenoFile = preprocessing_inputs$phenoFile,
+  idatFolder = preprocessing_inputs$idatFolder,
+  outputLogs = file.path(preprocessing_inputs$tempDir, "logs"),
+  nSamples = 6,
+  SampleID = "Sample_Name",
+  arrayType = preprocessing_inputs$arrayType,
+  annotationVersion = preprocessing_inputs$annotationVersion,
+  scriptLabel = "preprocessingMinfiEwasWater",
+  baseDataFolder = file.path(preprocessing_inputs$tempDir, "rData"),
+  figureBaseDir = file.path(preprocessing_inputs$tempDir, "figures"),
+  detPThreshold = 1,
+  normMethods = "quantile",
+  sexColumn = "Sex",
+  pvalThreshold = 1,
+  chrToRemove = "",
+  snpsToRemove = "SBE",
+  mafThreshold = 1,
+  crossReactivePath = preprocessing_inputs$crossReactivePath,
+  plotGroupVar = "Sex",
+  lcRef = "saliva",
+  phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
+  lcPhenoDir = preprocessing_inputs$tempDir,
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = FALSE
+)
+
+class(preprocessResult)
+names(preprocessResult)
+head(preprocessResult$targets[, c(
+  "Sample_Name",
+  "Sex",
+  "Sentrix_ID",
+  "Sentrix_Position"
+)])
+```
+
+The returned object has class `dnaEPICO_preprocessingMinfiEwasWater`. The
+`targets` element is the filtered phenotype table aligned to the retained
+samples. The remaining elements are nested result objects for the major
+preprocessing stages.
+
+Arguments used in this example:
+
+- `phenoFile` and `idatFolder` define the phenotype table and the directory of
+  raw IDAT pairs.
+- `nSamples = 6` keeps the example small enough for interactive use.
+- `SampleID = "Sample_Name"` identifies the column used to align phenotype data
+  and methylation objects.
+- `arrayType` and `annotationVersion` must match the array platform being
+  processed.
+- `detPThreshold`, `normMethods`, `pvalThreshold`, `chrToRemove`,
+  `snpsToRemove`, and `mafThreshold` control quality filtering and probe
+  filtering.
+- `crossReactivePath` supplies the cross-reactive probe reference used during
+  filtering.
+- `sexColumn`, `plotGroupVar`, `lcRef`, and `phenoOrder` control sex
+  prediction, quality-control grouping, cell-type estimation, and the structure
+  of the returned phenotype table.
+- `display = FALSE`, `verbose = FALSE`, `logs = FALSE`, and
+  `saveOutputs = FALSE` keep the example quiet, in memory, and free of file
+  outputs.
+
+The next chunk inspects three important elements: the filtered `RGSet`, the
+metric matrices, and the phenotype table augmented with cell-composition
+estimates.
+
+```{r preprocessing-local-inspect, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
+class(preprocessResult$RGSet)
+names(preprocessResult$metricsData)
+head(preprocessResult$lcData$phenoLC[, 1:6])
+```
+
+In local use, these are the most useful objects to inspect first. `RGSet` is
+the core methylation object; `metricsData` contains the beta-value, M-value, and
+copy-number matrices; and `lcData$phenoLC` is the phenotype table that will be
+used by later workflow steps.
+
+# Step 2: svaEnmix
+
+The SVA wrapper loads a phenotype table and a saved `RGSet`, estimates
+surrogate variables from ENmix control probes, and returns both the surrogate
+variables and the merged phenotype table.
+
+```{r sva-local, eval = can_run_sva, message = FALSE, warning = FALSE}
+svaResult <- svaEnmix(
+  phenoFile = sva_targets_file,
+  rgsetData = sva_rgset_file,
+  outputLogs = file.path(tempdir(), "logs"),
+  SampleID = "Sample_Name",
+  arrayType = "IlluminaHumanMethylation450k",
+  annotationVersion = "ilmn12.hg19",
+  SentrixIDColumn = "Sentrix_ID",
+  SentrixPositionColumn = "Sentrix_Position",
+  ctrlSvaPercVar = 0.90,
+  ctrlSvaFlag = 1,
+  scriptLabel = "svaEnmix",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = FALSE
+)
+
+class(svaResult)
+names(svaResult)
+dim(svaResult$svaData$sva)
+head(svaResult$mergedPheno[, 1:min(6, ncol(svaResult$mergedPheno))])
+```
+
+The `svaData$sva` matrix contains one row per sample and one column per
+surrogate variable. The `mergedPheno` table is often the most convenient object
+to inspect because it combines the original phenotype data and the new SVA
+columns in one place.
+
+Arguments used in this example:
+
+- `phenoFile` points to the phenotype table that already includes the cell
+  composition estimates from preprocessing.
+- `rgsetData` points to the saved `RGSet` used to derive ENmix control-probe
+  surrogate variables.
+- `SampleID`, `SentrixIDColumn`, and `SentrixPositionColumn` identify the
+  sample and array-position columns used in the SVA analysis.
+- `ctrlSvaPercVar = 0.90` asks the procedure to keep enough control-derived
+  surrogate variables to explain 90% of the control-probe variance.
+- `ctrlSvaFlag = 1` enables the control-based SVA workflow.
+- `display = FALSE`, `verbose = FALSE`, `logs = FALSE`, and
+  `saveOutputs = FALSE` keep the example interactive and in-memory.
+
+The association analysis between the surrogate variables and array-position
+metadata is stored separately in `analysisData`.
+
+```{r sva-local-inspect, eval = can_run_sva, message = FALSE, warning = FALSE}
+class(svaResult$analysisData)
+names(svaResult$analysisData)
+```
+
+This object contains the fitted models and ANOVA summaries used to assess how
+the surrogate variables relate to Sentrix chip and position effects.
+
+# Step 3: preprocessingPheno
+
+The phenotype-preparation wrapper aligns the phenotype table with the beta,
+M-value, and copy-number matrices; splits the data by timepoint; constructs a
+combined longitudinal object; and prepares Clock Foundation export tables.
+
+```{r preprocessingPheno-local, message = FALSE, warning = FALSE}
+phenoResult <- preprocessingPheno(
+  phenoFile = pheno_inputs$phenoPath,
+  betaPath = pheno_inputs$betaPath,
+  mPath = pheno_inputs$mPath,
+  cnPath = pheno_inputs$cnPath,
+  SampleID = "Sample_Name",
+  timeVar = "Timepoint",
+  timepoints = "1,2",
+  combineTimepoints = "1,2",
+  outputPheno = file.path(pheno_inputs$tempDir, "data", "preprocessingPheno"),
+  outputRData = file.path(
+    pheno_inputs$tempDir,
+    "rData",
+    "preprocessingPheno",
+    "metrics"
+  ),
+  outputRDataMerge = file.path(
+    pheno_inputs$tempDir,
+    "rData",
+    "preprocessingPheno",
+    "mergeData"
+  ),
+  sexColumn = "Sex",
+  outputLogs = file.path(pheno_inputs$tempDir, "logs"),
+  outputDir = file.path(pheno_inputs$tempDir, "clockFoundation"),
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = FALSE
+)
+
+class(phenoResult)
+names(phenoResult)
+names(phenoResult$combinedData)
+head(phenoResult$combinedData$phenoBeta[, 1:6])
+```
+
+The `combinedData$phenoBeta` table is the key downstream object for modeling.
+It combines phenotype columns and CpG beta values in a single data frame that
+can be passed to the GLM or GLMM wrappers.
+
+Arguments used in this example:
+
+- `phenoFile`, `betaPath`, `mPath`, and `cnPath` define the phenotype table and
+  the three methylation matrices that are aligned in this step.
+- `SampleID = "Sample_Name"` is the key used to match samples across the loaded
+  objects.
+- `timeVar = "Timepoint"`, `timepoints = "1,2"`, and
+  `combineTimepoints = "1,2"` define the separate exports and the combined
+  longitudinal object.
+- `outputPheno`, `outputRData`, `outputRDataMerge`, and `outputDir` still need
+  to be specified even when `saveOutputs = FALSE`, because they define the
+  canonical output structure for the wrapper.
+- `sexColumn = "Sex"` identifies the sex variable used by the helper functions.
+- `verbose = FALSE`, `logs = FALSE`, and `saveOutputs = FALSE` keep the example
+  focused on the returned object rather than file writing.
+
+The Clock Foundation export objects are returned in the same result, which makes
+it possible to inspect the export-ready tables before deciding whether they
+should be written to disk.
+
+```{r preprocessingPheno-local-inspect, message = FALSE, warning = FALSE}
+names(phenoResult$clockFoundation)
+head(phenoResult$clockFoundation$phenoCF)
+```
+
+# Summary
+
+In interactive local use, the most important habit is to inspect the returned
+objects after each step. In practice, the following checks are usually enough to
+confirm that the workflow is behaving as expected:
+
+- `class(result)` to confirm which wrapper produced the object
+- `names(result)` to see the main return elements
+- `head()` on the phenotype-like tables
+- `class()` or `dim()` on the methylation objects and matrices
+
+When you are ready to move from interactive inspection to file-based execution,
+the next vignette shows how to use `saveOutputs = TRUE` and the Makefile
+workflow. The file-based vignette also describes the regression and
+mixed-effects model structures used downstream, including how phenotype-specific
+PRS terms are added through `prsMap`.
+
+# Basics
+
+Date the vignette was generated.
+
+```{r, echo = FALSE}
+Sys.time()
+```
+
+Wallclock time spent generating the vignette.
+
+```{r, echo = FALSE}
+totalTime <- diff(c(startTime, Sys.time()))
+round(totalTime, digits = 3)
+```
+
+`R` session information.
+
+```{r, echo = FALSE}
+sessionInfo()
+```
+
+## Asking for help
+
+As package developers, we try to explain clearly how to use our packages and in
+which order to use the functions. But `R` and `Bioconductor` have a steep
+learning curve, so it is critical to learn where to ask for help. We would like
+to highlight the [Bioconductor support site](https://support.bioconductor.org/)
+as the main resource for getting help. Please remember to use the `dnaEPICO`
+tag and check the
+[older posts](https://support.bioconductor.org/tag/dnaEPICO/). If you want to
+receive help, please provide a small reproducible example and your session
+information so the source of the problem can be tracked efficiently.

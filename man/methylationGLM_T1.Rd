@@ -150,10 +150,32 @@ the requested output directories. The default is \code{FALSE}, so the function
 returns in-memory results without writing files.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM_T1"} containing the
-prepared input object, exploratory plot objects, fitted GLMs, CpG summary
-tables, optional significant-CpG tables, diagnostic plot objects,
-annotation results, and any saved file paths.
+A list with class \code{"dnaEPICO_methylationGLM_T1"}.
+\describe{
+\item{preparedData}{Object returned by \code{\link[=prepareMethylationGLM_T1Data]{prepareMethylationGLM_T1Data()}}
+containing the merged phenotype-plus-beta analysis table and modeling
+metadata.}
+\item{distributionPlots}{Object returned by
+\code{\link[=plotMethylationGLM_T1Distributions]{plotMethylationGLM_T1Distributions()}} describing any exploratory plots that
+were generated or written.}
+\item{modelFits}{Object returned by \code{\link[=fitMethylationGLM_T1Models]{fitMethylationGLM_T1Models()}}
+containing the per-phenotype CpG model fits.}
+\item{modelSummaries}{Object returned by
+\code{\link[=summarizeMethylationGLM_T1Models]{summarizeMethylationGLM_T1Models()}} containing the combined CpG summary
+tables used for reporting and annotation.}
+\item{significantCpGs}{Object returned by
+\code{\link[=collectSignificantCpGsMethylationGLM_T1]{collectSignificantCpGsMethylationGLM_T1()}} containing optional
+phenotype-specific significant-CpG tables.}
+\item{diagnosticPlots}{Object returned by
+\code{\link[=plotMethylationGLM_T1Diagnostics]{plotMethylationGLM_T1Diagnostics()}} describing the diagnostic plot objects
+and any written TIFF files.}
+\item{annotation}{Object returned by
+\code{\link[=annotateMethylationGLM_T1Summaries]{annotateMethylationGLM_T1Summaries()}} containing the annotated combined
+summary table.}
+\item{savedFiles}{Object returned by \code{\link[=writeMethylationGLM_T1Outputs]{writeMethylationGLM_T1Outputs()}} when
+\code{saveOutputs = TRUE}, otherwise \code{NULL}.}
+}
+See \linkS4class{dnaEPICO_methylationGLM_T1} for a class-level overview.
 }
 \description{
 \code{methylationGLM_T1()} is the high-level coordinator for the one-timepoint GLM
@@ -199,4 +221,7 @@ if (requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = T
   class(result)
 }
 
+}
+\seealso{
+\linkS4class{dnaEPICO_methylationGLM_T1}
 }

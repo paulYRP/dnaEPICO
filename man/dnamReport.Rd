@@ -71,9 +71,21 @@ default is \code{FALSE}, so the function is quiet unless requested.}
 template. When \code{NULL}, the packaged \code{dnamReport.Rmd} template is used.}
 }
 \value{
-A list with class \code{"dnaEPICO_dnamReport"} containing the prepared
-report inputs, the optional render result, the final status, the intended or
-rendered output file path, and any render error message.
+A list with class \code{"dnaEPICO_dnamReport"}.
+\describe{
+\item{preparedReport}{Object returned by \code{\link[=prepareDnamReportInputs]{prepareDnamReportInputs()}}.}
+\item{renderResult}{Object returned by \code{\link[=renderDnamReport]{renderDnamReport()}} when
+\code{render = TRUE}, otherwise \code{NULL}.}
+\item{status}{Final status string such as \code{"prepared"}, \code{"rendered"},
+\code{"skipped"}, or \code{"failed"}.}
+\item{outputFile}{Intended output path when \code{render = FALSE}, or the
+rendered PDF path when rendering succeeded.}
+\item{errorMessage}{Final render error or skip message when available,
+otherwise \code{NULL}.}
+\item{logFile}{Resolved path to the optional log file, or \code{NULL} when
+logging was disabled.}
+}
+See \linkS4class{dnaEPICO_dnamReport} for a class-level overview.
 }
 \description{
 \code{dnamReport()} is a high-level convenience wrapper for the reporting stage of

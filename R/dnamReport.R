@@ -123,9 +123,23 @@ resolveTemplatePathDnamReport <- function(templatePath = NULL) {
 #' @param templatePath Character or `NULL`. Optional path to a custom report
 #'   template. When `NULL`, the packaged `dnamReport.Rmd` template is used.
 #'
-#' @return A list with class `"dnaEPICO_dnamReport_prepared"` containing the
-#'   normalized output paths, report parameters, template path, and an inventory
-#'   of the available report figures.
+#' @return A list with class `"dnaEPICO_dnamReport_prepared"`.
+#' \describe{
+#'   \item{output}{Requested output file name.}
+#'   \item{outputDir}{Normalized directory where the report would be written.}
+#'   \item{outputFile}{Normalized full path to the intended output file.}
+#'   \item{figDir}{Normalized directory used by the template for figure copies.}
+#'   \item{templatePath}{Resolved path to the packaged or custom report
+#'   template.}
+#'   \item{params}{Named list of parameters passed to `rmarkdown::render()`.}
+#'   \item{figureInventory}{Named list describing the available figures for each
+#'   report section.}
+#'   \item{missingFigureDirectories}{Character vector of expected figure
+#'   directories that were not present at preparation time.}
+#'   \item{logFile}{Resolved path to the optional log file, or `NULL` when
+#'   logging was disabled.}
+#' }
+#' See [dnaEPICO_dnamReport_prepared-class] for a class-level overview.
 #'
 #' @description
 #' `prepareDnamReportInputs()` resolves the report template, normalizes the input
@@ -282,9 +296,20 @@ prepareDnamReportInputs <- function(
 #' @param clean Logical. Passed to `rmarkdown::render()` to remove intermediate
 #'   files after rendering.
 #'
-#' @return A list with class `"dnaEPICO_dnamReport_render"` describing whether
-#'   the PDF report was rendered, skipped, or failed, together with the output
-#'   path and any error message.
+#' @return A list with class `"dnaEPICO_dnamReport_render"`.
+#' \describe{
+#'   \item{preparedReport}{The prepared input object supplied to
+#'   `renderDnamReport()`.}
+#'   \item{status}{Render status string such as `"rendered"`, `"skipped"`, or
+#'   `"failed"`.}
+#'   \item{renderedFile}{Normalized path to the rendered PDF file when rendering
+#'   succeeded, otherwise `NULL`.}
+#'   \item{errorMessage}{Render error or skip message when available, otherwise
+#'   `NULL`.}
+#'   \item{logFile}{Resolved path to the optional log file, or `NULL` when
+#'   logging was disabled.}
+#' }
+#' See [dnaEPICO_dnamReport_render-class] for a class-level overview.
 #'
 #' @description
 #' `renderDnamReport()` renders the packaged or custom DNA methylation report
@@ -433,9 +458,21 @@ renderDnamReport <- function(
 #' @param templatePath Character or `NULL`. Optional path to a custom report
 #'   template. When `NULL`, the packaged `dnamReport.Rmd` template is used.
 #'
-#' @return A list with class `"dnaEPICO_dnamReport"` containing the prepared
-#'   report inputs, the optional render result, the final status, the intended or
-#'   rendered output file path, and any render error message.
+#' @return A list with class `"dnaEPICO_dnamReport"`.
+#' \describe{
+#'   \item{preparedReport}{Object returned by [prepareDnamReportInputs()].}
+#'   \item{renderResult}{Object returned by [renderDnamReport()] when
+#'   `render = TRUE`, otherwise `NULL`.}
+#'   \item{status}{Final status string such as `"prepared"`, `"rendered"`,
+#'   `"skipped"`, or `"failed"`.}
+#'   \item{outputFile}{Intended output path when `render = FALSE`, or the
+#'   rendered PDF path when rendering succeeded.}
+#'   \item{errorMessage}{Final render error or skip message when available,
+#'   otherwise `NULL`.}
+#'   \item{logFile}{Resolved path to the optional log file, or `NULL` when
+#'   logging was disabled.}
+#' }
+#' See [dnaEPICO_dnamReport-class] for a class-level overview.
 #'
 #' @description
 #' `dnamReport()` is a high-level convenience wrapper for the reporting stage of

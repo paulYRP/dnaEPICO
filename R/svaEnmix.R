@@ -273,10 +273,27 @@ svaEnmixValidateRGSet <- function(
 #' @param saveOutputs Logical. If `TRUE`, write the legacy CSV, `.RData`, text,
 #'   and TIFF outputs to disk. The default is `FALSE`.
 #'
-#' @return A list with class `"dnaEPICO_svaEnmix"` containing the phenotype
-#'   data, loaded `RGChannelSet`, surrogate-variable matrix, merged phenotype,
-#'   association-analysis objects, optional saved-file paths, and the resolved
-#'   log file path.
+#' @return A list with class `"dnaEPICO_svaEnmix"`.
+#' \describe{
+#'   \item{targets}{Phenotype table read from `phenoFile` after any optional row
+#'   subsetting.}
+#'   \item{RGSet}{Loaded `RGChannelSet` with sample names realigned to
+#'   `targets[[SampleID]]`.}
+#'   \item{svaData}{Object returned by [estimateSvaEnmixControls()] containing
+#'   the surrogate-variable matrix and the control-probe settings used to
+#'   estimate it.}
+#'   \item{mergedPheno}{Phenotype table returned by [mergeSvaTargetsEnmix()]
+#'   after the surrogate variables were appended as additional columns.}
+#'   \item{analysisData}{Object returned by [analyzeSvaEnmix()] containing the
+#'   surrogate-variable association models, ANOVA tables, and Sentrix metadata.}
+#'   \item{plotFiles}{Named list describing the plot file paths requested for the
+#'   SVA figures. When `saveOutputs = FALSE`, the entries are typically `NULL`.}
+#'   \item{savedFiles}{Object returned by [writeSvaEnmixOutputs()] when
+#'   `saveOutputs = TRUE`, otherwise `NULL`.}
+#'   \item{logFile}{Resolved path to the optional log file, or `NULL` when
+#'   logging was disabled.}
+#' }
+#' See [dnaEPICO_svaEnmix-class] for a class-level overview.
 #'
 #' @examples
 #' tmp <- tempdir()
@@ -305,6 +322,8 @@ svaEnmixValidateRGSet <- function(
 #'   )
 #'   stopifnot(inherits(sva_result, "dnaEPICO_svaEnmix"))
 #' }
+#'
+#' @seealso [dnaEPICO_svaEnmix-class]
 #'
 #' @export
 svaEnmix <- function(

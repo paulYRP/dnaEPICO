@@ -134,9 +134,31 @@ default is \code{FALSE}.}
 be used in the more traditional in-memory Bioconductor style.}
 }
 \value{
-A list with class \code{"dnaEPICO_preprocessingMinfiEwasWater"}
-containing the filtered phenotype table, preprocessing objects, metrics, and
-cell-composition results.
+A list with class \code{"dnaEPICO_preprocessingMinfiEwasWater"}.
+\describe{
+\item{targets}{Filtered phenotype table aligned to the retained samples.}
+\item{RGSet}{Filtered \code{RGChannelSet} used in downstream preprocessing and
+available for direct interactive inspection.}
+\item{rawData}{Object returned by \code{\link[=buildRawMinfiEwasWater]{buildRawMinfiEwasWater()}} containing the
+raw \code{MSet}, \code{RatioSet}, and genome-mapped object derived from \code{RGSet}.}
+\item{assessment}{Object returned by \code{\link[=assessSamplesMinfiEwasWater]{assessSamplesMinfiEwasWater()}}
+containing detection P values, QC summaries, and failed-sample tracking.}
+\item{sexData}{Object returned by \code{\link[=predictSexMinfiEwasWater]{predictSexMinfiEwasWater()}} containing
+predicted sex labels, mismatch summaries, and plotting data.}
+\item{normData}{Object returned by \code{\link[=normalizeMinfiEwasWater]{normalizeMinfiEwasWater()}} containing
+the requested normalized objects and metadata on the methods that were run.}
+\item{filterData}{Object returned by \code{\link[=filterProbesMinfiEwasWater]{filterProbesMinfiEwasWater()}}
+containing the probe-filtered methylation objects at each filtering stage.}
+\item{metricsData}{Object returned by \code{\link[=extractMetricsMinfiEwasWater]{extractMetricsMinfiEwasWater()}}
+containing the beta-value, M-value, and copy-number matrices used by later
+workflow steps.}
+\item{lcData}{Object returned by \code{\link[=estimateLCMinfiEwasWater]{estimateLCMinfiEwasWater()}} containing
+the estimated cell-type proportions and the phenotype table augmented with
+those proportions.}
+\item{logFile}{Resolved path to the optional log file, or \code{NULL} when
+logging was disabled.}
+}
+See \linkS4class{dnaEPICO_preprocessingMinfiEwasWater} for a class-level overview.
 }
 \description{
 Run the \code{dnaEPICO} preprocessing workflow as a convenience wrapper around the
@@ -179,4 +201,7 @@ if (requireNamespace("minfiData", quietly = TRUE) &&
   inherits(result, "dnaEPICO_preprocessingMinfiEwasWater")
 }
 
+}
+\seealso{
+\linkS4class{dnaEPICO_preprocessingMinfiEwasWater}
 }
