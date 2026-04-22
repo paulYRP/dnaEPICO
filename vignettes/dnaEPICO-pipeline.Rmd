@@ -1,10 +1,13 @@
 ---
-title: "File-Based and Pipeline Use of dnaEPICO"
+title: "Pipeline Use of dnaEPICO"
 author:
   - name: Paul Ruiz
     affiliation:
       - Queensland University of Technology
     email: ruizpint@qut.edu.au
+  - name: Divya Mehta
+    affiliation:
+      - Queensland University of Technology
 output:
   BiocStyle::html_document:
     self_contained: yes
@@ -30,25 +33,26 @@ knitr::opts_chunk$set(
 
 library(dnaEPICO)
 
+can_run_preprocessing <- requireNamespace("minfiData", quietly = TRUE) &&
+  requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
+  requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)
+
 pheno_inputs <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 glm_inputs <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 
-can_run_sva <- requireNamespace("minfiData", quietly = TRUE)
+can_run_sva <- can_run_preprocessing
 can_run_glm <- requireNamespace(
   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
   quietly = TRUE
 )
-sva_targets_file <- NULL
-sva_rgset_file <- NULL
-if (isTRUE(can_run_sva)) {
-  sva_inputs <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
-  sva_temp_dir <- tempdir()
-  sva_targets_file <- file.path(sva_temp_dir, "pipeline_sva_targets.csv")
-  sva_rgset_file <- file.path(sva_temp_dir, "pipeline_sva_RGSet.RData")
-  utils::write.csv(sva_inputs$targets, sva_targets_file, row.names = FALSE)
-  RGSet <- sva_inputs$RGSet
-  save(RGSet, file = sva_rgset_file)
+
+preprocessing_inputs <- NULL
+if (isTRUE(can_run_preprocessing)) {
+  preprocessing_inputs <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 6L)
 }
+
+glmm_inputs <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+can_run_glmm <- can_run_glm && requireNamespace("lmerTest", quietly = TRUE)
 ```
 
 # Introduction
@@ -132,12 +136,114 @@ basename(makefilePath)
 After extraction, the file should be edited so that the project-specific paths,
 model labels, and cluster settings match the target analysis environment.
 
-Arguments used in this example:
+Arguments:
 
 - `destDir = tempdir()` writes the template to a temporary directory so the
   example does not modify the working tree.
 - `overwrite = TRUE` allows the template to be replaced if it already exists in
   that temporary location.
+
+# Write preprocessingMinfiEwasWater outputs to disk
+
+The file-based route usually starts with `preprocessingMinfiEwasWater()`. This
+step writes the filtered `RGSet`, normalized metric matrices, quality-control
+figures, and the `phenoLC.csv` file that will be consumed by `svaEnmix()` and
+`preprocessingPheno()`.
+
+```{r preprocessing-pipeline, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
+preprocessPipelineResult <- preprocessingMinfiEwasWater(
+  phenoFile = preprocessing_inputs$phenoFile,
+  idatFolder = preprocessing_inputs$idatFolder,
+  outputLogs = file.path(preprocessing_inputs$tempDir, "logs"),
+  nSamples = 6,
+  SampleID = "Sample_Name",
+  arrayType = preprocessing_inputs$arrayType,
+  annotationVersion = preprocessing_inputs$annotationVersion,
+  scriptLabel = "preprocessingMinfiEwasWater",
+  baseDataFolder = file.path(preprocessing_inputs$tempDir, "rData"),
+  figureBaseDir = file.path(preprocessing_inputs$tempDir, "figures"),
+  detPThreshold = 1,
+  normMethods = "quantile",
+  sexColumn = "Sex",
+  pvalThreshold = 1,
+  chrToRemove = "",
+  snpsToRemove = "SBE",
+  mafThreshold = 1,
+  crossReactivePath = preprocessing_inputs$crossReactivePath,
+  plotGroupVar = "Sex",
+  lcRef = "saliva",
+  phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
+  lcPhenoDir = file.path(
+    preprocessing_inputs$tempDir,
+    "data",
+    "preprocessingMinfiEwasWater"
+  ),
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = TRUE
+)
+
+preprocess_paths <- c(
+  phenoLC = file.path(
+    preprocessing_inputs$tempDir,
+    "data",
+    "preprocessingMinfiEwasWater",
+    "phenoLC.csv"
+  ),
+  rgset = file.path(
+    preprocessing_inputs$tempDir,
+    "rData",
+    "preprocessingMinfiEwasWater",
+    "objects",
+    "RGSet.RData"
+  ),
+  beta = file.path(
+    preprocessing_inputs$tempDir,
+    "rData",
+    "preprocessingMinfiEwasWater",
+    "metrics",
+    "beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+  ),
+  qc = file.path(
+    preprocessing_inputs$tempDir,
+    "figures",
+    "preprocessingMinfiEwasWater",
+    "qc",
+    "quality_control(MSet).tiff"
+  )
+)
+
+class(preprocessPipelineResult)
+basename(preprocess_paths)
+file.exists(preprocess_paths)
+```
+
+The returned object still has class `dnaEPICO_preprocessingMinfiEwasWater`, but
+the printed vectors in this chunk focus on the written outputs. In
+`preprocess_paths`, `phenoLC` is the phenotype table with estimated cell
+proportions, `rgset` is the filtered `RGSet`, `beta` is the saved beta matrix
+used later by phenotype preparation, and `qc` is an example quality-control
+figure. `basename(preprocess_paths)` shows the file names, while
+`file.exists(preprocess_paths)` confirms that each one was written successfully.
+
+Arguments:
+
+- `phenoFile` and `idatFolder` define the phenotype table and the IDAT folder
+  used to start the pipeline.
+- `SampleID = "Sample_Name"` is the key used to align phenotype rows with the
+  methylation objects.
+- `arrayType` and `annotationVersion` define the array manifest and annotation
+  used by `minfi`.
+- `baseDataFolder`, `figureBaseDir`, and `lcPhenoDir` define where serialized
+  objects, figures, and `phenoLC.csv` are written.
+- `detPThreshold`, `normMethods`, `pvalThreshold`, `chrToRemove`,
+  `snpsToRemove`, `mafThreshold`, and `crossReactivePath` define the main
+  preprocessing and filtering choices.
+- `plotGroupVar`, `lcRef`, and `phenoOrder` control QC grouping, cell-type
+  estimation, and the structure of the exported phenotype table.
+- `saveOutputs = TRUE` is what turns this wrapper into the first file-producing
+  step of the pipeline.
 
 # Write SVA outputs to disk
 
@@ -147,9 +253,20 @@ main output files written to disk.
 
 ```{r sva-pipeline, eval = can_run_sva, message = FALSE, warning = FALSE}
 svaPipelineResult <- svaEnmix(
-  phenoFile = sva_targets_file,
-  rgsetData = sva_rgset_file,
-  outputLogs = file.path(tempdir(), "logs"),
+  phenoFile = file.path(
+    preprocessing_inputs$tempDir,
+    "data",
+    "preprocessingMinfiEwasWater",
+    "phenoLC.csv"
+  ),
+  rgsetData = file.path(
+    preprocessing_inputs$tempDir,
+    "rData",
+    "preprocessingMinfiEwasWater",
+    "objects",
+    "RGSet.RData"
+  ),
+  outputLogs = file.path(preprocessing_inputs$tempDir, "logs"),
   SampleID = "Sample_Name",
   arrayType = "IlluminaHumanMethylation450k",
   annotationVersion = "ilmn12.hg19",
@@ -158,8 +275,9 @@ svaPipelineResult <- svaEnmix(
   ctrlSvaPercVar = 0.90,
   ctrlSvaFlag = 1,
   scriptLabel = "svaEnmix",
-  dataBaseDir = file.path(tempdir(), "data"),
-  rBaseDir = file.path(tempdir(), "rData"),
+  dataBaseDir = file.path(preprocessing_inputs$tempDir, "data"),
+  rBaseDir = file.path(preprocessing_inputs$tempDir, "rData"),
+  figureBaseDir = file.path(preprocessing_inputs$tempDir, "figures"),
   display = FALSE,
   verbose = FALSE,
   logs = FALSE,
@@ -171,11 +289,15 @@ names(svaPipelineResult$savedFiles)
 basename(unlist(svaPipelineResult$savedFiles, use.names = FALSE))
 ```
 
-The file outputs from this step include the surrogate-variable matrix, the
-phenotype table with appended SVA columns, and the serialized SVA object used in
-later stages.
+The returned `savedFiles` object records the main paths written by this step.
+`names(svaPipelineResult$savedFiles)` identifies the output groups: `svaRData`
+is the serialized surrogate-variable matrix, `svaCSV` is the CSV version of
+that matrix, `phenoWithSva` is the updated phenotype table with appended SVA
+columns, and `dataDir` / `rDir` are the parent directories used for the saved
+outputs. The `basename(...)` call shows the file names generated from those
+paths.
 
-Arguments used in this example:
+Arguments:
 
 - `phenoFile` and `rgsetData` identify the phenotype table and saved `RGSet`
   produced by the earlier preprocessing step.
@@ -238,10 +360,16 @@ basename(unlist(phenoPipelineResult$savedFiles[c(
 ```
 
 These outputs are the files most commonly consumed by downstream modeling
-functions. The combined phenotype-plus-beta object is particularly important
-because it becomes the direct input to the GLM and GLMM wrappers.
+functions. `names(phenoPipelineResult$savedFiles)` shows the high-level output
+groups returned by the wrapper. `names(phenoPipelineResult$savedFiles$timepoints)`
+lists the available timepoint-specific subsets. The `basename(...)` calls then
+show examples of the concrete files written for one timepoint and for the
+combined outputs. In this structure, `combinedPhenoBeta` is the merged
+phenotype-plus-beta object that becomes the direct input to the GLM and GLMM
+wrappers, while `betaCSV`, `betaZIP`, and `phenoCF` are the Clock Foundation
+exports.
 
-Arguments used in this example:
+Arguments:
 
 - `phenoFile`, `betaPath`, `mPath`, and `cnPath` point to the phenotype table
   and the aligned methylation matrices from the previous workflow stages.
@@ -255,7 +383,7 @@ Arguments used in this example:
 - `saveOutputs = TRUE` is what makes this step useful in a file-based pipeline,
   because later modeling steps consume these written files.
 
-# Write model outputs to disk
+# Write GLM model outputs to disk
 
 The modeling wrappers also separate in-memory results from file outputs. The
 next example runs a small GLM analysis and prints the names of the files written
@@ -289,11 +417,14 @@ class(glmPipelineResult$savedFiles)
 names(glmPipelineResult$savedFiles)
 ```
 
-At this stage, the most important saved outputs are the annotated summary table,
-the serialized model objects, and the optional text summaries used for
-inspection outside R.
+The returned `savedFiles` object records the groups of outputs written by the
+GLM step. `names(glmPipelineResult$savedFiles)` typically includes the model
+files, summary files, diagnostic plot files, significant-CpG exports, summary
+text files, and the annotated results table. This is the object to inspect when
+you want to confirm which modeling outputs were written and how they are
+grouped.
 
-Arguments used in this example:
+Arguments:
 
 - `inputPheno` points to the merged phenotype-plus-beta object generated by
   `preprocessingPheno()`.
@@ -312,7 +443,82 @@ Arguments used in this example:
 - `saveOutputs = TRUE` enables the file-based pipeline behaviour expected by
   Makefile and HPC use.
 
-## Model structure and PRS terms
+# Write LME model outputs to disk
+
+The longitudinal modeling step follows the same pattern as the GLM wrapper, but
+the saved outputs now correspond to mixed-effects models, longitudinal summary
+tables, and interaction-specific result files.
+
+```{r glmm-pipeline, eval = can_run_glmm, message = FALSE, warning = FALSE}
+glmmPipelineResult <- methylationGLMM_T1T2(
+  inputPheno = glmm_inputs$inputPath,
+  outputLogs = file.path(glmm_inputs$tempDir, "logs"),
+  outputRData = file.path(glmm_inputs$tempDir, "rData", "models"),
+  outputPlots = file.path(glmm_inputs$tempDir, "figures"),
+  personVar = "person",
+  timeVar = "Timepoint",
+  phenotypes = "score",
+  covariates = "sex",
+  factorVars = "sex,Timepoint",
+  cpgLimit = 2,
+  nCores = 1,
+  summaryPval = 1,
+  saveSignificantInteractions = TRUE,
+  significantInteractionDir = file.path(
+    glmm_inputs$tempDir,
+    "results",
+    "cpgs",
+    "methylationGLMM_T1T2"
+  ),
+  significantInteractionPval = 1,
+  saveTxtSummaries = TRUE,
+  summaryTxtDir = file.path(
+    glmm_inputs$tempDir,
+    "results",
+    "summary",
+    "methylationGLMM_T1T2"
+  ),
+  annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+  annotationCols = "Name,chr,pos",
+  annotatedLMEOut = file.path(glmm_inputs$tempDir, "annotated"),
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE,
+  saveOutputs = TRUE
+)
+
+class(glmmPipelineResult$savedFiles)
+names(glmmPipelineResult$savedFiles)
+```
+
+The returned `savedFiles` object records the groups of outputs written by the
+LME step. `names(glmmPipelineResult$savedFiles)` typically includes the model
+files, summary files, diagnostic plot files, summary text files, significant
+interaction exports, and the annotated longitudinal results table. This is the
+object to inspect when you want to confirm which longitudinal modeling outputs
+were written and how they are grouped.
+
+Arguments:
+
+- `inputPheno` points to the combined longitudinal phenotype-plus-beta object.
+- `personVar` defines the participant identifier used for the random effect.
+- `timeVar` defines the repeated-measures time variable.
+- `phenotypes`, `covariates`, and `factorVars` define the fixed-effect portion
+  of the mixed model.
+- `cpgLimit = 2` keeps the example short by fitting only two CpG models.
+- `nCores = 1` keeps the example lightweight; production HPC runs usually use
+  higher parallel settings.
+- `saveSignificantInteractions`, `significantInteractionDir`, and
+  `significantInteractionPval` control the export of interaction-specific
+  results.
+- `summaryTxtDir` defines where plain-text model summaries are written.
+- `annotationPackage`, `annotationCols`, and `annotatedLMEOut` define the
+  annotation resources and output location for the final longitudinal summary
+  table.
+- `saveOutputs = TRUE` enables the file-based longitudinal workflow expected by
+  Makefile and HPC use.
+
+## GLM model structure and PRS terms
 
 For each CpG, `methylationGLM_T1()` fits a regression model of the form:
 
@@ -418,6 +624,173 @@ for the project. In practice, `saveOutputs = TRUE` is what makes the individual
 steps compatible with this route because later steps consume the files written by
 earlier ones.
 
+# Full exported Makefile
+
+The full Makefile exported by `extractMake()` is shown below. This is the
+template that should be adapted for a project before running the pipeline on a
+workstation or HPC system.
+
+```{r makefile-template-full, echo = FALSE, results = "asis"}
+makefile_lines <- readLines(makefilePath, warn = FALSE)
+cat("```make\n", paste(makefile_lines, collapse = "\n"), "\n```\n", sep = "")
+```
+
+# Makefile section guide
+
+The exported Makefile is organised into sections so that project-specific
+choices can be edited without changing the pipeline rules themselves.
+
+## User configuration
+
+- `MAKEFLAGS += --output-sync` keeps parallel Make output grouped by recipe,
+  which makes logs easier to read.
+
+## Models selection and parallel run
+
+- `MODEL` defines a single pipeline configuration to run.
+- `MODELS` defines a set of configurations that can be launched in parallel by
+  the grouped Make targets.
+
+In single-model use, commands such as `make f4 MODEL=model1` run one workflow.
+In multi-model use, commands such as `make f4_models` evaluate the same template
+for each name listed in `MODELS`.
+
+## Per-model overrides
+
+- `PHENO_FILE` is reassigned according to the selected `MODEL`.
+
+This block is useful when different cohorts, case definitions, or phenotype
+encodings should reuse the same analysis pipeline without duplicating the full
+Makefile.
+
+## Directories
+
+- `LOGS_DIR`, `DATA_DIR`, `RDATA_DIR`, `RESULTS_DIR`, and `FIGURES_DIR` define
+  the top-level folder structure.
+- `STEP1` to `STEP6` define the canonical names of the major pipeline stages.
+- `METRICS_DIR`, `IDAT_DIR`, `OBJ_DIR`, `MERGE_DIR`, `MODEL_DIR`, `CPG_DIR`,
+  `SUMMARY_DIR`, `ENMIX_DIR`, `SVA_DIR`, and `QC_DIR` define the subdirectory
+  names used by the rules file.
+- `R_DIR` optionally points to a custom R library path on shared systems. When
+  set to `NULL`, the default library path is used.
+
+These variables control where files are written and how paths are composed
+across all stages of the pipeline.
+
+## Global parameters
+
+These parameters are shared across multiple workflow steps.
+
+### Step 1 to Step 5 shared parameters
+
+- `PHENO_FILE`: input phenotype table used to start the workflow.
+- `SEP_TYPE`: separator used when reading text files.
+- `SAMPLE_ID`: phenotype column used to align samples.
+- `N_SAMPLES`: optional sample subset for testing; `NA` uses all samples.
+- `ARRAY_TYPE` and `ANNOTATION_VERSION`: array platform and annotation build.
+- `TIFF_WIDTH`, `TIFF_HEIGHT`, and `TIFF_RES`: default plot dimensions and
+  resolution.
+- `SEX_COLUMN`: phenotype column used for sex-based checks and prediction.
+- `SENTRIX_ID_COLUMN` and `SENTRIX_POSITION_COLUMN`: chip-position metadata
+  used by the SVA stage.
+- `BASENAME_COLUMN`: column holding the array basename.
+- `TIME_VAR`: phenotype column used for repeated-measures or longitudinal
+  workflows.
+- `PHENO_ORDER`: desired order of key phenotype columns in exported tables.
+
+### Step 4 and Step 5 shared modeling parameters
+
+- `PHENOTYPES`: comma-separated phenotype variables that will be modelled one at
+  a time.
+- `COVARIATES`: comma-separated adjustment variables included in each model.
+- `FACTOR_VARS`: variables that should be treated as categorical before model
+  fitting.
+- `CPG_PREFIX`: prefix used to identify CpG columns.
+- `CPG_LIMIT`: optional cap on the number of CpGs processed; `NA` uses all.
+- `PRS_MAP`: mapping from phenotype names to PRS variables.
+- `SUMMARY_PVAL`: optional p-value cutoff for summary tables.
+- `N_CORES`: number of cores used within each R job.
+- `SAVE_TXT_SUMMARIES`: whether plain-text summaries should be written.
+- `CHUNK_SIZE`: number of CpGs processed per chunk.
+- `FDR_THRESHOLD`: false-discovery-rate threshold used for filtering.
+- `PADJ_METHOD`: multiple-testing correction method.
+- `ANNOTATION_PACKAGE`: array annotation package used for annotated summaries.
+- `ANNOTATION_COLS`: annotation fields to merge into output tables.
+
+## Step 1 parameters
+
+- `QC_CUTOFF`: sample-quality threshold applied during preprocessing.
+- `DET_PTYPE`: detection p-value method.
+- `DET_PTHRESHOLD`: detection p-value cutoff.
+- `PVAL_THRESHOLD`: probe-level p-value filter applied after preprocessing.
+- `CHR_TO_REMOVE`: chromosomes to exclude from downstream matrices.
+- `SNPS_TO_REMOVE`: SNP-related probe categories to remove.
+- `CROSS_REACTIVE_FILE`: cross-reactive probe reference file.
+- `MAF_THRESHOLD`: minor-allele-frequency threshold used during SNP filtering.
+- `PLOT_GROUP_VAR`: phenotype variable used for grouped QC plots.
+- `LC_REF`: reference panel used for cell-type estimation.
+
+These values control the main preprocessing and filtering choices in
+`preprocessingMinfiEwasWater()`.
+
+## Step 2 parameters
+
+- `CTRL_SVA_PERC_VAR`: target proportion of control-probe variance explained by
+  the retained surrogate variables.
+- `CTRL_SVA_FLAG`: enables the control-based ENmix SVA workflow.
+
+These values determine how `svaEnmix()` estimates and retains surrogate
+variables.
+
+## Step 3 parameters
+
+- `TIMEPOINTS`: comma-separated timepoints exported separately.
+- `COMBINE_TIMEPOINTS`: comma-separated timepoints combined into the
+  longitudinal object.
+
+These values determine how `preprocessingPheno()` splits and recombines the
+phenotype-methylation data.
+
+## Step 4 parameters
+
+- `GLM_LIBS`: GLM implementation used by `methylationGLM_T1()`.
+- `INTERACTION_GLM`: optional interaction term added to the fixed-effect part
+  of the GLM.
+- `SUMMARY_RESIDUAL_SD`: whether residual standard deviations are reported in
+  summaries.
+- `SAVE_SIGNIFICANT_CPGS`: whether tables of significant CpGs are exported.
+- `SIGNIFICANT_CPG_PVAL`: p-value threshold used for those significant-CpG
+  exports.
+
+## Step 5 parameters
+
+- `PERSON_VAR`: participant identifier used as the random effect grouping
+  factor.
+- `LME_LIBS`: mixed-effects libraries used by `methylationGLMM_T1T2()`.
+- `INTERACTION_LME`: optional interaction term used in the longitudinal model.
+- `SAVE_SIGNIFICANT_INTERACTIONS`: whether significant interaction tables are
+  exported.
+- `SIGNIFICANT_INTERACTION_PVAL`: p-value threshold for those exported
+  interaction results.
+
+## Argument normalisation
+
+- `PRS_MAP_ARG`, `R_DIR_ARG`, `INTERACTION_GLM_ARG`, and `INTERACTION_LME_ARG`
+  convert Makefile string values into arguments that can be passed safely to R.
+
+This section is especially important for values such as `NULL`, because it
+prevents the literal string `"NULL"` from being interpreted as a real model
+value inside the wrapper functions.
+
+## Include pipeline from dnaEPICO
+
+- `DNAPIPE_MK` resolves the packaged `Makefile.rules.pipeline` file.
+- `include $(DNAPIPE_MK)` imports the actual pipeline rules after the user
+  configuration has been defined.
+
+This separation is what allows the template Makefile to stay compact while the
+package keeps the rule implementation in one maintained location.
+
 # Summary
 
 The file-based route is the correct choice when you need:
@@ -463,3 +836,5 @@ tag and check the
 [older posts](https://support.bioconductor.org/tag/dnaEPICO/). If you want to
 receive help, please provide a small reproducible example and your session
 information so the source of the problem can be tracked efficiently.
+
+# References

@@ -5,6 +5,9 @@ author:
     affiliation:
       - Queensland University of Technology
     email: ruizpint@qut.edu.au
+  - name: Divya Mehta
+    affiliation:
+      - Queensland University of Technology
 output:
   BiocStyle::html_document:
     self_contained: yes
@@ -175,12 +178,14 @@ head(preprocessResult$targets[, c(
 )])
 ```
 
-The returned object has class `dnaEPICO_preprocessingMinfiEwasWater`. The
+The returned object has class `dnaEPICO_preprocessingMinfiEwasWater`.
+`names(preprocessResult)` lists the main elements returned by the wrapper. The
 `targets` element is the filtered phenotype table aligned to the retained
 samples. The remaining elements are nested result objects for the major
-preprocessing stages.
+preprocessing stages, including the `RGSet`, the methylation metrics, and the
+cell-composition results.
 
-Arguments used in this example:
+Arguments:
 
 - `phenoFile` and `idatFolder` define the phenotype table and the directory of
   raw IDAT pairs.
@@ -211,10 +216,11 @@ names(preprocessResult$metricsData)
 head(preprocessResult$lcData$phenoLC[, 1:6])
 ```
 
-In local use, these are the most useful objects to inspect first. `RGSet` is
-the core methylation object; `metricsData` contains the beta-value, M-value, and
-copy-number matrices; and `lcData$phenoLC` is the phenotype table that will be
-used by later workflow steps.
+In local use, these are the most useful objects to inspect first.
+`preprocessResult$RGSet` is the core methylation object. `metricsData`
+contains the beta-value, M-value, and copy-number matrices used in downstream
+steps. `lcData$phenoLC` is the phenotype table augmented with estimated cell
+composition and is the object passed forward to later workflow stages.
 
 # Step 2: svaEnmix
 
@@ -247,12 +253,13 @@ dim(svaResult$svaData$sva)
 head(svaResult$mergedPheno[, 1:min(6, ncol(svaResult$mergedPheno))])
 ```
 
-The `svaData$sva` matrix contains one row per sample and one column per
-surrogate variable. The `mergedPheno` table is often the most convenient object
-to inspect because it combines the original phenotype data and the new SVA
-columns in one place.
+The returned object has class `dnaEPICO_svaEnmix`, and `names(svaResult)`
+shows the main SVA components returned by the wrapper. The `svaData$sva`
+matrix contains one row per sample and one column per surrogate variable. The
+`mergedPheno` table is often the most convenient object to inspect because it
+combines the original phenotype data and the new SVA columns in one place.
 
-Arguments used in this example:
+Arguments:
 
 - `phenoFile` points to the phenotype table that already includes the cell
   composition estimates from preprocessing.
@@ -320,11 +327,14 @@ names(phenoResult$combinedData)
 head(phenoResult$combinedData$phenoBeta[, 1:6])
 ```
 
-The `combinedData$phenoBeta` table is the key downstream object for modeling.
+The returned object has class `dnaEPICO_preprocessingPheno`, and
+`names(phenoResult)` shows the main returned components. The
+`combinedData` element groups the combined longitudinal objects, and
+`phenoResult$combinedData$phenoBeta` is the key downstream table for modeling.
 It combines phenotype columns and CpG beta values in a single data frame that
 can be passed to the GLM or GLMM wrappers.
 
-Arguments used in this example:
+Arguments:
 
 - `phenoFile`, `betaPath`, `mPath`, and `cnPath` define the phenotype table and
   the three methylation matrices that are aligned in this step.
@@ -340,14 +350,18 @@ Arguments used in this example:
 - `verbose = FALSE`, `logs = FALSE`, and `saveOutputs = FALSE` keep the example
   focused on the returned object rather than file writing.
 
-The Clock Foundation export objects are returned in the same result, which makes
-it possible to inspect the export-ready tables before deciding whether they
-should be written to disk.
+The Clock Foundation export objects are returned in the same result, which
+makes it possible to inspect the export-ready tables before deciding whether
+they should be used in a reporting or export workflow.
 
 ```{r preprocessingPheno-local-inspect, message = FALSE, warning = FALSE}
 names(phenoResult$clockFoundation)
 head(phenoResult$clockFoundation$phenoCF)
 ```
+
+The `clockFoundation` element contains the export-ready objects, and
+`phenoResult$clockFoundation$phenoCF` is the phenotype table prepared for
+Clock Foundation use.
 
 # Summary
 
@@ -360,8 +374,7 @@ confirm that the workflow is behaving as expected:
 - `head()` on the phenotype-like tables
 - `class()` or `dim()` on the methylation objects and matrices
 
-When you are ready to move from interactive inspection to file-based execution,
-the next vignette shows how to use `saveOutputs = TRUE` and the Makefile
+The next vignette shows how to use `saveOutputs = TRUE` and the Makefile
 workflow. The file-based vignette also describes the regression and
 mixed-effects model structures used downstream, including how phenotype-specific
 PRS terms are added through `prsMap`.
@@ -398,3 +411,5 @@ tag and check the
 [older posts](https://support.bioconductor.org/tag/dnaEPICO/). If you want to
 receive help, please provide a small reproducible example and your session
 information so the source of the problem can be tracked efficiently.
+
+# References
