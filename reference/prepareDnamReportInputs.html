@@ -20,17 +20,27 @@ renderDnamReport()."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/a
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.14</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
-  <a href="../articles/dnaEPICO.html">Get started</a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/dnaEPICO-local.html">Interactive Local Use of dnaEPICO</a>
+    </li>
+    <li>
+      <a href="../articles/dnaEPICO-pipeline.html">File-Based and Pipeline Use of dnaEPICO</a>
+    </li>
+  </ul></li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -162,9 +172,39 @@ template. When <code>NULL</code>, the packaged <code>dnamReport.Rmd</code> templ
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list with class <code>"dnaEPICO_dnamReport_prepared"</code> containing the
-normalized output paths, report parameters, template path, and an inventory
-of the available report figures.</p>
+    <p>A list with class <code>"dnaEPICO_dnamReport_prepared"</code>.</p><dl><dt>output</dt>
+<dd><p>Requested output file name.</p></dd>
+
+<dt>outputDir</dt>
+<dd><p>Normalized directory where the report would be written.</p></dd>
+
+<dt>outputFile</dt>
+<dd><p>Normalized full path to the intended output file.</p></dd>
+
+<dt>figDir</dt>
+<dd><p>Normalized directory used by the template for figure copies.</p></dd>
+
+<dt>templatePath</dt>
+<dd><p>Resolved path to the packaged or custom report
+template.</p></dd>
+
+<dt>params</dt>
+<dd><p>Named list of parameters passed to <code><a href="https://pkgs.rstudio.com/rmarkdown/reference/render.html" class="external-link">rmarkdown::render()</a></code>.</p></dd>
+
+<dt>figureInventory</dt>
+<dd><p>Named list describing the available figures for each
+report section.</p></dd>
+
+<dt>missingFigureDirectories</dt>
+<dd><p>Character vector of expected figure
+directories that were not present at preparation time.</p></dd>
+
+<dt>logFile</dt>
+<dd><p>Resolved path to the optional log file, or <code>NULL</code> when
+logging was disabled.</p></dd>
+
+
+</dl><p>See <a href="dnaEPICO_dnamReport_prepared-class.html">dnaEPICO_dnamReport_prepared</a> for a class-level overview.</p>
     </div>
 
     <div id="ref-examples">

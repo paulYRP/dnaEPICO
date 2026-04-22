@@ -20,17 +20,27 @@ each stage. Legacy files are written only when saveOutputs = TRUE."><!-- mathjax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.14</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
-  <a href="../articles/dnaEPICO.html">Get started</a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/dnaEPICO-local.html">Interactive Local Use of dnaEPICO</a>
+    </li>
+    <li>
+      <a href="../articles/dnaEPICO-pipeline.html">File-Based and Pipeline Use of dnaEPICO</a>
+    </li>
+  </ul></li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -261,9 +271,53 @@ be used in the more traditional in-memory Bioconductor style.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list with class <code>"dnaEPICO_preprocessingMinfiEwasWater"</code>
-containing the filtered phenotype table, preprocessing objects, metrics, and
-cell-composition results.</p>
+    <p>A list with class <code>"dnaEPICO_preprocessingMinfiEwasWater"</code>.</p><dl><dt>targets</dt>
+<dd><p>Filtered phenotype table aligned to the retained samples.</p></dd>
+
+<dt>RGSet</dt>
+<dd><p>Filtered <code>RGChannelSet</code> used in downstream preprocessing and
+available for direct interactive inspection.</p></dd>
+
+<dt>rawData</dt>
+<dd><p>Object returned by <code><a href="buildRawMinfiEwasWater.html">buildRawMinfiEwasWater()</a></code> containing the
+raw <code>MSet</code>, <code>RatioSet</code>, and genome-mapped object derived from <code>RGSet</code>.</p></dd>
+
+<dt>assessment</dt>
+<dd><p>Object returned by <code><a href="assessSamplesMinfiEwasWater.html">assessSamplesMinfiEwasWater()</a></code>
+containing detection P values, QC summaries, and failed-sample tracking.</p></dd>
+
+<dt>sexData</dt>
+<dd><p>Object returned by <code><a href="predictSexMinfiEwasWater.html">predictSexMinfiEwasWater()</a></code> containing
+predicted sex labels, mismatch summaries, and plotting data.</p></dd>
+
+<dt>normData</dt>
+<dd><p>Object returned by <code><a href="normalizeMinfiEwasWater.html">normalizeMinfiEwasWater()</a></code> containing
+the requested normalized objects and metadata on the methods that were run.</p></dd>
+
+<dt>filterData</dt>
+<dd><p>Object returned by <code><a href="filterProbesMinfiEwasWater.html">filterProbesMinfiEwasWater()</a></code>
+containing the probe-filtered methylation objects at each filtering stage.</p></dd>
+
+<dt>metricsData</dt>
+<dd><p>Object returned by <code><a href="extractMetricsMinfiEwasWater.html">extractMetricsMinfiEwasWater()</a></code>
+containing the beta-value, M-value, and copy-number matrices used by later
+workflow steps.</p></dd>
+
+<dt>lcData</dt>
+<dd><p>Object returned by <code><a href="estimateLCMinfiEwasWater.html">estimateLCMinfiEwasWater()</a></code> containing
+the estimated cell-type proportions and the phenotype table augmented with
+those proportions.</p></dd>
+
+<dt>logFile</dt>
+<dd><p>Resolved path to the optional log file, or <code>NULL</code> when
+logging was disabled.</p></dd>
+
+
+</dl><p>See <a href="dnaEPICO_preprocessingMinfiEwasWater-class.html">dnaEPICO_preprocessingMinfiEwasWater</a> for a class-level overview.</p>
+    </div>
+    <div id="see-also">
+    <h2>See also</h2>
+    <div class="dont-index"><p><a href="dnaEPICO_preprocessingMinfiEwasWater-class.html">dnaEPICO_preprocessingMinfiEwasWater</a></p></div>
     </div>
 
     <div id="ref-examples">

@@ -21,17 +21,27 @@ without writing the PDF."><!-- mathjax --><script src="https://cdnjs.cloudflare.
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.14</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
-  <a href="../articles/dnaEPICO.html">Get started</a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/dnaEPICO-local.html">Interactive Local Use of dnaEPICO</a>
+    </li>
+    <li>
+      <a href="../articles/dnaEPICO-pipeline.html">File-Based and Pipeline Use of dnaEPICO</a>
+    </li>
+  </ul></li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -170,9 +180,31 @@ template. When <code>NULL</code>, the packaged <code>dnamReport.Rmd</code> templ
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list with class <code>"dnaEPICO_dnamReport"</code> containing the prepared
-report inputs, the optional render result, the final status, the intended or
-rendered output file path, and any render error message.</p>
+    <p>A list with class <code>"dnaEPICO_dnamReport"</code>.</p><dl><dt>preparedReport</dt>
+<dd><p>Object returned by <code><a href="prepareDnamReportInputs.html">prepareDnamReportInputs()</a></code>.</p></dd>
+
+<dt>renderResult</dt>
+<dd><p>Object returned by <code><a href="renderDnamReport.html">renderDnamReport()</a></code> when
+<code>render = TRUE</code>, otherwise <code>NULL</code>.</p></dd>
+
+<dt>status</dt>
+<dd><p>Final status string such as <code>"prepared"</code>, <code>"rendered"</code>,
+<code>"skipped"</code>, or <code>"failed"</code>.</p></dd>
+
+<dt>outputFile</dt>
+<dd><p>Intended output path when <code>render = FALSE</code>, or the
+rendered PDF path when rendering succeeded.</p></dd>
+
+<dt>errorMessage</dt>
+<dd><p>Final render error or skip message when available,
+otherwise <code>NULL</code>.</p></dd>
+
+<dt>logFile</dt>
+<dd><p>Resolved path to the optional log file, or <code>NULL</code> when
+logging was disabled.</p></dd>
+
+
+</dl><p>See <a href="dnaEPICO_dnamReport-class.html">dnaEPICO_dnamReport</a> for a class-level overview.</p>
     </div>
 
     <div id="ref-examples">

@@ -25,17 +25,27 @@ Bioconductor usage."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/a
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.14</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
-  <a href="../articles/dnaEPICO.html">Get started</a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/dnaEPICO-local.html">Interactive Local Use of dnaEPICO</a>
+    </li>
+    <li>
+      <a href="../articles/dnaEPICO-pipeline.html">File-Based and Pipeline Use of dnaEPICO</a>
+    </li>
+  </ul></li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -291,10 +301,50 @@ returns in-memory results without writing files.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list with class <code>"dnaEPICO_methylationGLM_T1"</code> containing the
-prepared input object, exploratory plot objects, fitted GLMs, CpG summary
-tables, optional significant-CpG tables, diagnostic plot objects,
-annotation results, and any saved file paths.</p>
+    <p>A list with class <code>"dnaEPICO_methylationGLM_T1"</code>.</p><dl><dt>preparedData</dt>
+<dd><p>Object returned by <code><a href="prepareMethylationGLM_T1Data.html">prepareMethylationGLM_T1Data()</a></code>
+containing the merged phenotype-plus-beta analysis table and modeling
+metadata.</p></dd>
+
+<dt>distributionPlots</dt>
+<dd><p>Object returned by
+<code><a href="plotMethylationGLM_T1Distributions.html">plotMethylationGLM_T1Distributions()</a></code> describing any exploratory plots that
+were generated or written.</p></dd>
+
+<dt>modelFits</dt>
+<dd><p>Object returned by <code><a href="fitMethylationGLM_T1Models.html">fitMethylationGLM_T1Models()</a></code>
+containing the per-phenotype CpG model fits.</p></dd>
+
+<dt>modelSummaries</dt>
+<dd><p>Object returned by
+<code><a href="summarizeMethylationGLM_T1Models.html">summarizeMethylationGLM_T1Models()</a></code> containing the combined CpG summary
+tables used for reporting and annotation.</p></dd>
+
+<dt>significantCpGs</dt>
+<dd><p>Object returned by
+<code><a href="collectSignificantCpGsMethylationGLM_T1.html">collectSignificantCpGsMethylationGLM_T1()</a></code> containing optional
+phenotype-specific significant-CpG tables.</p></dd>
+
+<dt>diagnosticPlots</dt>
+<dd><p>Object returned by
+<code><a href="plotMethylationGLM_T1Diagnostics.html">plotMethylationGLM_T1Diagnostics()</a></code> describing the diagnostic plot objects
+and any written TIFF files.</p></dd>
+
+<dt>annotation</dt>
+<dd><p>Object returned by
+<code><a href="annotateMethylationGLM_T1Summaries.html">annotateMethylationGLM_T1Summaries()</a></code> containing the annotated combined
+summary table.</p></dd>
+
+<dt>savedFiles</dt>
+<dd><p>Object returned by <code><a href="writeMethylationGLM_T1Outputs.html">writeMethylationGLM_T1Outputs()</a></code> when
+<code>saveOutputs = TRUE</code>, otherwise <code>NULL</code>.</p></dd>
+
+
+</dl><p>See <a href="dnaEPICO_methylationGLM_T1-class.html">dnaEPICO_methylationGLM_T1</a> for a class-level overview.</p>
+    </div>
+    <div id="see-also">
+    <h2>See also</h2>
+    <div class="dont-index"><p><a href="dnaEPICO_methylationGLM_T1-class.html">dnaEPICO_methylationGLM_T1</a></p></div>
     </div>
 
     <div id="ref-examples">

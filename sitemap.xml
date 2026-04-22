@@ -4,7 +4,8 @@
 <url><loc>/CONTRIBUTING.html</loc></url>
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/SUPPORT.html</loc></url>
-<url><loc>/articles/dnaEPICO.html</loc></url>
+<url><loc>/articles/dnaEPICO-local.html</loc></url>
+<url><loc>/articles/dnaEPICO-pipeline.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
@@ -18,6 +19,15 @@
 <url><loc>/reference/collectSignificantCpGsMethylationGLM_T1.html</loc></url>
 <url><loc>/reference/collectSignificantInteractionsMethylationGLMM_T1T2.html</loc></url>
 <url><loc>/reference/combineTimepointsPreprocessingPheno.html</loc></url>
+<url><loc>/reference/dnaEPICO.html</loc></url>
+<url><loc>/reference/dnaEPICO_dnamReport-class.html</loc></url>
+<url><loc>/reference/dnaEPICO_dnamReport_prepared-class.html</loc></url>
+<url><loc>/reference/dnaEPICO_dnamReport_render-class.html</loc></url>
+<url><loc>/reference/dnaEPICO_methylationGLMM_T1T2-class.html</loc></url>
+<url><loc>/reference/dnaEPICO_methylationGLM_T1-class.html</loc></url>
+<url><loc>/reference/dnaEPICO_preprocessingMinfiEwasWater-class.html</loc></url>
+<url><loc>/reference/dnaEPICO_preprocessingPheno-class.html</loc></url>
+<url><loc>/reference/dnaEPICO_svaEnmix-class.html</loc></url>
 <url><loc>/reference/dnamReport.html</loc></url>
 <url><loc>/reference/estimateLC.html</loc></url>
 <url><loc>/reference/estimateLCMinfiEwasWater.html</loc></url>
