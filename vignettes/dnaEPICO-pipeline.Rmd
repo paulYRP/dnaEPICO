@@ -37,21 +37,11 @@ can_run_preprocessing <- requireNamespace("minfiData", quietly = TRUE) &&
   requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
   requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)
 
-pheno_inputs <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
-glm_inputs <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-
 can_run_sva <- can_run_preprocessing
 can_run_glm <- requireNamespace(
   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
   quietly = TRUE
 )
-
-preprocessing_inputs <- NULL
-if (isTRUE(can_run_preprocessing)) {
-  preprocessing_inputs <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 6L)
-}
-
-glmm_inputs <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
 can_run_glmm <- can_run_glm && requireNamespace("lmerTest", quietly = TRUE)
 ```
 
@@ -149,6 +139,31 @@ The file-based route usually starts with `preprocessingMinfiEwasWater()`. This
 step writes the filtered `RGSet`, normalized metric matrices, quality-control
 figures, and the `phenoLC.csv` file that will be consumed by `svaEnmix()` and
 `preprocessingPheno()`.
+
+### Create example input files
+
+The next chunk shows how to recreate the temporary files used in this example.
+It writes a small phenotype table to a temporary directory, copies a small set
+of IDAT files, and records the cross-reactive probe reference used during probe
+filtering.
+
+```{r preprocessing-pipeline-inputs, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
+preprocessing_inputs <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 6L)
+
+names(preprocessing_inputs)
+preprocessing_inputs$tempDir
+basename(preprocessing_inputs$phenoFile)
+head(basename(list.files(preprocessing_inputs$idatFolder, full.names = TRUE)), 4)
+basename(preprocessing_inputs$crossReactivePath)
+```
+
+`preprocessing_inputs` is a small list returned by the internal example helper.
+`names(preprocessing_inputs)` shows its main elements: `tempDir` is the
+temporary working directory, `idatFolder` contains the copied example IDAT
+files, `phenoFile` is the phenotype table used by the wrapper, `targets` is the
+same phenotype information already loaded into memory, `arrayType` and
+`annotationVersion` describe the array platform, and `crossReactivePath` points
+to the cross-reactive probe reference used during probe filtering.
 
 ```{r preprocessing-pipeline, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
 preprocessPipelineResult <- preprocessingMinfiEwasWater(
@@ -251,21 +266,41 @@ The next example shows `svaEnmix()` in file-writing mode. The function still
 returns a structured result object, but the `savedFiles` element now records the
 main output files written to disk.
 
+### Reuse the temporary files written in Step 1
+
+In the file-based route, `svaEnmix()` consumes the `phenoLC.csv` and
+`RGSet.RData` files written by `preprocessingMinfiEwasWater()`. The next chunk
+shows how those temporary file paths are reconstructed locally.
+
+```{r sva-pipeline-inputs, eval = can_run_sva, message = FALSE, warning = FALSE}
+sva_targets_file <- file.path(
+  preprocessing_inputs$tempDir,
+  "data",
+  "preprocessingMinfiEwasWater",
+  "phenoLC.csv"
+)
+sva_rgset_file <- file.path(
+  preprocessing_inputs$tempDir,
+  "rData",
+  "preprocessingMinfiEwasWater",
+  "objects",
+  "RGSet.RData"
+)
+
+basename(c(sva_targets_file, sva_rgset_file))
+file.exists(c(sva_targets_file, sva_rgset_file))
+```
+
+Unlike the previous helper objects, `sva_targets_file` and `sva_rgset_file` are
+plain file paths reconstructed from `preprocessing_inputs$tempDir`. They point
+to the concrete outputs written by Step 1: `phenoLC.csv`, which is the
+phenotype table augmented with cell-composition estimates, and `RGSet.RData`,
+which is the filtered methylation object saved to disk.
+
 ```{r sva-pipeline, eval = can_run_sva, message = FALSE, warning = FALSE}
 svaPipelineResult <- svaEnmix(
-  phenoFile = file.path(
-    preprocessing_inputs$tempDir,
-    "data",
-    "preprocessingMinfiEwasWater",
-    "phenoLC.csv"
-  ),
-  rgsetData = file.path(
-    preprocessing_inputs$tempDir,
-    "rData",
-    "preprocessingMinfiEwasWater",
-    "objects",
-    "RGSet.RData"
-  ),
+  phenoFile = sva_targets_file,
+  rgsetData = sva_rgset_file,
   outputLogs = file.path(preprocessing_inputs$tempDir, "logs"),
   SampleID = "Sample_Name",
   arrayType = "IlluminaHumanMethylation450k",
@@ -316,6 +351,31 @@ Arguments:
 `preprocessingPheno()` is the step that usually prepares the largest number of
 pipeline-ready files because it writes timepoint-specific tables, combined
 longitudinal tables, and the Clock Foundation export inputs.
+
+### Create example input files
+
+The next chunk shows how to recreate the temporary phenotype and matrix files
+used in this example. The helper writes a phenotype table plus aligned beta,
+M-value, and copy-number objects to a temporary directory.
+
+```{r preprocessingPheno-pipeline-inputs, message = FALSE, warning = FALSE}
+pheno_inputs <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
+
+names(pheno_inputs)
+pheno_inputs$tempDir
+basename(c(
+  pheno_inputs$phenoPath,
+  pheno_inputs$betaPath,
+  pheno_inputs$mPath,
+  pheno_inputs$cnPath
+))
+```
+
+`pheno_inputs` is a list that bundles the temporary files and the aligned
+in-memory objects used in this stage. `names(pheno_inputs)` shows that it
+contains the temporary directory, the phenotype table, the saved beta, M-value,
+and copy-number files, and precomputed helper objects such as `metricsData`,
+`timepointData`, `combinedData`, and `clockFoundation`.
 
 ```{r preprocessingPheno-pipeline, message = FALSE, warning = FALSE}
 phenoPipelineResult <- preprocessingPheno(
@@ -389,6 +449,26 @@ The modeling wrappers also separate in-memory results from file outputs. The
 next example runs a small GLM analysis and prints the names of the files written
 to disk.
 
+### Create example input files
+
+The next chunk shows how to recreate the temporary merged phenotype-plus-beta
+input file used by the GLM example.
+
+```{r glm-pipeline-inputs, eval = can_run_glm, message = FALSE, warning = FALSE}
+glm_inputs <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+
+names(glm_inputs)
+glm_inputs$tempDir
+basename(glm_inputs$inputPath)
+file.exists(glm_inputs$inputPath)
+```
+
+`glm_inputs` is a list returned by the GLM example helper. `names(glm_inputs)`
+shows that it contains the temporary directory, the saved merged
+phenotype-plus-beta input file (`inputPath`), and the corresponding in-memory
+objects produced during helper construction: `preparedData`, `modelResults`, and
+`modelSummaries`.
+
 ```{r glm-pipeline, eval = can_run_glm, message = FALSE, warning = FALSE}
 glmPipelineResult <- methylationGLM_T1(
   inputPheno = glm_inputs$inputPath,
@@ -448,6 +528,25 @@ Arguments:
 The longitudinal modeling step follows the same pattern as the GLM wrapper, but
 the saved outputs now correspond to mixed-effects models, longitudinal summary
 tables, and interaction-specific result files.
+
+### Create example input files
+
+The next chunk shows how to recreate the temporary combined longitudinal
+phenotype-plus-beta input file used by the LME example.
+
+```{r glmm-pipeline-inputs, eval = can_run_glmm, message = FALSE, warning = FALSE}
+glmm_inputs <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+
+names(glmm_inputs)
+glmm_inputs$tempDir
+basename(glmm_inputs$inputPath)
+file.exists(glmm_inputs$inputPath)
+```
+
+`glmm_inputs` plays the same role for the longitudinal example. The helper
+returns a list with the temporary directory, the saved combined longitudinal
+input file (`inputPath`), and the in-memory objects used to build that example:
+`preparedData`, `modelResults`, and `modelSummaries`.
 
 ```{r glmm-pipeline, eval = can_run_glmm, message = FALSE, warning = FALSE}
 glmmPipelineResult <- methylationGLMM_T1T2(
@@ -609,15 +708,86 @@ Common arguments in this longitudinal stage are:
 # Typical Makefile use
 
 In a project directory, the Makefile route is usually simpler than calling each
-wrapper by hand. Typical commands look like this:
+wrapper by hand. A minimal project layout looks like this:
 
-```{r, eval = FALSE}
-make f1 MODEL=model1
-make f2 MODEL=model1
+```text
+my_project/
+  Makefile
+  metadata/
+    pheno_model1.csv
+  data/
+    preprocessingMinfiEwasWater/
+      idats/
+        <IDAT files>
+```
+
+The exported template should then be edited so that at least the model name,
+phenotype path, and directory variables match the project. A minimal example is:
+
+```make
+MODEL = model1
+PHENO_FILE = metadata/pheno_model1.csv
+LOGS_DIR := $(abspath logs)
+DATA_DIR = data
+RDATA_DIR = rData
+RESULTS_DIR = results
+FIGURES_DIR = figures
+```
+
+With that structure in place, a typical sequence of commands looks like this:
+
+```bash
+make step1 MODEL=model1
+make step2 MODEL=model1
+make step3 MODEL=model1
 make f3 MODEL=model1
+make f4 MODEL=model1
 make f3lme MODEL=model1
 make all MODEL=model1
+make status MODEL=model1
+make clean MODEL=model1
 ```
+
+These targets correspond to the grouped outputs defined in the exported rules:
+
+- `make step1 MODEL=model1` runs preprocessing only.
+- `make step2 MODEL=model1` runs the SVA step using the files written by Step 1.
+- `make step3 MODEL=model1` runs phenotype preparation using the files written by Step 1.
+- `make f3 MODEL=model1` runs preprocessing, SVA, phenotype preparation, and the report target defined by the current rules.
+- `make f4 MODEL=model1` runs the same route, adds the GLM step, and refreshes the report target.
+- `make f3lme MODEL=model1` runs the same route, adds the longitudinal LME step, and refreshes the report target.
+- `make all MODEL=model1` runs the full pipeline, including both modeling steps and the report.
+- `make status MODEL=model1` checks which expected output files are already present.
+- `make clean MODEL=model1` removes the files generated for the selected model while keeping the shared raw input area.
+
+If several models are declared in `MODELS`, the grouped multi-model targets can
+be used instead:
+
+```bash
+make f3_models
+make f4_models
+make f3lme_models
+make models
+```
+
+These grouped targets loop over every model listed in `MODELS`:
+
+- `make f3_models` runs the `f3` route for each declared model.
+- `make f4_models` runs the `f4` route for each declared model.
+- `make f3lme_models` runs the `f3lme` route for each declared model.
+- `make models` runs the full `all` pipeline for each declared model.
+
+Two maintenance targets are also useful during routine work:
+
+```bash
+make status MODEL=model1
+make clean MODEL=model1
+make clean MODEL=all
+```
+
+- `make status MODEL=model1` reports which expected outputs are already present for one model.
+- `make clean MODEL=model1` removes the generated outputs for one model.
+- `make clean MODEL=all` removes the generated outputs for every model listed in `MODELS`.
 
 The exact target names and variables depend on the Makefile settings extracted
 for the project. In practice, `saveOutputs = TRUE` is what makes the individual

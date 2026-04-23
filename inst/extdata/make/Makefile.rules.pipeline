@@ -128,7 +128,12 @@ MODEL_LOG_DIR = $(abspath $(LOGS_DIR)/$(MODEL))
 
 step1:
 	@echo "Running Step 1 for $(MODEL)"
-	$(MAKE) preprocessingMinfiEwasWater MODEL=$(MODEL)
+	@$(MAKE) -j1 \
+	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	  $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	  MODEL=$(MODEL)
 
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
@@ -168,6 +173,10 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 # =================================================================================================================================
 # Step 2: Surrogate Variable Analysis
 # =================================================================================================================================
+step2:
+	@echo "Running Step 2 for $(MODEL)"
+	@$(MAKE) -j1 $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt MODEL=$(MODEL)
+
 $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(svaEnmix( \
 	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
@@ -195,6 +204,14 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 # =================================================================================================================================
 # Step 3: Merge Phenotype
 # =================================================================================================================================
+step3:
+	@echo "Running Step 3 for $(MODEL)"
+	@$(MAKE) -j1 \
+	  $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
+	  $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
+	  $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
+	  MODEL=$(MODEL)
+
 $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
 $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
 $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv: 
@@ -362,5 +379,5 @@ status:
 	@test -e $(STEP6)/$(MODEL)/DNAm.pdf && echo "? Step 6: Report generated" || echo "? Step 6: Report missing"
 	@echo "============================"
 
-.PHONY: all clean status models f3 f4 f3lme f3_models f4_models f3lme_models
+.PHONY: all clean status models step1 step2 step3 f3 f4 f3lme f3_models f4_models f3lme_models
 
