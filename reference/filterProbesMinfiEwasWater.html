@@ -18,7 +18,7 @@ to the primary normalized object and return the filtered result."><!-- mathjax -
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.16</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.17</span>
       </span>
     </div>
 
@@ -153,6 +153,9 @@ filtered object and counts for each filtering stage.</p>
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">dnaEPICO</span><span class="fu">:::</span><span class="fu">exampleMinfiWorkflowStateDnaEpico</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [preprocessQuantile] Mapping to genome.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [preprocessQuantile] Fixing outliers.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [preprocessQuantile] Quantile normalizing.</span>
 <span class="r-in"><span><span class="va">filtered_data</span> <span class="op">&lt;-</span> <span class="fu">filterProbesMinfiEwasWater</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  normData <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">normData</span>,</span></span>
 <span class="r-in"><span>  RGSet <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">sampleData</span><span class="op">$</span><span class="va">RGSet</span>,</span></span>

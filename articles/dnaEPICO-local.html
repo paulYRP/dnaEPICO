@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.16</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.17</span>
       </span>
     </div>
 
@@ -196,7 +196,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"           "arrayType"         "annotationVersion"</span></span>
 <span><span class="co">#&gt; [7] "crossReactivePath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpIyhx6M/dnaEPICO-idat-example-1ebfd69904b"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpiR331m/dnaEPICO-idat-example-1ed411e10316"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -388,7 +388,7 @@ in-memory objects, so the chunk writes <code>targets</code> to
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  saveOutputs <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; 3  surrogate variables explain  91.17398 % of </span></span>
+<span><span class="co">#&gt; 3  surrogate variables explain  100 % of </span></span>
 <span><span class="co">#&gt;     data variation</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">svaResult</span><span class="op">)</span></span>
@@ -397,15 +397,13 @@ in-memory objects, so the chunk writes <code>targets</code> to
 <span><span class="co">#&gt; [1] "targets"      "RGSet"        "svaData"      "mergedPheno"  "analysisData"</span></span>
 <span><span class="co">#&gt; [6] "plotFiles"    "savedFiles"   "logFile"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">svaResult</span><span class="op">$</span><span class="va">svaData</span><span class="op">$</span><span class="va">sva</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 6 3</span></span>
+<span><span class="co">#&gt; [1] 4 3</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">svaResult</span><span class="op">$</span><span class="va">mergedPheno</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">svaResult</span><span class="op">$</span><span class="va">mergedPheno</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Sample_Name Sample_Well Sample_Plate Sample_Group Pool_ID person</span></span>
 <span><span class="co">#&gt; 1    GroupA_3          H5           NA       GroupA      NA    id3</span></span>
 <span><span class="co">#&gt; 2    GroupA_2          D5           NA       GroupA      NA    id2</span></span>
 <span><span class="co">#&gt; 3    GroupB_3          C6           NA       GroupB      NA    id3</span></span>
-<span><span class="co">#&gt; 4    GroupB_1          F7           NA       GroupB      NA    id1</span></span>
-<span><span class="co">#&gt; 5    GroupA_1          G7           NA       GroupA      NA    id1</span></span>
-<span><span class="co">#&gt; 6    GroupB_2          H7           NA       GroupB      NA    id2</span></span></code></pre></div>
+<span><span class="co">#&gt; 4    GroupB_1          F7           NA       GroupB      NA    id1</span></span></code></pre></div>
 <p>The returned object has class <code>dnaEPICO_svaEnmix</code>, and
 <code>names(svaResult)</code> shows the main SVA components returned by
 the wrapper. The <code>svaData$sva</code> matrix contains one row per
@@ -475,7 +473,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpIyhx6M/dnaEPICO-preprocessingPheno-example-1ebf85db7b3"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpiR331m/dnaEPICO-preprocessingPheno-example-1ed4759ec708"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -616,9 +614,9 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-05-11 05:47:25 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-05-11 06:35:16 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 59.009 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 46.281 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -662,7 +660,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.16                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.17                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
@@ -691,7 +689,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt;  [45] reshape_0.8.10            minfiData_0.52.0         </span></span>
 <span><span class="co">#&gt;  [47] AnnotationDbi_1.68.0      irlba_2.3.7              </span></span>
 <span><span class="co">#&gt;  [49] ExperimentHub_2.14.0      geneplotter_1.84.0       </span></span>
-<span><span class="co">#&gt;  [51] textshaping_1.0.5         RSQLite_2.4.6            </span></span>
+<span><span class="co">#&gt;  [51] textshaping_1.0.5         RSQLite_3.52.0           </span></span>
 <span><span class="co">#&gt;  [53] base64_2.0.2              filelock_1.0.3           </span></span>
 <span><span class="co">#&gt;  [55] httr_1.4.8                abind_1.4-8              </span></span>
 <span><span class="co">#&gt;  [57] compiler_4.4.2            beanplot_1.3.1           </span></span>
