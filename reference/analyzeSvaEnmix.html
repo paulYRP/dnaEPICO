@@ -19,7 +19,7 @@ return the in-memory analysis objects."><!-- mathjax --><script src="https://cdn
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.15</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.16</span>
       </span>
     </div>
 
@@ -130,12 +130,6 @@ aligned Sentrix factors, full and reduced linear models, and ANOVA tables.</p>
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">dnaEPICO</span><span class="fu">:::</span><span class="fu">exampleSvaAnalysisStateDnaEpico</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>attempting model selection on an essentially perfect fit is nonsense</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>attempting model selection on an essentially perfect fit is nonsense</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ANOVA F-tests on an essentially perfect fit are unreliable</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ANOVA F-tests on an essentially perfect fit are unreliable</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ANOVA F-tests on an essentially perfect fit are unreliable</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ANOVA F-tests on an essentially perfect fit are unreliable</span>
 <span class="r-in"><span><span class="va">analysis_data</span> <span class="op">&lt;-</span> <span class="fu">analyzeSvaEnmix</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  sva <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">sva</span>,</span></span>
 <span class="r-in"><span>  RGSet <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">RGSet</span>,</span></span>
@@ -144,14 +138,9 @@ aligned Sentrix factors, full and reduced linear models, and ANOVA tables.</p>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
 <span class="r-in"><span>  logs <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>attempting model selection on an essentially perfect fit is nonsense</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>attempting model selection on an essentially perfect fit is nonsense</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ANOVA F-tests on an essentially perfect fit are unreliable</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ANOVA F-tests on an essentially perfect fit are unreliable</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ANOVA F-tests on an essentially perfect fit are unreliable</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ANOVA F-tests on an essentially perfect fit are unreliable</span>
 <span class="r-in"><span><span class="va">analysis_data</span><span class="op">$</span><span class="va">K</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2</span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
