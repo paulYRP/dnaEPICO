@@ -61,11 +61,10 @@ otherwise \code{NULL}.
 Plot multidimensional scaling or density summaries from final metrics
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 plotMetricsMinfiEwasWater(
   metricsData = ex$metricsData,
-  targets = ex$sampleData$targets,
+  targets = ex$targets,
   plot = "density",
   plotGroupVar = "Sex",
   sexColumn = "Sex",
@@ -73,5 +72,5 @@ plotMetricsMinfiEwasWater(
   verbose = FALSE,
   logs = FALSE
 )
-\dontshow{\}) # examplesIf}
+
 }

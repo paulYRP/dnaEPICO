@@ -54,6 +54,8 @@ exampleMinfiBaseDataDnaEpico <- function() {
             utils::data("RGsetEx", package = "minfiData", envir = example_env)
 
             rgset <- get("RGsetEx", envir = example_env)
+            keep_samples <- seq_len(min(4L, ncol(rgset)))
+            rgset <- rgset[, keep_samples]
             targets <- as.data.frame(SummarizedExperiment::colData(rgset))
 
             if (!("Sample_Name" %in% colnames(targets))) {
@@ -165,6 +167,106 @@ exampleMinfiIdatInputsDnaEpico <- function(n = 6L) {
                     "12864_2024_10027_MOESM8_ESM.csv",
                     package = "dnaEPICO"
                 )
+            )
+        }
+    )
+}
+
+exampleMinfiMetricsStateDnaEpico <- function() {
+    getCachedExampleDnaEpico(
+        key = "minfi_metrics",
+        builder = function() {
+            sample_names <- paste0("S", seq_len(4L))
+            probe_names <- sprintf("cg%08d", seq_len(24L))
+            beta <- matrix(
+                seq(0.10, 0.90, length.out = length(probe_names) * length(sample_names)),
+                nrow = length(probe_names),
+                dimnames = list(probe_names, sample_names)
+            )
+            m <- log2(beta / (1 - beta))
+            cn <- matrix(
+                1,
+                nrow = nrow(beta),
+                ncol = ncol(beta),
+                dimnames = dimnames(beta)
+            )
+            ratio_set <- minfi::RatioSet(
+                Beta = beta,
+                M = m,
+                CN = cn,
+                annotation = c(
+                    array = "IlluminaHumanMethylation450k",
+                    annotation = "ilmn12.hg19"
+                )
+            )
+            methyl_set <- minfi::MethylSet(
+                Meth = beta * 1000,
+                Unmeth = (1 - beta) * 1000,
+                annotation = c(
+                    array = "IlluminaHumanMethylation450k",
+                    annotation = "ilmn12.hg19"
+                )
+            )
+            targets <- data.frame(
+                Sample_Name = sample_names,
+                Sex = rep(c("F", "M"), length.out = length(sample_names)),
+                Timepoint = rep(c("T1", "T2"), length.out = length(sample_names)),
+                stringsAsFactors = FALSE
+            )
+            filtered_data <- structure(
+                list(filtered = ratio_set),
+                class = "dnaEPICO_minfiEwasWater_filter"
+            )
+            metrics_data <- extractMetricsMinfiEwasWater(
+                filteredData = filtered_data,
+                verbose = FALSE,
+                logs = FALSE
+            )
+
+            list(
+                filteredData = filtered_data,
+                metricsData = metrics_data,
+                rawData = list(MSet = methyl_set),
+                normData = list(primary = ratio_set),
+                beta = beta,
+                targets = targets
+            )
+        }
+    )
+}
+
+exampleSexPlotStateDnaEpico <- function() {
+    getCachedExampleDnaEpico(
+        key = "sex_plot",
+        builder = function() {
+            sample_names <- paste0("S", seq_len(4L))
+            p_sex <- data.frame(
+                predictedSex = c("F", "M", "F", "M"),
+                xMed = c(12.2, 12.5, 12.1, 12.6),
+                yMed = c(8.4, 10.1, 8.5, 10.2),
+                row.names = sample_names,
+                stringsAsFactors = FALSE
+            )
+            targets <- data.frame(
+                Sample_Name = sample_names,
+                Sex = c(0L, 1L, 0L, 1L),
+                PredSex = c(0L, 1L, 0L, 1L),
+                stringsAsFactors = FALSE
+            )
+            sex_plot_data <- p_sex
+            sex_plot_data$SampleID <- sample_names
+            sex_plot_data$Sex <- targets$Sex
+
+            structure(
+                list(
+                    pSex = p_sex,
+                    targets = targets,
+                    sexPlotData = sex_plot_data,
+                    mismatches = targets[0L, , drop = FALSE],
+                    SampleID = "Sample_Name",
+                    sexColumn = "Sex"
+                ),
+                class = "dnaEPICO_minfiEwasWater_sex"
             )
         }
     )
@@ -456,7 +558,14 @@ exampleMethylationGLMStateDnaEpico <- function() {
                 inputPath = input_path,
                 preparedData = prepared_data,
                 modelResults = model_results,
-                modelSummaries = model_summaries
+                modelSummaries = model_summaries,
+                annotationData = data.frame(
+                    CpG = c("cg00000029", "cg00000108"),
+                    Name = c("cg00000029", "cg00000108"),
+                    chr = c("chr1", "chr2"),
+                    pos = c(100L, 200L),
+                    stringsAsFactors = FALSE
+                )
             )
         }
     )
@@ -512,7 +621,14 @@ exampleMethylationGLMMStateDnaEpico <- function() {
                 inputPath = input_path,
                 preparedData = prepared_data,
                 modelResults = model_results,
-                modelSummaries = model_summaries
+                modelSummaries = model_summaries,
+                annotationData = data.frame(
+                    CpG = c("cg00000029", "cg00000108"),
+                    Name = c("cg00000029", "cg00000108"),
+                    chr = c("chr1", "chr2"),
+                    pos = c(100L, 200L),
+                    stringsAsFactors = FALSE
+                )
             )
         }
     )

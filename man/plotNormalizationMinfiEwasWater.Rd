@@ -58,16 +58,15 @@ otherwise \code{NULL}.
 Draw the density comparison plot used to inspect raw versus normalized data.
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 plotNormalizationMinfiEwasWater(
-  RGSet = ex$sampleData$RGSet,
+  RGSet = ex$beta,
   normData = ex$normData,
-  targets = ex$sampleData$targets,
+  targets = ex$targets,
   sexColumn = "Sex",
   display = FALSE,
   verbose = FALSE,
   logs = FALSE
 )
-\dontshow{\}) # examplesIf}
+
 }

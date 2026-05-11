@@ -56,15 +56,14 @@ Draw the pre-normalization beta density plot from a raw minfi object and a
 grouping variable in the phenotype table.
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 plotRawDensityMinfiEwasWater(
-  rawData = ex$rawFiltered,
-  targets = ex$sampleData$targets,
+  rawData = ex$rawData,
+  targets = ex$targets,
   plotGroupVar = "Sex",
   display = FALSE,
   verbose = FALSE,
   logs = FALSE
 )
-\dontshow{\}) # examplesIf}
+
 }

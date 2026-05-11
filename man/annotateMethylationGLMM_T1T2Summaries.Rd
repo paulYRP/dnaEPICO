@@ -20,8 +20,8 @@ annotateMethylationGLMM_T1T2Summaries(
 \code{summarizeMethylationGLMM_T1T2Models()} or a named list of summary data
 frames.}
 
-\item{annotationObject}{Character package/object name or an annotation object
-understood by \code{minfi::getAnnotation()}.}
+\item{annotationObject}{Character package/object name, annotation data frame,
+or annotation object understood by \code{minfi::getAnnotation()}.}
 
 \item{annotationCols}{Character vector or comma-separated string of annotation
 columns to append.}
@@ -45,19 +45,14 @@ Merge phenotype-specific longitudinal summary tables with probe annotation
 metadata and return a single annotated result table.
 }
 \examples{
-if (requireNamespace(
-  "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-  quietly = TRUE
-)) {
-  ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-  annotation_data <- annotateMethylationGLMM_T1T2Summaries(
-    modelSummaries = ex$modelSummaries,
-    annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-    annotationCols = "Name,chr,pos",
-    verbose = FALSE,
-    logs = FALSE
-  )
-  names(annotation_data)
-}
+ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+annotation_data <- annotateMethylationGLMM_T1T2Summaries(
+  modelSummaries = ex$modelSummaries,
+  annotationObject = ex$annotationData,
+  annotationCols = "Name,chr,pos",
+  verbose = FALSE,
+  logs = FALSE
+)
+names(annotation_data)
 
 }

@@ -314,19 +314,14 @@ assessSamplesMinfiEwasWater <- function(
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
-#' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
-#' raw_data <- buildRawMinfiEwasWater(ex$RGSet, verbose = FALSE, logs = FALSE)
-#' assessment <- assessSamplesMinfiEwasWater(
-#'   rawData = raw_data,
-#'   RGSet = ex$RGSet,
-#'   detPThreshold = 1,
-#'   verbose = FALSE,
-#'   logs = FALSE
+#' @examples
+#' assessment <- list(
+#'   meanDetP = c(S1 = 0.01, S2 = 0.02, S3 = 0.04),
+#'   detPThreshold = 0.05
 #' )
 #' plotAssessmentMinfiEwasWater(
 #'   assessment = assessment,
-#'   plot = "qc",
+#'   plot = "detection",
 #'   display = FALSE,
 #'   verbose = FALSE,
 #'   logs = FALSE
@@ -639,10 +634,10 @@ predictSexMinfiEwasWater <- function(
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
-#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' @examples
+#' ex <- dnaEPICO:::exampleSexPlotStateDnaEpico()
 #' plotSexMinfiEwasWater(
-#'   sexData = ex$sexData,
+#'   sexData = ex,
 #'   type = "predicted",
 #'   display = FALSE,
 #'   verbose = FALSE,
@@ -897,12 +892,12 @@ normalizeMinfiEwasWater <- function(
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
-#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' @examples
+#' ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 #' plotNormalizationMinfiEwasWater(
-#'   RGSet = ex$sampleData$RGSet,
+#'   RGSet = ex$beta,
 #'   normData = ex$normData,
-#'   targets = ex$sampleData$targets,
+#'   targets = ex$targets,
 #'   sexColumn = "Sex",
 #'   display = FALSE,
 #'   verbose = FALSE,
@@ -1007,11 +1002,11 @@ plotNormalizationMinfiEwasWater <- function(
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
-#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' @examples
+#' ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 #' plotRawDensityMinfiEwasWater(
-#'   rawData = ex$rawFiltered,
-#'   targets = ex$sampleData$targets,
+#'   rawData = ex$rawData,
+#'   targets = ex$targets,
 #'   plotGroupVar = "Sex",
 #'   display = FALSE,
 #'   verbose = FALSE,
@@ -1234,8 +1229,8 @@ filterProbesMinfiEwasWater <- function(
 #' @return A list with class `"dnaEPICO_minfiEwasWater_metrics"` containing
 #'   `beta`, `m`, and `cn`.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
-#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' @examples
+#' ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 #' metrics_data <- extractMetricsMinfiEwasWater(
 #'   filteredData = ex$filteredData,
 #'   verbose = FALSE,
@@ -1311,11 +1306,11 @@ extractMetricsMinfiEwasWater <- function(
 #' @return Invisibly returns the saved TIFF path when `file` is supplied,
 #'   otherwise `NULL`.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
-#' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+#' @examples
+#' ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 #' plotMetricsMinfiEwasWater(
 #'   metricsData = ex$metricsData,
-#'   targets = ex$sampleData$targets,
+#'   targets = ex$targets,
 #'   plot = "density",
 #'   plotGroupVar = "Sex",
 #'   sexColumn = "Sex",

@@ -357,8 +357,8 @@ createDistributionPlotMethylationGLM_T1 <- function(
 
 #' Resolve an annotation object for methylationGLM_T1 helpers
 #'
-#' @param annotationObject Character package/object name or an annotation object
-#'   understood by `minfi::getAnnotation()`.
+#' @param annotationObject Character package/object name, annotation data frame,
+#'   or annotation object understood by `minfi::getAnnotation()`.
 #'
 #' @return An object accepted by `minfi::getAnnotation()`.
 #'
@@ -407,6 +407,31 @@ resolveAnnotationObjectMethylationGLM_T1 <- function(annotationObject) {
     annotationObject,
     call. = FALSE
   )
+}
+
+coerceAnnotationDataMethylationGLM_T1 <- function(annotationObject) {
+  if (is.data.frame(annotationObject)) {
+    annotation_df <- annotationObject
+    if (!("CpG" %in% colnames(annotation_df))) {
+      if ("IlmnID" %in% colnames(annotation_df)) {
+        annotation_df$CpG <- annotation_df$IlmnID
+        return(annotation_df)
+      }
+      if (is.null(rownames(annotation_df))) {
+        stop(
+          "annotationObject data frames must include a CpG column or row names.",
+          call. = FALSE
+        )
+      }
+      annotation_df$CpG <- rownames(annotation_df)
+    }
+    return(annotation_df)
+  }
+
+  annotation_source <- resolveAnnotationObjectMethylationGLM_T1(annotationObject)
+  annotation_df <- as.data.frame(minfi::getAnnotation(annotation_source))
+  annotation_df$CpG <- rownames(annotation_df)
+  annotation_df
 }
 
 #' Prepare phenotype-plus-beta data for one-timepoint GLM analyses
@@ -1511,8 +1536,8 @@ plotMethylationGLM_T1Diagnostics <- function(
 #'
 #' @param modelSummaries Object returned by `summarizeMethylationGLM_T1Models()`
 #'   or a named list of CpG summary data frames.
-#' @param annotationObject Character package/object name or an annotation object
-#'   understood by `minfi::getAnnotation()`.
+#' @param annotationObject Character package/object name, annotation data frame,
+#'   or annotation object understood by `minfi::getAnnotation()`.
 #' @param annotationCols Character vector or comma-separated string of annotation
 #'   columns to append.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
@@ -1530,20 +1555,15 @@ plotMethylationGLM_T1Diagnostics <- function(
 #' return a single annotated result table.
 #'
 #' @examples
-#' if (requireNamespace(
-#'   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-#'   quietly = TRUE
-#' )) {
-#'   ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#'   annotation_data <- annotateMethylationGLM_T1Summaries(
-#'     modelSummaries = ex$modelSummaries,
-#'     annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-#'     annotationCols = "Name,chr,pos",
-#'     verbose = FALSE,
-#'     logs = FALSE
-#'   )
-#'   names(annotation_data)
-#' }
+#' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#' annotation_data <- annotateMethylationGLM_T1Summaries(
+#'   modelSummaries = ex$modelSummaries,
+#'   annotationObject = ex$annotationData,
+#'   annotationCols = "Name,chr,pos",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(annotation_data)
 #'
 #' @export
 annotateMethylationGLM_T1Summaries <- function(
@@ -1570,9 +1590,7 @@ annotateMethylationGLM_T1Summaries <- function(
   }
 
   annotation_cols <- splitOptionMinfiEwasWater(annotationCols, sep = ",")
-  annotation_source <- resolveAnnotationObjectMethylationGLM_T1(annotationObject)
-  annotation_df <- as.data.frame(minfi::getAnnotation(annotation_source))
-  annotation_df$CpG <- rownames(annotation_df)
+  annotation_df <- coerceAnnotationDataMethylationGLM_T1(annotationObject)
 
   merged_summary_list <- lapply(
     names(summary_list),
@@ -1686,40 +1704,35 @@ annotateMethylationGLM_T1Summaries <- function(
 #' and annotated results from the one-timepoint GLM workflow.
 #'
 #' @examples
-#' if (requireNamespace(
-#'   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-#'   quietly = TRUE
-#' )) {
-#'   ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#'   annotation_data <- annotateMethylationGLM_T1Summaries(
-#'     modelSummaries = ex$modelSummaries,
-#'     annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-#'     annotationCols = "Name,chr,pos",
-#'     verbose = FALSE,
-#'     logs = FALSE
-#'   )
-#'   significant_cpgs <- collectSignificantCpGsMethylationGLM_T1(
-#'     modelResults = ex$modelResults,
-#'     pvalThreshold = 1,
-#'     verbose = FALSE,
-#'     logs = FALSE
-#'   )
-#'   output_paths <- writeMethylationGLM_T1Outputs(
-#'     modelResults = ex$modelResults,
-#'     modelSummaries = ex$modelSummaries,
-#'     annotatedResults = annotation_data,
-#'     significantCpGs = significant_cpgs,
-#'     outputRData = file.path(ex$tempDir, "models"),
-#'     summaryTxtDir = file.path(ex$tempDir, "summary"),
-#'     significantCpGDir = file.path(ex$tempDir, "significant"),
-#'     annotatedGLMOut = file.path(ex$tempDir, "annotated"),
-#'     saveTxtSummaries = TRUE,
-#'     saveSignificantCpGs = TRUE,
-#'     verbose = FALSE,
-#'     logs = FALSE
-#'   )
-#'   names(output_paths)
-#' }
+#' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
+#' annotation_data <- annotateMethylationGLM_T1Summaries(
+#'   modelSummaries = ex$modelSummaries,
+#'   annotationObject = ex$annotationData,
+#'   annotationCols = "Name,chr,pos",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' significant_cpgs <- collectSignificantCpGsMethylationGLM_T1(
+#'   modelResults = ex$modelResults,
+#'   pvalThreshold = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' output_paths <- writeMethylationGLM_T1Outputs(
+#'   modelResults = ex$modelResults,
+#'   modelSummaries = ex$modelSummaries,
+#'   annotatedResults = annotation_data,
+#'   significantCpGs = significant_cpgs,
+#'   outputRData = file.path(ex$tempDir, "models"),
+#'   summaryTxtDir = file.path(ex$tempDir, "summary"),
+#'   significantCpGDir = file.path(ex$tempDir, "significant"),
+#'   annotatedGLMOut = file.path(ex$tempDir, "annotated"),
+#'   saveTxtSummaries = TRUE,
+#'   saveSignificantCpGs = TRUE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(output_paths)
 #'
 #' @export
 writeMethylationGLM_T1Outputs <- function(

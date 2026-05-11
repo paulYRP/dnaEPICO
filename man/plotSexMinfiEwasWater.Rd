@@ -52,14 +52,13 @@ otherwise \code{NULL}.
 Plot predicted or clinical sex from \code{predictSexMinfiEwasWater()}
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+ex <- dnaEPICO:::exampleSexPlotStateDnaEpico()
 plotSexMinfiEwasWater(
-  sexData = ex$sexData,
+  sexData = ex,
   type = "predicted",
   display = FALSE,
   verbose = FALSE,
   logs = FALSE
 )
-\dontshow{\}) # examplesIf}
+
 }

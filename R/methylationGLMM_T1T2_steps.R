@@ -1270,8 +1270,8 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
 #' @param modelSummaries Object returned by
 #'   `summarizeMethylationGLMM_T1T2Models()` or a named list of summary data
 #'   frames.
-#' @param annotationObject Character package/object name or an annotation object
-#'   understood by `minfi::getAnnotation()`.
+#' @param annotationObject Character package/object name, annotation data frame,
+#'   or annotation object understood by `minfi::getAnnotation()`.
 #' @param annotationCols Character vector or comma-separated string of annotation
 #'   columns to append.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
@@ -1289,20 +1289,15 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
 #' metadata and return a single annotated result table.
 #'
 #' @examples
-#' if (requireNamespace(
-#'   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-#'   quietly = TRUE
-#' )) {
-#'   ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#'   annotation_data <- annotateMethylationGLMM_T1T2Summaries(
-#'     modelSummaries = ex$modelSummaries,
-#'     annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-#'     annotationCols = "Name,chr,pos",
-#'     verbose = FALSE,
-#'     logs = FALSE
-#'   )
-#'   names(annotation_data)
-#' }
+#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#' annotation_data <- annotateMethylationGLMM_T1T2Summaries(
+#'   modelSummaries = ex$modelSummaries,
+#'   annotationObject = ex$annotationData,
+#'   annotationCols = "Name,chr,pos",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(annotation_data)
 #'
 #' @export
 annotateMethylationGLMM_T1T2Summaries <- function(
@@ -1329,9 +1324,7 @@ annotateMethylationGLMM_T1T2Summaries <- function(
   }
 
   annotation_cols <- splitOptionMinfiEwasWater(annotationCols, sep = ",")
-  annotation_source <- resolveAnnotationObjectMethylationGLM_T1(annotationObject)
-  annotation_df <- as.data.frame(minfi::getAnnotation(annotation_source))
-  annotation_df$CpG <- rownames(annotation_df)
+  annotation_df <- coerceAnnotationDataMethylationGLM_T1(annotationObject)
 
   cleaned_summaries <- lapply(
     names(summary_list),
@@ -1448,40 +1441,35 @@ annotateMethylationGLMM_T1T2Summaries <- function(
 #' tables, and annotated results from the longitudinal mixed-effects workflow.
 #'
 #' @examples
-#' if (requireNamespace(
-#'   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-#'   quietly = TRUE
-#' )) {
-#'   ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#'   annotation_data <- annotateMethylationGLMM_T1T2Summaries(
-#'     modelSummaries = ex$modelSummaries,
-#'     annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-#'     annotationCols = "Name,chr,pos",
-#'     verbose = FALSE,
-#'     logs = FALSE
-#'   )
-#'   significant_hits <- collectSignificantInteractionsMethylationGLMM_T1T2(
-#'     modelResults = ex$modelResults,
-#'     pvalThreshold = 1,
-#'     verbose = FALSE,
-#'     logs = FALSE
-#'   )
-#'   output_paths <- writeMethylationGLMM_T1T2Outputs(
-#'     modelResults = ex$modelResults,
-#'     modelSummaries = ex$modelSummaries,
-#'     annotatedResults = annotation_data,
-#'     significantInteractions = significant_hits,
-#'     outputRData = file.path(ex$tempDir, "models"),
-#'     summaryTxtDir = file.path(ex$tempDir, "summary"),
-#'     significantInteractionDir = file.path(ex$tempDir, "significant"),
-#'     annotatedLMEOut = file.path(ex$tempDir, "annotated"),
-#'     saveTxtSummaries = TRUE,
-#'     saveSignificantInteractions = TRUE,
-#'     verbose = FALSE,
-#'     logs = FALSE
-#'   )
-#'   names(output_paths)
-#' }
+#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+#' annotation_data <- annotateMethylationGLMM_T1T2Summaries(
+#'   modelSummaries = ex$modelSummaries,
+#'   annotationObject = ex$annotationData,
+#'   annotationCols = "Name,chr,pos",
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' significant_hits <- collectSignificantInteractionsMethylationGLMM_T1T2(
+#'   modelResults = ex$modelResults,
+#'   pvalThreshold = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' output_paths <- writeMethylationGLMM_T1T2Outputs(
+#'   modelResults = ex$modelResults,
+#'   modelSummaries = ex$modelSummaries,
+#'   annotatedResults = annotation_data,
+#'   significantInteractions = significant_hits,
+#'   outputRData = file.path(ex$tempDir, "models"),
+#'   summaryTxtDir = file.path(ex$tempDir, "summary"),
+#'   significantInteractionDir = file.path(ex$tempDir, "significant"),
+#'   annotatedLMEOut = file.path(ex$tempDir, "annotated"),
+#'   saveTxtSummaries = TRUE,
+#'   saveSignificantInteractions = TRUE,
+#'   verbose = FALSE,
+#'   logs = FALSE
+#' )
+#' names(output_paths)
 #'
 #' @export
 writeMethylationGLMM_T1T2Outputs <- function(

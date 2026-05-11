@@ -52,22 +52,16 @@ Draw either the minfi QC plot or the detection P-value plot from an
 assessment object returned by \code{assessSamplesMinfiEwasWater()}.
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
-raw_data <- buildRawMinfiEwasWater(ex$RGSet, verbose = FALSE, logs = FALSE)
-assessment <- assessSamplesMinfiEwasWater(
-  rawData = raw_data,
-  RGSet = ex$RGSet,
-  detPThreshold = 1,
-  verbose = FALSE,
-  logs = FALSE
+assessment <- list(
+  meanDetP = c(S1 = 0.01, S2 = 0.02, S3 = 0.04),
+  detPThreshold = 0.05
 )
 plotAssessmentMinfiEwasWater(
   assessment = assessment,
-  plot = "qc",
+  plot = "detection",
   display = FALSE,
   verbose = FALSE,
   logs = FALSE
 )
-\dontshow{\}) # examplesIf}
+
 }

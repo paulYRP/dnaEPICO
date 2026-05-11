@@ -32,13 +32,12 @@ A list with class \code{"dnaEPICO_minfiEwasWater_metrics"} containing
 Extract beta, M, and copy-number matrices from a filtered object
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
+ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 metrics_data <- extractMetricsMinfiEwasWater(
   filteredData = ex$filteredData,
   verbose = FALSE,
   logs = FALSE
 )
 names(metrics_data)
-\dontshow{\}) # examplesIf}
+
 }
