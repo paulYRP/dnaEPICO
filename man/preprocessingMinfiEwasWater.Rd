@@ -170,12 +170,12 @@ each stage. Legacy files are written only when \code{saveOutputs = TRUE}.
 if (requireNamespace("minfiData", quietly = TRUE) &&
     requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
     requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
-  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico()
+  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
   result <- preprocessingMinfiEwasWater(
     phenoFile = ex$phenoFile,
     idatFolder = ex$idatFolder,
     outputLogs = file.path(ex$tempDir, "logs"),
-    nSamples = 6,
+    nSamples = 4,
     SampleID = "Sample_Name",
     arrayType = ex$arrayType,
     annotationVersion = ex$annotationVersion,

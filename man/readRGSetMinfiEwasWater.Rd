@@ -54,7 +54,7 @@ return the resulting \code{RGChannelSet}.
 if (requireNamespace("minfiData", quietly = TRUE) &&
     requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
     requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
-  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico()
+  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
   rgset <- readRGSetMinfiEwasWater(
     idatFolder = ex$idatFolder,
     targets = ex$targets,

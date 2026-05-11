@@ -45,7 +45,6 @@ Sentrix position, perform backward elimination with \code{MASS::dropterm()}, and
 return the in-memory analysis objects.
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 analysis_data <- analyzeSvaEnmix(
   sva = ex$sva,
@@ -56,5 +55,5 @@ analysis_data <- analyzeSvaEnmix(
   logs = FALSE
 )
 analysis_data$K
-\dontshow{\}) # examplesIf}
+
 }

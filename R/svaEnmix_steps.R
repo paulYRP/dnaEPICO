@@ -93,7 +93,7 @@ estimateSvaEnmixControls <- function(
 #' Merge the surrogate variable matrix back into the phenotype table while
 #' preserving the original row order of `targets`.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' @examples
 #' ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 #' merged_pheno <- mergeSvaTargetsEnmix(
 #'   targets = ex$targets,
@@ -178,7 +178,7 @@ mergeSvaTargetsEnmix <- function(
 #' Sentrix position, perform backward elimination with `MASS::dropterm()`, and
 #' return the in-memory analysis objects.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' @examples
 #' ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 #' analysis_data <- analyzeSvaEnmix(
 #'   sva = ex$sva,
@@ -339,7 +339,7 @@ analyzeSvaEnmix <- function(
 #' @description
 #' Draw one of the standard surrogate-variable plots used by `svaEnmix()`.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' @examples
 #' ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 #' plotSvaEnmix(
 #'   analysisData = ex$analysisData,
@@ -509,7 +509,7 @@ plotSvaEnmix <- function(
 #' Write the legacy CSV, `.RData`, and text-summary outputs used by the original
 #' `svaEnmix()` workflow.
 #'
-#' @examplesIf requireNamespace("minfiData", quietly = TRUE)
+#' @examples
 #' ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 #' temp_dir <- tempdir()
 #' output_paths <- writeSvaEnmixOutputs(

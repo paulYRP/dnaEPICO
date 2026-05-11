@@ -9,8 +9,8 @@ methylationGLM_T1(
   outputLogs = "logs",
   outputRData = "rData/methylationGLM_T1/models",
   outputPlots = "figures/methylationGLM_T1",
-  phenotypes =
-    "DASS_Depression,DASS_Anxiety,DASS_Stress,PCL5_TotalScore,MHCSF_TotalScore,BRS_TotalScore",
+  phenotypes = c("DASS_Depression", "DASS_Anxiety", "DASS_Stress", "PCL5_TotalScore",
+    "MHCSF_TotalScore", "BRS_TotalScore"),
   covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
   factorVars = "Sex,Ethnicity,TraumaDefinition",
   cpgPrefix = "cg",
@@ -34,8 +34,8 @@ methylationGLM_T1(
   fdrThreshold = 0.05,
   padjmethod = "fdr",
   annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
-  annotationCols =
-    "Name,chr,pos,UCSC_RefGene_Group,UCSC_RefGene_Name,Relation_to_Island,GencodeV41_Group",
+  annotationCols = c("Name", "chr", "pos", "UCSC_RefGene_Group", "UCSC_RefGene_Name",
+    "Relation_to_Island", "GencodeV41_Group"),
   annotatedGLMOut = "data/methylationGLM_T1",
   display = FALSE,
   verbose = FALSE,
@@ -55,7 +55,8 @@ summary outputs.}
 
 \item{outputPlots}{Character. Directory used for optional TIFF plots.}
 
-\item{phenotypes}{Character. Comma-separated phenotype variables to model.}
+\item{phenotypes}{Character vector or comma-separated phenotype variables to
+model.}
 
 \item{covariates}{Character. Comma-separated covariate variables included in
 each GLM.}
@@ -128,9 +129,9 @@ CpGs in the residual-significance diagnostic plots.}
 to \code{minfi::getAnnotation()}, for example
 \code{"IlluminaHumanMethylationEPICv2anno.20a1.hg38"}.}
 
-\item{annotationCols}{Character. Comma-separated annotation columns to append
-to the combined GLM summary table. Available columns depend on the selected
-annotation package.}
+\item{annotationCols}{Character vector or comma-separated annotation columns
+to append to the combined GLM summary table. Available columns depend on
+the selected annotation package.}
 
 \item{annotatedGLMOut}{Character. Directory used for the optional annotated
 GLM summary CSV file.}

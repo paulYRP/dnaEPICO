@@ -38,7 +38,6 @@ Merge the surrogate variable matrix back into the phenotype table while
 preserving the original row order of \code{targets}.
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 merged_pheno <- mergeSvaTargetsEnmix(
   targets = ex$targets,
@@ -48,5 +47,5 @@ merged_pheno <- mergeSvaTargetsEnmix(
   logs = FALSE
 )
 colnames(merged_pheno)[seq_len(4)]
-\dontshow{\}) # examplesIf}
+
 }

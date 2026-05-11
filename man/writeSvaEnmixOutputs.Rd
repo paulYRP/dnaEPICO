@@ -52,7 +52,6 @@ Write the legacy CSV, \code{.RData}, and text-summary outputs used by the origin
 \code{svaEnmix()} workflow.
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 temp_dir <- tempdir()
 output_paths <- writeSvaEnmixOutputs(
@@ -67,5 +66,5 @@ output_paths <- writeSvaEnmixOutputs(
   logs = FALSE
 )
 names(output_paths)
-\dontshow{\}) # examplesIf}
+
 }

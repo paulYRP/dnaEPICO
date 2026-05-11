@@ -51,7 +51,6 @@ Invisibly returns \code{file} when a TIFF is written, otherwise \code{NULL}.
 Draw one of the standard surrogate-variable plots used by \code{svaEnmix()}.
 }
 \examples{
-\dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 plotSvaEnmix(
   analysisData = ex$analysisData,
@@ -60,5 +59,5 @@ plotSvaEnmix(
   verbose = FALSE,
   logs = FALSE
 )
-\dontshow{\}) # examplesIf}
+
 }

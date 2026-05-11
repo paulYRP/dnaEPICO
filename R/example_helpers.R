@@ -358,17 +358,31 @@ exampleSvaAnalysisStateDnaEpico <- function() {
     getCachedExampleDnaEpico(
         key = "sva_analysis",
         builder = function() {
-            example_data <- exampleMinfiBaseDataDnaEpico()
-            sample_names <- colnames(example_data$RGSet)
+            sample_names <- paste0("S", seq_len(8L))
+            targets <- data.frame(
+                Sample_Name = sample_names,
+                Sentrix_ID = rep(c("Slide1", "Slide2"), each = 4L),
+                Sentrix_Position = rep(c("R01C01", "R02C01", "R03C01", "R04C01"), 2L),
+                stringsAsFactors = FALSE
+            )
+            RGSet <- SummarizedExperiment::SummarizedExperiment(
+                assays = list(signal = matrix(0, nrow = 2L, ncol = length(sample_names))),
+                colData = S4Vectors::DataFrame(
+                    Sentrix_ID = targets$Sentrix_ID,
+                    Sentrix_Position = targets$Sentrix_Position,
+                    row.names = sample_names
+                )
+            )
+            colnames(RGSet) <- sample_names
 
             sva <- cbind(
-                sva1 = seq_along(sample_names) / 10,
-                sva2 = rev(seq_along(sample_names)) / 10
+                sva1 = c(0.10, 0.25, 0.15, 0.45, 0.22, 0.30, 0.50, 0.48),
+                sva2 = c(0.50, 0.40, 0.55, 0.35, 0.42, 0.60, 0.38, 0.52)
             )
             rownames(sva) <- sample_names
 
             merged_pheno <- mergeSvaTargetsEnmix(
-                targets = example_data$targets,
+                targets = targets,
                 sva = sva,
                 SampleID = "Sample_Name",
                 verbose = FALSE,
@@ -376,7 +390,7 @@ exampleSvaAnalysisStateDnaEpico <- function() {
             )
             analysis_data <- analyzeSvaEnmix(
                 sva = sva,
-                RGSet = example_data$RGSet,
+                RGSet = RGSet,
                 SentrixIDColumn = "Sentrix_ID",
                 SentrixPositionColumn = "Sentrix_Position",
                 verbose = FALSE,
@@ -384,8 +398,8 @@ exampleSvaAnalysisStateDnaEpico <- function() {
             )
 
             list(
-                RGSet = example_data$RGSet,
-                targets = example_data$targets,
+                RGSet = RGSet,
+                targets = targets,
                 sva = sva,
                 mergedPheno = merged_pheno,
                 analysisData = analysis_data

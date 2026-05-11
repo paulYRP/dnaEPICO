@@ -1084,14 +1084,23 @@ plural <- function(n, singular, plural_form = paste0(singular, "s")) {
   if (length(n) && !is.na(n) && as.integer(n) == 1L) singular else plural_form
 }
 
+is_numeric_like <- function(values) {
+  values <- as.character(values)
+  grepl(
+    "^\\s*[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][+-]?\\d+)?\\s*$",
+    values,
+    perl = TRUE
+  )
+}
+
 sort_values <- function(values) {
   values <- unique(as.character(values[!is.na(values)]))
   values <- values[nzchar(trimws(values))]
   if (!length(values)) {
     return(character())
   }
-  numeric_values <- suppressWarnings(as.numeric(values))
-  if (all(!is.na(numeric_values))) {
+  if (all(is_numeric_like(values))) {
+    numeric_values <- as.numeric(values)
     values[order(numeric_values)]
   } else {
     sort(values)
@@ -1393,11 +1402,20 @@ summarize_sample_detection <- function(data) {
     return(summary)
   }
 
-  p_detected <- suppressWarnings(as.numeric(data$pDetected))
+  p_values <- as.character(data$pDetected)
+  numeric_idx <- is_numeric_like(p_values)
+  p_detected <- rep(NA_real_, length(p_values))
+  p_detected[numeric_idx] <- as.numeric(p_values[numeric_idx])
   summary$n_samples <- nrow(data)
-  summary$min_p_detected <- min(p_detected, na.rm = TRUE)
-  summary$median_p_detected <- stats::median(p_detected, na.rm = TRUE)
-  summary$max_p_detected <- max(p_detected, na.rm = TRUE)
+  if (any(!is.na(p_detected))) {
+    summary$min_p_detected <- min(p_detected, na.rm = TRUE)
+    summary$median_p_detected <- stats::median(p_detected, na.rm = TRUE)
+    summary$max_p_detected <- max(p_detected, na.rm = TRUE)
+  } else {
+    summary$min_p_detected <- NA_real_
+    summary$median_p_detected <- NA_real_
+    summary$max_p_detected <- NA_real_
+  }
   summary
 }
 
