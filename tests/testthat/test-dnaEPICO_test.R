@@ -295,7 +295,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
     report_result <- dnaEPICO::dnamReport(
         outputDir = file.path(tmpDir, "reports"),
         enmixTab = file.path(
-            tmpDir, "figures", "preprocessingMinfiEwasWater", "enMix"
+            tmpDir, "figures", "preprocessingMinfiEwasWater", "enmix"
         ),
         qcTab = file.path(
             tmpDir, "figures", "preprocessingMinfiEwasWater", "qc"

@@ -630,6 +630,29 @@ the GLM and LME examples write model outputs into their own temporary
 directories. Because `dnamReport()` accepts one path per tab, those outputs can
 be passed directly.
 
+When running this section from an R session, `dnamReport()` still needs the
+Quarto command line interface because the function renders the `.qmd` files into
+the final website. You can check whether R can find Quarto with:
+
+```{r quarto-check-r, eval = FALSE}
+Sys.which("quarto")
+system2("quarto", "--version")
+```
+
+If `Sys.which("quarto")` returns an empty string, install the Quarto command
+line interface from the
+[Quarto get-started page](https://quarto.org/docs/get-started/) before
+rendering the report. The R package `quarto` provides R helper functions for an
+existing Quarto installation; it does not replace the Quarto command line
+interface used by `dnamReport()`.
+
+If Quarto is installed but not on `PATH`, set the executable path before calling
+`dnamReport()`:
+
+```{r quarto-path-r, eval = FALSE}
+Sys.setenv(QUARTO_BIN = "/full/path/to/quarto")
+```
+
 ```{r dnamReport-pipeline-example, eval = FALSE}
 report_log_dir <- file.path(preprocessing_inputs$tempDir, "logs", "report")
 dir.create(report_log_dir, recursive = TRUE, showWarnings = FALSE)
@@ -663,7 +686,7 @@ reportResult <- dnamReport(
     preprocessing_inputs$tempDir,
     "figures",
     "preprocessingMinfiEwasWater",
-    "enMix"
+    "enmix"
   ),
   qcTab = file.path(
     preprocessing_inputs$tempDir,
@@ -875,16 +898,16 @@ earlier ones.
 
 ## Report generation
 
-The exported rules include the final report target:
+The exported Makefile contains a report rule whose output is
+`$(STEP6)/$(MODEL)/docs/index.html`. With the default directory settings, this
+becomes `reports/<model>/docs/index.html`. Users usually do not need to call
+that file target directly: the grouped targets above depend on it, so Make
+refreshes the report automatically after the required pipeline outputs are
+available.
 
-```bash
-make reports/model1/docs/index.html MODEL=model1
-```
-
-The grouped targets above also refresh the report automatically. For example,
-`make f3 MODEL=model1` builds a report with Data, ENmix QC, Quality Control,
-Batch Effect, Metrics, Report, and Logs tabs. `make f4`, `make f3lme`, and
-`make all` additionally make the GLM and LMER tables available when the
+For example, the `f3` route builds the report from the Data, ENmix QC, Quality
+Control, Batch Effect, Metrics, Report, and Logs inputs. The `f4`, `f3lme`, and
+`all` routes additionally make the GLM and LMER tables available when the
 corresponding model outputs exist.
 
 The report target reads the same types of outputs generated in the examples
@@ -893,20 +916,36 @@ above, organised under the Makefile project layout: the phenotype table in
 P-value object in `rData/`, model annotation tables in `data/`, and workflow
 logs in `logs/`.
 
-The generated site is opened from:
+The generated site is opened from the report target path:
 
 ```text
-reports/model1/docs/index.html
+$(STEP6)/$(MODEL)/docs/index.html
 ```
 
 Internally, the Makefile calls `dnamReport()` with one argument per tab, using
-the project paths defined by the Makefile variables.
+the project paths defined by the Makefile variables. The report target requires
+the Quarto command line interface in the same environment where `make` is run.
+If Quarto is not already available, install the Quarto command line interface
+from the [Quarto get-started page](https://quarto.org/docs/get-started/), or
+use the installation method provided by the local computing environment. Before
+launching the report target, check:
+
+```bash
+quarto --version
+```
+
+If Quarto is installed outside `PATH`, export its executable path before running
+`make`:
+
+```bash
+export QUARTO_BIN=/full/path/to/quarto
+```
 
 # Full exported Makefile
 
 The full Makefile exported by `extractMake()` is shown below. This is the
-template that should be adapted for a project before running the pipeline on a
-workstation or HPC system.
+template that should be adapted for a project before running the pipeline in the
+target analysis environment.
 
 ```{r makefile-template-full, echo = FALSE, results = "asis"}
 makefile_lines <- readLines(makefilePath, warn = FALSE)
@@ -1076,7 +1115,7 @@ The file-based route is the correct choice when you need:
 - a reproducible folder structure,
 - files that can be reused by later workflow stages,
 - Makefile execution, or
-- HPC submission.
+- repeated analyses across one or more models.
 
 The interactive route and the file-based route are therefore complementary:
 local use is best for understanding the returned objects, while pipeline use is

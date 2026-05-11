@@ -95,10 +95,36 @@ collectFigureInventoryDnamReport <- function(
 #'
 #' @return A list with class `"dnaEPICO_dnamReport_prepared"`.
 #'
+#' @examples
+#' report_root <- file.path(tempdir(), "dnaepico-report-inputs")
+#' prepared <- prepareDnamReportInputs(
+#'   outputDir = file.path(report_root, "reports"),
+#'   qcDir = file.path(
+#'     report_root,
+#'     "figures",
+#'     "preprocessingMinfiEwasWater",
+#'     "enmix"
+#'   ),
+#'   preprocessingDir = file.path(
+#'     report_root,
+#'     "figures",
+#'     "preprocessingMinfiEwasWater",
+#'     "qc"
+#'   ),
+#'   postprocessingDir = file.path(
+#'     report_root,
+#'     "figures",
+#'     "preprocessingMinfiEwasWater",
+#'     "metrics"
+#'   ),
+#'   svaDir = file.path(report_root, "figures", "svaEnmix")
+#' )
+#' inherits(prepared, "dnaEPICO_dnamReport_prepared")
+#'
 #' @export
 prepareDnamReportInputs <- function(
     outputDir = "reports",
-    qcDir = file.path("figures", "preprocessingMinfiEwasWater", "enMix"),
+    qcDir = file.path("figures", "preprocessingMinfiEwasWater", "enmix"),
     preprocessingDir = file.path("figures", "preprocessingMinfiEwasWater", "qc"),
     postprocessingDir = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
     svaDir = file.path("figures", "svaEnmix"),
@@ -193,6 +219,14 @@ prepareDnamReportInputs <- function(
 #'
 #' @return A list with class `"dnaEPICO_dnamReport_render"`.
 #'
+#' @examples
+#' report_root <- file.path(tempdir(), "dnaepico-render-example")
+#' prepared <- prepareDnamReportInputs(
+#'   outputDir = file.path(report_root, "reports")
+#' )
+#' rendered <- renderDnamReport(prepared)
+#' rendered$status
+#'
 #' @export
 renderDnamReport <- function(
     preparedReport,
@@ -272,11 +306,60 @@ renderDnamReport <- function(
 #'
 #' @return A list with class `"dnaEPICO_dnamReport"`.
 #'
+#' @examples
+#' report_root <- file.path(tempdir(), "dnaepico-dnam-report")
+#' pheno_file <- file.path(
+#'   report_root,
+#'   "data",
+#'   "model1",
+#'   "preprocessingMinfiEwasWater",
+#'   "phenoLC.csv"
+#' )
+#' dir.create(dirname(pheno_file), recursive = TRUE, showWarnings = FALSE)
+#' utils::write.csv(
+#'   data.frame(
+#'     UID = c("sample1", "sample2"),
+#'     Timepoint = c(1, 2),
+#'     Sex = c("F", "M")
+#'   ),
+#'   pheno_file,
+#'   row.names = FALSE
+#' )
+#'
+#' result <- dnamReport(
+#'   outputDir = file.path(report_root, "reports", "model1"),
+#'   phenoTab = pheno_file,
+#'   enmixTab = file.path(
+#'     report_root,
+#'     "figures",
+#'     "model1",
+#'     "preprocessingMinfiEwasWater",
+#'     "enmix"
+#'   ),
+#'   qcTab = file.path(
+#'     report_root,
+#'     "figures",
+#'     "model1",
+#'     "preprocessingMinfiEwasWater",
+#'     "qc"
+#'   ),
+#'   svaTab = file.path(report_root, "figures", "model1", "svaEnmix"),
+#'   metricTab = file.path(
+#'     report_root,
+#'     "figures",
+#'     "model1",
+#'     "preprocessingMinfiEwasWater",
+#'     "metrics"
+#'   ),
+#'   logTab = file.path(report_root, "logs", "model1")
+#' )
+#' result$status
+#'
 #' @export
 dnamReport <- function(
     outputDir = "reports",
     phenoTab = NULL,
-    enmixTab = file.path("figures", "preprocessingMinfiEwasWater", "enMix"),
+    enmixTab = file.path("figures", "preprocessingMinfiEwasWater", "enmix"),
     qcTab = file.path("figures", "preprocessingMinfiEwasWater", "qc"),
     svaTab = file.path("figures", "svaEnmix"),
     metricTab = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
@@ -433,6 +516,14 @@ write_utf8 <- function(path, lines) {
 }
 
 find_quarto <- function() {
+  env_candidates <- c(Sys.getenv("QUARTO_BIN"), Sys.getenv("QUARTO"))
+  env_candidates <- env_candidates[nzchar(env_candidates)]
+  env_candidates <- normalizePath(env_candidates, winslash = "/", mustWork = FALSE)
+  env_candidates <- env_candidates[file.exists(env_candidates)]
+  if (length(env_candidates)) {
+    return(env_candidates[[1]])
+  }
+
   quarto_bin <- Sys.which("quarto")
   if (nzchar(quarto_bin)) {
     return(unname(quarto_bin))
@@ -643,7 +734,7 @@ build_gallery_markup <- function(
       callout_lines(
         paste(
           "Some TIFF figures were copied without PNG conversion.",
-          "Install the `magick` package and rerun `report.R` if you want those figures to render directly in the browser."
+          "Install the `magick` package and rerun `dnamReport()` if you want those figures to render directly in the browser."
         ),
         type = "warning"
       )
@@ -723,7 +814,7 @@ build_figure_cards <- function(
       callout_lines(
         paste(
           "Some TIFF figures were copied without PNG conversion.",
-          "Install the `magick` package and rerun `report.R` if you want those figures to render directly in the browser."
+          "Install the `magick` package and rerun `dnamReport()` if you want those figures to render directly in the browser."
         ),
         type = "warning"
       )
@@ -1366,8 +1457,8 @@ summarize_logs <- function(log_assets) {
     methylation = "Methylation Analysis",
     data = "Data Preparation",
     batch = "Batch Effect",
-    glm = "GLM Analysis",
-    lmer = "LMER Analysis"
+    glm = "GLM",
+    lmer = "LMER"
   )
   rows <- lapply(names(log_assets), function(name) {
     asset <- log_assets[[name]]
@@ -1644,8 +1735,8 @@ build_report_page <- function(
     html_section("Quality Control", quality_control_paragraph),
     html_section("Batch Effect", batch_effect_paragraph),
     html_section("Metrics", metrics_paragraph),
-    html_section("GLM Analysis", glm_paragraph),
-    html_section("LMER Analysis", lmer_paragraph),
+    html_section("GLM", glm_paragraph),
+    html_section("LMER", lmer_paragraph),
     html_section("Logs", logs_paragraph),
     "</div>",
     "</div>",
@@ -2389,7 +2480,7 @@ data_page <- compose_page(
     "if (is.null(qp_data)) {",
     "  cat('::: {.callout-warning}\\n')",
     "  cat(qp_data_error, '\\n\\n')",
-    "  cat('Update the configured CSV path in `report.R` or place the file at the expected location before rendering.\\n')",
+    "  cat('Update the configured CSV path in the `dnamReport()` call or place the file at the expected location before rendering.\\n')",
     "  cat(':::\\n')",
     "}",
     "```",
@@ -2708,9 +2799,10 @@ if (nzchar(quarto_bin)) {
     )
   }
 } else {
+  render_status <- "failed"
   error_message <- paste(
     "Quarto CLI not found. The project files were created but not rendered.",
-    "Run `quarto render` inside the output project directory."
+    "Install Quarto or set QUARTO_BIN to the full path of the quarto executable."
   )
   emitLogMinfiEwasWater(
     c(error_message, project_dir),

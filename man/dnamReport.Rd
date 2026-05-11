@@ -7,7 +7,7 @@
 dnamReport(
   outputDir = "reports",
   phenoTab = NULL,
-  enmixTab = file.path("figures", "preprocessingMinfiEwasWater", "enMix"),
+  enmixTab = file.path("figures", "preprocessingMinfiEwasWater", "enmix"),
   qcTab = file.path("figures", "preprocessingMinfiEwasWater", "qc"),
   svaTab = file.path("figures", "svaEnmix"),
   metricTab = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
@@ -81,4 +81,54 @@ A list with class \code{"dnaEPICO_dnamReport"}.
 }
 \description{
 Generate a DNA methylation dashboard report
+}
+\examples{
+report_root <- file.path(tempdir(), "dnaepico-dnam-report")
+pheno_file <- file.path(
+  report_root,
+  "data",
+  "model1",
+  "preprocessingMinfiEwasWater",
+  "phenoLC.csv"
+)
+dir.create(dirname(pheno_file), recursive = TRUE, showWarnings = FALSE)
+utils::write.csv(
+  data.frame(
+    UID = c("sample1", "sample2"),
+    Timepoint = c(1, 2),
+    Sex = c("F", "M")
+  ),
+  pheno_file,
+  row.names = FALSE
+)
+
+result <- dnamReport(
+  outputDir = file.path(report_root, "reports", "model1"),
+  phenoTab = pheno_file,
+  enmixTab = file.path(
+    report_root,
+    "figures",
+    "model1",
+    "preprocessingMinfiEwasWater",
+    "enmix"
+  ),
+  qcTab = file.path(
+    report_root,
+    "figures",
+    "model1",
+    "preprocessingMinfiEwasWater",
+    "qc"
+  ),
+  svaTab = file.path(report_root, "figures", "model1", "svaEnmix"),
+  metricTab = file.path(
+    report_root,
+    "figures",
+    "model1",
+    "preprocessingMinfiEwasWater",
+    "metrics"
+  ),
+  logTab = file.path(report_root, "logs", "model1")
+)
+result$status
+
 }

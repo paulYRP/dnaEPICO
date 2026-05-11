@@ -1,6 +1,6 @@
 create_dnam_report_example <- function(path) {
     dirs <- list(
-        qcDir = file.path(path, "figures", "preprocessingMinfiEwasWater", "enMix"),
+        qcDir = file.path(path, "figures", "preprocessingMinfiEwasWater", "enmix"),
         preprocessingDir = file.path(path, "figures", "preprocessingMinfiEwasWater", "qc"),
         postprocessingDir = file.path(path, "figures", "preprocessingMinfiEwasWater", "metrics"),
         svaDir = file.path(path, "figures", "svaEnmix"),

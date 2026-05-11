@@ -323,7 +323,7 @@ REPORT_INPUTS = \
 
 $(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
 	mkdir -p $(STEP6)/$(MODEL) $(MODEL_LOG_DIR)
-	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(dnamReport( \
+	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); result <- dnamReport( \
 	  outputDir = '$(STEP6)/$(MODEL)', \
 	  phenoTab = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
 	  enmixTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
@@ -336,8 +336,10 @@ $(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
 	  detPThreshold = '$(PVAL_THRESHOLD)', \
 	  verbose = FALSE, \
 	  logs = TRUE, \
-	  logTab = '$(MODEL_LOG_DIR)' ))" \
-	  > $(MODEL_LOG_DIR)/report.log 2>&1
+	  logTab = '$(MODEL_LOG_DIR)' ); \
+	  if (!identical(result$$status, 'rendered') || !file.exists(result$$outputFile)) { \
+	    stop('Report rendering failed. See $(MODEL_LOG_DIR)/log_dnamReport.txt for details.', call. = FALSE); \
+	  }"
 	@echo "Report built: $(STEP6)/$(MODEL)/docs/index.html"
 
 # =================================================================================================================================

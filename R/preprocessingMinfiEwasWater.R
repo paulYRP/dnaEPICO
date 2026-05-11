@@ -244,7 +244,7 @@ preprocessingMinfiEwasWater <- function(
   qcDir <- file.path(baseDataFolder, scriptLabel, "qc")
   metricsFigDir <- file.path(figureBaseDir, scriptLabel, "metrics")
   qcFigDir <- file.path(figureBaseDir, scriptLabel, "qc")
-  enmixDir <- file.path(figureBaseDir, scriptLabel, "enMix")
+  enmixDir <- file.path(figureBaseDir, scriptLabel, "enmix")
 
   if (isTRUE(saveOutputs)) {
     dirs_to_create <- c(
