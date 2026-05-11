@@ -2,117 +2,83 @@
 % Please edit documentation in R/dnamReport.R
 \name{dnamReport}
 \alias{dnamReport}
-\title{Prepare and optionally render a DNA methylation PDF report}
+\title{Generate a DNA methylation dashboard report}
 \usage{
 dnamReport(
-  output = "DNAm_Report.pdf",
   outputDir = "reports",
-  qcDir = "figures/preprocessingMinfiEwasWater/enMix",
-  preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
-  postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
-  svaDir = "figures/svaEnmix/sva",
-  glmDir = "figures/methylationGLM_T1",
-  glmmDir = "figures/methylationGLMM_T1T2",
-  figDir = "reports/figures",
-  reportTitle = "DNA methylation",
-  author = "School of Biomedical Sciences",
-  date = format(Sys.Date(), "\%B \%d, \%Y"),
-  render = TRUE,
+  phenoTab = NULL,
+  enmixTab = file.path("figures", "preprocessingMinfiEwasWater", "enMix"),
+  qcTab = file.path("figures", "preprocessingMinfiEwasWater", "qc"),
+  svaTab = file.path("figures", "svaEnmix"),
+  metricTab = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
+  glmTab = NULL,
+  lmerTab = NULL,
+  logTab = outputDir,
   verbose = FALSE,
   logs = FALSE,
-  logDir = outputDir,
-  templatePath = NULL
+  projectName = "dnaEPICO",
+  detPPath = NULL,
+  detPThreshold = 0.01,
+  cpgDetectionPath = NULL,
+  sampleDetectionPath = NULL,
+  logoPath = system.file("extdata", "dnaEPICO.svg", package = "dnaEPICO"),
+  imagePattern = "\\\\.(png|jpg|jpeg|gif|webp|svg|tif|tiff)$",
+  recursive = TRUE
 )
 }
 \arguments{
-\item{output}{Character. Name of the output PDF file.}
+\item{outputDir}{Character. Directory where the Quarto project is written.}
 
-\item{outputDir}{Character. Directory where the report would be written.}
+\item{phenoTab}{Character or \code{NULL}. CSV file shown in the Data tab.
+When \code{NULL}, the path is inferred from the Makefile output layout.}
 
-\item{qcDir}{Character. Directory containing ENmix QC figures, typically \code{.jpg}
-files.}
+\item{enmixTab}{Character. Directory containing ENmix quality-control figures.}
 
-\item{preprocessingDir}{Character. Directory containing preprocessing QC
-figures, typically \code{.tiff} files.}
+\item{qcTab}{Character. Directory containing Quality Control figures.}
 
-\item{postprocessingDir}{Character. Directory containing postprocessing metric
-figures, typically \code{.tiff} files.}
+\item{svaTab}{Character. Directory containing Batch Effect or SVA figures.}
 
-\item{svaDir}{Character. Directory containing SVA figures, typically \code{.tiff}
-files.}
+\item{metricTab}{Character. Directory containing Metrics figures.}
 
-\item{glmDir}{Character. Directory containing GLM figures, including optional
-phenotype subdirectories.}
+\item{glmTab}{Character or \code{NULL}. CSV file shown in the GLM Analysis tab.
+When \code{NULL}, the path is inferred from the Makefile output layout.}
 
-\item{glmmDir}{Character. Directory containing GLMM figures, including optional
-phenotype subdirectories.}
+\item{lmerTab}{Character or \code{NULL}. CSV file shown in the LMER Analysis tab.
+When \code{NULL}, the path is inferred from the Makefile output layout.}
 
-\item{figDir}{Character. Directory used by \code{knitr} for temporary report figure
-output while rendering.}
+\item{logTab}{Character. Directory containing workflow logs shown in the Logs
+tab.}
 
-\item{reportTitle}{Character. Title shown on the rendered report.}
+\item{verbose}{Logical. If \code{TRUE}, emit progress messages.}
 
-\item{author}{Character. Author name shown on the rendered report.}
+\item{logs}{Logical. If \code{TRUE}, write a report log.}
 
-\item{date}{Character. Date string shown on the rendered report.}
+\item{projectName}{Character. Name used for the generated Quarto project.}
 
-\item{render}{Logical. If \code{TRUE}, render the PDF report. If \code{FALSE}, only
-prepare and return the report configuration object.}
+\item{detPPath}{Character or \code{NULL}. RData file containing the detection
+P-value matrix object \code{detP}, used to build the quality-control tables.
+When \code{NULL}, the path is inferred from the Makefile output layout.}
 
-\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}. The
-default is \code{FALSE}, so the function is quiet unless requested.}
+\item{detPThreshold}{Numeric. Detection P-value threshold used when
+summarising the \code{detP} matrix.}
 
-\item{logs}{Logical. If \code{TRUE}, write the same progress messages to
-\code{file.path(logDir, "log_dnamReport.txt")}.}
+\item{cpgDetectionPath}{Character or \code{NULL}. Optional fallback CpG detection
+summary CSV.}
 
-\item{logDir}{Character. Directory for optional log files.}
+\item{sampleDetectionPath}{Character or \code{NULL}. Optional fallback sample
+detection summary CSV.}
 
-\item{templatePath}{Character or \code{NULL}. Optional path to a custom report
-template. When \code{NULL}, the packaged \code{dnamReport.Rmd} template is used.}
+\item{logoPath}{Character. Path to the navbar logo. Defaults to the packaged
+\code{inst/extdata/dnaEPICO.svg} asset.}
+
+\item{imagePattern}{Character. Regular expression used to identify image
+files inside the section directories.}
+
+\item{recursive}{Logical. If \code{TRUE}, search section directories recursively.}
 }
 \value{
 A list with class \code{"dnaEPICO_dnamReport"}.
-\describe{
-\item{preparedReport}{Object returned by \code{\link[=prepareDnamReportInputs]{prepareDnamReportInputs()}}.}
-\item{renderResult}{Object returned by \code{\link[=renderDnamReport]{renderDnamReport()}} when
-\code{render = TRUE}, otherwise \code{NULL}.}
-\item{status}{Final status string such as \code{"prepared"}, \code{"rendered"},
-\code{"skipped"}, or \code{"failed"}.}
-\item{outputFile}{Intended output path when \code{render = FALSE}, or the
-rendered PDF path when rendering succeeded.}
-\item{errorMessage}{Final render error or skip message when available,
-otherwise \code{NULL}.}
-\item{logFile}{Resolved path to the optional log file, or \code{NULL} when
-logging was disabled.}
-}
-See \linkS4class{dnaEPICO_dnamReport} for a class-level overview.
 }
 \description{
-\code{dnamReport()} is a high-level convenience wrapper for the reporting stage of
-the \code{dnaEPICO} workflow. It prepares the report inputs, inventories the
-available figures from previous steps, and by default renders the packaged PDF
-report template. Set \code{render = FALSE} to inspect the prepared report object
-without writing the PDF.
-}
-\examples{
-tmp <- tempdir()
-report_info <- dnamReport(
-  output = "DNAm_Report.pdf",
-  outputDir = tmp,
-  qcDir = tmp,
-  preprocessingDir = tmp,
-  postprocessingDir = tmp,
-  svaDir = tmp,
-  glmDir = tmp,
-  glmmDir = tmp,
-  figDir = file.path(tmp, "report_figures"),
-  reportTitle = "DNA methylation analysis",
-  author = "School of Biomedical Sciences",
-  date = format(Sys.Date(), "\%B \%d, \%Y"),
-  render = FALSE,
-  verbose = FALSE,
-  logs = FALSE
-)
-report_info$status
-
+Generate a DNA methylation dashboard report
 }

@@ -5,107 +5,48 @@
 \title{Prepare inputs for a DNA methylation report}
 \usage{
 prepareDnamReportInputs(
-  output = "DNAm_Report.pdf",
   outputDir = "reports",
-  qcDir = "figures/preprocessingMinfiEwasWater/enMix",
-  preprocessingDir = "figures/preprocessingMinfiEwasWater/qc",
-  postprocessingDir = "figures/preprocessingMinfiEwasWater/metrics",
-  svaDir = "figures/svaEnmix/sva",
-  glmDir = "figures/methylationGLM_T1",
-  glmmDir = "figures/methylationGLMM_T1T2",
-  figDir = "reports/figures",
-  reportTitle = "DNA methylation",
-  author = "School of Biomedical Sciences",
-  date = format(Sys.Date(), "\%B \%d, \%Y"),
+  qcDir = file.path("figures", "preprocessingMinfiEwasWater", "enMix"),
+  preprocessingDir = file.path("figures", "preprocessingMinfiEwasWater", "qc"),
+  postprocessingDir = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
+  svaDir = file.path("figures", "svaEnmix"),
+  glmDir = file.path("figures", "methylationGLM_T1"),
+  glmmDir = file.path("figures", "methylationGLMM_T1T2"),
+  figDir = file.path(outputDir, "assets", "figures"),
   verbose = FALSE,
   logs = FALSE,
-  logDir = outputDir,
-  templatePath = NULL
+  logDir = outputDir
 )
 }
 \arguments{
-\item{output}{Character. Name of the output PDF file.}
+\item{outputDir}{Character. Directory where the report project is written.}
 
-\item{outputDir}{Character. Directory where the report would be written.}
+\item{qcDir}{Character. Directory containing ENmix quality-control figures.}
 
-\item{qcDir}{Character. Directory containing ENmix QC figures, typically \code{.jpg}
-files.}
-
-\item{preprocessingDir}{Character. Directory containing preprocessing QC
-figures, typically \code{.tiff} files.}
+\item{preprocessingDir}{Character. Directory containing preprocessing
+quality-control figures.}
 
 \item{postprocessingDir}{Character. Directory containing postprocessing metric
-figures, typically \code{.tiff} files.}
+figures.}
 
-\item{svaDir}{Character. Directory containing SVA figures, typically \code{.tiff}
-files.}
+\item{svaDir}{Character. Directory containing SVA or batch-effect figures.}
 
-\item{glmDir}{Character. Directory containing GLM figures, including optional
-phenotype subdirectories.}
+\item{glmDir}{Character. Directory containing GLM figures.}
 
-\item{glmmDir}{Character. Directory containing GLMM figures, including optional
-phenotype subdirectories.}
+\item{glmmDir}{Character. Directory containing GLMM figures.}
 
-\item{figDir}{Character. Directory used by \code{knitr} for temporary report figure
-output while rendering.}
+\item{figDir}{Character. Directory used for generated report figure assets.}
 
-\item{reportTitle}{Character. Title shown on the rendered report.}
+\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
-\item{author}{Character. Author name shown on the rendered report.}
-
-\item{date}{Character. Date string shown on the rendered report.}
-
-\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}. The
-default is \code{FALSE}.}
-
-\item{logs}{Logical. If \code{TRUE}, write the same progress messages to
+\item{logs}{Logical. If \code{TRUE}, write progress messages to
 \code{file.path(logDir, "log_dnamReport.txt")}.}
 
 \item{logDir}{Character. Directory for optional log files.}
-
-\item{templatePath}{Character or \code{NULL}. Optional path to a custom report
-template. When \code{NULL}, the packaged \code{dnamReport.Rmd} template is used.}
 }
 \value{
 A list with class \code{"dnaEPICO_dnamReport_prepared"}.
-\describe{
-\item{output}{Requested output file name.}
-\item{outputDir}{Normalized directory where the report would be written.}
-\item{outputFile}{Normalized full path to the intended output file.}
-\item{figDir}{Normalized directory used by the template for figure copies.}
-\item{templatePath}{Resolved path to the packaged or custom report
-template.}
-\item{params}{Named list of parameters passed to \code{rmarkdown::render()}.}
-\item{figureInventory}{Named list describing the available figures for each
-report section.}
-\item{missingFigureDirectories}{Character vector of expected figure
-directories that were not present at preparation time.}
-\item{logFile}{Resolved path to the optional log file, or \code{NULL} when
-logging was disabled.}
-}
-See \linkS4class{dnaEPICO_dnamReport_prepared} for a class-level overview.
 }
 \description{
-\code{prepareDnamReportInputs()} resolves the report template, normalizes the input
-and output paths, inventories the available figures for each report section,
-and returns a structured object that can later be passed to
-\code{renderDnamReport()}.
-}
-\examples{
-ex <- dnaEPICO:::exampleDnamReportStateDnaEpico()
-prepared_report <- prepareDnamReportInputs(
-  output = "DNAm_Report.pdf",
-  outputDir = ex$tempDir,
-  qcDir = file.path(ex$tempDir, "qc"),
-  preprocessingDir = file.path(ex$tempDir, "preprocessing"),
-  postprocessingDir = file.path(ex$tempDir, "postprocessing"),
-  svaDir = file.path(ex$tempDir, "sva"),
-  glmDir = file.path(ex$tempDir, "glm"),
-  glmmDir = file.path(ex$tempDir, "glmm"),
-  figDir = file.path(ex$tempDir, "report-figures"),
-  verbose = FALSE,
-  logs = FALSE
-)
-prepared_report$output
-
+Prepare inputs for a DNA methylation report
 }

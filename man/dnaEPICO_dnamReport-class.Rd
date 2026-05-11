@@ -7,19 +7,17 @@
 \title{Result class returned by dnamReport}
 \description{
 Objects of class \code{"dnaEPICO_dnamReport"} are list-based results returned by
-\code{\link[=dnamReport]{dnamReport()}}. They combine the prepared report inputs, optional render
-result, and final status metadata into one convenience object.
+\code{\link[=dnamReport]{dnamReport()}}. They combine the prepared report inputs, render result, and
+final status metadata into one convenience object.
 }
 \section{Structure}{
 
 \describe{
 \item{preparedReport}{Object returned by \code{\link[=prepareDnamReportInputs]{prepareDnamReportInputs()}}.}
-\item{renderResult}{Object returned by \code{\link[=renderDnamReport]{renderDnamReport()}} when
-\code{render = TRUE}, otherwise \code{NULL}.}
-\item{status}{Final status string such as \code{"prepared"}, \code{"rendered"},
-\code{"skipped"}, or \code{"failed"}.}
-\item{outputFile}{Intended output path when \code{render = FALSE}, or the
-rendered PDF path when rendering succeeded.}
+\item{renderResult}{Structured render metadata created by \code{\link[=dnamReport]{dnamReport()}}.}
+\item{status}{Final status string such as \code{"rendered"}, \code{"skipped"}, or
+\code{"failed"}.}
+\item{outputFile}{Path to \code{docs/index.html}.}
 \item{errorMessage}{Final render error or skip message when available,
 otherwise \code{NULL}.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when

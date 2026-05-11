@@ -146,7 +146,7 @@ NULL
 #'
 #' Objects of class `"dnaEPICO_dnamReport_prepared"` are list-based results
 #' returned by [prepareDnamReportInputs()]. They capture normalized report paths,
-#' report parameters, available figures, and logging metadata before rendering.
+#' available figures, and logging metadata before rendering.
 #'
 #' @section Structure:
 #' \describe{
@@ -155,9 +155,6 @@ NULL
 #'   \item{outputFile}{Normalized full path to the intended report output file.}
 #'   \item{figDir}{Normalized directory used by the report template for copied
 #'   figures.}
-#'   \item{templatePath}{Resolved path to the packaged or custom report
-#'   template.}
-#'   \item{params}{List of parameters passed to `rmarkdown::render()`.}
 #'   \item{figureInventory}{Named list describing the available figures for each
 #'   report section.}
 #'   \item{missingFigureDirectories}{Character vector of expected figure
@@ -200,18 +197,16 @@ NULL
 #' Result class returned by dnamReport
 #'
 #' Objects of class `"dnaEPICO_dnamReport"` are list-based results returned by
-#' [dnamReport()]. They combine the prepared report inputs, optional render
-#' result, and final status metadata into one convenience object.
+#' [dnamReport()]. They combine the prepared report inputs, render result, and
+#' final status metadata into one convenience object.
 #'
 #' @section Structure:
 #' \describe{
 #'   \item{preparedReport}{Object returned by [prepareDnamReportInputs()].}
-#'   \item{renderResult}{Object returned by [renderDnamReport()] when
-#'   `render = TRUE`, otherwise `NULL`.}
-#'   \item{status}{Final status string such as `"prepared"`, `"rendered"`,
-#'   `"skipped"`, or `"failed"`.}
-#'   \item{outputFile}{Intended output path when `render = FALSE`, or the
-#'   rendered PDF path when rendering succeeded.}
+#'   \item{renderResult}{Structured render metadata created by [dnamReport()].}
+#'   \item{status}{Final status string such as `"rendered"`, `"skipped"`, or
+#'   `"failed"`.}
+#'   \item{outputFile}{Path to `docs/index.html`.}
 #'   \item{errorMessage}{Final render error or skip message when available,
 #'   otherwise `NULL`.}
 #'   \item{logFile}{Resolved path to the optional log file, or `NULL` when

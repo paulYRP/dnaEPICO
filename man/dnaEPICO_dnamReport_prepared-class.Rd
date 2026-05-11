@@ -8,7 +8,7 @@
 \description{
 Objects of class \code{"dnaEPICO_dnamReport_prepared"} are list-based results
 returned by \code{\link[=prepareDnamReportInputs]{prepareDnamReportInputs()}}. They capture normalized report paths,
-report parameters, available figures, and logging metadata before rendering.
+available figures, and logging metadata before rendering.
 }
 \section{Structure}{
 
@@ -18,9 +18,6 @@ report parameters, available figures, and logging metadata before rendering.
 \item{outputFile}{Normalized full path to the intended report output file.}
 \item{figDir}{Normalized directory used by the report template for copied
 figures.}
-\item{templatePath}{Resolved path to the packaged or custom report
-template.}
-\item{params}{List of parameters passed to \code{rmarkdown::render()}.}
 \item{figureInventory}{Named list describing the available figures for each
 report section.}
 \item{missingFigureDirectories}{Character vector of expected figure

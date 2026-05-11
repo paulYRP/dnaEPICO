@@ -29,7 +29,7 @@ all: \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv \
-	$(STEP6)/$(MODEL)/DNAm.pdf
+	$(STEP6)/$(MODEL)/docs/index.html
 	
 # ===============================================
 # Group target: first3 (Steps 1 to 3)
@@ -45,7 +45,7 @@ FIRST3 = \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv
 
-f3: $(FIRST3) $(STEP6)/$(MODEL)/DNAm.pdf
+f3: $(FIRST3) $(STEP6)/$(MODEL)/docs/index.html
 
 # ===============================================
 # Run f3 (Steps 1 to 3) for all models in parallel
@@ -75,7 +75,7 @@ FIRST4 = \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv
 
-f4: $(FIRST4) $(STEP6)/$(MODEL)/DNAm.pdf
+f4: $(FIRST4) $(STEP6)/$(MODEL)/docs/index.html
 
 # ===============================================
 # Run f4 (Steps 1 to 4 only) for all models in parallel
@@ -105,7 +105,7 @@ F3LME = \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv
 
-f3lme: $(F3LME) $(STEP6)/$(MODEL)/DNAm.pdf
+f3lme: $(F3LME) $(STEP6)/$(MODEL)/docs/index.html
 
 # ===============================================
 # Run f3lme (Steps 1 to 3 + LME) for all models in parallel
@@ -132,12 +132,14 @@ step1:
 	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData \
 	  $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
 	  MODEL=$(MODEL)
 
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData \
 $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	@Rscript -e "set.seed($(SEED)); suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingMinfiEwasWater( \
 	  phenoFile = '$(PHENO_FILE)', \
@@ -316,26 +318,27 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
 # =================================================================================================================================
 REPORT_INPUTS = \
 	$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData \
 	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv
 
-$(STEP6)/$(MODEL)/DNAm.pdf: $(REPORT_INPUTS)
+$(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
 	mkdir -p $(STEP6)/$(MODEL) $(MODEL_LOG_DIR)
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(dnamReport( \
-	  output = 'DNAm.pdf', \
 	  outputDir = '$(STEP6)/$(MODEL)', \
-	  qcDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
-	  preprocessingDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)', \
-	  postprocessingDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)', \
-	  svaDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP2)', \
-	  glmDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)', \
-	  glmmDir = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
-	  reportTitle = 'DNA methylation â€“ $(MODEL)', \
-	  author = 'School of Biomedical Sciences', \
+	  phenoTab = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
+	  enmixTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
+	  qcTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)', \
+	  svaTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP2)', \
+	  metricTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)', \
+	  glmTab = '$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv', \
+	  lmerTab = '$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv', \
+	  detPPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData', \
+	  detPThreshold = '$(PVAL_THRESHOLD)', \
 	  verbose = FALSE, \
 	  logs = TRUE, \
-	  logDir = '$(MODEL_LOG_DIR)' ))" \
+	  logTab = '$(MODEL_LOG_DIR)' ))" \
 	  > $(MODEL_LOG_DIR)/report.log 2>&1
-	@echo "Report built: $(STEP6)/$(MODEL)/DNAm.pdf"
+	@echo "Report built: $(STEP6)/$(MODEL)/docs/index.html"
 
 # =================================================================================================================================
 # Clean up outputs
@@ -376,7 +379,7 @@ status:
 	@test -e $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv && echo "? Step 3: preprocessingPheno done" || echo "? Step 3: preprocessingPheno outcome file missing"
 	@test -e $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv && echo "? Step 4: methylationGLM_T1 done" || echo "? Step 4: methylationGLM_T1 outcome file missing"
 	@test -e $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv && echo "? Step 5: methylationGLMM_T1T2 done" || echo "? Step 5: methylationGLMM_T1T2 outcome file missing"
-	@test -e $(STEP6)/$(MODEL)/DNAm.pdf && echo "? Step 6: Report generated" || echo "? Step 6: Report missing"
+	@test -e $(STEP6)/$(MODEL)/docs/index.html && echo "? Step 6: Report generated" || echo "? Step 6: Report missing"
 	@echo "============================"
 
 .PHONY: all clean status models step1 step2 step3 f3 f4 f3lme f3_models f4_models f3lme_models

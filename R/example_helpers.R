@@ -525,7 +525,6 @@ exampleDnamReportStateDnaEpico <- function() {
             createDummyImageDnaEpico(file.path(glmm_dir, "glmm.png"))
 
             prepared_report <- prepareDnamReportInputs(
-                output = "DNAm_Report.pdf",
                 outputDir = temp_dir,
                 qcDir = qc_dir,
                 preprocessingDir = preprocessing_dir,

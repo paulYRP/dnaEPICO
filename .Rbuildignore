@@ -6,3 +6,7 @@
 ^codecov\.yml$
 ^doc$
 ^Meta$
+^desktop[.]ini$
+^pkgdown$
+^\.positai$
+^\.claude$

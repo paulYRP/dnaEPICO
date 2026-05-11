@@ -15,45 +15,17 @@ renderDnamReport(
 \arguments{
 \item{preparedReport}{Object returned by \code{prepareDnamReportInputs()}.}
 
-\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
+\item{verbose}{Logical. If \code{TRUE}, emit progress messages.}
 
-\item{logs}{Logical. If \code{TRUE}, write the same progress messages to a log file.}
+\item{logs}{Logical. If \code{TRUE}, write progress messages to a log file.}
 
-\item{logDir}{Character or \code{NULL}. Directory for optional log files. When
-\code{NULL}, the directory from \code{preparedReport$logFile} is reused when available.}
+\item{logDir}{Character or \code{NULL}. Directory for optional log files.}
 
-\item{clean}{Logical. Passed to \code{rmarkdown::render()} to remove intermediate
-files after rendering.}
+\item{clean}{Logical. Retained for backwards compatibility.}
 }
 \value{
 A list with class \code{"dnaEPICO_dnamReport_render"}.
-\describe{
-\item{preparedReport}{The prepared input object supplied to
-\code{renderDnamReport()}.}
-\item{status}{Render status string such as \code{"rendered"}, \code{"skipped"}, or
-\code{"failed"}.}
-\item{renderedFile}{Normalized path to the rendered PDF file when rendering
-succeeded, otherwise \code{NULL}.}
-\item{errorMessage}{Render error or skip message when available, otherwise
-\code{NULL}.}
-\item{logFile}{Resolved path to the optional log file, or \code{NULL} when
-logging was disabled.}
-}
-See \linkS4class{dnaEPICO_dnamReport_render} for a class-level overview.
 }
 \description{
-\code{renderDnamReport()} renders the packaged or custom DNA methylation report
-template using a prepared report object. The function returns a structured
-result instead of relying only on file-writing side effects, which makes it
-easier to inspect rendering status in scripts and tests.
-}
-\examples{
-ex <- dnaEPICO:::exampleDnamReportStateDnaEpico()
-render_result <- renderDnamReport(
-  preparedReport = ex$preparedReport,
-  verbose = FALSE,
-  logs = FALSE
-)
-render_result$status
-
+Render a prepared DNA methylation report
 }

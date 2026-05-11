@@ -293,35 +293,22 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
     # ------------------------------------------------------------------
 
     report_result <- dnaEPICO::dnamReport(
-        output = "DNAm_Report.pdf",
         outputDir = file.path(tmpDir, "reports"),
-        qcDir = file.path(
+        enmixTab = file.path(
             tmpDir, "figures", "preprocessingMinfiEwasWater", "enMix"
         ),
-        preprocessingDir = file.path(
+        qcTab = file.path(
             tmpDir, "figures", "preprocessingMinfiEwasWater", "qc"
         ),
-        postprocessingDir = file.path(
+        metricTab = file.path(
             tmpDir, "figures", "preprocessingMinfiEwasWater", "metrics"
         ),
-        svaDir = file.path(
+        svaTab = file.path(
             tmpDir, "figures", "svaEnmix"
         ),
-        glmDir = file.path(
-            tmpDir, "figures", "methylationGLM_T1"
-        ),
-        glmmDir = file.path(
-            tmpDir, "figures", "methylationGLMM_T1T2"
-        ),
-        figDir = file.path(
-            tmpDir, "reports", "figures"
-        ),
-        reportTitle = "DNA methylation",
-        author = "School of Biomedical Sciences",
-        date = format(Sys.Date(), "%B %d, %Y"),
         verbose = FALSE,
         logs = TRUE,
-        logDir = file.path(tmpDir, "logs")
+        logTab = file.path(tmpDir, "logs")
     )
     if (identical(report_result$status, "failed")) {
         testthat::skip(

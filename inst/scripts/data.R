@@ -26,7 +26,7 @@
 # 2. Cell composition reference coefficients (Houseman method):
 #
 #   saliva.txt
-# salivaEPIC.txt
+#   salivaEPIC.txt
 #
 # These reference coefficient matrices are used by the function
 # `estimateLC()` to estimate cell type proportions from DNA
@@ -60,7 +60,7 @@
 #
 #   - Makefile rules that define parameters between preprocessing,
 # modelling, and reporting steps
-# - Makefile model pipeline configuration variables and models shared
+#   - Makefile model pipeline configuration variables and models shared
 # across scripts
 #
 # These files allow users and developers to reproduce the full analysis
@@ -68,10 +68,10 @@
 # ensuring transparency and methodological reproducibility.
 
 # -----------------------------------------------------------
-# dnamReport.Rmd template
+# dnaEPICO logo
 # -----------------------------------------------------------
 
-# `dnamReport.Rmd` is the packaged report template used by `dnamReport()`
+# `dnaEPICO.svg` is the packaged logo used by `dnamReport()`.
 
 # -----------------------------------------------------------
 # Final location in the package
@@ -82,9 +82,9 @@
 #   inst/extdata/
 #
 #   - 12864_2024_10027_MOESM8_ESM.csv
-# - saliva.txt
-# - salivaEPIC.txt
-# - dnamReport.Rmd
+#   - saliva.txt
+#   - salivaEPIC.txt
+#   - dnaEPICO.svg
 #
 # inst/extdata/make/
 #

@@ -195,7 +195,7 @@ preprocessPipelineResult <- preprocessingMinfiEwasWater(
   ),
   display = FALSE,
   verbose = FALSE,
-  logs = FALSE,
+  logs = TRUE,
   saveOutputs = TRUE
 )
 
@@ -315,7 +315,7 @@ svaPipelineResult <- svaEnmix(
   figureBaseDir = file.path(preprocessing_inputs$tempDir, "figures"),
   display = FALSE,
   verbose = FALSE,
-  logs = FALSE,
+  logs = TRUE,
   saveOutputs = TRUE
 )
 
@@ -343,8 +343,8 @@ Arguments:
 - `ctrlSvaFlag = 1` enables the ENmix control-based SVA workflow.
 - `dataBaseDir` and `rBaseDir` define where file outputs are written when
   `saveOutputs = TRUE`.
-- `display = FALSE`, `verbose = FALSE`, and `logs = FALSE` keep the example
-  quiet while still demonstrating file creation.
+- `display = FALSE` and `verbose = FALSE` keep the console output quiet, while
+  `logs = TRUE` writes the log files used by the report.
 
 # Write preprocessingPheno outputs to disk
 
@@ -404,7 +404,7 @@ phenoPipelineResult <- preprocessingPheno(
   outputLogs = file.path(pheno_inputs$tempDir, "logs"),
   outputDir = file.path(pheno_inputs$tempDir, "clockFoundation"),
   verbose = FALSE,
-  logs = FALSE,
+  logs = TRUE,
   saveOutputs = TRUE
 )
 
@@ -489,7 +489,7 @@ glmPipelineResult <- methylationGLM_T1(
   annotatedGLMOut = file.path(glm_inputs$tempDir, "annotated"),
   display = FALSE,
   verbose = FALSE,
-  logs = FALSE,
+  logs = TRUE,
   saveOutputs = TRUE
 )
 
@@ -582,7 +582,7 @@ glmmPipelineResult <- methylationGLMM_T1T2(
   annotatedLMEOut = file.path(glmm_inputs$tempDir, "annotated"),
   display = FALSE,
   verbose = FALSE,
-  logs = FALSE,
+  logs = TRUE,
   saveOutputs = TRUE
 )
 
@@ -616,6 +616,85 @@ Arguments:
   table.
 - `saveOutputs = TRUE` enables the file-based longitudinal workflow expected by
   Makefile and HPC use.
+
+## Generate the report from the example outputs
+
+After the file-based examples above have been run, `dnamReport()` can assemble
+the phenotype table, ENmix control figures, quality-control figures, batch
+effect figures, metrics figures, model annotation tables, and logs into one
+website report. The example below uses the concrete output paths created by the
+previous chunks.
+
+The preprocessing and SVA examples share `preprocessing_inputs$tempDir`, while
+the GLM and LME examples write model outputs into their own temporary
+directories. Because `dnamReport()` accepts one path per tab, those outputs can
+be passed directly.
+
+```{r dnamReport-pipeline-example, eval = FALSE}
+report_log_dir <- file.path(preprocessing_inputs$tempDir, "logs", "report")
+dir.create(report_log_dir, recursive = TRUE, showWarnings = FALSE)
+
+report_logs <- c(
+  file.path(
+    preprocessing_inputs$tempDir,
+    "logs",
+    "log_preprocessingMinfiEwasWater.txt"
+  ),
+  file.path(pheno_inputs$tempDir, "logs", "log_preprocessingPheno.txt"),
+  file.path(preprocessing_inputs$tempDir, "logs", "log_svaEnmix.txt"),
+  file.path(glm_inputs$tempDir, "logs", "log_methylationGLM_T1.txt"),
+  file.path(glmm_inputs$tempDir, "logs", "log_methylationGLMM_T1T2.txt")
+)
+
+existing_logs <- report_logs[file.exists(report_logs)]
+if (length(existing_logs)) {
+  file.copy(existing_logs, report_log_dir, overwrite = TRUE)
+}
+
+reportResult <- dnamReport(
+  outputDir = file.path(preprocessing_inputs$tempDir, "reports", "example"),
+  phenoTab = file.path(
+    preprocessing_inputs$tempDir,
+    "data",
+    "preprocessingMinfiEwasWater",
+    "phenoLC.csv"
+  ),
+  enmixTab = file.path(
+    preprocessing_inputs$tempDir,
+    "figures",
+    "preprocessingMinfiEwasWater",
+    "enMix"
+  ),
+  qcTab = file.path(
+    preprocessing_inputs$tempDir,
+    "figures",
+    "preprocessingMinfiEwasWater",
+    "qc"
+  ),
+  svaTab = file.path(preprocessing_inputs$tempDir, "figures", "svaEnmix"),
+  metricTab = file.path(
+    preprocessing_inputs$tempDir,
+    "figures",
+    "preprocessingMinfiEwasWater",
+    "metrics"
+  ),
+  glmTab = glmPipelineResult$savedFiles$annotatedGLM,
+  lmerTab = glmmPipelineResult$savedFiles$annotatedLME,
+  logTab = report_log_dir,
+  detPPath = file.path(
+    preprocessing_inputs$tempDir,
+    "rData",
+    "preprocessingMinfiEwasWater",
+    "qc",
+    "detP_RGSet.RData"
+  ),
+  detPThreshold = 0.01,
+  verbose = FALSE,
+  logs = TRUE
+)
+
+reportResult$outputFile
+```
 
 ## GLM model structure and PRS terms
 
@@ -793,6 +872,35 @@ The exact target names and variables depend on the Makefile settings extracted
 for the project. In practice, `saveOutputs = TRUE` is what makes the individual
 steps compatible with this route because later steps consume the files written by
 earlier ones.
+
+## Report generation
+
+The exported rules include the final report target:
+
+```bash
+make reports/model1/docs/index.html MODEL=model1
+```
+
+The grouped targets above also refresh the report automatically. For example,
+`make f3 MODEL=model1` builds a report with Data, ENmix QC, Quality Control,
+Batch Effect, Metrics, Report, and Logs tabs. `make f4`, `make f3lme`, and
+`make all` additionally make the GLM and LMER tables available when the
+corresponding model outputs exist.
+
+The report target reads the same types of outputs generated in the examples
+above, organised under the Makefile project layout: the phenotype table in
+`data/`, quality-control and metric figures in `figures/`, the detection
+P-value object in `rData/`, model annotation tables in `data/`, and workflow
+logs in `logs/`.
+
+The generated site is opened from:
+
+```text
+reports/model1/docs/index.html
+```
+
+Internally, the Makefile calls `dnamReport()` with one argument per tab, using
+the project paths defined by the Makefile variables.
 
 # Full exported Makefile
 

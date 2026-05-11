@@ -1,5 +1,5 @@
 ---
-title: "Interactive Local Use of dnaEPICO"
+title: "Local Use of dnaEPICO"
 author:
   - name: Paul Ruiz
     affiliation:
@@ -89,7 +89,7 @@ Bioconductor workflows, and Illumina IDAT file structures.
 
 If you are asking yourself the question "Where do I start using
 Bioconductor?", you might be interested in
-[this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
+[this post](https://www.bioconductor.org/install/).
 
 # Installation
 
