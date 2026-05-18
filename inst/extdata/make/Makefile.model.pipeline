@@ -15,7 +15,6 @@ MODELS = modelA modelB modelC # Multiple models for parallel run
 ifeq ($(MODEL), modelA)
   PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoA.csv
 
-
 else ifeq ($(MODEL), modelB)
   PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoB.csv
 
@@ -74,7 +73,6 @@ TIME_VAR = Timepoint
 PHENO_ORDER = $(SAMPLE_ID);$(TIME_VAR);$(SEX_COLUMN);PredSex;$(BASENAME_COLUMN);$(SENTRIX_ID_COLUMN);$(SENTRIX_POSITION_COLUMN)
 
 # STEP 4-5 PARAMETERS
-PHENOTYPES = TreatmentGroup
 COVARIATES = Sex
 FACTOR_VARS = Sex,TreatmentGroup
 CPG_PREFIX = cg
@@ -118,6 +116,7 @@ COMBINE_TIMEPOINTS = 1,2
 # ===============================================
 # STEP 4 PARAMETERS
 # ===============================================
+PHENOTYPES_GLM = TreatmentGroup
 GLM_LIBS = glm2
 INTERACTION_GLM = NULL
 SUMMARY_RESIDUAL_SD = TRUE
@@ -127,6 +126,7 @@ SIGNIFICANT_CPG_PVAL = 0.1
 # ==============================================
 # STEP 5 PARAMETERS
 # ==============================================
+PHENOTYPES_LME = TreatmentGroup
 PERSON_VAR = person
 LME_LIBS = lme4,lmerTest
 INTERACTION_LME = TreatvControl_Time1_vs_Time2

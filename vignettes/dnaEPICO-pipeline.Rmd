@@ -91,7 +91,7 @@ command-line execution, and Illumina IDAT file structures.
 
 If you are asking yourself the question "Where do I start using
 Bioconductor?", you might be interested in
-[this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
+[this blog post](https://www.bioconductor.org/install/).
 
 # Installation
 
@@ -1017,8 +1017,6 @@ These parameters are shared across multiple workflow steps.
 
 ### Step 4 and Step 5 shared modeling parameters
 
-- `PHENOTYPES`: comma-separated phenotype variables that will be modelled one at
-  a time.
 - `COVARIATES`: comma-separated adjustment variables included in each model.
 - `FACTOR_VARS`: variables that should be treated as categorical before model
   fitting.
@@ -1070,6 +1068,8 @@ phenotype-methylation data.
 
 ## Step 4 parameters
 
+- `PHENOTYPES_GLM`: comma-separated phenotype variables that will be modelled
+  one at a time by `methylationGLM_T1()`.
 - `GLM_LIBS`: GLM implementation used by `methylationGLM_T1()`.
 - `INTERACTION_GLM`: optional interaction term added to the fixed-effect part
   of the GLM.
@@ -1081,6 +1081,8 @@ phenotype-methylation data.
 
 ## Step 5 parameters
 
+- `PHENOTYPES_LME`: comma-separated phenotype variables that will be modelled
+  one at a time by `methylationGLMM_T1T2()`.
 - `PERSON_VAR`: participant identifier used as the random effect grouping
   factor.
 - `LME_LIBS`: mixed-effects libraries used by `methylationGLMM_T1T2()`.

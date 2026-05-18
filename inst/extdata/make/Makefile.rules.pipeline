@@ -245,7 +245,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
 	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)/', \
-	  phenotypes = '$(PHENOTYPES)', \
+	  phenotypes = '$(PHENOTYPES_GLM)', \
 	  covariates = '$(COVARIATES)', \
 	  factorVars = '$(FACTOR_VARS)', \
 	  cpgPrefix = '$(CPG_PREFIX)', \
@@ -285,7 +285,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
 	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
 	  personVar = '$(PERSON_VAR)', \
 	  timeVar = '$(TIME_VAR)', \
-	  phenotypes = '$(PHENOTYPES)', \
+	  phenotypes = '$(PHENOTYPES_LME)', \
 	  covariates = '$(COVARIATES)', \
 	  factorVars = '$(FACTOR_VARS)', \
 	  lmeLibs = '$(LME_LIBS)', \
