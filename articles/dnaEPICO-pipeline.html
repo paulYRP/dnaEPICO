@@ -106,7 +106,7 @@ Mehta</h4>
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>This vignette describes the file-based route in
-<code>dnaEPICO</code>. In this mode, the same wrapper functions still
+<code>dnaEPICO</code>. In this mode, the same main functions still
 return structured result objects, but they also write files to disk when
 <code>saveOutputs = TRUE</code>. This route is appropriate when you want
 a reproducible folder structure, Makefile-driven execution, or a
@@ -217,7 +217,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"           "arrayType"         "annotationVersion"</span></span>
 <span><span class="co">#&gt; [7] "crossReactivePath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpJWoOsT/dnaEPICO-idat-example-207b3d69acb9"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpQlGE0C/dnaEPICO-idat-example-207a3af4cb12"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -230,7 +230,7 @@ internal example helper. <code>names(preprocessing_inputs)</code> shows
 its main elements: <code>tempDir</code> is the temporary working
 directory, <code>idatFolder</code> contains the copied example IDAT
 files, <code>phenoFile</code> is the phenotype table used by the
-wrapper, <code>targets</code> is the same phenotype information already
+function, <code>targets</code> is the same phenotype information already
 loaded into memory, <code>arrayType</code> and
 <code>annotationVersion</code> describe the array platform, and
 <code>crossReactivePath</code> points to the cross-reactive probe
@@ -359,7 +359,7 @@ filtering choices.</li>
 <code>phenoOrder</code> control QC grouping, cell-type estimation, and
 the structure of the exported phenotype table.</li>
 <li>
-<code>saveOutputs = TRUE</code> is what turns this wrapper into the
+<code>saveOutputs = TRUE</code> is what turns this function into the
 first file-producing step of the pipeline.</li>
 </ul>
 </div>
@@ -493,7 +493,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpJWoOsT/dnaEPICO-preprocessingPheno-example-207b594606a4"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpQlGE0C/dnaEPICO-preprocessingPheno-example-207a63b643f8"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -557,13 +557,13 @@ files, and precomputed helper objects such as <code>metricsData</code>,
 <span><span class="co">#&gt; [4] "phenoCF.csv"</span></span></code></pre></div>
 <p>These outputs are the files most commonly consumed by downstream
 modeling functions. <code>names(phenoPipelineResult$savedFiles)</code>
-shows the high-level output groups returned by the wrapper.
+shows the high-level output groups returned by the function.
 <code>names(phenoPipelineResult$savedFiles$timepoints)</code> lists the
 available timepoint-specific subsets. The <code>basename(...)</code>
 calls then show examples of the concrete files written for one timepoint
 and for the combined outputs. In this structure,
 <code>combinedPhenoBeta</code> is the merged phenotype-plus-beta object
-that becomes the direct input to the GLM and GLMM wrappers, while
+that becomes the direct input to the GLM and GLMM functions, while
 <code>betaCSV</code>, <code>betaZIP</code>, and <code>phenoCF</code> are
 the Clock Foundation exports.</p>
 <p>Arguments:</p>
@@ -594,7 +594,7 @@ files.</li>
 <div class="section level2">
 <h2 id="write-glm-model-outputs-to-disk">Write GLM model outputs to disk<a class="anchor" aria-label="anchor" href="#write-glm-model-outputs-to-disk"></a>
 </h2>
-<p>The modeling wrappers also separate in-memory results from file
+<p>The modeling function also separate in-memory results from file
 outputs. The next example runs a small GLM analysis and prints the names
 of the files written to disk.</p>
 <div class="section level4">
@@ -609,7 +609,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpJWoOsT/dnaEPICO-glm-example-207b1cac5f43"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpQlGE0C/dnaEPICO-glm-example-207a6d32a70d"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -695,7 +695,7 @@ behaviour expected by Makefile and HPC use.</li>
 <h2 id="write-lme-model-outputs-to-disk">Write LME model outputs to disk<a class="anchor" aria-label="anchor" href="#write-lme-model-outputs-to-disk"></a>
 </h2>
 <p>The longitudinal modeling step follows the same pattern as the GLM
-wrapper, but the saved outputs now correspond to mixed-effects models,
+function, but the saved outputs now correspond to mixed-effects models,
 longitudinal summary tables, and interaction-specific result files.</p>
 <div class="section level4">
 <h4 id="create-example-input-files-3">Create example input files<a class="anchor" aria-label="anchor" href="#create-example-input-files-3"></a>
@@ -709,7 +709,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpJWoOsT/dnaEPICO-glmm-example-207b51aade87"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpQlGE0C/dnaEPICO-glmm-example-207a6a64c04b"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -963,7 +963,7 @@ of the model.</p>
 <div class="section level3">
 <h3 id="longitudinal-mixed-effects-structure">Longitudinal mixed-effects structure<a class="anchor" aria-label="anchor" href="#longitudinal-mixed-effects-structure"></a>
 </h3>
-<p>The longitudinal wrapper <code><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2()</a></code> follows
+<p>The longitudinal function <code><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2()</a></code> follows
 the same file-based pattern, but uses a mixed-effects model with a
 participant-level random intercept. In schematic form:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Timepoint</mtext><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">Phenotype</mtext><mo>×</mo><mtext mathvariant="normal">Timepoint</mtext><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd><mtd columnalign="left" style="text-align: left"><mi>+</mi><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>3</mn></mrow></msub><mo>⋅</mo><msub><mtext mathvariant="normal">Covariate</mtext><mi>k</mi></msub><mo>+</mo><msub><mi>β</mi><mtext mathvariant="normal">PRS</mtext></msub><mo>⋅</mo><mtext mathvariant="normal">PRS</mtext><mo>+</mo><msub><mi>b</mi><mtext mathvariant="normal">person</mtext></msub><mo>+</mo><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
@@ -1012,9 +1012,8 @@ annotated summaries</li>
 <div class="section level2">
 <h2 id="makefile-use">Makefile use<a class="anchor" aria-label="anchor" href="#makefile-use"></a>
 </h2>
-<p>In a project directory, the Makefile route is usually simpler than
-calling each wrapper by hand. A minimal project layout looks like
-this:</p>
+<p>In a project directory, the Makefile route is simpler than calling
+each function by hand. A minimal project layout looks like this:</p>
 <pre class="text"><code>my_project/
   Makefile
   metadata/
@@ -1606,7 +1605,7 @@ to R.</li>
 <p>This section is especially important for values such as
 <code>NULL</code>, because it prevents the literal string
 <code>"NULL"</code> from being interpreted as a real model value inside
-the wrapper functions.</p>
+the main functions.</p>
 </div>
 <div class="section level3">
 <h3 id="include-pipeline-from-dnaepico">Include pipeline from dnaEPICO<a class="anchor" aria-label="anchor" href="#include-pipeline-from-dnaepico"></a>
@@ -1642,9 +1641,9 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-05-23 12:31:25 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-05-23 14:11:40 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.56 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.46 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
