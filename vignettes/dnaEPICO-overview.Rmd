@@ -1,5 +1,5 @@
 ---
-title: "Pipeline Overview"
+title: "dnaEPICO Overview"
 author:
   - name: Paul Ruiz
     affiliation:
@@ -17,7 +17,7 @@ output:
 date: "`r Sys.Date()`"
 package: dnaEPICO
 vignette: >
-  %\VignetteIndexEntry{1. Pipeline Overview}
+  %\VignetteIndexEntry{1. dnaEPICO Overview}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
@@ -35,14 +35,14 @@ library(dnaEPICO)
 
 # Introduction
 
-This vignette provides a visual overview of the main `dnaEPICO`
-pipelines roles. It complements the local-use and pipeline vignettes
+This vignette provides a visual overview of the main `r Biocpkg("dnaEPICO")`
+functions roles. It complements the local-use and pipeline vignettes
 by showing how the major functions organise their inputs, internal
 processing stages, and outputs.
 
 The diagrams are intended as orientation maps. They are useful when deciding
 which function to run, checking how outputs move between stages, or explaining
-the pipeline structure to collaborators. For detailed arguments and executable
+the structure to collaborators. For detailed arguments and executable
 examples, use the local-use and pipeline-use vignettes.
 
 Read each overview as follows:
@@ -262,9 +262,9 @@ svg_to_html <- function(svg_path, title = NULL) {
 }
 ```
 
-# Pipelines roles
+# Functions
 
-The sections below describe the role of each main function in the package pipeline.
+The sections below describe the role of each main function in the package `r Biocpkg("dnaEPICO")`.
 They are ordered according to the usual analysis path: preprocessing,
 surrogate-variable estimation, phenotype preparation, modelling, longitudinal
 modelling, and report generation.
@@ -275,7 +275,7 @@ modelling, and report generation.
 objects, performs quality control and normalisation, filters probes, and
 estimates cell composition.
 
-Its role in the pipeline is to create analysis-ready methylation data:
+Its role in the package is to create analysis-ready methylation data:
 
 - Main inputs: phenotype metadata, IDAT files, array annotation, and filtering
   settings.
@@ -377,7 +377,7 @@ svg_to_html(
 into a report website. It is usually run after preprocessing and modelling
 outputs have been written to disk.
 
-Its role is to make the pipeline outputs easier to inspect and share:
+Its role is to make the package outputs easier to inspect and share:
 
 - Main inputs: phenotype tables, QC figures, ENmix figures, SVA figures,
   metric figures, model annotation tables, detection P-value data, and logs.
@@ -393,13 +393,13 @@ svg_to_html(
 
 # Summary
 
-The `dnaEPICO` pipeline is organised around function functions with clear roles.
-The preprocessing functions create quality-controlled methylation data and
+The `dnaEPICO` package is organised around function with clear roles.
+The preprocessing function create quality-controlled methylation data and
 analysis-ready phenotype tables. The modelling functions fit cross-sectional and
 longitudinal association models. The report function gathers the resulting
 tables, figures, and logs into a browsable output.
 
-In practice, the most common pipeline is:
+In practice, the main functions are:
 
 - run `preprocessingMinfiEwasWater()` to prepare methylation objects and QC
   outputs,
