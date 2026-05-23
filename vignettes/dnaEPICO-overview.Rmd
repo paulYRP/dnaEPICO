@@ -10,7 +10,7 @@ author:
       - Queensland University of Technology
 output:
   BiocStyle::html_document:
-    self_contained: yes
+    self_contained: no
     toc: true
     toc_float: true
     toc_depth: 2

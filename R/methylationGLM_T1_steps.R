@@ -541,9 +541,17 @@ inferMethylationValueLabelMethylationGLM_T1 <- function(modelResults) {
         next
       }
 
-      response_values <- suppressWarnings(
-        as.numeric(fit_object$fitted) + as.numeric(fit_object$residuals)
-      )
+      fitted_values <- fit_object$fitted
+      residual_values <- fit_object$residuals
+      if (
+        !is.numeric(fitted_values) ||
+          !is.numeric(residual_values) ||
+          length(fitted_values) != length(residual_values)
+      ) {
+        next
+      }
+
+      response_values <- fitted_values + residual_values
       response_values <- response_values[is.finite(response_values)]
       if (length(response_values) == 0L) {
         next

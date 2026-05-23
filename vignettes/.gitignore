@@ -1,3 +1,4 @@
 *.html
 *.knit.md
 *.R
+*_files/
