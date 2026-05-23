@@ -48,7 +48,7 @@ can_run_glmm <- can_run_glm && requireNamespace("lmerTest", quietly = TRUE)
 # Introduction
 
 This vignette describes the file-based route in `dnaEPICO`. In this mode, the
-same wrapper functions still return structured result objects, but they also
+same main functions still return structured result objects, but they also
 write files to disk when `saveOutputs = TRUE`. This route is appropriate when
 you want a reproducible folder structure, Makefile-driven execution, or a
 pipeline that can be resumed on a local workstation or an HPC system.
@@ -160,7 +160,7 @@ basename(preprocessing_inputs$crossReactivePath)
 `preprocessing_inputs` is a small list returned by the internal example helper.
 `names(preprocessing_inputs)` shows its main elements: `tempDir` is the
 temporary working directory, `idatFolder` contains the copied example IDAT
-files, `phenoFile` is the phenotype table used by the wrapper, `targets` is the
+files, `phenoFile` is the phenotype table used by the function, `targets` is the
 same phenotype information already loaded into memory, `arrayType` and
 `annotationVersion` describe the array platform, and `crossReactivePath` points
 to the cross-reactive probe reference used during probe filtering.
@@ -257,7 +257,7 @@ Arguments:
   preprocessing and filtering choices.
 - `plotGroupVar`, `lcRef`, and `phenoOrder` control QC grouping, cell-type
   estimation, and the structure of the exported phenotype table.
-- `saveOutputs = TRUE` is what turns this wrapper into the first file-producing
+- `saveOutputs = TRUE` is what turns this function into the first file-producing
   step of the pipeline.
 
 # Write SVA outputs to disk
@@ -421,12 +421,12 @@ basename(unlist(phenoPipelineResult$savedFiles[c(
 
 These outputs are the files most commonly consumed by downstream modeling
 functions. `names(phenoPipelineResult$savedFiles)` shows the high-level output
-groups returned by the wrapper. `names(phenoPipelineResult$savedFiles$timepoints)`
+groups returned by the function. `names(phenoPipelineResult$savedFiles$timepoints)`
 lists the available timepoint-specific subsets. The `basename(...)` calls then
 show examples of the concrete files written for one timepoint and for the
 combined outputs. In this structure, `combinedPhenoBeta` is the merged
 phenotype-plus-beta object that becomes the direct input to the GLM and GLMM
-wrappers, while `betaCSV`, `betaZIP`, and `phenoCF` are the Clock Foundation
+functions, while `betaCSV`, `betaZIP`, and `phenoCF` are the Clock Foundation
 exports.
 
 Arguments:
@@ -445,7 +445,7 @@ Arguments:
 
 # Write GLM model outputs to disk
 
-The modeling wrappers also separate in-memory results from file outputs. The
+The modeling function also separate in-memory results from file outputs. The
 next example runs a small GLM analysis and prints the names of the files written
 to disk.
 
@@ -525,7 +525,7 @@ Arguments:
 
 # Write LME model outputs to disk
 
-The longitudinal modeling step follows the same pattern as the GLM wrapper, but
+The longitudinal modeling step follows the same pattern as the GLM function, but
 the saved outputs now correspond to mixed-effects models, longitudinal summary
 tables, and interaction-specific result files.
 
@@ -774,7 +774,7 @@ requested interaction to the fixed-effect portion of the model.
 
 ## Longitudinal mixed-effects structure
 
-The longitudinal wrapper `methylationGLMM_T1T2()` follows the same file-based
+The longitudinal function `methylationGLMM_T1T2()` follows the same file-based
 pattern, but uses a mixed-effects model with a participant-level random
 intercept. In schematic form:
 
@@ -809,8 +809,8 @@ Common arguments in this longitudinal stage are:
 
 # Makefile use
 
-In a project directory, the Makefile route is usually simpler than calling each
-wrapper by hand. A minimal project layout looks like this:
+In a project directory, the Makefile route is simpler than calling each
+function by hand. A minimal project layout looks like this:
 
 ```text
 my_project/
@@ -1099,7 +1099,7 @@ phenotype-methylation data.
 
 This section is especially important for values such as `NULL`, because it
 prevents the literal string `"NULL"` from being interpreted as a real model
-value inside the wrapper functions.
+value inside the main functions.
 
 ## Include pipeline from dnaEPICO
 

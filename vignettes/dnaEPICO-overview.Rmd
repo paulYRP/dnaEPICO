@@ -43,13 +43,11 @@ library(dnaEPICO)
 # Introduction
 
 This vignette provides a visual overview of the main `r Biocpkg("dnaEPICO")`
-functions roles. It complements the local-use and pipeline vignettes
-by showing how the major functions organise their inputs, internal
+functions roles. It shows how the major functions organise their inputs, internal
 processing stages, and outputs.
 
 The diagrams are intended as orientation maps. They are useful when deciding
-which function to run, checking how outputs move between stages, or explaining
-the structure to collaborators. For detailed arguments and executable
+which function to run and checking how outputs move between stages. For detailed arguments and executable
 examples, use the local-use and pipeline-use vignettes.
 
 Read each overview as follows:
@@ -277,7 +275,7 @@ svg_to_html <- function(svg_path, title = NULL) {
 # Functions
 
 The sections below describe the role of each main function in the package `r Biocpkg("dnaEPICO")`.
-They are ordered according to the usual analysis path: preprocessing,
+They are ordered according to the analysis path: preprocessing,
 surrogate-variable estimation, phenotype preparation, modelling, longitudinal
 modelling, and report generation.
 
@@ -386,7 +384,7 @@ svg_to_html(
 ## dnamReport()
 
 `dnamReport()` assembles the main tables, figures, logs, and model summaries
-into a report website. It is usually run after preprocessing and modelling
+into a report website. It can be run after preprocessing and modelling
 outputs have been written to disk.
 
 Its role is to make the package outputs easier to inspect and share:

@@ -113,7 +113,7 @@ library("dnaEPICO")
 
 # Step 1: preprocessingMinfiEwasWater
 
-The preprocessing wrapper reads a phenotype table and IDAT files, performs
+The preprocessing function reads a phenotype table and IDAT files, performs
 quality control, normalisation, filtering, and cell-composition estimation, and
 returns a list-based result object. The next chunk runs the function on a small
 example input and prints the class, element names, and a preview of the
@@ -139,7 +139,7 @@ basename(preprocessing_inputs$crossReactivePath)
 `preprocessing_inputs` is a small list returned by the internal example helper.
 `names(preprocessing_inputs)` shows its main elements: `tempDir` is the
 temporary working directory, `idatFolder` contains the copied example IDAT
-files, `phenoFile` is the phenotype table used by the wrapper, `targets` is the
+files, `phenoFile` is the phenotype table used by the function, `targets` is the
 same phenotype information already loaded into memory, `arrayType` and
 `annotationVersion` describe the array platform, and `crossReactivePath` points
 to the cross-reactive probe reference used later during filtering.
@@ -185,7 +185,7 @@ head(preprocessResult$targets[, c(
 ```
 
 The returned object has class `dnaEPICO_preprocessingMinfiEwasWater`.
-`names(preprocessResult)` lists the main elements returned by the wrapper. The
+`names(preprocessResult)` lists the main elements returned by the function. The
 `targets` element is the filtered phenotype table aligned to the retained
 samples. The remaining elements are nested result objects for the major
 preprocessing stages, including the `RGSet`, the methylation metrics, and the
@@ -230,7 +230,7 @@ composition and is the object passed forward to later workflow stages.
 
 # Step 2: svaEnmix
 
-The SVA wrapper loads a phenotype table and a saved `RGSet`, estimates
+The SVA function loads a phenotype table and a saved `RGSet`, estimates
 surrogate variables from ENmix control probes, and returns both the surrogate
 variables and the merged phenotype table.
 
@@ -258,7 +258,7 @@ file.exists(c(sva_targets_file, sva_rgset_file))
 
 `sva_inputs` is another helper list used to make the vignette self-contained.
 `names(sva_inputs)` shows that it provides the in-memory `RGSet`, the matching
-`targets` table, and a `crossReactivePath` reference. In this step, the wrapper
+`targets` table, and a `crossReactivePath` reference. In this step, the function
 needs file inputs rather than the in-memory objects, so the chunk writes
 `targets` to `sva_targets.csv` and saves the `RGSet` object to
 `sva_RGSet.RData`.
@@ -289,7 +289,7 @@ head(svaResult$mergedPheno[, 1:min(6, ncol(svaResult$mergedPheno))])
 ```
 
 The returned object has class `dnaEPICO_svaEnmix`, and `names(svaResult)`
-shows the main SVA components returned by the wrapper. The `svaData$sva`
+shows the main SVA components returned by the function. The `svaData$sva`
 matrix contains one row per sample and one column per surrogate variable. The
 `mergedPheno` table is often the most convenient object to inspect because it
 combines the original phenotype data and the new SVA columns in one place.
@@ -321,7 +321,7 @@ the surrogate variables relate to Sentrix chip and position effects.
 
 # Step 3: preprocessingPheno
 
-The phenotype-preparation wrapper aligns the phenotype table with the beta,
+The phenotype-preparation function aligns the phenotype table with the beta,
 M-value, and copy-number matrices; splits the data by timepoint; constructs a
 combined longitudinal object; and prepares Clock Foundation export tables.
 
@@ -393,7 +393,7 @@ The returned object has class `dnaEPICO_preprocessingPheno`, and
 `combinedData` element groups the combined longitudinal objects, and
 `phenoResult$combinedData$phenoBeta` is the key downstream table for modeling.
 It combines phenotype columns and CpG beta values in a single data frame that
-can be passed to the GLM or GLMM wrappers.
+can be passed to the GLM or GLMM functions.
 
 Arguments:
 
@@ -406,7 +406,7 @@ Arguments:
   longitudinal object.
 - `outputPheno`, `outputRData`, `outputRDataMerge`, and `outputDir` still need
   to be specified even when `saveOutputs = FALSE`, because they define the
-  canonical output structure for the wrapper.
+  canonical output structure for the function.
 - `sexColumn = "Sex"` identifies the sex variable used by the helper functions.
 - `verbose = FALSE`, `logs = FALSE`, and `saveOutputs = FALSE` keep the example
   focused on the returned object rather than file writing.
@@ -427,10 +427,10 @@ The `clockFoundation` element contains the export-ready objects, and
 # Summary
 
 In interactive local use, the most important habit is to inspect the returned
-objects after each step. In practice, the following checks are usually enough to
+objects after each step. In practice, the following checks are enough to
 confirm that the workflow is behaving as expected:
 
-- `class(result)` to confirm which wrapper produced the object
+- `class(result)` to confirm which function produced the object
 - `names(result)` to see the main return elements
 - `head()` on the phenotype-like tables
 - `class()` or `dim()` on the methylation objects and matrices
