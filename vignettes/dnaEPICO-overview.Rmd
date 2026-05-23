@@ -87,11 +87,6 @@ cat("
   margin: 1.5rem 0 2rem;
 }
 
-.overview-figure-title {
-  font-weight: 700;
-  margin: 0 0 0.5rem;
-}
-
 .overview-controls {
   display: flex;
   flex-wrap: wrap;
@@ -239,10 +234,6 @@ svg_to_html <- function(svg_path, title = NULL) {
     '<div class="overview-figure" id="%s" data-scale="1">\n',
     figure_id
   ))
-  cat(sprintf(
-    '<p class="overview-figure-title">%s</p>\n',
-    html_escape(title)
-  ))
   cat('<div class="overview-controls">\n')
   cat(sprintf(
     '<button class="overview-zoom-button" type="button" onclick="changeOverviewZoom(\'%s\', 0.25)">Zoom +</button>\n',
@@ -276,7 +267,7 @@ svg_to_html <- function(svg_path, title = NULL) {
 
 The sections below describe the role of each main function in the package `r Biocpkg("dnaEPICO")`.
 They are ordered according to the analysis path: preprocessing,
-surrogate-variable estimation, phenotype preparation, modelling, longitudinal
+surrogate-variable estimation, phenotype preparation, cross-sectional modelling, longitudinal
 modelling, and report generation.
 
 ## preprocessingMinfiEwasWater()
@@ -403,7 +394,7 @@ svg_to_html(
 
 # Summary
 
-The `dnaEPICO` package is organised around function with clear roles.
+The `dnaEPICO` package is organised around functions with clear roles.
 The preprocessing function create quality-controlled methylation data and
 analysis-ready phenotype tables. The modelling functions fit cross-sectional and
 longitudinal association models. The report function gathers the resulting

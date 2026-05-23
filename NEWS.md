@@ -1,4 +1,4 @@
-CHANGES IN VERSION 0.99.19
+CHANGES IN VERSION 0.99.20
 ------------------------
 
 NEW FEATURES
@@ -10,7 +10,6 @@ NEW FEATURES
 
     o Added a Quarto dashboard report workflow for dnamReport().
 
-    o Added a pipeline overview vignette with visual summaries of the main
-      dnaEPICO pipeline stages and interactive controls for inspecting the
-      diagrams.
+    o Added a overview vignette with visual summaries of the main
+      dnaEPICO functions.
 
