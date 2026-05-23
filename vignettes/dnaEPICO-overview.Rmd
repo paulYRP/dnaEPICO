@@ -16,6 +16,13 @@ output:
     toc_depth: 2
 date: "`r Sys.Date()`"
 package: dnaEPICO
+resource_files:
+  - preprocessingMinfiEwasWater_pipeline_overview.svg
+  - svaEnmix_pipeline_overview.svg
+  - preprocessingPheno_pipeline_overview.svg
+  - methylationGLM_T1_pipeline_overview.svg
+  - methylationGLMM_T1T2_pipeline_overview.svg
+  - dnamReport_pipeline_overview.svg
 vignette: >
   %\VignetteIndexEntry{1. dnaEPICO Overview}
   %\VignetteEncoding{UTF-8}
@@ -127,7 +134,8 @@ cat("
   padding: 10px;
 }
 
-.overview-svg-frame svg {
+.overview-svg-frame img {
+  display: block;
   height: auto;
   max-width: none;
   width: calc(1600px * var(--overview-scale, 1));
@@ -150,7 +158,7 @@ cat("
     max-height: 520px;
   }
 
-  .overview-svg-frame svg {
+  .overview-svg-frame img {
     width: calc(1200px * var(--overview-scale, 1));
   }
 }
@@ -217,14 +225,14 @@ svg_to_html <- function(svg_path, title = NULL) {
     stop("Missing overview SVG: ", svg_path)
   }
 
-  svg_lines <- readLines(svg_path, warn = FALSE, encoding = "UTF-8")
-  svg_start <- grep("<svg\\b", svg_lines)[1]
-
-  if (is.na(svg_start)) {
-    stop("No <svg> tag found in: ", svg_path)
+  if (is.null(title)) {
+    title <- sub(
+      "_pipeline_overview$",
+      "() overview",
+      tools::file_path_sans_ext(basename(svg_path))
+    )
   }
 
-  svg_markup <- paste(svg_lines[svg_start:length(svg_lines)], collapse = "\n")
   figure_id <- gsub("[^A-Za-z0-9_-]", "-", tools::file_path_sans_ext(
     basename(svg_path)
   ))
@@ -257,7 +265,11 @@ svg_to_html <- function(svg_path, title = NULL) {
   cat('<span class="overview-zoom-value">100%</span>\n')
   cat('</div>\n')
   cat('<div class="overview-svg-frame">\n')
-  cat(svg_markup)
+  cat(sprintf(
+    '<img src="%s" alt="%s">\n',
+    html_escape(svg_path),
+    html_escape(title)
+  ))
   cat('\n</div>\n</div>\n')
 }
 ```

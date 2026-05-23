@@ -1,5 +1,6 @@
 articles:
 - title: Vignettes
+  navbar: ~
   contents:
   - dnaEPICO-overview
   - dnaEPICO-local
