@@ -18,7 +18,7 @@ date: "`r Sys.Date()`"
 package: dnaEPICO
 bibliography: dnaEPICO.bib
 vignette: >
-  %\VignetteIndexEntry{File-Based and Pipeline Use of dnaEPICO}
+  %\VignetteIndexEntry{3. Pipeline Use of dnaEPICO}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
@@ -500,7 +500,7 @@ names(glmPipelineResult$savedFiles)
 The returned `savedFiles` object records the groups of outputs written by the
 GLM step. `names(glmPipelineResult$savedFiles)` typically includes the model
 files, summary files, diagnostic plot files, significant-CpG exports, summary
-text files, and the annotated results table. This is the object to inspect when
+text files, and the annotated results workbook. This is the object to inspect when
 you want to confirm which modeling outputs were written and how they are
 grouped.
 
@@ -518,8 +518,8 @@ Arguments:
 - `annotationPackage` and `annotationCols` control which array annotation is
   merged into the final summary tables.
 - `outputRData`, `outputPlots`, `significantCpGDir`, `summaryTxtDir`, and
-  `annotatedGLMOut` define where model objects, plots, summaries, and annotated
-  results are written.
+  `annotatedGLMOut` define where model objects, plots, summaries, and the
+  annotated GLM workbook are written.
 - `saveOutputs = TRUE` enables the file-based pipeline behaviour expected by
   Makefile and HPC use.
 
@@ -613,7 +613,7 @@ Arguments:
 - `summaryTxtDir` defines where plain-text model summaries are written.
 - `annotationPackage`, `annotationCols`, and `annotatedLMEOut` define the
   annotation resources and output location for the final longitudinal summary
-  table.
+  workbook.
 - `saveOutputs = TRUE` enables the file-based longitudinal workflow expected by
   Makefile and HPC use.
 
@@ -807,7 +807,7 @@ Common arguments in this longitudinal stage are:
 - `cpgLimit` and `nCores` for computational control
 - `annotationPackage` and `annotationCols` for annotated summaries
 
-# Typical Makefile use
+# Makefile use
 
 In a project directory, the Makefile route is usually simpler than calling each
 wrapper by hand. A minimal project layout looks like this:

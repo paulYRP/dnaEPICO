@@ -63,7 +63,7 @@
 #'   to append to the combined LME summary table. Available columns depend on
 #'   the selected annotation package.
 #' @param annotatedLMEOut Character. Directory used for the optional annotated LME
-#'   summary CSV file.
+#'   summary XLSX workbook.
 #' @param display Logical. If `TRUE`, draw diagnostic plots on the active
 #'   graphics device.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`. The

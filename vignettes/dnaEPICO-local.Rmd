@@ -18,7 +18,7 @@ date: "`r Sys.Date()`"
 package: dnaEPICO
 bibliography: dnaEPICO.bib
 vignette: >
-  %\VignetteIndexEntry{Interactive Local Use of dnaEPICO}
+  %\VignetteIndexEntry{2. Local Use of dnaEPICO}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---

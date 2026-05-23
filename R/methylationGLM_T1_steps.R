@@ -434,6 +434,135 @@ coerceAnnotationDataMethylationGLM_T1 <- function(annotationObject) {
   annotation_df
 }
 
+buildAnnotatedWorkbookDictionaryMethylationGLM_T1 <- function(
+    columns,
+    modelDescription,
+    formulaText,
+    modelLabel,
+    responseLabel
+) {
+  pvalue_columns <- grepl("P\\.Value$|P\\.value$", columns)
+  default_formula <- paste(responseLabel, "~ formula unavailable")
+  formula_values <- as.character(formulaText)
+  formula_values <- formula_values[!is.na(formula_values) & nzchar(formula_values)]
+
+  select_formula <- function(column) {
+    if (length(formula_values) == 0L) {
+      return(default_formula)
+    }
+
+    formula_names <- names(formula_values)
+    if (!is.null(formula_names) && any(nzchar(formula_names))) {
+      for (formula_name in formula_names[nzchar(formula_names)]) {
+        if (grepl(paste0("^", escapeRegexMethylationGLM_T1(formula_name)), column)) {
+          return(unname(formula_values[[formula_name]]))
+        }
+      }
+    }
+
+    if (length(formula_values) == 1L) {
+      return(unname(formula_values[[1L]]))
+    }
+
+    paste(unique(unname(formula_values)), collapse = "; ")
+  }
+
+  display_formula <- function(column) {
+    formula_text <- select_formula(column)
+    formula_text <- sub(
+      "^\\s*`?beta`?\\s*~",
+      paste(responseLabel, "~"),
+      formula_text,
+      ignore.case = TRUE
+    )
+    paste0(modelLabel, ": ", formula_text)
+  }
+
+  descriptions <- ifelse(
+    pvalue_columns,
+    modelDescription,
+    ifelse(
+      columns %in% c("IlmnID", "CpG", "Name"),
+      "CpG probe identifier",
+      "Genomic annotation or supporting result column"
+    )
+  )
+  formulas <- rep("", length(columns))
+  formulas[pvalue_columns] <- vapply(
+    columns[pvalue_columns],
+    display_formula,
+    character(1)
+  )
+
+  data.frame(
+    Column = columns,
+    Description = descriptions,
+    Formula = formulas,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+}
+
+writeAnnotatedWorkbookMethylationGLM_T1 <- function(
+    annotated_df,
+    file,
+    resultSheet,
+    dictionary
+) {
+  workbook <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(workbook, resultSheet)
+  openxlsx::writeData(workbook, sheet = resultSheet, x = annotated_df)
+  openxlsx::addWorksheet(workbook, "dictionary")
+  openxlsx::writeData(workbook, sheet = "dictionary", x = dictionary)
+  openxlsx::saveWorkbook(workbook, file = file, overwrite = TRUE)
+
+  invisible(file)
+}
+
+inferMethylationValueLabelMethylationGLM_T1 <- function(modelResults) {
+  if (is.null(modelResults$fits) || length(modelResults$fits) == 0L) {
+    return("Beta values")
+  }
+
+  found_response <- FALSE
+  for (fit_group in modelResults$fits) {
+    if (!is.list(fit_group)) {
+      next
+    }
+
+    for (fit_object in fit_group) {
+      if (
+        !is.list(fit_object) ||
+          inherits(fit_object, "dnaEPICO_methylationGLM_T1_fit_error") ||
+          inherits(fit_object, "dnaEPICO_methylationGLMM_T1T2_fit_error") ||
+          is.null(fit_object$fitted) ||
+          is.null(fit_object$residuals)
+      ) {
+        next
+      }
+
+      response_values <- suppressWarnings(
+        as.numeric(fit_object$fitted) + as.numeric(fit_object$residuals)
+      )
+      response_values <- response_values[is.finite(response_values)]
+      if (length(response_values) == 0L) {
+        next
+      }
+
+      found_response <- TRUE
+      if (any(response_values < 0 | response_values > 1, na.rm = TRUE)) {
+        return("M-values")
+      }
+    }
+  }
+
+  if (isTRUE(found_response)) {
+    return("Beta values")
+  }
+
+  "Beta values"
+}
+
 #' Prepare phenotype-plus-beta data for one-timepoint GLM analyses
 #'
 #' @param inputPheno Character. Path to the merged phenotype-plus-beta object
@@ -1685,7 +1814,7 @@ annotateMethylationGLM_T1Summaries <- function(
 #' @param significantCpGDir Character. Directory used for significant-CpG
 #'   coefficient tables.
 #' @param annotatedGLMOut Character. Directory used for the annotated summary
-#'   CSV file.
+#'   XLSX workbook.
 #' @param saveTxtSummaries Logical. If `TRUE`, write tab-delimited summary
 #'   tables.
 #' @param saveSignificantCpGs Logical. If `TRUE`, write significant-CpG
@@ -1813,8 +1942,20 @@ writeMethylationGLM_T1Outputs <- function(
   if (!is.null(annotatedResults$data)) {
     annotated_df <- annotatedResults$data
   }
-  annotated_file <- file.path(annotatedGLMOut, "annotatedGLM.csv")
-  utils::write.csv(annotated_df, file = annotated_file, row.names = FALSE)
+  annotated_file <- file.path(annotatedGLMOut, "annotatedGLM.xlsx")
+  dictionary <- buildAnnotatedWorkbookDictionaryMethylationGLM_T1(
+    columns = colnames(annotated_df),
+    modelDescription = "Pvalue from GLM model",
+    formulaText = modelResults$formulas,
+    modelLabel = "GLM",
+    responseLabel = inferMethylationValueLabelMethylationGLM_T1(modelResults)
+  )
+  writeAnnotatedWorkbookMethylationGLM_T1(
+    annotated_df = annotated_df,
+    file = annotated_file,
+    resultSheet = "annotatedGLM",
+    dictionary = dictionary
+  )
 
   emitLogMinfiEwasWater(
     c(

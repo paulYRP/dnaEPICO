@@ -98,10 +98,50 @@ test_that("methylationGLM_T1 can write outputs and logs on request", {
     expect_true(file.exists(result$savedFiles$summaryFiles[["status"]]))
     expect_true(file.exists(result$savedFiles$summaryTxtFiles[["status"]]))
     expect_true(file.exists(result$savedFiles$annotatedGLM))
+    expect_match(result$savedFiles$annotatedGLM, "annotatedGLM\\.xlsx$")
+    expect_equal(
+        openxlsx::getSheetNames(result$savedFiles$annotatedGLM),
+        c("annotatedGLM", "dictionary")
+    )
+    dictionary <- openxlsx::read.xlsx(
+        result$savedFiles$annotatedGLM,
+        sheet = "dictionary",
+        check.names = FALSE
+    )
+    expect_equal(colnames(dictionary), c("Column", "Description", "Formula"))
+    expect_true(any(dictionary$Description == "Pvalue from GLM model"))
+    expect_true(any(dictionary$Formula == "GLM: Beta values ~ `status` + `sex`"))
     expect_true(file.exists(file.path(tmp, "figures", "methylationGLM_T1", "bar_status.tiff")))
     expect_true(file.exists(file.path(tmp, "figures", "methylationGLM_T1", "qqplot_status.tiff")))
     expect_true(length(result$savedFiles$significantCpGFiles$status) >= 1)
     expect_true(all(file.exists(result$savedFiles$significantCpGFiles$status)))
+})
+
+test_that("annotated workbook dictionary reports M-values when the fitted response uses M scale", {
+    model_results <- list(
+        fits = list(
+            status = list(
+                cg00000029 = list(
+                    fitted = c(-0.4, 0.2, 1.3),
+                    residuals = c(0, 0, 0)
+                )
+            )
+        ),
+        formulas = c(status = "beta ~ `status` + `sex`")
+    )
+
+    dictionary <- dnaEPICO:::buildAnnotatedWorkbookDictionaryMethylationGLM_T1(
+        columns = c("CpG", "statusCaseP.Value"),
+        modelDescription = "Pvalue from GLM model",
+        formulaText = model_results$formulas,
+        modelLabel = "GLM",
+        responseLabel = dnaEPICO:::inferMethylationValueLabelMethylationGLM_T1(model_results)
+    )
+
+    expect_equal(
+        dictionary$Formula[dictionary$Column == "statusCaseP.Value"],
+        "GLM: M-values ~ `status` + `sex`"
+    )
 })
 
 test_that("annotateMethylationGLM_T1Summaries accepts annotation package names", {

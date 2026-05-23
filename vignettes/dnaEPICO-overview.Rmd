@@ -1,0 +1,443 @@
+---
+title: "Pipeline Overview"
+author:
+  - name: Paul Ruiz
+    affiliation:
+      - Queensland University of Technology
+    email: ruizpint@qut.edu.au
+  - name: Divya Mehta
+    affiliation:
+      - Queensland University of Technology
+output:
+  BiocStyle::html_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+date: "`r Sys.Date()`"
+package: dnaEPICO
+vignette: >
+  %\VignetteIndexEntry{1. Pipeline Overview}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, include = FALSE}
+startTime <- Sys.time()
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  crop = NULL
+)
+
+library(dnaEPICO)
+```
+
+# Introduction
+
+This vignette provides a visual overview of the main `dnaEPICO`
+pipelines roles. It complements the local-use and pipeline vignettes
+by showing how the major functions organise their inputs, internal
+processing stages, and outputs.
+
+The diagrams are intended as orientation maps. They are useful when deciding
+which function to run, checking how outputs move between stages, or explaining
+the pipeline structure to collaborators. For detailed arguments and executable
+examples, use the local-use and pipeline-use vignettes.
+
+Read each overview as follows:
+
+- The arrows show the expected flow from inputs to derived objects and files.
+- The grouped regions show the main analysis tasks performed inside a function.
+- The final nodes show the outputs that are returned to R or written to disk.
+- The same function can be used interactively or as part of a file-based
+  pipeline, depending on the value of `saveOutputs`.
+
+# Required knowledge
+
+`r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for
+high-dimensional genomic data, with a focus on Illumina DNA methylation arrays.
+To read this vignette, we assume that you are already familiar with the general
+DNA methylation pipeline. If not, we recommend first reading
+[this tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html),
+which provides a practical introduction to the main concepts and analysis
+steps.
+
+Preprocessing and quality control are performed using established
+Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and
+`r Biocpkg("wateRmelon")`. Downstream statistical modelling relies on base R
+and CRAN frameworks, including generalised linear models and linear
+mixed-effects models. Users are expected to have basic familiarity with R,
+Bioconductor pipelines, command-line execution, and Illumina IDAT file
+structures.
+
+If you are asking yourself the question "Where do I start using
+Bioconductor?", you might be interested in
+[this blog post](https://www.bioconductor.org/install/).
+
+```{r overview-helpers, echo = FALSE, results = "asis"}
+cat("
+<style>
+.overview-figure {
+  margin: 1.5rem 0 2rem;
+}
+
+.overview-figure-title {
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.overview-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 0.5rem;
+}
+
+.overview-zoom-button {
+  background: #ffffff;
+  border: 1px solid #2c7fb8;
+  border-radius: 6px;
+  color: #2c7fb8;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  padding: 5px 9px;
+}
+
+.overview-zoom-button:hover,
+.overview-zoom-button:focus {
+  background: #edf6fb;
+}
+
+.overview-zoom-value {
+  align-items: center;
+  color: #4b5563;
+  display: inline-flex;
+  font-size: 0.875rem;
+  min-width: 44px;
+}
+
+.overview-svg-frame {
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  border-radius: 6px;
+  max-height: 680px;
+  overflow: auto;
+  padding: 10px;
+}
+
+.overview-svg-frame svg {
+  height: auto;
+  max-width: none;
+  width: calc(1600px * var(--overview-scale, 1));
+}
+
+.overview-figure:fullscreen {
+  background: #ffffff;
+  margin: 0;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.overview-figure:fullscreen .overview-svg-frame {
+  height: calc(100vh - 88px);
+  max-height: none;
+}
+
+@media (max-width: 768px) {
+  .overview-svg-frame {
+    max-height: 520px;
+  }
+
+  .overview-svg-frame svg {
+    width: calc(1200px * var(--overview-scale, 1));
+  }
+}
+</style>
+<script>
+function setOverviewZoom(figureId, scale) {
+  var figure = document.getElementById(figureId);
+  if (!figure) {
+    return;
+  }
+
+  var next = Math.max(0.5, Math.min(3, scale));
+  figure.dataset.scale = next.toFixed(2);
+  figure.style.setProperty('--overview-scale', next.toString());
+
+  var label = figure.querySelector('.overview-zoom-value');
+  if (label) {
+    label.textContent = Math.round(next * 100) + '%';
+  }
+}
+
+function changeOverviewZoom(figureId, delta) {
+  var figure = document.getElementById(figureId);
+  var current = figure ? parseFloat(figure.dataset.scale || '1') : 1;
+  setOverviewZoom(figureId, current + delta);
+}
+
+function openOverviewFullscreen(figureId) {
+  var figure = document.getElementById(figureId);
+  if (!figure || !figure.requestFullscreen) {
+    return;
+  }
+
+  figure.requestFullscreen();
+}
+</script>
+")
+
+overview_svgs <- c(
+  preprocessingMinfiEwasWater =
+    "preprocessingMinfiEwasWater_pipeline_overview.svg",
+  svaEnmix =
+    "svaEnmix_pipeline_overview.svg",
+  preprocessingPheno =
+    "preprocessingPheno_pipeline_overview.svg",
+  methylationGLM_T1 =
+    "methylationGLM_T1_pipeline_overview.svg",
+  methylationGLMM_T1T2 =
+    "methylationGLMM_T1T2_pipeline_overview.svg",
+  dnamReport =
+    "dnamReport_pipeline_overview.svg"
+)
+
+html_escape <- function(x) {
+  x <- gsub("&", "&amp;", x, fixed = TRUE)
+  x <- gsub("<", "&lt;", x, fixed = TRUE)
+  x <- gsub(">", "&gt;", x, fixed = TRUE)
+  x <- gsub('"', "&quot;", x, fixed = TRUE)
+  x
+}
+
+svg_to_html <- function(svg_path, title = NULL) {
+  if (!file.exists(svg_path)) {
+    stop("Missing overview SVG: ", svg_path)
+  }
+
+  svg_lines <- readLines(svg_path, warn = FALSE, encoding = "UTF-8")
+  svg_start <- grep("<svg\\b", svg_lines)[1]
+
+  if (is.na(svg_start)) {
+    stop("No <svg> tag found in: ", svg_path)
+  }
+
+  svg_markup <- paste(svg_lines[svg_start:length(svg_lines)], collapse = "\n")
+  figure_id <- gsub("[^A-Za-z0-9_-]", "-", tools::file_path_sans_ext(
+    basename(svg_path)
+  ))
+
+  cat(sprintf(
+    '<div class="overview-figure" id="%s" data-scale="1">\n',
+    figure_id
+  ))
+  cat(sprintf(
+    '<p class="overview-figure-title">%s</p>\n',
+    html_escape(title)
+  ))
+  cat('<div class="overview-controls">\n')
+  cat(sprintf(
+    '<button class="overview-zoom-button" type="button" onclick="changeOverviewZoom(\'%s\', 0.25)">Zoom +</button>\n',
+    figure_id
+  ))
+  cat(sprintf(
+    '<button class="overview-zoom-button" type="button" onclick="changeOverviewZoom(\'%s\', -0.25)">Zoom -</button>\n',
+    figure_id
+  ))
+  cat(sprintf(
+    '<button class="overview-zoom-button" type="button" onclick="setOverviewZoom(\'%s\', 1)">Reset</button>\n',
+    figure_id
+  ))
+  cat(sprintf(
+    '<button class="overview-zoom-button" type="button" onclick="openOverviewFullscreen(\'%s\')">Full screen</button>\n',
+    figure_id
+  ))
+  cat('<span class="overview-zoom-value">100%</span>\n')
+  cat('</div>\n')
+  cat('<div class="overview-svg-frame">\n')
+  cat(svg_markup)
+  cat('\n</div>\n</div>\n')
+}
+```
+
+# Pipelines roles
+
+The sections below describe the role of each main function in the package pipeline.
+They are ordered according to the usual analysis path: preprocessing,
+surrogate-variable estimation, phenotype preparation, modelling, longitudinal
+modelling, and report generation.
+
+## preprocessingMinfiEwasWater()
+
+`preprocessingMinfiEwasWater()` reads the phenotype table and IDAT files, builds the methylation
+objects, performs quality control and normalisation, filters probes, and
+estimates cell composition.
+
+Its role in the pipeline is to create analysis-ready methylation data:
+
+- Main inputs: phenotype metadata, IDAT files, array annotation, and filtering
+  settings.
+- Main processing tasks: import, quality control, normalisation, probe
+  filtering, metric extraction, and cell-composition estimation.
+- Main outputs: filtered phenotype data, `RGSet`, beta values, M-values,
+  copy-number values, quality-control figures, and `phenoLC`.
+
+```{r preprocessingMinfiEwasWater-overview, echo = FALSE, results = "asis"}
+svg_to_html(
+  overview_svgs[["preprocessingMinfiEwasWater"]]
+)
+```
+
+## svaEnmix()
+
+`svaEnmix()` estimates surrogate variables from control-probe information and
+adds them to the phenotype table. This step helps represent technical
+variation that may otherwise influence downstream association models.
+
+Its role is to prepare covariates for batch and technical adjustment:
+
+- Main inputs: the phenotype table from preprocessing and the saved `RGSet`.
+- Main processing tasks: control-probe extraction, surrogate-variable
+  estimation, association checks with array-position metadata, and phenotype
+  merging.
+- Main outputs: surrogate-variable matrices, an updated phenotype table, and
+  diagnostic summaries.
+
+```{r svaEnmix-overview, echo = FALSE, results = "asis"}
+svg_to_html(
+  overview_svgs[["svaEnmix"]])
+```
+
+## preprocessingPheno()
+
+`preprocessingPheno()` aligns phenotype information with methylation metrics.
+It prepares timepoint-specific data, combines longitudinal records, and creates export-ready files for external methylation-age tools.
+
+Its role is to organise samples and methylation matrices for modelling:
+
+- Main inputs: phenotype data, beta values, M-values, copy-number values, and
+  timepoint settings.
+- Main processing tasks: sample alignment, timepoint splitting, longitudinal
+  merging, and Clock Foundation export preparation.
+- Main outputs: timepoint-specific phenotype-methylation tables, combined
+  longitudinal tables, and Clock Foundation input files.
+
+```{r preprocessingPheno-overview, echo = FALSE, results = "asis"}
+svg_to_html(
+  overview_svgs[["preprocessingPheno"]])
+```
+
+## methylationGLM_T1()
+
+`methylationGLM_T1()` fits cross-sectional methylation association models. It
+is designed for analyses where one phenotype is tested against CpG-level
+methylation while adjusting for selected covariates.
+
+Its role is to run single-timepoint association testing:
+
+- Main inputs: a phenotype-methylation table, phenotype variables,
+  covariates, optional PRS mappings, and annotation settings.
+- Main processing tasks: model preparation, CpG-GLM model fitting, diagnostic
+  plotting, result summarisation, multiple-testing adjustment, and annotation.
+- Main outputs: model objects, summary tables, diagnostic figures,
+  significant-CpG exports, and annotated workbooks.
+
+```{r methylationGLM_T1-overview, echo = FALSE, results = "asis"}
+svg_to_html(
+  overview_svgs[["methylationGLM_T1"]])
+```
+
+## methylationGLMM_T1T2()
+
+`methylationGLMM_T1T2()` fits longitudinal mixed-effects models. It supports
+repeated-measures designs by including participant-level random effects and
+timepoint-related terms.
+
+Its role is to model methylation change across repeated observations:
+
+- Main inputs: combined longitudinal phenotype-methylation data, participant
+  identifiers, timepoint variables, phenotypes, covariates, and annotation
+  settings.
+- Main processing tasks: longitudinal model preparation, CpG-LME model
+  fitting, interaction testing, diagnostic plotting, summarisation, and
+  annotation.
+- Main outputs: mixed-model objects, interaction summaries, diagnostic figures,
+  significant-interaction exports, and annotated longitudinal workbooks.
+
+```{r methylationGLMM_T1T2-overview, echo = FALSE, results = "asis"}
+svg_to_html(
+  overview_svgs[["methylationGLMM_T1T2"]])
+```
+
+## dnamReport()
+
+`dnamReport()` assembles the main tables, figures, logs, and model summaries
+into a report website. It is usually run after preprocessing and modelling
+outputs have been written to disk.
+
+Its role is to make the pipeline outputs easier to inspect and share:
+
+- Main inputs: phenotype tables, QC figures, ENmix figures, SVA figures,
+  metric figures, model annotation tables, detection P-value data, and logs.
+- Main processing tasks: input validation, report file preparation, Quarto
+  rendering, and post-processing.
+- Main outputs: a rendered report site with organised tabs for data,
+  preprocessing, modelling, logs, and supporting diagnostics.
+
+```{r dnamReport-overview, echo = FALSE, results = "asis"}
+svg_to_html(
+  overview_svgs[["dnamReport"]])
+```
+
+# Summary
+
+The `dnaEPICO` pipeline is organised around function functions with clear roles.
+The preprocessing functions create quality-controlled methylation data and
+analysis-ready phenotype tables. The modelling functions fit cross-sectional and
+longitudinal association models. The report function gathers the resulting
+tables, figures, and logs into a browsable output.
+
+In practice, the most common pipeline is:
+
+- run `preprocessingMinfiEwasWater()` to prepare methylation objects and QC
+  outputs,
+- run `svaEnmix()` when control-probe surrogate variables are needed,
+- run `preprocessingPheno()` to prepare modelling tables,
+- run `methylationGLM_T1()` or `methylationGLMM_T1T2()` for association
+  testing, and
+- run `dnamReport()` to review the completed outputs.
+
+# Basics
+
+Date the vignette was generated.
+
+```{r, echo = FALSE}
+Sys.time()
+```
+
+Wallclock time spent generating the vignette.
+
+```{r, echo = FALSE}
+totalTime <- diff(c(startTime, Sys.time()))
+round(totalTime, digits = 3)
+```
+
+`R` session information.
+
+```{r, echo = FALSE}
+sessionInfo()
+```
+
+## Asking for help
+
+As package developers, we try to explain clearly how to use our packages and
+in which order to use the functions. But `R` and `Bioconductor` have a steep
+learning curve, so it is critical to learn where to ask for help. We would
+like to highlight the [Bioconductor support site](https://support.bioconductor.org/)
+as the main resource for getting help. Please remember to use the `dnaEPICO`
+tag and check the
+[older posts](https://support.bioconductor.org/tag/dnaEPICO/). If you want to
+receive help, please provide a small reproducible example and your session
+information so the source of the problem can be tracked efficiently.

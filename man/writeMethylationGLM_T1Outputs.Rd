@@ -42,7 +42,7 @@ tables.}
 coefficient tables.}
 
 \item{annotatedGLMOut}{Character. Directory used for the annotated summary
-CSV file.}
+XLSX workbook.}
 
 \item{saveTxtSummaries}{Logical. If \code{TRUE}, write tab-delimited summary
 tables.}

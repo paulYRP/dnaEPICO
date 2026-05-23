@@ -108,6 +108,19 @@ test_that("methylationGLMM_T1T2 can write outputs and derive person IDs on reque
     expect_true(file.exists(result$savedFiles$summaryFiles[["score"]]))
     expect_true(file.exists(result$savedFiles$summaryTxtFiles[["score"]]))
     expect_true(file.exists(result$savedFiles$annotatedLME))
+    expect_match(result$savedFiles$annotatedLME, "annotatedLME\\.xlsx$")
+    expect_equal(
+        openxlsx::getSheetNames(result$savedFiles$annotatedLME),
+        c("annotatedLME", "dictionary")
+    )
+    dictionary <- openxlsx::read.xlsx(
+        result$savedFiles$annotatedLME,
+        sheet = "dictionary",
+        check.names = FALSE
+    )
+    expect_equal(colnames(dictionary), c("Column", "Description", "Formula"))
+    expect_true(any(dictionary$Description == "Pvalue from LME model"))
+    expect_true(any(dictionary$Formula == "LME: Beta values ~ `score` + `Timepoint` + `sex` + (1 | `person` )"))
     expect_true(file.exists(file.path(tmp, "figures", "methylationGLMM_T1T2", "qqplot_score.tiff")))
     expect_true(isTRUE(result$preparedData$personCreated))
     expect_true(length(result$savedFiles$significantInteractionFiles$score) >= 1)

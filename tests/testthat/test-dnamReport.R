@@ -28,8 +28,8 @@ create_dnam_report_example <- function(path) {
     file.create(file.path(glm_subdir, "qqplot_status.tiff"))
     file.create(file.path(glmm_subdir, "qqplot_score.tiff"))
 
-    dirs$glmTablePath <- file.path(dirs$glmTableDir, "annotatedGLM.csv")
-    dirs$lmerTablePath <- file.path(dirs$lmerTableDir, "annotatedLME.csv")
+    dirs$glmTablePath <- file.path(dirs$glmTableDir, "annotatedGLM.xlsx")
+    dirs$lmerTablePath <- file.path(dirs$lmerTableDir, "annotatedLME.xlsx")
     dirs$phenoTab <- file.path(dirs$phenoTabDir, "phenoLC.csv")
     utils::write.csv(
         data.frame(
@@ -40,8 +40,27 @@ create_dnam_report_example <- function(path) {
         dirs$phenoTab,
         row.names = FALSE
     )
-    utils::write.csv(
-        data.frame(
+    glm_dictionary <- data.frame(
+        Column = c("P.Value", "IlmnID", "Name", "chr", "pos"),
+        Description = c(
+            "Pvalue from GLM model",
+            "CpG probe identifier",
+            "CpG probe identifier",
+            "Genomic annotation or supporting result column",
+            "Genomic annotation or supporting result column"
+        ),
+        Formula = c(
+            "GLM: Beta values ~ `status` + `sex`",
+            "",
+            "",
+            "",
+            ""
+        ),
+        check.names = FALSE
+    )
+    openxlsx::write.xlsx(
+        list(
+            annotatedGLM = data.frame(
             IlmnID = "cg00000029",
             Name = "cg00000029",
             P.Value = 0.001,
@@ -52,12 +71,33 @@ create_dnam_report_example <- function(path) {
             Relation_to_Island = "OpenSea",
             GencodeV41_Group = "TSS",
             check.names = FALSE
+            ),
+            dictionary = glm_dictionary
         ),
         dirs$glmTablePath,
-        row.names = FALSE
+        overwrite = TRUE
     )
-    utils::write.csv(
-        data.frame(
+    lmer_dictionary <- data.frame(
+        Column = c("phenotype:Timepoint P.Value", "IlmnID", "Name", "chr", "pos"),
+        Description = c(
+            "Pvalue from LME model",
+            "CpG probe identifier",
+            "CpG probe identifier",
+            "Genomic annotation or supporting result column",
+            "Genomic annotation or supporting result column"
+        ),
+        Formula = c(
+            "LME: Beta values ~ `score` + `Timepoint` + `sex` + (1 | `person` )",
+            "",
+            "",
+            "",
+            ""
+        ),
+        check.names = FALSE
+    )
+    openxlsx::write.xlsx(
+        list(
+            annotatedLME = data.frame(
             IlmnID = "cg00000108",
             Name = "cg00000108",
             "phenotype:Timepoint P.Value" = 0.002,
@@ -68,9 +108,11 @@ create_dnam_report_example <- function(path) {
             Relation_to_Island = "Island",
             GencodeV41_Group = "gene body",
             check.names = FALSE
+            ),
+            dictionary = lmer_dictionary
         ),
         dirs$lmerTablePath,
-        row.names = FALSE
+        overwrite = TRUE
     )
 
     dirs
@@ -145,7 +187,8 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     )))
     expect_true(any(grepl("`Table 1` presents", glm_qmd, fixed = TRUE)))
     expect_true(any(grepl("`glm2` package", glm_qmd, fixed = TRUE)))
-    expect_true(any(grepl("annotatedGLM.csv", glm_qmd, fixed = TRUE)))
+    expect_true(any(grepl("annotatedGLM.xlsx", glm_qmd, fixed = TRUE)))
+    expect_true(any(grepl("annotatedGLM", glm_qmd, fixed = TRUE)))
     expect_true(any(grepl(
         "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and Timepoint",
         lmer_qmd,
@@ -153,8 +196,8 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     )))
     expect_true(any(grepl("`Table 1` presents", lmer_qmd, fixed = TRUE)))
     expect_true(any(grepl("`lmer` package", lmer_qmd, fixed = TRUE)))
-    expect_true(any(grepl("phenotype:Timepoint P.Value", lmer_qmd, fixed = TRUE)))
-    expect_true(any(grepl("annotatedLME.csv", lmer_qmd, fixed = TRUE)))
+    expect_true(any(grepl("annotatedLME", lmer_qmd, fixed = TRUE)))
+    expect_true(any(grepl("annotatedLME.xlsx", lmer_qmd, fixed = TRUE)))
 
     enmix_qmd <- readLines(file.path(result$projectDir, "enmix-qc.qmd"), warn = FALSE)
     metrics_qmd <- readLines(file.path(result$projectDir, "metrics.qmd"), warn = FALSE)

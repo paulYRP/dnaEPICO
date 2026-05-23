@@ -61,7 +61,7 @@
 #'   to append to the combined GLM summary table. Available columns depend on
 #'   the selected annotation package.
 #' @param annotatedGLMOut Character. Directory used for the optional annotated
-#'   GLM summary CSV file.
+#'   GLM summary XLSX workbook.
 #' @param display Logical. If `TRUE`, draw exploratory and diagnostic plots on
 #'   the active graphics device.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.

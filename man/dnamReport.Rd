@@ -40,10 +40,10 @@ When \code{NULL}, the path is inferred from the Makefile output layout.}
 
 \item{metricTab}{Character. Directory containing Metrics figures.}
 
-\item{glmTab}{Character or \code{NULL}. CSV file shown in the GLM Analysis tab.
+\item{glmTab}{Character or \code{NULL}. XLSX workbook shown in the GLM Analysis tab.
 When \code{NULL}, the path is inferred from the Makefile output layout.}
 
-\item{lmerTab}{Character or \code{NULL}. CSV file shown in the LMER Analysis tab.
+\item{lmerTab}{Character or \code{NULL}. XLSX workbook shown in the LMER Analysis tab.
 When \code{NULL}, the path is inferred from the Makefile output layout.}
 
 \item{logTab}{Character. Directory containing workflow logs shown in the Logs

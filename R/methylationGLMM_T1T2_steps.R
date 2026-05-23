@@ -1422,8 +1422,8 @@ annotateMethylationGLMM_T1T2Summaries <- function(
 #'   tables.
 #' @param significantInteractionDir Character. Directory used for significant
 #'   interaction coefficient tables.
-#' @param annotatedLMEOut Character. Directory used for the annotated summary CSV
-#'   file.
+#' @param annotatedLMEOut Character. Directory used for the annotated summary
+#'   XLSX workbook.
 #' @param saveTxtSummaries Logical. If `TRUE`, write tab-delimited summary tables.
 #' @param saveSignificantInteractions Logical. If `TRUE`, write significant
 #'   interaction coefficient tables.
@@ -1550,8 +1550,20 @@ writeMethylationGLMM_T1T2Outputs <- function(
   if (!is.null(annotatedResults$data)) {
     annotated_df <- annotatedResults$data
   }
-  annotated_file <- file.path(annotatedLMEOut, "annotatedLME.csv")
-  utils::write.csv(annotated_df, file = annotated_file, row.names = FALSE)
+  annotated_file <- file.path(annotatedLMEOut, "annotatedLME.xlsx")
+  dictionary <- buildAnnotatedWorkbookDictionaryMethylationGLM_T1(
+    columns = colnames(annotated_df),
+    modelDescription = "Pvalue from LME model",
+    formulaText = modelResults$formulas,
+    modelLabel = "LME",
+    responseLabel = inferMethylationValueLabelMethylationGLM_T1(modelResults)
+  )
+  writeAnnotatedWorkbookMethylationGLM_T1(
+    annotated_df = annotated_df,
+    file = annotated_file,
+    resultSheet = "annotatedLME",
+    dictionary = dictionary
+  )
 
   emitLogMinfiEwasWater(
     c(

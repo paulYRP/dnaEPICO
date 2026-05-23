@@ -41,8 +41,8 @@ tables.}
 \item{significantInteractionDir}{Character. Directory used for significant
 interaction coefficient tables.}
 
-\item{annotatedLMEOut}{Character. Directory used for the annotated summary CSV
-file.}
+\item{annotatedLMEOut}{Character. Directory used for the annotated summary
+XLSX workbook.}
 
 \item{saveTxtSummaries}{Logical. If \code{TRUE}, write tab-delimited summary tables.}
 

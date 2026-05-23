@@ -27,8 +27,8 @@ all: \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
-	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv \
-	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv \
+	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx \
+	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx \
 	$(STEP6)/$(MODEL)/docs/index.html
 	
 # ===============================================
@@ -73,7 +73,7 @@ FIRST4 = \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
-	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv
+	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx
 
 f4: $(FIRST4) $(STEP6)/$(MODEL)/docs/index.html
 
@@ -103,7 +103,7 @@ F3LME = \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT2.csv \
 	$(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv \
-	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv
+	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx
 
 f3lme: $(F3LME) $(STEP6)/$(MODEL)/docs/index.html
 
@@ -239,7 +239,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv:
 # =================================================================================================================================
 # Step 4: GLM for T1
 # =================================================================================================================================
-$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
+$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx:
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationGLM_T1( \
 	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1.RData', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
@@ -277,7 +277,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv:
 # =================================================================================================================================
 # Step 5: LME for T1 vs T2 (Longitudinal Analysis)
 # =================================================================================================================================
-$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv:
+$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx:
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationGLMM_T1T2( \
 	  inputPheno = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/phenoBetaT1T2.RData', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
@@ -330,8 +330,8 @@ $(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
 	  qcTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)', \
 	  svaTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP2)', \
 	  metricTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)', \
-	  glmTab = '$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv', \
-	  lmerTab = '$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv', \
+	  glmTab = '$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx', \
+	  lmerTab = '$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx', \
 	  detPPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData', \
 	  detPThreshold = '$(PVAL_THRESHOLD)', \
 	  verbose = FALSE, \
@@ -379,8 +379,8 @@ status:
 	@test -e $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData && echo "? Step 1: preprocessingMinfiEwasWater done" || echo "? Step 1: preprocessingMinfiEwasWater outcome file missing"
 	@test -e $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt && echo "? Step 2: SVA done" || echo "? Step 2: SVA outcome file missing"
 	@test -e $(DATA_DIR)/$(MODEL)/$(STEP3)/phenoT1T2.csv && echo "? Step 3: preprocessingPheno done" || echo "? Step 3: preprocessingPheno outcome file missing"
-	@test -e $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.csv && echo "? Step 4: methylationGLM_T1 done" || echo "? Step 4: methylationGLM_T1 outcome file missing"
-	@test -e $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.csv && echo "? Step 5: methylationGLMM_T1T2 done" || echo "? Step 5: methylationGLMM_T1T2 outcome file missing"
+	@test -e $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx && echo "? Step 4: methylationGLM_T1 done" || echo "? Step 4: methylationGLM_T1 outcome file missing"
+	@test -e $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx && echo "? Step 5: methylationGLMM_T1T2 done" || echo "? Step 5: methylationGLMM_T1T2 outcome file missing"
 	@test -e $(STEP6)/$(MODEL)/docs/index.html && echo "? Step 6: Report generated" || echo "? Step 6: Report missing"
 	@echo "============================"
 

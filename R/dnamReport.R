@@ -280,9 +280,9 @@ renderDnamReport <- function(
 #' @param qcTab Character. Directory containing Quality Control figures.
 #' @param svaTab Character. Directory containing Batch Effect or SVA figures.
 #' @param metricTab Character. Directory containing Metrics figures.
-#' @param glmTab Character or `NULL`. CSV file shown in the GLM Analysis tab.
+#' @param glmTab Character or `NULL`. XLSX workbook shown in the GLM Analysis tab.
 #'   When `NULL`, the path is inferred from the Makefile output layout.
-#' @param lmerTab Character or `NULL`. CSV file shown in the LMER Analysis tab.
+#' @param lmerTab Character or `NULL`. XLSX workbook shown in the LMER Analysis tab.
 #'   When `NULL`, the path is inferred from the Makefile output layout.
 #' @param logTab Character. Directory containing workflow logs shown in the Logs
 #'   tab.
@@ -455,12 +455,12 @@ sample_detection_path <- if (is.null(sampleDetectionPath) || !nzchar(sampleDetec
   resolve_report_path(sampleDetectionPath)
 }
 glm_table_path <- if (is.null(glmTab) || !nzchar(glmTab)) {
-  resolve_report_path(file.path("data", model_name, "methylationGLM_T1", "annotatedGLM.csv"))
+  resolve_report_path(file.path("data", model_name, "methylationGLM_T1", "annotatedGLM.xlsx"))
 } else {
   resolve_report_path(glmTab)
 }
 lmer_table_path <- if (is.null(lmerTab) || !nzchar(lmerTab)) {
-  resolve_report_path(file.path("data", model_name, "methylationGLMM_T1T2", "annotatedLME.csv"))
+  resolve_report_path(file.path("data", model_name, "methylationGLMM_T1T2", "annotatedLME.xlsx"))
 } else {
   resolve_report_path(lmerTab)
 }
@@ -866,9 +866,10 @@ build_figure_cards <- function(
   lines
 }
 
-build_csv_table_section <- function(
+build_xlsx_table_section <- function(
     title,
     data_path,
+    sheet,
     page_length = 10L,
     preview_rows = 25L,
     var_prefix = NULL,
@@ -895,29 +896,29 @@ build_csv_table_section <- function(
     ))
   }
 
-  csv_data <- tryCatch(
-    utils::read.csv(source_data_path, check.names = FALSE),
+  table_data <- tryCatch(
+    openxlsx::read.xlsx(source_data_path, sheet = sheet, check.names = FALSE),
     error = function(e) e
   )
 
-  if (inherits(csv_data, "error")) {
+  if (inherits(table_data, "error")) {
     return(c(
       sprintf("### %s", title),
       "",
-      callout_lines(conditionMessage(csv_data), type = "warning")
+      callout_lines(conditionMessage(table_data), type = "warning")
     ))
   }
 
   if (!isTRUE(interactive)) {
-    if (is.finite(preview_rows) && nrow(csv_data) > as.integer(preview_rows)) {
-      csv_data <- utils::head(csv_data, as.integer(preview_rows))
+    if (is.finite(preview_rows) && nrow(table_data) > as.integer(preview_rows)) {
+      table_data <- utils::head(table_data, as.integer(preview_rows))
     }
 
-    header_cells <- paste0("    <th>", html_escape(names(csv_data)), "</th>")
+    header_cells <- paste0("    <th>", html_escape(names(table_data)), "</th>")
     body_rows <- unlist(
-      lapply(seq_len(nrow(csv_data)), function(i) {
+      lapply(seq_len(nrow(table_data)), function(i) {
         row_values <- vapply(
-          csv_data[i, , drop = FALSE],
+          table_data[i, , drop = FALSE],
           function(value) {
             if (is.na(value)) "" else as.character(value)
           },
@@ -955,6 +956,7 @@ build_csv_table_section <- function(
   path_display_var <- paste0(var_prefix, "_path_display")
   data_var <- paste0(var_prefix, "_data")
   error_var <- paste0(var_prefix, "_error")
+  sheet_var <- paste0(var_prefix, "_sheet")
   dashboard_data_path <- to_dashboard_data_path(data_path)
 
   c(
@@ -965,6 +967,7 @@ build_csv_table_section <- function(
     "#| include: false",
     sprintf("%s <- %s", path_var, r_string(dashboard_data_path)),
     sprintf("%s <- %s", path_display_var, r_string(dashboard_data_path)),
+    sprintf("%s <- %s", sheet_var, r_string(sheet)),
     sprintf("%s <- NULL", data_var),
     sprintf("%s <- NULL", error_var),
     sprintf("if (!nzchar(%s)) {", path_var),
@@ -973,7 +976,7 @@ build_csv_table_section <- function(
     sprintf("  %s <- paste0('Data file not found at `', %s, '`.')", error_var, path_display_var),
     "} else {",
     sprintf("  %s <- tryCatch(", data_var),
-    sprintf("    utils::read.csv(%s, check.names = FALSE),", path_var),
+    sprintf("    openxlsx::read.xlsx(%s, sheet = %s, check.names = FALSE),", path_var, sheet_var),
     "    error = function(e) {",
     sprintf("      %s <<- conditionMessage(e)", error_var),
     "      NULL",
@@ -1125,12 +1128,17 @@ is_blank <- function(values) {
   is.na(values) | !nzchar(trimws(as.character(values)))
 }
 
-safe_read_csv <- function(path) {
+safe_read_table_file <- function(path, sheet = 1) {
   if (!file.exists(path)) {
     return(NULL)
   }
+  extension <- tolower(sub("^.*\\.([^.]+)$", "\\1", basename(path)))
   tryCatch(
-    utils::read.csv(path, check.names = FALSE),
+    if (extension %in% c("xlsx", "xlsm")) {
+      openxlsx::read.xlsx(path, sheet = sheet, check.names = FALSE)
+    } else {
+      utils::read.csv(path, check.names = FALSE)
+    },
     error = function(e) NULL
   )
 }
@@ -1209,8 +1217,8 @@ read_detection_tables <- function(detp_path, threshold, cpg_path = "", sample_pa
     }
   }
 
-  cpg <- safe_read_csv(cpg_path)
-  sample <- safe_read_csv(sample_path)
+  cpg <- safe_read_table_file(cpg_path)
+  sample <- safe_read_table_file(sample_path)
   if (!is.null(cpg) || !is.null(sample)) {
     result$source <- "csv"
     result$exists <- TRUE
@@ -1295,7 +1303,7 @@ pick_timepoint_column <- function(data) {
 }
 
 summarize_dataset <- function(data_path) {
-  data <- safe_read_csv(data_path)
+  data <- safe_read_table_file(data_path)
   summary <- list(
     path = slash(data_path),
     exists = !is.null(data),
@@ -1436,7 +1444,7 @@ extract_sva_log_summary <- function(log_path) {
 }
 
 summarize_sva <- function(pheno_path, log_path) {
-  pheno_data <- safe_read_csv(pheno_path)
+  pheno_data <- safe_read_table_file(pheno_path)
   log_summary <- extract_sva_log_summary(log_path)
   summary <- list(
     path = slash(pheno_path),
@@ -2597,9 +2605,10 @@ glm_page <- compose_page(
   title = "GLM Analysis",
   notes = glm_notes,
   body_lines = c(
-    build_csv_table_section(
+    build_xlsx_table_section(
       title = glm_table_title,
       data_path = glm_table_path,
+      sheet = "annotatedGLM",
       page_length = 10L,
       preview_rows = 25L,
       var_prefix = "glm_results",
@@ -2612,9 +2621,10 @@ lmer_page <- compose_page(
   title = "LMER Analysis",
   notes = lmer_notes,
   body_lines = c(
-    build_csv_table_section(
+    build_xlsx_table_section(
       title = lmer_table_title,
       data_path = lmer_table_path,
+      sheet = "annotatedLME",
       page_length = 10L,
       preview_rows = 25L,
       var_prefix = "lmer_results",

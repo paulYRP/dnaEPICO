@@ -138,7 +138,7 @@ to append to the combined LME summary table. Available columns depend on
 the selected annotation package.}
 
 \item{annotatedLMEOut}{Character. Directory used for the optional annotated LME
-summary CSV file.}
+summary XLSX workbook.}
 
 \item{display}{Logical. If \code{TRUE}, draw diagnostic plots on the active
 graphics device.}
