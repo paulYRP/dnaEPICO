@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.18</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.19</span>
       </span>
     </div>
 
@@ -50,6 +50,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/dnaEPICO-local.html">Local Use of dnaEPICO</a>
+    </li>
+    <li>
+      <a href="../articles/dnaEPICO-overview.html">Pipeline Overview</a>
     </li>
     <li>
       <a href="../articles/dnaEPICO-pipeline.html">Pipeline Use of dnaEPICO</a>
@@ -89,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-05-19</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-05-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-local.Rmd" class="external-link"><code>vignettes/dnaEPICO-local.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-local.Rmd</code></div>
@@ -196,7 +199,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"           "arrayType"         "annotationVersion"</span></span>
 <span><span class="co">#&gt; [7] "crossReactivePath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpxE8C75/dnaEPICO-idat-example-32b0370050be"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpVaGMfx/dnaEPICO-idat-example-208f20bdcf6f"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -473,7 +476,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpxE8C75/dnaEPICO-preprocessingPheno-example-32b06f54b410"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpVaGMfx/dnaEPICO-preprocessingPheno-example-208f57ec431d"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -614,9 +617,9 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-05-19 00:10:17 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-05-23 11:24:27 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 48.756 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 48.868 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -660,7 +663,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.18                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.19                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
@@ -694,7 +697,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt;  [55] httr_1.4.8                abind_1.4-8              </span></span>
 <span><span class="co">#&gt;  [57] compiler_4.4.2            beanplot_1.3.1           </span></span>
 <span><span class="co">#&gt;  [59] rngtools_1.5.2            doParallel_1.0.17        </span></span>
-<span><span class="co">#&gt;  [61] bit64_4.8.0               BiocParallel_1.40.2      </span></span>
+<span><span class="co">#&gt;  [61] bit64_4.8.2               BiocParallel_1.40.2      </span></span>
 <span><span class="co">#&gt;  [63] DBI_1.3.0                 gplots_3.3.0             </span></span>
 <span><span class="co">#&gt;  [65] HDF5Array_1.34.0          MASS_7.3-65              </span></span>
 <span><span class="co">#&gt;  [67] openssl_2.4.1             rappdirs_0.3.4           </span></span>
