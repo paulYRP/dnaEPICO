@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.19</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.20</span>
       </span>
     </div>
 
@@ -151,11 +151,6 @@ Bioconductor?”, you might be interested in <a href="https://www.bioconductor.o
   margin: 1.5rem 0 2rem;
 }
 
-.overview-figure-title {
-  font-weight: 700;
-  margin: 0 0 0.5rem;
-}
-
 .overview-controls {
   display: flex;
   flex-wrap: wrap;
@@ -264,8 +259,8 @@ function openOverviewFullscreen(figureId) {
 <p>The sections below describe the role of each main function in the
 package <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>.
 They are ordered according to the analysis path: preprocessing,
-surrogate-variable estimation, phenotype preparation, modelling,
-longitudinal modelling, and report generation.</p>
+surrogate-variable estimation, phenotype preparation, cross-sectional
+modelling, longitudinal modelling, and report generation.</p>
 <div class="section level3">
 <h3 id="preprocessingminfiewaswater">preprocessingMinfiEwasWater()<a class="anchor" aria-label="anchor" href="#preprocessingminfiewaswater"></a>
 </h3>
@@ -284,9 +279,6 @@ values, M-values, copy-number values, quality-control figures, and
 <code>phenoLC</code>.</li>
 </ul>
 <div id="preprocessingMinfiEwasWater_pipeline_overview" class="overview-figure" data-scale="1">
-<p class="overview-figure-title">
-preprocessingMinfiEwasWater() overview
-</p>
 <div class="overview-controls">
 <button class="overview-zoom-button" type="button" onclick="changeOverviewZoom('preprocessingMinfiEwasWater_pipeline_overview', 0.25)">
 Zoom +
@@ -326,9 +318,6 @@ phenotype merging.</li>
 table, and diagnostic summaries.</li>
 </ul>
 <div id="svaEnmix_pipeline_overview" class="overview-figure" data-scale="1">
-<p class="overview-figure-title">
-svaEnmix() overview
-</p>
 <div class="overview-controls">
 <button class="overview-zoom-button" type="button" onclick="changeOverviewZoom('svaEnmix_pipeline_overview', 0.25)">
 Zoom +
@@ -367,9 +356,6 @@ longitudinal merging, and Clock Foundation export preparation.</li>
 combined longitudinal tables, and Clock Foundation input files.</li>
 </ul>
 <div id="preprocessingPheno_pipeline_overview" class="overview-figure" data-scale="1">
-<p class="overview-figure-title">
-preprocessingPheno() overview
-</p>
 <div class="overview-controls">
 <button class="overview-zoom-button" type="button" onclick="changeOverviewZoom('preprocessingPheno_pipeline_overview', 0.25)">
 Zoom +
@@ -408,9 +394,6 @@ and annotation.</li>
 significant-CpG exports, and annotated workbooks.</li>
 </ul>
 <div id="methylationGLM_T1_pipeline_overview" class="overview-figure" data-scale="1">
-<p class="overview-figure-title">
-methylationGLM_T1() overview
-</p>
 <div class="overview-controls">
 <button class="overview-zoom-button" type="button" onclick="changeOverviewZoom('methylationGLM_T1_pipeline_overview', 0.25)">
 Zoom +
@@ -451,9 +434,6 @@ figures, significant-interaction exports, and annotated longitudinal
 workbooks.</li>
 </ul>
 <div id="methylationGLMM_T1T2_pipeline_overview" class="overview-figure" data-scale="1">
-<p class="overview-figure-title">
-methylationGLMM_T1T2() overview
-</p>
 <div class="overview-controls">
 <button class="overview-zoom-button" type="button" onclick="changeOverviewZoom('methylationGLMM_T1T2_pipeline_overview', 0.25)">
 Zoom +
@@ -492,9 +472,6 @@ Quarto rendering, and post-processing.</li>
 preprocessing, modelling, logs, and supporting diagnostics.</li>
 </ul>
 <div id="dnamReport_pipeline_overview" class="overview-figure" data-scale="1">
-<p class="overview-figure-title">
-dnamReport() overview
-</p>
 <div class="overview-controls">
 <button class="overview-zoom-button" type="button" onclick="changeOverviewZoom('dnamReport_pipeline_overview', 0.25)">
 Zoom +
@@ -519,7 +496,7 @@ Full screen
 <div class="section level2">
 <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
 </h2>
-<p>The <code>dnaEPICO</code> package is organised around function with
+<p>The <code>dnaEPICO</code> package is organised around functions with
 clear roles. The preprocessing function create quality-controlled
 methylation data and analysis-ready phenotype tables. The modelling
 functions fit cross-sectional and longitudinal association models. The
@@ -542,9 +519,9 @@ tables,</li>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-05-23 14:10:10 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-05-23 14:50:42 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 0.534 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 0.607 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -569,7 +546,7 @@ tables,</li>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dnaEPICO_0.99.19 BiocStyle_2.34.0</span></span>
+<span><span class="co">#&gt; [1] dnaEPICO_0.99.20 BiocStyle_2.34.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] cli_3.6.6           knitr_1.51          rlang_1.2.0        </span></span>
