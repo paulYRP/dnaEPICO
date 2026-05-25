@@ -10,7 +10,7 @@ author:
       - Queensland University of Technology
 output:
   BiocStyle::html_document:
-    self_contained: no
+    self_contained: yes
     toc: true
     toc_float: true
     toc_depth: 2
@@ -394,7 +394,6 @@ svg_to_html(
 
 # Summary
 
-The `dnaEPICO` package is organised around functions with clear roles.
 The preprocessing function create quality-controlled methylation data and
 analysis-ready phenotype tables. The modelling functions fit cross-sectional and
 longitudinal association models. The report function gathers the resulting
