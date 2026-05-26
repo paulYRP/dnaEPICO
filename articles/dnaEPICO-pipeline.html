@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.20</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.21</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-05-23</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-05-26</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-pipeline.Rmd" class="external-link"><code>vignettes/dnaEPICO-pipeline.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-pipeline.Rmd</code></div>
@@ -217,7 +217,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"           "arrayType"         "annotationVersion"</span></span>
 <span><span class="co">#&gt; [7] "crossReactivePath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpsiLyua/dnaEPICO-idat-example-20d510718a55"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpcstsfp/dnaEPICO-idat-example-20ebe3f027"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -493,7 +493,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpsiLyua/dnaEPICO-preprocessingPheno-example-20d55bde0bf8"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpcstsfp/dnaEPICO-preprocessingPheno-example-20eb3ddb824a"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -609,7 +609,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpsiLyua/dnaEPICO-glm-example-20d553a27524"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpcstsfp/dnaEPICO-glm-example-20eb6c685220"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -709,7 +709,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpsiLyua/dnaEPICO-glmm-example-20d5698cfcbf"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpcstsfp/dnaEPICO-glmm-example-20eb45d3b95b"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -1641,9 +1641,9 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-05-23 14:52:13 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-05-26 00:10:08 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.492 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.355 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1687,7 +1687,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.20                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.21                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
@@ -1731,7 +1731,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt;  [75] caTools_1.18.3            digest_0.6.39            </span></span>
 <span><span class="co">#&gt;  [77] R6_2.6.1                  textshaping_1.0.5        </span></span>
 <span><span class="co">#&gt;  [79] RPMM_1.25                 gtools_3.9.5             </span></span>
-<span><span class="co">#&gt;  [81] RSQLite_3.52.0            minfiData_0.52.0         </span></span>
+<span><span class="co">#&gt;  [81] RSQLite_3.53.1            minfiData_0.52.0         </span></span>
 <span><span class="co">#&gt;  [83] tidyr_1.3.2               generics_0.1.4           </span></span>
 <span><span class="co">#&gt;  [85] data.table_1.18.4         rtracklayer_1.66.0       </span></span>
 <span><span class="co">#&gt;  [87] httr_1.4.8                htmlwidgets_1.6.4        </span></span>
