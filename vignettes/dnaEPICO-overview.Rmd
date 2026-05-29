@@ -278,11 +278,11 @@ estimates cell composition.
 
 Its role in the package is to create analysis-ready methylation data:
 
-- Main inputs: phenotype metadata, IDAT files, array annotation, and filtering
+- Inputs: phenotype metadata, IDAT files, array annotation, and filtering
   settings.
-- Main processing tasks: import, quality control, normalisation, probe
+- Processing tasks: import, quality control, normalisation, probe
   filtering, metric extraction, and cell-composition estimation.
-- Main outputs: filtered phenotype data, `RGSet`, beta values, M-values,
+- Outputs: filtered phenotype data, `RGSet`, beta values, M-values,
   copy-number values, quality-control figures, and `phenoLC`.
 
 ```{r preprocessingMinfiEwasWater-overview, echo = FALSE, results = "asis"}
@@ -299,11 +299,11 @@ variation that may otherwise influence downstream association models.
 
 Its role is to prepare covariates for batch and technical adjustment:
 
-- Main inputs: the phenotype table from preprocessing and the saved `RGSet`.
-- Main processing tasks: control-probe extraction, surrogate-variable
+- Inputs: the phenotype table from preprocessing and the saved `RGSet`.
+- Processing tasks: control-probe extraction, surrogate-variable
   estimation, association checks with array-position metadata, and phenotype
   merging.
-- Main outputs: surrogate-variable matrices, an updated phenotype table, and
+- Outputs: surrogate-variable matrices, an updated phenotype table, and
   diagnostic summaries.
 
 ```{r svaEnmix-overview, echo = FALSE, results = "asis"}
@@ -318,11 +318,11 @@ It prepares timepoint-specific data, combines longitudinal records, and creates 
 
 Its role is to organise samples and methylation matrices for modelling:
 
-- Main inputs: phenotype data, beta values, M-values, copy-number values, and
+- Inputs: phenotype data, beta values, M-values, copy-number values, and
   timepoint settings.
-- Main processing tasks: sample alignment, timepoint splitting, longitudinal
+- Processing tasks: sample alignment, timepoint splitting, longitudinal
   merging, and Clock Foundation export preparation.
-- Main outputs: timepoint-specific phenotype-methylation tables, combined
+- Outputs: timepoint-specific phenotype-methylation tables, combined
   longitudinal tables, and Clock Foundation input files.
 
 ```{r preprocessingPheno-overview, echo = FALSE, results = "asis"}
@@ -338,11 +338,11 @@ methylation while adjusting for selected covariates.
 
 Its role is to run single-timepoint association testing:
 
-- Main inputs: a phenotype-methylation table, phenotype variables,
+- Inputs: a phenotype-methylation table, phenotype variables,
   covariates, optional PRS mappings, and annotation settings.
-- Main processing tasks: model preparation, CpG-GLM model fitting, diagnostic
+- Processing tasks: model preparation, CpG-GLM model fitting, diagnostic
   plotting, result summarisation, multiple-testing adjustment, and annotation.
-- Main outputs: model objects, summary tables, diagnostic figures,
+- Outputs: model objects, summary tables, diagnostic figures,
   significant-CpG exports, and annotated workbooks.
 
 ```{r methylationGLM_T1-overview, echo = FALSE, results = "asis"}
@@ -358,13 +358,13 @@ timepoint-related terms.
 
 Its role is to model methylation change across repeated observations:
 
-- Main inputs: combined longitudinal phenotype-methylation data, participant
+- Inputs: combined longitudinal phenotype-methylation data, participant
   identifiers, timepoint variables, phenotypes, covariates, and annotation
   settings.
-- Main processing tasks: longitudinal model preparation, CpG-LME model
+- Processing tasks: longitudinal model preparation, CpG-LME model
   fitting, interaction testing, diagnostic plotting, summarisation, and
   annotation.
-- Main outputs: mixed-model objects, interaction summaries, diagnostic figures,
+- Outputs: mixed-model objects, interaction summaries, diagnostic figures,
   significant-interaction exports, and annotated longitudinal workbooks.
 
 ```{r methylationGLMM_T1T2-overview, echo = FALSE, results = "asis"}
@@ -380,11 +380,11 @@ outputs have been written to disk.
 
 Its role is to make the package outputs easier to inspect and share:
 
-- Main inputs: phenotype tables, QC figures, ENmix figures, SVA figures,
+- Inputs: phenotype tables, QC figures, ENmix figures, SVA figures,
   metric figures, model annotation tables, detection P-value data, and logs.
-- Main processing tasks: input validation, report file preparation, Quarto
+- Processing tasks: input validation, report file preparation, Quarto
   rendering, and post-processing.
-- Main outputs: a rendered report site with organised tabs for data,
+- Outputs: a rendered report site with organised tabs for data,
   preprocessing, modelling, logs, and supporting diagnostics.
 
 ```{r dnamReport-overview, echo = FALSE, results = "asis"}
