@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.22</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.23</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-05-28</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-05-29</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-overview.Rmd" class="external-link"><code>vignettes/dnaEPICO-overview.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-overview.Rmd</code></div>
@@ -270,12 +270,12 @@ and normalisation, filters probes, and estimates cell composition.</p>
 <p>Its role in the package is to create analysis-ready methylation
 data:</p>
 <ul>
-<li>Main inputs: phenotype metadata, IDAT files, array annotation, and
+<li>Inputs: phenotype metadata, IDAT files, array annotation, and
 filtering settings.</li>
-<li>Main processing tasks: import, quality control, normalisation, probe
+<li>Processing tasks: import, quality control, normalisation, probe
 filtering, metric extraction, and cell-composition estimation.</li>
-<li>Main outputs: filtered phenotype data, <code>RGSet</code>, beta
-values, M-values, copy-number values, quality-control figures, and
+<li>Outputs: filtered phenotype data, <code>RGSet</code>, beta values,
+M-values, copy-number values, quality-control figures, and
 <code>phenoLC</code>.</li>
 </ul>
 <div id="preprocessingMinfiEwasWater_pipeline_overview" class="overview-figure" data-scale="1">
@@ -309,13 +309,13 @@ downstream association models.</p>
 <p>Its role is to prepare covariates for batch and technical
 adjustment:</p>
 <ul>
-<li>Main inputs: the phenotype table from preprocessing and the saved
+<li>Inputs: the phenotype table from preprocessing and the saved
 <code>RGSet</code>.</li>
-<li>Main processing tasks: control-probe extraction, surrogate-variable
+<li>Processing tasks: control-probe extraction, surrogate-variable
 estimation, association checks with array-position metadata, and
 phenotype merging.</li>
-<li>Main outputs: surrogate-variable matrices, an updated phenotype
-table, and diagnostic summaries.</li>
+<li>Outputs: surrogate-variable matrices, an updated phenotype table,
+and diagnostic summaries.</li>
 </ul>
 <div id="svaEnmix_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -348,12 +348,12 @@ methylation-age tools.</p>
 <p>Its role is to organise samples and methylation matrices for
 modelling:</p>
 <ul>
-<li>Main inputs: phenotype data, beta values, M-values, copy-number
-values, and timepoint settings.</li>
-<li>Main processing tasks: sample alignment, timepoint splitting,
+<li>Inputs: phenotype data, beta values, M-values, copy-number values,
+and timepoint settings.</li>
+<li>Processing tasks: sample alignment, timepoint splitting,
 longitudinal merging, and Clock Foundation export preparation.</li>
-<li>Main outputs: timepoint-specific phenotype-methylation tables,
-combined longitudinal tables, and Clock Foundation input files.</li>
+<li>Outputs: timepoint-specific phenotype-methylation tables, combined
+longitudinal tables, and Clock Foundation input files.</li>
 </ul>
 <div id="preprocessingPheno_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -385,12 +385,12 @@ tested against CpG-level methylation while adjusting for selected
 covariates.</p>
 <p>Its role is to run single-timepoint association testing:</p>
 <ul>
-<li>Main inputs: a phenotype-methylation table, phenotype variables,
+<li>Inputs: a phenotype-methylation table, phenotype variables,
 covariates, optional PRS mappings, and annotation settings.</li>
-<li>Main processing tasks: model preparation, CpG-GLM model fitting,
+<li>Processing tasks: model preparation, CpG-GLM model fitting,
 diagnostic plotting, result summarisation, multiple-testing adjustment,
 and annotation.</li>
-<li>Main outputs: model objects, summary tables, diagnostic figures,
+<li>Outputs: model objects, summary tables, diagnostic figures,
 significant-CpG exports, and annotated workbooks.</li>
 </ul>
 <div id="methylationGLM_T1_pipeline_overview" class="overview-figure" data-scale="1">
@@ -423,13 +423,13 @@ participant-level random effects and timepoint-related terms.</p>
 <p>Its role is to model methylation change across repeated
 observations:</p>
 <ul>
-<li>Main inputs: combined longitudinal phenotype-methylation data,
+<li>Inputs: combined longitudinal phenotype-methylation data,
 participant identifiers, timepoint variables, phenotypes, covariates,
 and annotation settings.</li>
-<li>Main processing tasks: longitudinal model preparation, CpG-LME model
+<li>Processing tasks: longitudinal model preparation, CpG-LME model
 fitting, interaction testing, diagnostic plotting, summarisation, and
 annotation.</li>
-<li>Main outputs: mixed-model objects, interaction summaries, diagnostic
+<li>Outputs: mixed-model objects, interaction summaries, diagnostic
 figures, significant-interaction exports, and annotated longitudinal
 workbooks.</li>
 </ul>
@@ -463,12 +463,12 @@ preprocessing and modelling outputs have been written to disk.</p>
 <p>Its role is to make the package outputs easier to inspect and
 share:</p>
 <ul>
-<li>Main inputs: phenotype tables, QC figures, ENmix figures, SVA
-figures, metric figures, model annotation tables, detection P-value
-data, and logs.</li>
-<li>Main processing tasks: input validation, report file preparation,
-Quarto rendering, and post-processing.</li>
-<li>Main outputs: a rendered report site with organised tabs for data,
+<li>Inputs: phenotype tables, QC figures, ENmix figures, SVA figures,
+metric figures, model annotation tables, detection P-value data, and
+logs.</li>
+<li>Processing tasks: input validation, report file preparation, Quarto
+rendering, and post-processing.</li>
+<li>Outputs: a rendered report site with organised tabs for data,
 preprocessing, modelling, logs, and supporting diagnostics.</li>
 </ul>
 <div id="dnamReport_pipeline_overview" class="overview-figure" data-scale="1">
@@ -518,9 +518,9 @@ tables,</li>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-05-28 20:16:36 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-05-29 23:57:45 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 0.611 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 0.606 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -545,7 +545,7 @@ tables,</li>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dnaEPICO_0.99.22 BiocStyle_2.34.0</span></span>
+<span><span class="co">#&gt; [1] dnaEPICO_0.99.23 BiocStyle_2.34.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] cli_3.6.6           knitr_1.51          rlang_1.2.0        </span></span>
