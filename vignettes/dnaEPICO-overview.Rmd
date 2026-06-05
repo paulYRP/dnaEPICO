@@ -80,6 +80,16 @@ If you are asking yourself the question "Where do I start using
 Bioconductor?", you might be interested in
 [this blog post](https://www.bioconductor.org/install/).
 
+## Cross-reactive probe reference files
+
+The lists of excluded probes depend on the platform. For Illumina
+HumanMethylationEPIC v2.0, use the cross-reactive probe file from
+[Peters et al. (2024)](https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323);
+for Illumina MethylationEPIC (a.k.a. 850k array), use
+[Pidsley et al. (2016)](https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334);
+and for Illumina HumanMethylation450k, use
+[Chen et al. (2013)](https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205).
+
 ```{r overview-helpers, echo = FALSE, results = "asis"}
 cat("
 <style>

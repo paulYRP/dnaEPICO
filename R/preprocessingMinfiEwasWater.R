@@ -47,8 +47,12 @@
 #'   types to remove, for example `"SBE,CpG"`.
 #' @param mafThreshold Numeric. Minor allele frequency threshold passed to
 #'   `minfi::dropLociWithSnps()`.
-#' @param crossReactivePath Character. Path to a CSV file containing a `ProbeID`
-#'   column of cross-reactive probes to remove.
+#' @param crossReactivePath Character. Path to a CSV file containing
+#'   cross-reactive probes to remove.
+#' @param crossReactiveIdColumn Character or `NULL`. Column containing
+#'   cross-reactive probe IDs. When `NULL` or `""`, the function auto-detects
+#'   `ProbeID`, `TargetID`, `IlmnID`, or `Name`, then falls back to an unlabeled
+#'   or probe-like first column.
 #' @param plotGroupVar Character. Phenotype column used for density and MDS
 #'   grouping plots.
 #' @param lcRef Character. Reference panel used for cell composition estimation.
@@ -157,6 +161,7 @@ preprocessingMinfiEwasWater <- function(
     mafThreshold = 0.1,
     crossReactivePath =
       "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
+    crossReactiveIdColumn = NULL,
     plotGroupVar = "Sex",
     lcRef = "salivaEPIC",
     phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
@@ -222,6 +227,18 @@ preprocessingMinfiEwasWater <- function(
       paste("  SNP positions filter:   ", snpsToRemove),
       paste("  MAF threshold:          ", mafThreshold),
       paste("  Cross-reactive file:    ", crossReactivePath),
+      paste(
+        "  Cross-reactive ID col:  ",
+        if (
+          length(crossReactiveIdColumn) == 0L ||
+            is.na(crossReactiveIdColumn[[1L]]) ||
+            !nzchar(trimws(as.character(crossReactiveIdColumn[[1L]])))
+        ) {
+          "auto"
+        } else {
+          crossReactiveIdColumn
+        }
+      ),
       "Cell composition (estimateLC):",
       paste("  Reference:              ", lcRef),
       paste("  Leading pheno order:    ", phenoOrder),
@@ -482,6 +499,7 @@ preprocessingMinfiEwasWater <- function(
     snpsToRemove = snpsToRemove,
     mafThreshold = mafThreshold,
     crossReactivePath = crossReactivePath,
+    crossReactiveIdColumn = crossReactiveIdColumn,
     detPtype = detPtype,
     verbose = verbose,
     logs = logs,

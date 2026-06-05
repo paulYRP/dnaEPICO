@@ -50,14 +50,15 @@ SUMMARY_DIR = summary
 ENMIX_DIR = enmix
 SVA_DIR = sva
 QC_DIR = qc
-R_DIR = ~/R/x86_64-pc-linux-gnu-library/4.4 # NULL is default R library path
+R_DIR = ~/R/x86_64-pc-linux-gnu-library/4.4
 
 # ===============================================
 # GLOBAL PARAMETERS
 # ===============================================
 # STEP 1-5 PARAMETERS
 PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoEMD.csv
-SEP_TYPE = ""
+SEED = 123
+SEP_TYPE =
 SAMPLE_ID = Sample_Name
 N_SAMPLES = 30
 ARRAY_TYPE = IlluminaHumanMethylationEPICv2
@@ -97,6 +98,7 @@ PVAL_THRESHOLD = 0.01
 CHR_TO_REMOVE = chrX,chrY
 SNPS_TO_REMOVE = SBE,CpG
 CROSS_REACTIVE_FILE = $(DATA_DIR)/$(STEP1)/12864_2024_10027_MOESM8_ESM.csv
+CROSS_REACTIVE_ID_COLUMN =
 MAF_THRESHOLD = 0.1
 PLOT_GROUP_VAR = TreatvControl_Time1_vs_Time2
 LC_REF = salivaEPIC

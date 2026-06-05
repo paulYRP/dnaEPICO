@@ -1069,6 +1069,132 @@ plotRawDensityMinfiEwasWater <- function(
   invisible(file)
 }
 
+#' Read cross-reactive probe identifiers from a CSV file
+#'
+#' @param crossReactivePath Character. Path to a CSV file containing
+#'   cross-reactive probe identifiers.
+#' @param crossReactiveIdColumn Character or `NULL`. Column containing probe
+#'   identifiers. When `NULL` or `""`, common names are auto-detected before
+#'   falling back to an unlabeled or probe-like first column.
+#' @param featureNames Character vector or `NULL`. Optional array feature names
+#'   used to count overlap.
+#'
+#' @return A list with class `"dnaEPICO_crossReactive_ids"`.
+#'
+#' @keywords internal
+#' @noRd
+readCrossReactiveIdsMinfiEwasWater <- function(
+    crossReactivePath,
+    crossReactiveIdColumn = NULL,
+    featureNames = NULL
+) {
+  if (!file.exists(crossReactivePath)) {
+    stop(
+      "crossReactivePath does not exist: ",
+      crossReactivePath,
+      call. = FALSE
+    )
+  }
+
+  cross_reactive <- utils::read.csv(
+    crossReactivePath,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+
+  if (ncol(cross_reactive) == 0L) {
+    stop("crossReactivePath contains no columns: ", crossReactivePath, call. = FALSE)
+  }
+
+  id_column <- crossReactiveIdColumn
+  if (length(id_column) == 0L || is.na(id_column[[1L]])) {
+    id_column <- NULL
+  } else {
+    id_column <- trimws(as.character(id_column[[1L]]))
+    if (!nzchar(id_column) || identical(toupper(id_column), "NULL")) {
+      id_column <- NULL
+    }
+  }
+
+  available_columns <- colnames(cross_reactive)
+  standard_columns <- c("ProbeID", "TargetID", "IlmnID", "Name")
+
+  if (!is.null(id_column)) {
+    if (!(id_column %in% available_columns)) {
+      stop(
+        "crossReactiveIdColumn not found in cross-reactive file: ",
+        id_column,
+        ". Available columns: ",
+        paste(ifelse(nzchar(available_columns), available_columns, "<blank>"), collapse = ", "),
+        call. = FALSE
+      )
+    }
+    selected_column <- id_column
+    selected_index <- match(id_column, available_columns)
+    source <- "configured"
+  } else {
+    standard_match <- standard_columns[standard_columns %in% available_columns]
+    if (length(standard_match) > 0L) {
+      selected_column <- standard_match[[1L]]
+      selected_index <- match(selected_column, available_columns)
+      source <- "standard"
+    } else {
+      first_column <- available_columns[[1L]]
+      first_values <- trimws(as.character(cross_reactive[[1L]]))
+      first_values <- first_values[!is.na(first_values) & nzchar(first_values)]
+      first_column_is_unlabeled <- !nzchar(first_column)
+      first_column_is_probe_like <- length(first_values) > 0L &&
+        all(grepl("^(cg|ch\\.)", first_values))
+
+      if (isTRUE(first_column_is_unlabeled) || isTRUE(first_column_is_probe_like)) {
+        selected_column <- first_column
+        selected_index <- 1L
+        source <- if (isTRUE(first_column_is_unlabeled)) {
+          "unlabeled first column"
+        } else {
+          "probe-like first column"
+        }
+      } else {
+        stop(
+          "Could not detect a cross-reactive probe ID column in ",
+          crossReactivePath,
+          ". Set crossReactiveIdColumn to one of: ",
+          paste(ifelse(nzchar(available_columns), available_columns, "<blank>"), collapse = ", "),
+          call. = FALSE
+        )
+      }
+    }
+  }
+
+  ids <- trimws(as.character(cross_reactive[[selected_index]]))
+  ids <- unique(ids[!is.na(ids) & nzchar(ids)])
+
+  if (length(ids) == 0L) {
+    stop(
+      "Cross-reactive probe ID column contains no usable IDs: ",
+      ifelse(nzchar(selected_column), selected_column, "<blank>"),
+      call. = FALSE
+    )
+  }
+
+  overlap <- NA_integer_
+  if (!is.null(featureNames)) {
+    overlap <- sum(ids %in% featureNames)
+  }
+
+  structure(
+    list(
+      ids = ids,
+      column = selected_column,
+      source = source,
+      nRows = nrow(cross_reactive),
+      nIds = length(ids),
+      overlap = overlap
+    ),
+    class = "dnaEPICO_crossReactive_ids"
+  )
+}
+
 #' Filter probes from a normalized methylation object
 #'
 #' Apply detection P-value, chromosome, SNP, and cross-reactive probe filters
@@ -1084,8 +1210,12 @@ plotRawDensityMinfiEwasWater <- function(
 #'   types to remove, for example `"SBE,CpG"`.
 #' @param mafThreshold Numeric. Minor allele frequency threshold passed to
 #'   `minfi::dropLociWithSnps()`.
-#' @param crossReactivePath Character. Path to a CSV file containing a `ProbeID`
-#'   column of cross-reactive probes to remove.
+#' @param crossReactivePath Character. Path to a CSV file containing
+#'   cross-reactive probes to remove.
+#' @param crossReactiveIdColumn Character or `NULL`. Column containing
+#'   cross-reactive probe IDs. When `NULL` or `""`, the function auto-detects
+#'   `ProbeID`, `TargetID`, `IlmnID`, or `Name`, then falls back to an unlabeled
+#'   or probe-like first column.
 #' @param detPtype Character. Detection P-value mode passed to
 #'   `minfi::detectionP()` for the probe filter. Common values in minfi
 #'   workflows are `"m+u"` and `"negative"`.
@@ -1123,6 +1253,7 @@ filterProbesMinfiEwasWater <- function(
     snpsToRemove = "SBE,CpG",
     mafThreshold = 0.1,
     crossReactivePath,
+    crossReactiveIdColumn = NULL,
     detPtype = "m+u",
     verbose = FALSE,
     logs = FALSE,
@@ -1134,14 +1265,6 @@ filterProbesMinfiEwasWater <- function(
     log_dir = log_dir,
     log_file = log_file
   )
-
-  if (!file.exists(crossReactivePath)) {
-    stop(
-      "crossReactivePath does not exist: ",
-      crossReactivePath,
-      call. = FALSE
-    )
-  }
 
   chr_list <- splitOptionMinfiEwasWater(chrToRemove, sep = ",")
   snp_list <- splitOptionMinfiEwasWater(snpsToRemove, sep = ",")
@@ -1167,11 +1290,21 @@ filterProbesMinfiEwasWater <- function(
     maf = mafThreshold
   )
 
-  cross_reactive <- utils::read.csv(
-    crossReactivePath,
-    stringsAsFactors = FALSE
+  cross_reactive_ids <- readCrossReactiveIdsMinfiEwasWater(
+    crossReactivePath = crossReactivePath,
+    crossReactiveIdColumn = crossReactiveIdColumn,
+    featureNames = Biobase::featureNames(filtered_snp)
   )
-  keep_cross <- !(Biobase::featureNames(filtered_snp) %in% cross_reactive$ProbeID)
+
+  if (isTRUE(!is.na(cross_reactive_ids$overlap)) && identical(cross_reactive_ids$overlap, 0L)) {
+    warning(
+      "No cross-reactive probe IDs overlap the filtered array feature names. ",
+      "Check that crossReactivePath and crossReactiveIdColumn match the array platform.",
+      call. = FALSE
+    )
+  }
+
+  keep_cross <- !(Biobase::featureNames(filtered_snp) %in% cross_reactive_ids$ids)
   filtered_final <- filtered_snp[keep_cross, ]
 
   counts <- c(
@@ -1189,6 +1322,15 @@ filterProbesMinfiEwasWater <- function(
       paste("SNP filters removed:       ", paste(snp_list, collapse = ", ")),
       paste("MAF threshold:             ", mafThreshold),
       paste("Cross-reactive file:       ", crossReactivePath),
+      paste(
+        "Cross-reactive ID column:  ",
+        ifelse(nzchar(cross_reactive_ids$column), cross_reactive_ids$column, "<blank>"),
+        " (",
+        cross_reactive_ids$source,
+        ")"
+      ),
+      paste("Cross-reactive IDs loaded: ", cross_reactive_ids$nIds),
+      paste("Cross-reactive IDs overlap:", cross_reactive_ids$overlap),
       paste("Probes after detP filter:  ", counts[["detP"]]),
       paste("Probes after chr filter:   ", counts[["chromosome"]]),
       paste("Probes after SNP filter:   ", counts[["snp"]]),
@@ -1211,7 +1353,9 @@ filterProbesMinfiEwasWater <- function(
       chrToRemove = chr_list,
       snpsToRemove = snp_list,
       mafThreshold = mafThreshold,
-      crossReactivePath = crossReactivePath
+      crossReactivePath = crossReactivePath,
+      crossReactiveIdColumn = cross_reactive_ids$column,
+      crossReactiveIds = cross_reactive_ids
     ),
     class = "dnaEPICO_minfiEwasWater_filter"
   )

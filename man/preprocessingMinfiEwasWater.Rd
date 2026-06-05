@@ -29,6 +29,7 @@ preprocessingMinfiEwasWater(
   snpsToRemove = "SBE,CpG",
   mafThreshold = 0.1,
   crossReactivePath = "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
+  crossReactiveIdColumn = NULL,
   plotGroupVar = "Sex",
   lcRef = "salivaEPIC",
   phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
@@ -105,8 +106,13 @@ types to remove, for example \code{"SBE,CpG"}.}
 \item{mafThreshold}{Numeric. Minor allele frequency threshold passed to
 \code{minfi::dropLociWithSnps()}.}
 
-\item{crossReactivePath}{Character. Path to a CSV file containing a \code{ProbeID}
-column of cross-reactive probes to remove.}
+\item{crossReactivePath}{Character. Path to a CSV file containing
+cross-reactive probes to remove.}
+
+\item{crossReactiveIdColumn}{Character or \code{NULL}. Column containing
+cross-reactive probe IDs. When \code{NULL} or \code{""}, the function auto-detects
+\code{ProbeID}, \code{TargetID}, \code{IlmnID}, or \code{Name}, then falls back to an unlabeled
+or probe-like first column.}
 
 \item{plotGroupVar}{Character. Phenotype column used for density and MDS
 grouping plots.}
