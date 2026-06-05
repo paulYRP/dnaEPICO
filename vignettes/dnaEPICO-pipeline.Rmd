@@ -1011,7 +1011,8 @@ These parameters are shared across multiple workflow steps.
 ### Step 1 to Step 5 shared parameters
 
 - `PHENO_FILE`: input phenotype table used to start the workflow.
-- `SEP_TYPE`: separator used when reading text files.
+- `SEP_TYPE`: optional separator used when reading text files; `NULL` uses the
+  default comma separator.
 - `SAMPLE_ID`: phenotype column used to align samples.
 - `N_SAMPLES`: optional sample subset for testing; `NA` uses all samples.
 - `ARRAY_TYPE` and `ANNOTATION_VERSION`: array platform and annotation build.
@@ -1054,6 +1055,8 @@ These parameters are shared across multiple workflow steps.
 - `CHR_TO_REMOVE`: chromosomes to exclude from downstream matrices.
 - `SNPS_TO_REMOVE`: SNP-related probe categories to remove.
 - `CROSS_REACTIVE_FILE`: cross-reactive probe reference file.
+- `CROSS_REACTIVE_ID_COLUMN`: optional column containing cross-reactive probe
+  IDs; `NULL` auto-detects the column from the reference file.
 - `MAF_THRESHOLD`: minor-allele-frequency threshold used during SNP filtering.
 - `PLOT_GROUP_VAR`: phenotype variable used for grouped QC plots.
 - `LC_REF`: reference panel used for cell-type estimation.
@@ -1108,8 +1111,10 @@ phenotype-methylation data.
 
 ## Argument normalisation
 
-- `PRS_MAP_ARG`, `R_DIR_ARG`, `INTERACTION_GLM_ARG`, and `INTERACTION_LME_ARG`
-  convert Makefile string values into arguments that can be passed safely to R.
+- `PRS_MAP_ARG`, `SEP_TYPE_ARG`, `R_DIR_ARG`,
+  `CROSS_REACTIVE_ID_COLUMN_ARG`, `INTERACTION_GLM_ARG`, and
+  `INTERACTION_LME_ARG` convert Makefile string values into arguments that can
+  be passed safely to R.
 
 This section is especially important for values such as `NULL`, because it
 prevents the literal string `"NULL"` from being interpreted as a real model
@@ -1117,9 +1122,9 @@ value inside the main functions.
 
 The template convention is therefore: use `NA` for optional numeric limits or
 filters where the meaning is "use all" or "keep all", and use `NULL` when an
-optional variable, path, mapping, or model term should be absent. `CHUNK_SIZE`
-uses `NULL` for automatic chunking because it disables a user-specified tuning
-value rather than applying a filter.
+optional separator, variable, path, mapping, or model term should be absent.
+`CHUNK_SIZE` uses `NULL` for automatic chunking because it disables a
+user-specified tuning value rather than applying a filter.
 
 ## Include pipeline from dnaEPICO
 

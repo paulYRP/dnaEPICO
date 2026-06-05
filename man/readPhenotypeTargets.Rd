@@ -6,7 +6,7 @@
 \usage{
 readPhenotypeTargets(
   phenoFile,
-  sepType = "",
+  sepType = NULL,
   nSamples = NA,
   SampleID = "Sample_Name",
   verbose = FALSE,
@@ -18,10 +18,9 @@ readPhenotypeTargets(
 \arguments{
 \item{phenoFile}{Character. Path to the phenotype table on disk.}
 
-\item{sepType}{Character. Field separator used in \code{phenoFile}. Use \code{""}
-(default) for a standard comma-separated file, \code{"\\\\t"} for a
-tab-delimited file, or another single-character separator accepted by
-\code{utils::read.csv()}.}
+\item{sepType}{Character or \code{NULL}. Field separator used in \code{phenoFile}. Use
+\code{NULL} for a standard comma-separated file, \code{"\\\\t"} for a tab-delimited
+file, or another single-character separator accepted by \code{utils::read.csv()}.}
 
 \item{nSamples}{Integer or \code{NA}. Number of rows to keep from the start of the
 phenotype table. The default \code{NA} reads and returns all rows.}

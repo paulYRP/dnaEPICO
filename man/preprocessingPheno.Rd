@@ -6,7 +6,7 @@
 \usage{
 preprocessingPheno(
   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
-  sepType = "",
+  sepType = NULL,
   betaPath =
     "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
   mPath = "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
@@ -30,9 +30,9 @@ preprocessingPheno(
 \arguments{
 \item{phenoFile}{Character. Path to the phenotype CSV file.}
 
-\item{sepType}{Character. Field separator used in \code{phenoFile}. Use \code{""} for
-a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or another
-separator accepted by \code{utils::read.csv()}.}
+\item{sepType}{Character or \code{NULL}. Field separator used in \code{phenoFile}. Use
+\code{NULL} for a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or
+another separator accepted by \code{utils::read.csv()}.}
 
 \item{betaPath}{Character. Path to the saved beta-value object. Both \code{.RData}
 and \code{.rds} files are supported.}

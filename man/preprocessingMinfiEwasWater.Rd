@@ -15,7 +15,7 @@ preprocessingMinfiEwasWater(
   scriptLabel = "preprocessingMinfiEwasWater",
   baseDataFolder = "rData",
   figureBaseDir = "figures",
-  sepType = "",
+  sepType = NULL,
   tiffWidth = 2000,
   tiffHeight = 1000,
   tiffRes = 150,
@@ -68,9 +68,9 @@ outputs when \code{saveOutputs = TRUE}.}
 \item{figureBaseDir}{Character. Base directory used for saved figure outputs
 when \code{saveOutputs = TRUE}.}
 
-\item{sepType}{Character. Field separator used in \code{phenoFile}. Use \code{""} for
-a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or another
-separator accepted by \code{utils::read.csv()}.}
+\item{sepType}{Character or \code{NULL}. Field separator used in \code{phenoFile}. Use
+\code{NULL} for a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or
+another separator accepted by \code{utils::read.csv()}.}
 
 \item{tiffWidth}{Integer. Width of saved TIFF plots in pixels.}
 

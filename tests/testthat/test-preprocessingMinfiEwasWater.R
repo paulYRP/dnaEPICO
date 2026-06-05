@@ -42,12 +42,20 @@ test_that("cross-reactive IDs can be read from TargetID files", {
         crossReactiveIdColumn = "TargetID",
         featureNames = c("cg00003969", "cg00004121")
     )
+    null_string_result <- dnaEPICO:::readCrossReactiveIdsMinfiEwasWater(
+        crossReactivePath = path,
+        crossReactiveIdColumn = "NULL",
+        featureNames = c("cg00003969", "cg00004121")
+    )
 
     expect_identical(auto_result$source, "standard")
     expect_identical(auto_result$column, "TargetID")
     expect_identical(configured_result$column, "TargetID")
+    expect_identical(null_string_result$source, "standard")
+    expect_identical(null_string_result$column, "TargetID")
     expect_equal(auto_result$overlap, 2)
     expect_equal(configured_result$overlap, 2)
+    expect_equal(null_string_result$overlap, 2)
 })
 
 test_that("cross-reactive ID column errors are clear", {

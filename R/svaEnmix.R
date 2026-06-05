@@ -235,9 +235,9 @@ svaEnmixValidateRGSet <- function(
 #'   data.
 #' @param rgsetData Character. Path to a saved `RGChannelSet` object. Both
 #'   `.RData` and `.rds` files are supported.
-#' @param sepType Character. Field separator used in `phenoFile`. Use `""` for
-#'   a comma-separated file, `"\\t"` for a tab-delimited file, or another
-#'   separator accepted by `utils::read.csv()`.
+#' @param sepType Character or `NULL`. Field separator used in `phenoFile`. Use
+#'   `NULL` for a comma-separated file, `"\\t"` for a tab-delimited file, or
+#'   another separator accepted by `utils::read.csv()`.
 #' @param outputLogs Character. Directory used for log files when `logs = TRUE`.
 #' @param nSamples Integer or `NA`. Number of rows to keep from the phenotype
 #'   table. Use `NA` to keep all samples.
@@ -329,7 +329,7 @@ svaEnmixValidateRGSet <- function(
 svaEnmix <- function(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     rgsetData = "rData/preprocessingMinfiEwasWater/objects/RGSet.RData",
-    sepType = "",
+    sepType = NULL,
     outputLogs = "logs",
     nSamples = NA,
     SampleID = "Sample_Name",

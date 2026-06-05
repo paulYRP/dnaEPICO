@@ -5,10 +5,9 @@
 #' the targets as a base `data.frame`.
 #'
 #' @param phenoFile Character. Path to the phenotype table on disk.
-#' @param sepType Character. Field separator used in `phenoFile`. Use `""`
-#'   (default) for a standard comma-separated file, `"\\t"` for a
-#'   tab-delimited file, or another single-character separator accepted by
-#'   `utils::read.csv()`.
+#' @param sepType Character or `NULL`. Field separator used in `phenoFile`. Use
+#'   `NULL` for a standard comma-separated file, `"\\t"` for a tab-delimited
+#'   file, or another single-character separator accepted by `utils::read.csv()`.
 #' @param nSamples Integer or `NA`. Number of rows to keep from the start of the
 #'   phenotype table. The default `NA` reads and returns all rows.
 #' @param SampleID Character. Name of the column containing sample identifiers
@@ -45,7 +44,7 @@
 #' @export
 readPhenotypeTargets <- function(
     phenoFile,
-    sepType = "",
+    sepType = NULL,
     nSamples = NA,
     SampleID = "Sample_Name",
     verbose = FALSE,

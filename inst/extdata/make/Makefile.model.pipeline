@@ -58,7 +58,7 @@ R_DIR = ~/R/x86_64-pc-linux-gnu-library/4.4
 # STEP 1-5 PARAMETERS
 PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoEMD.csv
 SEED = 123
-SEP_TYPE =
+SEP_TYPE = NULL
 SAMPLE_ID = Sample_Name
 N_SAMPLES = 30
 ARRAY_TYPE = IlluminaHumanMethylationEPICv2
@@ -98,7 +98,7 @@ PVAL_THRESHOLD = 0.01
 CHR_TO_REMOVE = chrX,chrY
 SNPS_TO_REMOVE = SBE,CpG
 CROSS_REACTIVE_FILE = $(DATA_DIR)/$(STEP1)/12864_2024_10027_MOESM8_ESM.csv
-CROSS_REACTIVE_ID_COLUMN =
+CROSS_REACTIVE_ID_COLUMN = NULL
 MAF_THRESHOLD = 0.1
 PLOT_GROUP_VAR = TreatvControl_Time1_vs_Time2
 LC_REF = salivaEPIC
@@ -145,10 +145,30 @@ else
   PRS_MAP_ARG = '$(PRS_MAP)'
 endif
 
+ifeq ($(strip $(SEP_TYPE)),)
+  SEP_TYPE_ARG = NULL
+else
+ifeq ($(strip $(SEP_TYPE)),NULL)
+  SEP_TYPE_ARG = NULL
+else
+  SEP_TYPE_ARG = '$(SEP_TYPE)'
+endif
+endif
+
 ifeq ($(R_DIR),NULL)
   R_DIR_ARG = NULL
 else
   R_DIR_ARG = '$(R_DIR)'
+endif
+
+ifeq ($(strip $(CROSS_REACTIVE_ID_COLUMN)),)
+  CROSS_REACTIVE_ID_COLUMN_ARG = NULL
+else
+ifeq ($(strip $(CROSS_REACTIVE_ID_COLUMN)),NULL)
+  CROSS_REACTIVE_ID_COLUMN_ARG = NULL
+else
+  CROSS_REACTIVE_ID_COLUMN_ARG = '$(CROSS_REACTIVE_ID_COLUMN)'
+endif
 endif
 
 ifeq ($(INTERACTION_GLM),NULL)

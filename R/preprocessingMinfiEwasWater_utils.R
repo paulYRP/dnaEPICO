@@ -154,7 +154,8 @@ resolveLogPathMinfiEwasWater <- function(
 
 #' Resolve the phenotype separator used in preprocessingMinfiEwasWater helpers
 #'
-#' @param sepType Character. Separator description supplied by the user.
+#' @param sepType Character or `NULL`. Separator description supplied by the
+#'   user.
 #'
 #' @return Character scalar with the resolved separator, or `NULL` for the
 #'   default comma separator used by `utils::read.csv()`.
@@ -163,13 +164,20 @@ resolveLogPathMinfiEwasWater <- function(
 #' preprocessing functions.
 #' @keywords internal
 #' @noRd
-resolveSeparatorMinfiEwasWater <- function(sepType = "") {
-    if (identical(sepType, "\\t")) {
-        return("\t")
+resolveSeparatorMinfiEwasWater <- function(sepType = NULL) {
+    if (length(sepType) == 0L || is.na(sepType[[1L]])) {
+        return(NULL)
     }
 
-    if (identical(sepType, "")) {
+    sepType <- as.character(sepType[[1L]])
+    sepTypeLabel <- trimws(sepType)
+
+    if (!nzchar(sepType) || identical(toupper(sepTypeLabel), "NULL")) {
         return(NULL)
+    }
+
+    if (identical(sepType, "\\t")) {
+        return("\t")
     }
 
     sepType

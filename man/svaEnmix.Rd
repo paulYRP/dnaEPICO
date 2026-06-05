@@ -7,7 +7,7 @@
 svaEnmix(
   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
   rgsetData = "rData/preprocessingMinfiEwasWater/objects/RGSet.RData",
-  sepType = "",
+  sepType = NULL,
   outputLogs = "logs",
   nSamples = NA,
   SampleID = "Sample_Name",
@@ -37,9 +37,9 @@ data.}
 \item{rgsetData}{Character. Path to a saved \code{RGChannelSet} object. Both
 \code{.RData} and \code{.rds} files are supported.}
 
-\item{sepType}{Character. Field separator used in \code{phenoFile}. Use \code{""} for
-a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or another
-separator accepted by \code{utils::read.csv()}.}
+\item{sepType}{Character or \code{NULL}. Field separator used in \code{phenoFile}. Use
+\code{NULL} for a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or
+another separator accepted by \code{utils::read.csv()}.}
 
 \item{outputLogs}{Character. Directory used for log files when \code{logs = TRUE}.}
 

@@ -22,9 +22,9 @@
 #'   outputs when `saveOutputs = TRUE`.
 #' @param figureBaseDir Character. Base directory used for saved figure outputs
 #'   when `saveOutputs = TRUE`.
-#' @param sepType Character. Field separator used in `phenoFile`. Use `""` for
-#'   a comma-separated file, `"\\t"` for a tab-delimited file, or another
-#'   separator accepted by `utils::read.csv()`.
+#' @param sepType Character or `NULL`. Field separator used in `phenoFile`. Use
+#'   `NULL` for a comma-separated file, `"\\t"` for a tab-delimited file, or
+#'   another separator accepted by `utils::read.csv()`.
 #' @param tiffWidth Integer. Width of saved TIFF plots in pixels.
 #' @param tiffHeight Integer. Height of saved TIFF plots in pixels.
 #' @param tiffRes Integer. Resolution in DPI for saved TIFF plots.
@@ -146,7 +146,7 @@ preprocessingMinfiEwasWater <- function(
     scriptLabel = "preprocessingMinfiEwasWater",
     baseDataFolder = "rData",
     figureBaseDir = "figures",
-    sepType = "",
+    sepType = NULL,
     tiffWidth = 2000,
     tiffHeight = 1000,
     tiffRes = 150,

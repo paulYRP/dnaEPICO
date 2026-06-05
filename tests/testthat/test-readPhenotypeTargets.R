@@ -23,6 +23,56 @@ test_that("readPhenotypeTargets is quiet by default and subsets rows", {
     expect_identical(targets$Sample_Name, c("S1", "S2"))
 })
 
+test_that("readPhenotypeTargets treats absent separator values as comma defaults", {
+    pheno <- data.frame(
+        Sample_Name = c("S1", "S2"),
+        Sex = c("F", "M"),
+        stringsAsFactors = FALSE
+    )
+
+    pheno_file <- tempfile(fileext = ".csv")
+    utils::write.csv(pheno, pheno_file, row.names = FALSE)
+
+    for (sep_type in list(NULL, "", "NULL")) {
+        targets <- dnaEPICO::readPhenotypeTargets(
+            phenoFile = pheno_file,
+            sepType = sep_type,
+            SampleID = "Sample_Name"
+        )
+
+        expect_identical(targets$Sample_Name, pheno$Sample_Name)
+        expect_identical(targets$Sex, pheno$Sex)
+    }
+})
+
+test_that("readPhenotypeTargets preserves explicit tab separators", {
+    pheno <- data.frame(
+        Sample_Name = c("S1", "S2"),
+        Sex = c("F", "M"),
+        stringsAsFactors = FALSE
+    )
+
+    pheno_file <- tempfile(fileext = ".tsv")
+    utils::write.table(
+        pheno,
+        pheno_file,
+        sep = "\t",
+        row.names = FALSE,
+        quote = FALSE
+    )
+
+    for (sep_type in list("\t", "\\t")) {
+        targets <- dnaEPICO::readPhenotypeTargets(
+            phenoFile = pheno_file,
+            sepType = sep_type,
+            SampleID = "Sample_Name"
+        )
+
+        expect_identical(targets$Sample_Name, pheno$Sample_Name)
+        expect_identical(targets$Sex, pheno$Sex)
+    }
+})
+
 test_that("readPhenotypeTargets can emit verbose messages and write logs", {
     pheno <- data.frame(
         Sample_Name = c("S1", "S2"),

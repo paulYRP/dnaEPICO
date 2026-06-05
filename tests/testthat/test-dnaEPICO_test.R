@@ -212,7 +212,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
         dnaEPICO::svaEnmix(
             phenoFile = phenoFile,
             rgsetData = rgsetPath,
-            sepType = "",
+            sepType = NULL,
             outputLogs = file.path(tmpDir, "logs"),
             nSamples = NA,
             SampleID = "Sample_Name",
@@ -269,7 +269,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
     expect_error(
         dnaEPICO::preprocessingPheno(
             phenoFile = phenoFile,
-            sepType = "",
+            sepType = NULL,
             betaPath = betaPath,
             mPath = mPath,
             cnPath = cnPath,

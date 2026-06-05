@@ -5,7 +5,9 @@ MAKEFLAGS += --output-sync
 
 PHENO_TIME_VAR ?= $(TIME_VAR)
 LME_TIME_VAR ?= $(TIME_VAR)
-CROSS_REACTIVE_ID_COLUMN ?=
+CROSS_REACTIVE_ID_COLUMN ?= NULL
+SEP_TYPE_ARG ?= '$(SEP_TYPE)'
+CROSS_REACTIVE_ID_COLUMN_ARG ?= '$(CROSS_REACTIVE_ID_COLUMN)'
 empty :=
 space := $(empty) $(empty)
 comma := ,
@@ -162,7 +164,7 @@ $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData \
 $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	@Rscript -e "$(SET_SEED_EXPR) suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingMinfiEwasWater( \
 	  phenoFile = '$(PHENO_FILE)', \
-	  sepType = '$(SEP_TYPE)', \
+	  sepType = $(SEP_TYPE_ARG), \
 	  idatFolder = '$(DATA_DIR)/$(STEP1)/$(IDAT_DIR)/', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  nSamples = $(N_SAMPLES), \
@@ -183,7 +185,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  chrToRemove = '$(CHR_TO_REMOVE)', \
 	  snpsToRemove = '$(SNPS_TO_REMOVE)', \
 	  crossReactivePath = '$(CROSS_REACTIVE_FILE)', \
-	  crossReactiveIdColumn = '$(CROSS_REACTIVE_ID_COLUMN)', \
+	  crossReactiveIdColumn = $(CROSS_REACTIVE_ID_COLUMN_ARG), \
 	  mafThreshold = $(MAF_THRESHOLD), \
 	  plotGroupVar = '$(PLOT_GROUP_VAR)', \
 	  lcRef = '$(LC_REF)', \
@@ -203,7 +205,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(svaEnmix( \
 	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
 	  rgsetData = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData', \
-	  sepType = '$(SEP_TYPE)', \
+	  sepType = $(SEP_TYPE_ARG), \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  nSamples = $(N_SAMPLES), \
 	  SampleID = '$(SAMPLE_ID)', \
@@ -241,7 +243,7 @@ $(COMBINED_PHENO_TARGET) \
 $(COMBINED_PHENO_BETA): 
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingPheno( \
 	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
-	  sepType = '$(SEP_TYPE)', \
+	  sepType = $(SEP_TYPE_ARG), \
 	  betaPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
 	  mPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
 	  cnPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \

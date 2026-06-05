@@ -7,9 +7,9 @@
 #' written only when `saveOutputs = TRUE`.
 #'
 #' @param phenoFile Character. Path to the phenotype CSV file.
-#' @param sepType Character. Field separator used in `phenoFile`. Use `""` for
-#'   a comma-separated file, `"\\t"` for a tab-delimited file, or another
-#'   separator accepted by `utils::read.csv()`.
+#' @param sepType Character or `NULL`. Field separator used in `phenoFile`. Use
+#'   `NULL` for a comma-separated file, `"\\t"` for a tab-delimited file, or
+#'   another separator accepted by `utils::read.csv()`.
 #' @param betaPath Character. Path to the saved beta-value object. Both `.RData`
 #'   and `.rds` files are supported.
 #' @param mPath Character. Path to the saved M-value object. Both `.RData` and
@@ -111,7 +111,7 @@
 #' @export
 preprocessingPheno <- function(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
-    sepType = "",
+    sepType = NULL,
     betaPath =
       "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
     mPath =
