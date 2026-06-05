@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.23</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.24</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-05-29</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-local.Rmd" class="external-link"><code>vignettes/dnaEPICO-local.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-local.Rmd</code></div>
@@ -156,6 +156,16 @@ Users are expected to have basic familiarity with R, Bioconductor
 workflows, and Illumina IDAT file structures.</p>
 <p>If you are asking yourself the question “Where do I start using
 Bioconductor?”, you might be interested in <a href="https://www.bioconductor.org/install/" class="external-link">this post</a>.</p>
+<div class="section level3">
+<h3 id="cross-reactive-probe-reference-files">Cross-reactive probe reference files<a class="anchor" aria-label="anchor" href="#cross-reactive-probe-reference-files"></a>
+</h3>
+<p>The lists of excluded probes depend on the platform. For Illumina
+HumanMethylationEPIC v2.0, use the cross-reactive probe file from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323" class="external-link">Peters
+et al. (2024)</a>; for Illumina MethylationEPIC (a.k.a. 850k array), use
+<a href="https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334" class="external-link">Pidsley
+et al. (2016)</a>; and for Illumina HumanMethylation450k, use <a href="https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205" class="external-link">Chen
+et al. (2013)</a>.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -199,7 +209,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"           "arrayType"         "annotationVersion"</span></span>
 <span><span class="co">#&gt; [7] "crossReactivePath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmphnuY7l/dnaEPICO-idat-example-20455126d911"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmplIQ83X/dnaEPICO-idat-example-205a65a74798"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -476,7 +486,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmphnuY7l/dnaEPICO-preprocessingPheno-example-204574d06cbf"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmplIQ83X/dnaEPICO-preprocessingPheno-example-205a6ceb9333"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -617,9 +627,9 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-05-29 23:57:42 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-06-05 12:59:02 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 47.413 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 48.023 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -663,7 +673,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.23                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.24                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
@@ -674,7 +684,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt;   [9] ragg_1.5.2                vctrs_0.7.3              </span></span>
 <span><span class="co">#&gt;  [11] multtest_2.62.0           memoise_2.0.1            </span></span>
 <span><span class="co">#&gt;  [13] Rsamtools_2.22.0          DelayedMatrixStats_1.28.1</span></span>
-<span><span class="co">#&gt;  [15] ENmix_1.42.2              RCurl_1.98-1.18          </span></span>
+<span><span class="co">#&gt;  [15] ENmix_1.42.2              RCurl_1.98-1.19          </span></span>
 <span><span class="co">#&gt;  [17] askpass_1.2.1             htmltools_0.5.9          </span></span>
 <span><span class="co">#&gt;  [19] S4Arrays_1.6.0            AnnotationHub_3.14.0     </span></span>
 <span><span class="co">#&gt;  [21] dynamicTreeCut_1.63-1     curl_7.1.0               </span></span>
@@ -719,7 +729,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt;  [99] rtracklayer_1.66.0        bit_4.6.0                </span></span>
 <span><span class="co">#&gt; [101] GEOquery_2.74.0           annotate_1.84.0          </span></span>
 <span><span class="co">#&gt; [103] tidyselect_1.2.1          knitr_1.51               </span></span>
-<span><span class="co">#&gt; [105] bookdown_0.46             xfun_0.57                </span></span>
+<span><span class="co">#&gt; [105] bookdown_0.46             xfun_0.58                </span></span>
 <span><span class="co">#&gt; [107] scrime_1.3.7              statmod_1.5.2            </span></span>
 <span><span class="co">#&gt; [109] UCSC.utils_1.2.0          yaml_2.3.12              </span></span>
 <span><span class="co">#&gt; [111] evaluate_1.0.5            codetools_0.2-20         </span></span>

@@ -20,7 +20,7 @@ each stage. Legacy files are written only when saveOutputs = TRUE."><!-- mathjax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.23</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.24</span>
       </span>
     </div>
 
@@ -100,6 +100,7 @@ each stage. Legacy files are written only when <code>saveOutputs = TRUE</code>.<
 <span>  snpsToRemove <span class="op">=</span> <span class="st">"SBE,CpG"</span>,</span>
 <span>  mafThreshold <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  crossReactivePath <span class="op">=</span> <span class="st">"data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv"</span>,</span>
+<span>  crossReactiveIdColumn <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  plotGroupVar <span class="op">=</span> <span class="st">"Sex"</span>,</span>
 <span>  lcRef <span class="op">=</span> <span class="st">"salivaEPIC"</span>,</span>
 <span>  phenoOrder <span class="op">=</span> <span class="st">"Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position"</span>,</span>
@@ -227,8 +228,15 @@ types to remove, for example <code>"SBE,CpG"</code>.</p></dd>
 
 
 <dt id="arg-crossreactivepath">crossReactivePath<a class="anchor" aria-label="anchor" href="#arg-crossreactivepath"></a></dt>
-<dd><p>Character. Path to a CSV file containing a <code>ProbeID</code>
-column of cross-reactive probes to remove.</p></dd>
+<dd><p>Character. Path to a CSV file containing
+cross-reactive probes to remove.</p></dd>
+
+
+<dt id="arg-crossreactiveidcolumn">crossReactiveIdColumn<a class="anchor" aria-label="anchor" href="#arg-crossreactiveidcolumn"></a></dt>
+<dd><p>Character or <code>NULL</code>. Column containing
+cross-reactive probe IDs. When <code>NULL</code> or <code>""</code>, the function auto-detects
+<code>ProbeID</code>, <code>TargetID</code>, <code>IlmnID</code>, or <code>Name</code>, then falls back to an unlabeled
+or probe-like first column.</p></dd>
 
 
 <dt id="arg-plotgroupvar">plotGroupVar<a class="anchor" aria-label="anchor" href="#arg-plotgroupvar"></a></dt>
@@ -361,6 +369,7 @@ logging was disabled.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> [preprocessQuantile] Mapping to genome.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> [preprocessQuantile] Fixing outliers.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> [preprocessQuantile] Quantile normalizing.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>No cross-reactive probe IDs overlap the filtered array feature names. Check that crossReactivePath and crossReactiveIdColumn match the array platform.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

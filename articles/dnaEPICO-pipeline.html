@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.23</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.24</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-05-29</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-pipeline.Rmd" class="external-link"><code>vignettes/dnaEPICO-pipeline.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-pipeline.Rmd</code></div>
@@ -152,6 +152,16 @@ Users are expected to have basic familiarity with R, command-line
 execution, and Illumina IDAT file structures.</p>
 <p>If you are asking yourself the question “Where do I start using
 Bioconductor?”, you might be interested in <a href="https://www.bioconductor.org/install/" class="external-link">this blog post</a>.</p>
+<div class="section level3">
+<h3 id="cross-reactive-probe-reference-files">Cross-reactive probe reference files<a class="anchor" aria-label="anchor" href="#cross-reactive-probe-reference-files"></a>
+</h3>
+<p>The lists of excluded probes depend on the platform. For Illumina
+HumanMethylationEPIC v2.0, use the cross-reactive probe file from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323" class="external-link">Peters
+et al. (2024)</a>; for Illumina MethylationEPIC (a.k.a. 850k array), use
+<a href="https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334" class="external-link">Pidsley
+et al. (2016)</a>; and for Illumina HumanMethylation450k, use <a href="https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205" class="external-link">Chen
+et al. (2013)</a>.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -217,7 +227,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"           "arrayType"         "annotationVersion"</span></span>
 <span><span class="co">#&gt; [7] "crossReactivePath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp05TiUp/dnaEPICO-idat-example-20b12c6afe26"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpVzjGUL/dnaEPICO-idat-example-20c628596a26"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -493,7 +503,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp05TiUp/dnaEPICO-preprocessingPheno-example-20b14be6fedf"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpVzjGUL/dnaEPICO-preprocessingPheno-example-20c633e22866"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -609,7 +619,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp05TiUp/dnaEPICO-glm-example-20b14d2d4bcd"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpVzjGUL/dnaEPICO-glm-example-20c65411bb7b"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -709,7 +719,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp05TiUp/dnaEPICO-glmm-example-20b1252624eb"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpVzjGUL/dnaEPICO-glmm-example-20c657b47428"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -1208,14 +1218,15 @@ SUMMARY_DIR = summary
 ENMIX_DIR = enmix
 SVA_DIR = sva
 QC_DIR = qc
-R_DIR = ~/R/x86_64-pc-linux-gnu-library/4.4 # NULL is default R library path
+R_DIR = ~/R/x86_64-pc-linux-gnu-library/4.4
 
 # ===============================================
 # GLOBAL PARAMETERS
 # ===============================================
 # STEP 1-5 PARAMETERS
 PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoEMD.csv
-SEP_TYPE = ""
+SEED = 123
+SEP_TYPE =
 SAMPLE_ID = Sample_Name
 N_SAMPLES = 30
 ARRAY_TYPE = IlluminaHumanMethylationEPICv2
@@ -1255,6 +1266,7 @@ PVAL_THRESHOLD = 0.01
 CHR_TO_REMOVE = chrX,chrY
 SNPS_TO_REMOVE = SBE,CpG
 CROSS_REACTIVE_FILE = $(DATA_DIR)/$(STEP1)/12864_2024_10027_MOESM8_ESM.csv
+CROSS_REACTIVE_ID_COLUMN =
 MAF_THRESHOLD = 0.1
 PLOT_GROUP_VAR = TreatvControl_Time1_vs_Time2
 LC_REF = salivaEPIC
@@ -1452,18 +1464,20 @@ categorical before model fitting.</li>
 <code>CPG_LIMIT</code>: optional cap on the number of CpGs
 processed; <code>NA</code> uses all.</li>
 <li>
-<code>PRS_MAP</code>: mapping from phenotype names to PRS
-variables.</li>
+<code>PRS_MAP</code>: optional mapping from phenotype names to PRS
+variables; <code>NULL</code> omits PRS terms from the models.</li>
 <li>
 <code>SUMMARY_PVAL</code>: optional p-value cutoff for summary
-tables.</li>
+tables; <code>NA</code> keeps all summary rows.</li>
 <li>
 <code>N_CORES</code>: number of cores used within each R job.</li>
 <li>
 <code>SAVE_TXT_SUMMARIES</code>: whether plain-text summaries should
 be written.</li>
 <li>
-<code>CHUNK_SIZE</code>: number of CpGs processed per chunk.</li>
+<code>CHUNK_SIZE</code>: number of CpGs processed per chunk;
+<code>NULL</code> lets the R helpers choose the chunk size
+automatically.</li>
 <li>
 <code>FDR_THRESHOLD</code>: false-discovery-rate threshold used for
 filtering.</li>
@@ -1555,7 +1569,8 @@ that will be modelled one at a time by
 <code><a href="../reference/methylationGLM_T1.html">methylationGLM_T1()</a></code>.</li>
 <li>
 <code>INTERACTION_GLM</code>: optional interaction term added to the
-fixed-effect part of the GLM.</li>
+fixed-effect part of the GLM; <code>NULL</code> omits the
+interaction.</li>
 <li>
 <code>SUMMARY_RESIDUAL_SD</code>: whether residual standard
 deviations are reported in summaries.</li>
@@ -1583,7 +1598,7 @@ effect grouping factor.</li>
 <code><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2()</a></code>.</li>
 <li>
 <code>INTERACTION_LME</code>: optional interaction term used in the
-longitudinal model.</li>
+longitudinal model; <code>NULL</code> omits the interaction.</li>
 <li>
 <code>SAVE_SIGNIFICANT_INTERACTIONS</code>: whether significant
 interaction tables are exported.</li>
@@ -1606,6 +1621,12 @@ to R.</li>
 <code>NULL</code>, because it prevents the literal string
 <code>"NULL"</code> from being interpreted as a real model value inside
 the main functions.</p>
+<p>The template convention is therefore: use <code>NA</code> for
+optional numeric limits or filters where the meaning is “use all” or
+“keep all”, and use <code>NULL</code> when an optional variable, path,
+mapping, or model term should be absent. <code>CHUNK_SIZE</code> uses
+<code>NULL</code> for automatic chunking because it disables a
+user-specified tuning value rather than applying a filter.</p>
 </div>
 <div class="section level3">
 <h3 id="include-pipeline-from-dnaepico">Include pipeline from dnaEPICO<a class="anchor" aria-label="anchor" href="#include-pipeline-from-dnaepico"></a>
@@ -1641,9 +1662,9 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-05-29 23:59:16 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-06-05 13:00:38 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.486 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.511 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1687,7 +1708,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.23                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.24                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
@@ -1707,7 +1728,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt;  [27] minqa_1.2.8               RColorBrewer_1.1-3       </span></span>
 <span><span class="co">#&gt;  [29] abind_1.4-8               zlibbioc_1.52.0          </span></span>
 <span><span class="co">#&gt;  [31] quadprog_1.5-8            purrr_1.2.2              </span></span>
-<span><span class="co">#&gt;  [33] RCurl_1.98-1.18           rappdirs_0.3.4           </span></span>
+<span><span class="co">#&gt;  [33] RCurl_1.98-1.19           rappdirs_0.3.4           </span></span>
 <span><span class="co">#&gt;  [35] GenomeInfoDbData_1.2.13   ggrepel_0.9.8            </span></span>
 <span><span class="co">#&gt;  [37] irlba_2.3.7               rentrez_1.2.4            </span></span>
 <span><span class="co">#&gt;  [39] genefilter_1.88.0         annotate_1.84.0          </span></span>
@@ -1723,7 +1744,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt;  [59] systemfonts_1.3.2         tools_4.4.2              </span></span>
 <span><span class="co">#&gt;  [61] ragg_1.5.2                Rcpp_1.1.1-1.1           </span></span>
 <span><span class="co">#&gt;  [63] glue_1.8.1                SparseArray_1.6.2        </span></span>
-<span><span class="co">#&gt;  [65] xfun_0.57                 dplyr_1.2.1              </span></span>
+<span><span class="co">#&gt;  [65] xfun_0.58                 dplyr_1.2.1              </span></span>
 <span><span class="co">#&gt;  [67] HDF5Array_1.34.0          withr_3.0.2              </span></span>
 <span><span class="co">#&gt;  [69] numDeriv_2016.8-1.1       BiocManager_1.30.27      </span></span>
 <span><span class="co">#&gt;  [71] fastmap_1.2.0             boot_1.3-32              </span></span>
