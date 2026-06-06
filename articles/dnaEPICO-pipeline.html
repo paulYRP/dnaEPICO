@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.25</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.26</span>
       </span>
     </div>
 
@@ -227,7 +227,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"           "arrayType"         "annotationVersion"</span></span>
 <span><span class="co">#&gt; [7] "crossReactivePath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpWKf9R5/dnaEPICO-idat-example-20c62278091d"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpCBzRbW/dnaEPICO-idat-example-20c464644abf"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -503,7 +503,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpWKf9R5/dnaEPICO-preprocessingPheno-example-20c620be3577"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpCBzRbW/dnaEPICO-preprocessingPheno-example-20c465f0d700"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -619,7 +619,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpWKf9R5/dnaEPICO-glm-example-20c620bcfea1"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpCBzRbW/dnaEPICO-glm-example-20c46842a389"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -719,7 +719,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpWKf9R5/dnaEPICO-glmm-example-20c6493647d0"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpCBzRbW/dnaEPICO-glmm-example-20c49fd8d9c"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -1108,7 +1108,7 @@ each declared model.</li>
 <p>Two maintenance targets are also useful during routine work:</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">make</span> status MODEL=model1</span>
 <span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="fu">make</span> clean MODEL=model1</span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">make</span> clean MODEL=all</span></code></pre></div>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">make</span> clean_models</span></code></pre></div>
 <ul>
 <li>
 <code>make status MODEL=model1</code> reports which expected outputs
@@ -1117,7 +1117,7 @@ are already present for one model.</li>
 <code>make clean MODEL=model1</code> removes the generated outputs
 for one model.</li>
 <li>
-<code>make clean MODEL=all</code> removes the generated outputs for
+<code>make clean_models</code> removes the generated outputs for
 every model listed in <code>MODELS</code>.</li>
 </ul>
 <p>The exact target names and variables depend on the Makefile settings
@@ -1231,6 +1231,7 @@ SAMPLE_ID = Sample_Name
 N_SAMPLES = 30
 ARRAY_TYPE = IlluminaHumanMethylationEPICv2
 ANNOTATION_VERSION = 20a1.hg38
+IDAT_FORCE = FALSE
 TIFF_WIDTH = 2000
 TIFF_HEIGHT = 1000
 TIFF_RES = 150
@@ -1448,6 +1449,11 @@ files; <code>NULL</code> uses the default comma separator.</li>
 <li>
 <code>ARRAY_TYPE</code> and <code>ANNOTATION_VERSION</code>: array
 platform and annotation build.</li>
+<li>
+<code>IDAT_FORCE</code>: whether
+<code><a href="https://rdrr.io/pkg/minfi/man/read.metharray.exp.html" class="external-link">minfi::read.metharray.exp()</a></code> should force reading selected
+IDAT files with different internal array sizes; the default is
+<code>FALSE</code>.</li>
 <li>
 <code>TIFF_WIDTH</code>, <code>TIFF_HEIGHT</code>, and
 <code>TIFF_RES</code>: default plot dimensions and resolution.</li>
@@ -1689,9 +1695,9 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-06-06 00:03:20 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-06-06 00:45:54 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.632 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.561 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1735,7 +1741,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.25                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.26                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
