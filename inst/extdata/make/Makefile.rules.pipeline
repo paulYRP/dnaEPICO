@@ -171,6 +171,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  SampleID = '$(SAMPLE_ID)', \
 	  arrayType = '$(ARRAY_TYPE)', \
 	  annotationVersion = '$(ANNOTATION_VERSION)', \
+	  idatForce = $(IDAT_FORCE), \
 	  scriptLabel = '$(MODEL)/$(STEP1)', \
 	  baseDataFolder = '$(RDATA_DIR)', \
 	  figureBaseDir = '$(FIGURES_DIR)', \
@@ -369,6 +370,21 @@ $(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
 # =================================================================================================================================
 # Clean up outputs
 # =================================================================================================================================
+clean_models:
+	@echo "===== Cleaning all models ====="
+	@for m in $(MODELS); do \
+	  echo "Cleaning model $$m ..."; \
+	  rm -rf \
+	    $(DATA_DIR)/$$m \
+	    $(RDATA_DIR)/$$m \
+	    $(STEP6)/$$m \
+	    $(LOGS_DIR)/$$m \
+		$(FIGURES_DIR)/$$m \
+	    $(RESULTS_DIR)/$$m; \
+	done
+	@rmdir $(RDATA_DIR) $(STEP6) $(LOGS_DIR) $(FIGURES_DIR) $(RESULTS_DIR) 2>/dev/null || true
+	@echo "Clean completed for all models. Kept $(DATA_DIR)/$(STEP1)/."
+
 clean:
 ifeq ($(MODEL),all)
 	@echo "===== Cleaning all models ====="
@@ -382,6 +398,7 @@ ifeq ($(MODEL),all)
 		$(FIGURES_DIR)/$$m \
 	    $(RESULTS_DIR)/$$m; \
 	done
+	@rmdir $(RDATA_DIR) $(STEP6) $(LOGS_DIR) $(FIGURES_DIR) $(RESULTS_DIR) 2>/dev/null || true
 	@echo "Clean completed for all models. Kept $(DATA_DIR)/$(STEP1)/."
 else
 	@echo "Cleaning outputs for: $(MODEL)"
@@ -392,6 +409,7 @@ else
 		$(LOGS_DIR)/$(MODEL) \
 		$(FIGURES_DIR)/$(MODEL) \
 		$(RESULTS_DIR)/$(MODEL)
+	@rmdir $(RDATA_DIR) $(STEP6) $(LOGS_DIR) $(FIGURES_DIR) $(RESULTS_DIR) 2>/dev/null || true
 	@echo "Clean completed for: $(MODEL)"
 endif
 
@@ -408,5 +426,5 @@ status:
 	@test -e $(STEP6)/$(MODEL)/docs/index.html && echo "? Step 6: Report generated" || echo "? Step 6: Report missing"
 	@echo "============================"
 
-.PHONY: all clean status models step1 step2 step3 f3 f4 f3lme f3_models f4_models f3lme_models
+.PHONY: all clean clean_models status models step1 step2 step3 f3 f4 f3lme f3_models f4_models f3lme_models
 

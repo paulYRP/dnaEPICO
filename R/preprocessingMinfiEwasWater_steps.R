@@ -15,6 +15,8 @@
 #' @param annotationVersion Character. Annotation build passed to
 #'   `Biobase::annotation(RGSet)`, for example `"20a1.hg38"` for EPIC v2 hg38
 #'   annotations or `"ilmn12.hg19"` for 450K hg19 annotations.
+#' @param force Logical. Passed to `minfi::read.metharray.exp()`. Use `TRUE`
+#'   only after confirming that the selected IDAT files should be read together.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
@@ -45,6 +47,7 @@ readRGSetMinfiEwasWater <- function(
     SampleID = "Sample_Name",
     arrayType = "IlluminaHumanMethylationEPICv2",
     annotationVersion = "20a1.hg38",
+    force = FALSE,
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
@@ -69,7 +72,8 @@ readRGSetMinfiEwasWater <- function(
       "=======================================================================",
       paste("IDAT folder:              ", idatFolder),
       paste("Array type:               ", arrayType),
-      paste("Annotation version:       ", annotationVersion)
+      paste("Annotation version:       ", annotationVersion),
+      paste("Force IDAT read:          ", force)
     ),
     verbose = verbose,
     log_path = log_path
@@ -80,7 +84,8 @@ readRGSetMinfiEwasWater <- function(
     targets = targets,
     extended = FALSE,
     recursive = FALSE,
-    verbose = FALSE
+    verbose = FALSE,
+    force = force
   )
 
   colnames(RGSet) <- targets[[SampleID]]

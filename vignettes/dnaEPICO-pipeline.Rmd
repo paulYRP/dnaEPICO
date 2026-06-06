@@ -894,12 +894,13 @@ Two maintenance targets are also useful during routine work:
 ```bash
 make status MODEL=model1
 make clean MODEL=model1
-make clean MODEL=all
+make clean_models
 ```
 
 - `make status MODEL=model1` reports which expected outputs are already present for one model.
 - `make clean MODEL=model1` removes the generated outputs for one model.
-- `make clean MODEL=all` removes the generated outputs for every model listed in `MODELS`.
+- `make clean_models` removes the generated outputs for every model listed in
+  `MODELS`.
 
 The exact target names and variables depend on the Makefile settings extracted
 for the project. In practice, `saveOutputs = TRUE` is what makes the individual
@@ -1016,6 +1017,9 @@ These parameters are shared across multiple workflow steps.
 - `SAMPLE_ID`: phenotype column used to align samples.
 - `N_SAMPLES`: optional sample subset for testing; `NA` uses all samples.
 - `ARRAY_TYPE` and `ANNOTATION_VERSION`: array platform and annotation build.
+- `IDAT_FORCE`: whether `minfi::read.metharray.exp()` should force reading
+  selected IDAT files with different internal array sizes; the default is
+  `FALSE`.
 - `TIFF_WIDTH`, `TIFF_HEIGHT`, and `TIFF_RES`: default plot dimensions and
   resolution.
 - `SEX_COLUMN`: phenotype column used for sex-based checks and prediction.

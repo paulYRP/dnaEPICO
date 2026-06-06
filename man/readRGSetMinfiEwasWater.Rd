@@ -10,6 +10,7 @@ readRGSetMinfiEwasWater(
   SampleID = "Sample_Name",
   arrayType = "IlluminaHumanMethylationEPICv2",
   annotationVersion = "20a1.hg38",
+  force = FALSE,
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
@@ -32,6 +33,9 @@ identifiers used to label the \code{RGChannelSet}.}
 \item{annotationVersion}{Character. Annotation build passed to
 \code{Biobase::annotation(RGSet)}, for example \code{"20a1.hg38"} for EPIC v2 hg38
 annotations or \code{"ilmn12.hg19"} for 450K hg19 annotations.}
+
+\item{force}{Logical. Passed to \code{minfi::read.metharray.exp()}. Use \code{TRUE}
+only after confirming that the selected IDAT files should be read together.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 

@@ -12,6 +12,7 @@ preprocessingMinfiEwasWater(
   SampleID = "Sample_Name",
   arrayType = "IlluminaHumanMethylationEPICv2",
   annotationVersion = "20a1.hg38",
+  idatForce = FALSE,
   scriptLabel = "preprocessingMinfiEwasWater",
   baseDataFolder = "rData",
   figureBaseDir = "figures",
@@ -58,6 +59,10 @@ identifiers.}
 
 \item{annotationVersion}{Character. Annotation build passed to
 \code{Biobase::annotation()}, for example \code{"20a1.hg38"} or \code{"ilmn12.hg19"}.}
+
+\item{idatForce}{Logical. Passed to \code{minfi::read.metharray.exp()} when
+reading IDAT files. Use \code{TRUE} only after confirming that the selected IDAT
+files should be read together.}
 
 \item{scriptLabel}{Character. Label used to name output folders when
 \code{saveOutputs = TRUE}.}

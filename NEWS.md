@@ -1,7 +1,10 @@
-CHANGES IN VERSION 0.99.25
+CHANGES IN VERSION 0.99.26
 ------------------------
 
 NEW FEATURES
+
+    o [06-06-2026] Added IDAT_FORCE to optionally force minfi IDAT parsing for
+      validated mixed-size IDAT inputs.
 
     o [05-06-2026] Added configurable cross-reactive probe ID detection. 
 

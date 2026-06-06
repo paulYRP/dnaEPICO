@@ -16,6 +16,9 @@
 #'   `Biobase::annotation()`, for example `"IlluminaHumanMethylationEPICv2"`.
 #' @param annotationVersion Character. Annotation build passed to
 #'   `Biobase::annotation()`, for example `"20a1.hg38"` or `"ilmn12.hg19"`.
+#' @param idatForce Logical. Passed to `minfi::read.metharray.exp()` when
+#'   reading IDAT files. Use `TRUE` only after confirming that the selected IDAT
+#'   files should be read together.
 #' @param scriptLabel Character. Label used to name output folders when
 #'   `saveOutputs = TRUE`.
 #' @param baseDataFolder Character. Base directory used for saved `.RData`
@@ -143,6 +146,7 @@ preprocessingMinfiEwasWater <- function(
     SampleID = "Sample_Name",
     arrayType = "IlluminaHumanMethylationEPICv2",
     annotationVersion = "20a1.hg38",
+    idatForce = FALSE,
     scriptLabel = "preprocessingMinfiEwasWater",
     baseDataFolder = "rData",
     figureBaseDir = "figures",
@@ -202,6 +206,7 @@ preprocessingMinfiEwasWater <- function(
       paste("SampleID column:          ", SampleID),
       paste("Array type:               ", arrayType),
       paste("Annotation version:       ", annotationVersion),
+      paste("Force IDAT read:          ", idatForce),
       paste("Base RData folder:        ", baseDataFolder),
       paste("Base Figure folder:       ", figureBaseDir),
       paste(
@@ -297,6 +302,7 @@ preprocessingMinfiEwasWater <- function(
     SampleID = SampleID,
     arrayType = arrayType,
     annotationVersion = annotationVersion,
+    force = idatForce,
     verbose = verbose,
     logs = logs,
     log_dir = outputLogs,
