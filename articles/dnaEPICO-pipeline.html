@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.24</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.25</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-05</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-06</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-pipeline.Rmd" class="external-link"><code>vignettes/dnaEPICO-pipeline.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-pipeline.Rmd</code></div>
@@ -227,7 +227,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"           "arrayType"         "annotationVersion"</span></span>
 <span><span class="co">#&gt; [7] "crossReactivePath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpVzjGUL/dnaEPICO-idat-example-20c628596a26"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpWKf9R5/dnaEPICO-idat-example-20c62278091d"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -503,7 +503,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpVzjGUL/dnaEPICO-preprocessingPheno-example-20c633e22866"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpWKf9R5/dnaEPICO-preprocessingPheno-example-20c620be3577"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -619,7 +619,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpVzjGUL/dnaEPICO-glm-example-20c65411bb7b"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpWKf9R5/dnaEPICO-glm-example-20c620bcfea1"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -719,7 +719,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpVzjGUL/dnaEPICO-glmm-example-20c657b47428"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpWKf9R5/dnaEPICO-glmm-example-20c6493647d0"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -1226,7 +1226,7 @@ R_DIR = ~/R/x86_64-pc-linux-gnu-library/4.4
 # STEP 1-5 PARAMETERS
 PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoEMD.csv
 SEED = 123
-SEP_TYPE =
+SEP_TYPE = NULL
 SAMPLE_ID = Sample_Name
 N_SAMPLES = 30
 ARRAY_TYPE = IlluminaHumanMethylationEPICv2
@@ -1266,7 +1266,7 @@ PVAL_THRESHOLD = 0.01
 CHR_TO_REMOVE = chrX,chrY
 SNPS_TO_REMOVE = SBE,CpG
 CROSS_REACTIVE_FILE = $(DATA_DIR)/$(STEP1)/12864_2024_10027_MOESM8_ESM.csv
-CROSS_REACTIVE_ID_COLUMN =
+CROSS_REACTIVE_ID_COLUMN = NULL
 MAF_THRESHOLD = 0.1
 PLOT_GROUP_VAR = TreatvControl_Time1_vs_Time2
 LC_REF = salivaEPIC
@@ -1313,10 +1313,30 @@ else
   PRS_MAP_ARG = '$(PRS_MAP)'
 endif
 
+ifeq ($(strip $(SEP_TYPE)),)
+  SEP_TYPE_ARG = NULL
+else
+ifeq ($(strip $(SEP_TYPE)),NULL)
+  SEP_TYPE_ARG = NULL
+else
+  SEP_TYPE_ARG = '$(SEP_TYPE)'
+endif
+endif
+
 ifeq ($(R_DIR),NULL)
   R_DIR_ARG = NULL
 else
   R_DIR_ARG = '$(R_DIR)'
+endif
+
+ifeq ($(strip $(CROSS_REACTIVE_ID_COLUMN)),)
+  CROSS_REACTIVE_ID_COLUMN_ARG = NULL
+else
+ifeq ($(strip $(CROSS_REACTIVE_ID_COLUMN)),NULL)
+  CROSS_REACTIVE_ID_COLUMN_ARG = NULL
+else
+  CROSS_REACTIVE_ID_COLUMN_ARG = '$(CROSS_REACTIVE_ID_COLUMN)'
+endif
 endif
 
 ifeq ($(INTERACTION_GLM),NULL)
@@ -1418,7 +1438,8 @@ composed across all stages of the pipeline.</p>
 <code>PHENO_FILE</code>: input phenotype table used to start the
 workflow.</li>
 <li>
-<code>SEP_TYPE</code>: separator used when reading text files.</li>
+<code>SEP_TYPE</code>: optional separator used when reading text
+files; <code>NULL</code> uses the default comma separator.</li>
 <li>
 <code>SAMPLE_ID</code>: phenotype column used to align samples.</li>
 <li>
@@ -1516,6 +1537,10 @@ remove.</li>
 <code>CROSS_REACTIVE_FILE</code>: cross-reactive probe reference
 file.</li>
 <li>
+<code>CROSS_REACTIVE_ID_COLUMN</code>: optional column containing
+cross-reactive probe IDs; <code>NULL</code> auto-detects the column from
+the reference file.</li>
+<li>
 <code>MAF_THRESHOLD</code>: minor-allele-frequency threshold used
 during SNP filtering.</li>
 <li>
@@ -1612,7 +1637,8 @@ those exported interaction results.</li>
 </h3>
 <ul>
 <li>
-<code>PRS_MAP_ARG</code>, <code>R_DIR_ARG</code>,
+<code>PRS_MAP_ARG</code>, <code>SEP_TYPE_ARG</code>,
+<code>R_DIR_ARG</code>, <code>CROSS_REACTIVE_ID_COLUMN_ARG</code>,
 <code>INTERACTION_GLM_ARG</code>, and <code>INTERACTION_LME_ARG</code>
 convert Makefile string values into arguments that can be passed safely
 to R.</li>
@@ -1623,10 +1649,11 @@ to R.</li>
 the main functions.</p>
 <p>The template convention is therefore: use <code>NA</code> for
 optional numeric limits or filters where the meaning is “use all” or
-“keep all”, and use <code>NULL</code> when an optional variable, path,
-mapping, or model term should be absent. <code>CHUNK_SIZE</code> uses
-<code>NULL</code> for automatic chunking because it disables a
-user-specified tuning value rather than applying a filter.</p>
+“keep all”, and use <code>NULL</code> when an optional separator,
+variable, path, mapping, or model term should be absent.
+<code>CHUNK_SIZE</code> uses <code>NULL</code> for automatic chunking
+because it disables a user-specified tuning value rather than applying a
+filter.</p>
 </div>
 <div class="section level3">
 <h3 id="include-pipeline-from-dnaepico">Include pipeline from dnaEPICO<a class="anchor" aria-label="anchor" href="#include-pipeline-from-dnaepico"></a>
@@ -1662,9 +1689,9 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-06-05 13:00:38 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-06-06 00:03:20 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.511 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.632 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1708,7 +1735,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.24                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.25                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>

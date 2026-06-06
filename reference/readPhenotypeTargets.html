@@ -19,7 +19,7 @@ the targets as a base data.frame."><!-- mathjax --><script src="https://cdnjs.cl
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.24</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.25</span>
       </span>
     </div>
 
@@ -75,7 +75,7 @@ the targets as a base <code>data.frame</code>.</p>
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">readPhenotypeTargets</span><span class="op">(</span></span>
 <span>  <span class="va">phenoFile</span>,</span>
-<span>  sepType <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  sepType <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  nSamples <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -94,10 +94,9 @@ the targets as a base <code>data.frame</code>.</p>
 
 
 <dt id="arg-septype">sepType<a class="anchor" aria-label="anchor" href="#arg-septype"></a></dt>
-<dd><p>Character. Field separator used in <code>phenoFile</code>. Use <code>""</code>
-(default) for a standard comma-separated file, <code>"\\t"</code> for a
-tab-delimited file, or another single-character separator accepted by
-<code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">utils::read.csv()</a></code>.</p></dd>
+<dd><p>Character or <code>NULL</code>. Field separator used in <code>phenoFile</code>. Use
+<code>NULL</code> for a standard comma-separated file, <code>"\\t"</code> for a tab-delimited
+file, or another single-character separator accepted by <code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">utils::read.csv()</a></code>.</p></dd>
 
 
 <dt id="arg-nsamples">nSamples<a class="anchor" aria-label="anchor" href="#arg-nsamples"></a></dt>

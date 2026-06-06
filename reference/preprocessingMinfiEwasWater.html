@@ -20,7 +20,7 @@ each stage. Legacy files are written only when saveOutputs = TRUE."><!-- mathjax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.24</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.25</span>
       </span>
     </div>
 
@@ -86,7 +86,7 @@ each stage. Legacy files are written only when <code>saveOutputs = TRUE</code>.<
 <span>  scriptLabel <span class="op">=</span> <span class="st">"preprocessingMinfiEwasWater"</span>,</span>
 <span>  baseDataFolder <span class="op">=</span> <span class="st">"rData"</span>,</span>
 <span>  figureBaseDir <span class="op">=</span> <span class="st">"figures"</span>,</span>
-<span>  sepType <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  sepType <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  tiffWidth <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  tiffHeight <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  tiffRes <span class="op">=</span> <span class="fl">150</span>,</span>
@@ -164,9 +164,9 @@ when <code>saveOutputs = TRUE</code>.</p></dd>
 
 
 <dt id="arg-septype">sepType<a class="anchor" aria-label="anchor" href="#arg-septype"></a></dt>
-<dd><p>Character. Field separator used in <code>phenoFile</code>. Use <code>""</code> for
-a comma-separated file, <code>"\\t"</code> for a tab-delimited file, or another
-separator accepted by <code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">utils::read.csv()</a></code>.</p></dd>
+<dd><p>Character or <code>NULL</code>. Field separator used in <code>phenoFile</code>. Use
+<code>NULL</code> for a comma-separated file, <code>"\\t"</code> for a tab-delimited file, or
+another separator accepted by <code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">utils::read.csv()</a></code>.</p></dd>
 
 
 <dt id="arg-tiffwidth">tiffWidth<a class="anchor" aria-label="anchor" href="#arg-tiffwidth"></a></dt>
