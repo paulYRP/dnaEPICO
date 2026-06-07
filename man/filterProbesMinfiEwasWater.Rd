@@ -11,13 +11,18 @@ filterProbesMinfiEwasWater(
   chrToRemove = "chrX,chrY",
   snpsToRemove = "SBE,CpG",
   mafThreshold = 0.1,
-  crossReactivePath,
-  crossReactiveIdColumn = NULL,
+  probeExclusionPath,
+  probeExclusionIdColumn = NULL,
+  useEpicV2Manifest = FALSE,
+  epicV2ManifestFlags = c(CH_WGBS_evidence = TRUE, CH_BLAT = TRUE, MissingPos = TRUE,
+    MismatchPos = FALSE),
   detPtype = "m+u",
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
-  log_file = "log_filterProbesMinfiEwasWater.txt"
+  log_file = "log_filterProbesMinfiEwasWater.txt",
+  crossReactivePath = NULL,
+  crossReactiveIdColumn = NULL
 )
 }
 \arguments{
@@ -37,13 +42,21 @@ types to remove, for example \code{"SBE,CpG"}.}
 \item{mafThreshold}{Numeric. Minor allele frequency threshold passed to
 \code{minfi::dropLociWithSnps()}.}
 
-\item{crossReactivePath}{Character. Path to a CSV file containing
-cross-reactive probes to remove.}
+\item{probeExclusionPath}{Character vector or semicolon-separated string of
+CSV files containing probe IDs to remove.}
 
-\item{crossReactiveIdColumn}{Character or \code{NULL}. Column containing
-cross-reactive probe IDs. When \code{NULL} or \code{""}, the function auto-detects
-\code{ProbeID}, \code{TargetID}, \code{IlmnID}, or \code{Name}, then falls back to an unlabeled
-or probe-like first column.}
+\item{probeExclusionIdColumn}{Character or \code{NULL}. Column containing probe
+IDs. When \code{NULL} or \code{""}, each file is auto-detected using \code{ProbeID},
+\code{TargetID}, \code{IlmnID}, or \code{Name}, then falling back to an unlabeled or
+probe-like first column.}
+
+\item{useEpicV2Manifest}{Logical. If \code{TRUE}, also remove EPICv2 probes
+flagged in the Peters et al. expanded manifest from AnnotationHub resource
+\code{AH116484}.}
+
+\item{epicV2ManifestFlags}{Named logical vector controlling which EPICv2
+manifest flags are removed. Defaults remove \code{CH_WGBS_evidence}, \code{CH_BLAT},
+and \code{MissingPos}, but not \code{MismatchPos}.}
 
 \item{detPtype}{Character. Detection P-value mode passed to
 \code{minfi::detectionP()} for the probe filter. Common values in minfi
@@ -57,14 +70,18 @@ workflows are \code{"m+u"} and \code{"negative"}.}
 \code{logs = TRUE}.}
 
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
+
+\item{crossReactivePath}{Deprecated alias for \code{probeExclusionPath}.}
+
+\item{crossReactiveIdColumn}{Deprecated alias for \code{probeExclusionIdColumn}.}
 }
 \value{
 A list with class \code{"dnaEPICO_minfiEwasWater_filter"} containing the
 filtered object and counts for each filtering stage.
 }
 \description{
-Apply detection P-value, chromosome, SNP, and cross-reactive probe filters
-to the primary normalized object and return the filtered result.
+Apply detection P-value, chromosome, SNP, and probe-exclusion filters to the
+primary normalized object and return the filtered result.
 }
 \examples{
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -76,11 +93,11 @@ filtered_data <- filterProbesMinfiEwasWater(
   chrToRemove = "chrY",
   snpsToRemove = "SBE",
   mafThreshold = 1,
-  crossReactivePath = ex$crossReactivePath,
+  probeExclusionPath = ex$probeExclusionPath,
   detPtype = "m+u",
   verbose = FALSE,
   logs = FALSE
 )
-filtered_data$counts[["crossReactive"]]
+filtered_data$counts[["probeExclusion"]]
 \dontshow{\}) # examplesIf}
 }

@@ -1,7 +1,10 @@
-CHANGES IN VERSION 0.99.26
+CHANGES IN VERSION 0.99.27
 ------------------------
 
 NEW FEATURES
+
+    o [07-06-2026] Renamed cross-reactive probe inputs to probe-exclusion inputs,
+      with support for multiple files and optional EPICv2 manifest flags.
 
     o [06-06-2026] Added IDAT_FORCE to optionally force minfi IDAT parsing for
       validated mixed-size IDAT inputs.

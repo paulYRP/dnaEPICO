@@ -101,7 +101,7 @@ exampleMinfiBaseDataDnaEpico <- function() {
             list(
                 RGSet = rgset,
                 targets = targets,
-                crossReactivePath = system.file(
+                probeExclusionPath = system.file(
                     "extdata",
                     "12864_2024_10027_MOESM8_ESM.csv",
                     package = "dnaEPICO"
@@ -162,7 +162,7 @@ exampleMinfiIdatInputsDnaEpico <- function(n = 6L) {
                 targets = targets,
                 arrayType = "IlluminaHumanMethylation450k",
                 annotationVersion = "ilmn12.hg19",
-                crossReactivePath = system.file(
+                probeExclusionPath = system.file(
                     "extdata",
                     "12864_2024_10027_MOESM8_ESM.csv",
                     package = "dnaEPICO"
@@ -334,7 +334,7 @@ exampleMinfiWorkflowStateDnaEpico <- function() {
                 chrToRemove = "chrY",
                 snpsToRemove = "SBE",
                 mafThreshold = 1,
-                crossReactivePath = example_data$crossReactivePath,
+                probeExclusionPath = example_data$probeExclusionPath,
                 detPtype = "m+u",
                 verbose = FALSE,
                 logs = FALSE
@@ -356,7 +356,7 @@ exampleMinfiWorkflowStateDnaEpico <- function() {
                 normData = norm_data,
                 filteredData = filtered_data,
                 metricsData = metrics_data,
-                crossReactivePath = example_data$crossReactivePath
+                probeExclusionPath = example_data$probeExclusionPath
             )
         }
     )

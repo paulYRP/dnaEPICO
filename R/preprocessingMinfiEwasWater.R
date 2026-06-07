@@ -50,12 +50,20 @@
 #'   types to remove, for example `"SBE,CpG"`.
 #' @param mafThreshold Numeric. Minor allele frequency threshold passed to
 #'   `minfi::dropLociWithSnps()`.
-#' @param crossReactivePath Character. Path to a CSV file containing
-#'   cross-reactive probes to remove.
-#' @param crossReactiveIdColumn Character or `NULL`. Column containing
-#'   cross-reactive probe IDs. When `NULL` or `""`, the function auto-detects
-#'   `ProbeID`, `TargetID`, `IlmnID`, or `Name`, then falls back to an unlabeled
-#'   or probe-like first column.
+#' @param probeExclusionPath Character vector or semicolon-separated string of
+#'   CSV files containing probe IDs to remove.
+#' @param probeExclusionIdColumn Character or `NULL`. Column containing probe
+#'   IDs. When `NULL` or `""`, each file is auto-detected using `ProbeID`,
+#'   `TargetID`, `IlmnID`, or `Name`, then falling back to an unlabeled or
+#'   probe-like first column.
+#' @param useEpicV2Manifest Logical. If `TRUE`, also remove EPICv2 probes
+#'   flagged in the Peters et al. expanded manifest from AnnotationHub resource
+#'   `AH116484`.
+#' @param epicV2ManifestFlags Named logical vector controlling which EPICv2
+#'   manifest flags are removed. Defaults remove `CH_WGBS_evidence`, `CH_BLAT`,
+#'   and `MissingPos`, but not `MismatchPos`.
+#' @param crossReactivePath Deprecated alias for `probeExclusionPath`.
+#' @param crossReactiveIdColumn Deprecated alias for `probeExclusionIdColumn`.
 #' @param plotGroupVar Character. Phenotype column used for density and MDS
 #'   grouping plots.
 #' @param lcRef Character. Reference panel used for cell composition estimation.
@@ -123,7 +131,7 @@
 #'     chrToRemove = "",
 #'     snpsToRemove = "SBE",
 #'     mafThreshold = 1,
-#'     crossReactivePath = ex$crossReactivePath,
+#'     probeExclusionPath = ex$probeExclusionPath,
 #'     plotGroupVar = "Sex",
 #'     lcRef = "saliva",
 #'     phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
@@ -163,9 +171,16 @@ preprocessingMinfiEwasWater <- function(
     chrToRemove = "chrX,chrY",
     snpsToRemove = "SBE,CpG",
     mafThreshold = 0.1,
-    crossReactivePath =
+    probeExclusionPath =
       "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
-    crossReactiveIdColumn = NULL,
+    probeExclusionIdColumn = NULL,
+    useEpicV2Manifest = FALSE,
+    epicV2ManifestFlags = c(
+      CH_WGBS_evidence = TRUE,
+      CH_BLAT = TRUE,
+      MissingPos = TRUE,
+      MismatchPos = FALSE
+    ),
     plotGroupVar = "Sex",
     lcRef = "salivaEPIC",
     phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
@@ -173,8 +188,17 @@ preprocessingMinfiEwasWater <- function(
     display = FALSE,
     verbose = FALSE,
     logs = FALSE,
-    saveOutputs = FALSE
+    saveOutputs = FALSE,
+    crossReactivePath = NULL,
+    crossReactiveIdColumn = NULL
 ) {
+  if (!is.null(crossReactivePath)) {
+    probeExclusionPath <- crossReactivePath
+  }
+  if (!is.null(crossReactiveIdColumn)) {
+    probeExclusionIdColumn <- crossReactiveIdColumn
+  }
+
   log_file <- "log_preprocessingMinfiEwasWater.txt"
   log_path <- resolveLogPathMinfiEwasWater(
     logs = logs,
@@ -231,18 +255,31 @@ preprocessingMinfiEwasWater <- function(
       paste("  Chromosomes to remove:  ", chrToRemove),
       paste("  SNP positions filter:   ", snpsToRemove),
       paste("  MAF threshold:          ", mafThreshold),
-      paste("  Cross-reactive file:    ", crossReactivePath),
+      paste("  Probe-exclusion file(s):", probeExclusionPath),
       paste(
-        "  Cross-reactive ID col:  ",
+        "  Probe-exclusion ID col: ",
         if (
-          length(crossReactiveIdColumn) == 0L ||
-            is.na(crossReactiveIdColumn[[1L]]) ||
-            !nzchar(trimws(as.character(crossReactiveIdColumn[[1L]])))
+          length(probeExclusionIdColumn) == 0L ||
+            is.na(probeExclusionIdColumn[[1L]]) ||
+            !nzchar(trimws(as.character(probeExclusionIdColumn[[1L]]))) ||
+            identical(toupper(trimws(as.character(probeExclusionIdColumn[[1L]]))), "NULL")
         ) {
           "auto"
         } else {
-          crossReactiveIdColumn
+          probeExclusionIdColumn
         }
+      ),
+      paste("  Use EPICv2 manifest:    ", useEpicV2Manifest),
+      paste(
+        "  EPICv2 manifest flags:  ",
+        paste(
+          paste(
+            names(normalizeEpicV2ManifestFlagsMinfiEwasWater(epicV2ManifestFlags)),
+            normalizeEpicV2ManifestFlagsMinfiEwasWater(epicV2ManifestFlags),
+            sep = "="
+          ),
+          collapse = ";"
+        )
       ),
       "Cell composition (estimateLC):",
       paste("  Reference:              ", lcRef),
@@ -504,8 +541,10 @@ preprocessingMinfiEwasWater <- function(
     chrToRemove = chrToRemove,
     snpsToRemove = snpsToRemove,
     mafThreshold = mafThreshold,
-    crossReactivePath = crossReactivePath,
-    crossReactiveIdColumn = crossReactiveIdColumn,
+    probeExclusionPath = probeExclusionPath,
+    probeExclusionIdColumn = probeExclusionIdColumn,
+    useEpicV2Manifest = useEpicV2Manifest,
+    epicV2ManifestFlags = epicV2ManifestFlags,
     detPtype = detPtype,
     verbose = verbose,
     logs = logs,

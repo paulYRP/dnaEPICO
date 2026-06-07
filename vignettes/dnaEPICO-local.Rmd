@@ -91,15 +91,19 @@ If you are asking yourself the question "Where do I start using
 Bioconductor?", you might be interested in
 [this post](https://www.bioconductor.org/install/).
 
-## Cross-reactive probe reference files
+## Probe-exclusion reference files
 
-The lists of excluded probes depend on the platform. For Illumina
-HumanMethylationEPIC v2.0, use the cross-reactive probe file from
-[Peters et al. (2024)](https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323);
-for Illumina MethylationEPIC (a.k.a. 850k array), use
-[Pidsley et al. (2016)](https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334);
-and for Illumina HumanMethylation450k, use
-[Chen et al. (2013)](https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205).
+The lists of excluded probes depend on the Illumina methylation-array platform.
+
+- For **Illumina HumanMethylationEPIC v2.0**, use the cross-reactive probe-exclusion file from [Peters et al. (2024)](https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323).
+
+- For **Illumina MethylationEPIC**, also known as the **850k array**, use the probe-exclusion resources from [Pidsley et al. (2016)](https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334). The supplementary files commonly used together are [13059_2016_1066_MOESM1_ESM.csv](https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM1_ESM.csv), [13059_2016_1066_MOESM4_ESM.csv](https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM4_ESM.csv), [13059_2016_1066_MOESM5_ESM.csv](https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM5_ESM.csv), and [13059_2016_1066_MOESM6_ESM.csv](https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM6_ESM.csv).
+
+- For **Illumina HumanMethylation450k**, use the cross-reactive and polymorphic probe resources from [Chen et al. (2013)](https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205).
+
+- Multiple probe-exclusion files can be supplied as a semicolon-separated value in `probeExclusionPath`. `dnaEPICO` reads probe IDs from each file, uses `probeExclusionIdColumn` when supplied, or otherwise auto-detects common probe-ID columns such as `ProbeID`, `TargetID`, `IlmnID`, and `Name`. The unique union of all probe IDs is then used to filter the normalised object.
+
+- For **EPICv2**, setting `useEpicV2Manifest = TRUE` also retrieves the expanded Peters et al. manifest from AnnotationHub resource [AH116484](https://bioconductor.org/packages/release/data/annotation/vignettes/EPICv2manifest/inst/doc/EPICv2manifest.html). Probes flagged in selected manifest columns are added to the same exclusion set. By default, probes flagged by `CH_WGBS_evidence`, `CH_BLAT`, or `MissingPos` are removed, while `MismatchPos` is retained unless explicitly enabled.
 
 # Installation
 
@@ -133,7 +137,7 @@ filtered phenotype table.
 
 The next chunk shows how to recreate the temporary files used in this example.
 It writes a small phenotype table to a temporary directory, copies a small set
-of IDAT files, and records the cross-reactive probe reference used during probe
+of IDAT files, and records the probe-exclusion reference used during probe
 filtering.
 
 ```{r preprocessing-local-inputs, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
@@ -143,7 +147,7 @@ names(preprocessing_inputs)
 preprocessing_inputs$tempDir
 basename(preprocessing_inputs$phenoFile)
 head(basename(list.files(preprocessing_inputs$idatFolder, full.names = TRUE)), 4)
-basename(preprocessing_inputs$crossReactivePath)
+basename(preprocessing_inputs$probeExclusionPath)
 ```
 
 `preprocessing_inputs` is a small list returned by the internal example helper.
@@ -151,8 +155,8 @@ basename(preprocessing_inputs$crossReactivePath)
 temporary working directory, `idatFolder` contains the copied example IDAT
 files, `phenoFile` is the phenotype table used by the function, `targets` is the
 same phenotype information already loaded into memory, `arrayType` and
-`annotationVersion` describe the array platform, and `crossReactivePath` points
-to the cross-reactive probe reference used later during filtering.
+`annotationVersion` describe the array platform, and `probeExclusionPath`
+points to the probe-exclusion reference used later during filtering.
 
 ```{r preprocessing-local, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
 preprocessResult <- preprocessingMinfiEwasWater(
@@ -173,7 +177,7 @@ preprocessResult <- preprocessingMinfiEwasWater(
   chrToRemove = "",
   snpsToRemove = "SBE",
   mafThreshold = 1,
-  crossReactivePath = preprocessing_inputs$crossReactivePath,
+  probeExclusionPath = preprocessing_inputs$probeExclusionPath,
   plotGroupVar = "Sex",
   lcRef = "saliva",
   phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
@@ -213,7 +217,7 @@ Arguments:
 - `detPThreshold`, `normMethods`, `pvalThreshold`, `chrToRemove`,
   `snpsToRemove`, and `mafThreshold` control quality filtering and probe
   filtering.
-- `crossReactivePath` supplies the cross-reactive probe reference used during
+- `probeExclusionPath` supplies the probe-exclusion reference used during
   filtering.
 - `sexColumn`, `plotGroupVar`, `lcRef`, and `phenoOrder` control sex
   prediction, quality-control grouping, cell-type estimation, and the structure
@@ -268,7 +272,7 @@ file.exists(c(sva_targets_file, sva_rgset_file))
 
 `sva_inputs` is another helper list used to make the vignette self-contained.
 `names(sva_inputs)` shows that it provides the in-memory `RGSet`, the matching
-`targets` table, and a `crossReactivePath` reference. In this step, the function
+`targets` table, and a `probeExclusionPath` reference. In this step, the function
 needs file inputs rather than the in-memory objects, so the chunk writes
 `targets` to `sva_targets.csv` and saves the `RGSet` object to
 `sva_RGSet.RData`.

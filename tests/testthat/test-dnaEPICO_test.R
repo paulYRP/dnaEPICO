@@ -24,18 +24,18 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Bio
     expect_true(length(idatFiles) > 0)
 
     # ------------------------------------------------------------------
-    # 2. Locate dnaEPICO packaged extdata (cross-reactive probes)
+    # 2. Locate dnaEPICO packaged extdata (probe-exclusion reference)
     # ------------------------------------------------------------------
 
     baseDirDnaEPICO <- system.file("extdata", package = "dnaEPICO")
     expect_true(dir.exists(baseDirDnaEPICO))
 
-    crossReactivePath <- file.path(
+    probeExclusionPath <- file.path(
         baseDirDnaEPICO,
         "12864_2024_10027_MOESM8_ESM.csv"
     )
 
-    expect_true(file.exists(crossReactivePath))
+    expect_true(file.exists(probeExclusionPath))
 
     # ------------------------------------------------------------------
     # 3. Create temporary working directory
@@ -109,18 +109,18 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
     expect_true(length(idatFiles) > 0)
 
     # ------------------------------------------------------------------
-    # 2. Locate dnaEPICO packaged extdata (cross-reactive probes)
+    # 2. Locate dnaEPICO packaged extdata (probe-exclusion reference)
     # ------------------------------------------------------------------
 
     baseDirDnaEPICO <- system.file("extdata", package = "dnaEPICO")
     expect_true(dir.exists(baseDirDnaEPICO))
 
-    crossReactivePath <- file.path(
+    probeExclusionPath <- file.path(
         baseDirDnaEPICO,
         "12864_2024_10027_MOESM8_ESM.csv"
     )
 
-    expect_true(file.exists(crossReactivePath))
+    expect_true(file.exists(probeExclusionPath))
 
     # ------------------------------------------------------------------
     # 3. Create temporary working directory
@@ -187,7 +187,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
             lcRef = "saliva",
             outputLogs = file.path(tmpDir, "logs"),
             baseDataFolder = file.path(tmpDir, "rData"),
-            crossReactivePath = crossReactivePath,
+            probeExclusionPath = probeExclusionPath,
             lcPhenoDir = tmpDir,
             saveOutputs = TRUE
         ),

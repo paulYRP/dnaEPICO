@@ -1074,44 +1074,44 @@ plotRawDensityMinfiEwasWater <- function(
   invisible(file)
 }
 
-#' Read cross-reactive probe identifiers from a CSV file
+#' Read probe-exclusion identifiers from one CSV file
 #'
-#' @param crossReactivePath Character. Path to a CSV file containing
-#'   cross-reactive probe identifiers.
-#' @param crossReactiveIdColumn Character or `NULL`. Column containing probe
+#' @param probeExclusionPath Character. Path to a CSV file containing probe
+#'   identifiers to exclude.
+#' @param probeExclusionIdColumn Character or `NULL`. Column containing probe
 #'   identifiers. When `NULL` or `""`, common names are auto-detected before
 #'   falling back to an unlabeled or probe-like first column.
 #' @param featureNames Character vector or `NULL`. Optional array feature names
 #'   used to count overlap.
 #'
-#' @return A list with class `"dnaEPICO_crossReactive_ids"`.
+#' @return A list with class `"dnaEPICO_probeExclusion_file_ids"`.
 #'
 #' @keywords internal
 #' @noRd
-readCrossReactiveIdsMinfiEwasWater <- function(
-    crossReactivePath,
-    crossReactiveIdColumn = NULL,
+readProbeExclusionFileIdsMinfiEwasWater <- function(
+    probeExclusionPath,
+    probeExclusionIdColumn = NULL,
     featureNames = NULL
 ) {
-  if (!file.exists(crossReactivePath)) {
+  if (!file.exists(probeExclusionPath)) {
     stop(
-      "crossReactivePath does not exist: ",
-      crossReactivePath,
+      "probeExclusionPath does not exist: ",
+      probeExclusionPath,
       call. = FALSE
     )
   }
 
-  cross_reactive <- utils::read.csv(
-    crossReactivePath,
+  probe_exclusion <- utils::read.csv(
+    probeExclusionPath,
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
 
-  if (ncol(cross_reactive) == 0L) {
-    stop("crossReactivePath contains no columns: ", crossReactivePath, call. = FALSE)
+  if (ncol(probe_exclusion) == 0L) {
+    stop("probeExclusionPath contains no columns: ", probeExclusionPath, call. = FALSE)
   }
 
-  id_column <- crossReactiveIdColumn
+  id_column <- probeExclusionIdColumn
   if (length(id_column) == 0L || is.na(id_column[[1L]])) {
     id_column <- NULL
   } else {
@@ -1121,13 +1121,13 @@ readCrossReactiveIdsMinfiEwasWater <- function(
     }
   }
 
-  available_columns <- colnames(cross_reactive)
+  available_columns <- colnames(probe_exclusion)
   standard_columns <- c("ProbeID", "TargetID", "IlmnID", "Name")
 
   if (!is.null(id_column)) {
     if (!(id_column %in% available_columns)) {
       stop(
-        "crossReactiveIdColumn not found in cross-reactive file: ",
+        "probeExclusionIdColumn not found in probe-exclusion file: ",
         id_column,
         ". Available columns: ",
         paste(ifelse(nzchar(available_columns), available_columns, "<blank>"), collapse = ", "),
@@ -1145,7 +1145,7 @@ readCrossReactiveIdsMinfiEwasWater <- function(
       source <- "standard"
     } else {
       first_column <- available_columns[[1L]]
-      first_values <- trimws(as.character(cross_reactive[[1L]]))
+      first_values <- trimws(as.character(probe_exclusion[[1L]]))
       first_values <- first_values[!is.na(first_values) & nzchar(first_values)]
       first_column_is_unlabeled <- !nzchar(first_column)
       first_column_is_probe_like <- length(first_values) > 0L &&
@@ -1161,9 +1161,9 @@ readCrossReactiveIdsMinfiEwasWater <- function(
         }
       } else {
         stop(
-          "Could not detect a cross-reactive probe ID column in ",
-          crossReactivePath,
-          ". Set crossReactiveIdColumn to one of: ",
+          "Could not detect a probe-exclusion ID column in ",
+          probeExclusionPath,
+          ". Set probeExclusionIdColumn to one of: ",
           paste(ifelse(nzchar(available_columns), available_columns, "<blank>"), collapse = ", "),
           call. = FALSE
         )
@@ -1171,12 +1171,12 @@ readCrossReactiveIdsMinfiEwasWater <- function(
     }
   }
 
-  ids <- trimws(as.character(cross_reactive[[selected_index]]))
+  ids <- trimws(as.character(probe_exclusion[[selected_index]]))
   ids <- unique(ids[!is.na(ids) & nzchar(ids)])
 
   if (length(ids) == 0L) {
     stop(
-      "Cross-reactive probe ID column contains no usable IDs: ",
+      "Probe-exclusion ID column contains no usable IDs: ",
       ifelse(nzchar(selected_column), selected_column, "<blank>"),
       call. = FALSE
     )
@@ -1190,20 +1190,341 @@ readCrossReactiveIdsMinfiEwasWater <- function(
   structure(
     list(
       ids = ids,
+      path = probeExclusionPath,
       column = selected_column,
       source = source,
-      nRows = nrow(cross_reactive),
+      nRows = nrow(probe_exclusion),
       nIds = length(ids),
       overlap = overlap
     ),
-    class = "dnaEPICO_crossReactive_ids"
+    class = "dnaEPICO_probeExclusion_file_ids"
+  )
+}
+
+normalizeProbeExclusionPathsMinfiEwasWater <- function(probeExclusionPath) {
+  if (
+    length(probeExclusionPath) == 0L ||
+      all(is.na(probeExclusionPath))
+  ) {
+    return(character(0))
+  }
+
+  paths <- splitOptionMinfiEwasWater(probeExclusionPath, sep = ";")
+  paths[toupper(paths) != "NULL"]
+}
+
+normalizeProbeExclusionColumnsMinfiEwasWater <- function(
+    probeExclusionIdColumn,
+    nFiles
+) {
+  if (
+    length(probeExclusionIdColumn) == 0L ||
+      all(is.na(probeExclusionIdColumn))
+  ) {
+    return(rep(list(NULL), nFiles))
+  }
+
+  columns <- splitOptionMinfiEwasWater(probeExclusionIdColumn, sep = ";")
+  if (length(columns) == 0L || identical(toupper(columns[[1L]]), "NULL")) {
+    return(rep(list(NULL), nFiles))
+  }
+
+  if (length(columns) == 1L) {
+    return(rep(as.list(columns), nFiles))
+  }
+
+  if (length(columns) != nFiles) {
+    stop(
+      "probeExclusionIdColumn must be NULL, a single column name, or one ",
+      "semicolon-separated column name per probe-exclusion file.",
+      call. = FALSE
+    )
+  }
+
+  as.list(columns)
+}
+
+#' Read probe-exclusion identifiers from one or more CSV files
+#'
+#' @param probeExclusionPath Character vector or semicolon-separated string of
+#'   CSV files containing probe identifiers to exclude.
+#' @param probeExclusionIdColumn Character, `NULL`, or semicolon-separated
+#'   string of column names.
+#' @param featureNames Character vector or `NULL`. Optional array feature names
+#'   used to count overlap.
+#'
+#' @return A list with class `"dnaEPICO_probeExclusion_ids"`.
+#'
+#' @keywords internal
+#' @noRd
+readProbeExclusionIdsMinfiEwasWater <- function(
+    probeExclusionPath,
+    probeExclusionIdColumn = NULL,
+    featureNames = NULL
+) {
+  paths <- normalizeProbeExclusionPathsMinfiEwasWater(probeExclusionPath)
+  columns <- normalizeProbeExclusionColumnsMinfiEwasWater(
+    probeExclusionIdColumn = probeExclusionIdColumn,
+    nFiles = length(paths)
+  )
+
+  if (length(paths) == 0L) {
+    return(structure(
+      list(
+        ids = character(0),
+        files = data.frame(
+          path = character(0),
+          column = character(0),
+          source = character(0),
+          nRows = integer(0),
+          nIds = integer(0),
+          overlap = integer(0),
+          stringsAsFactors = FALSE
+        ),
+        nIds = 0L,
+        overlap = if (is.null(featureNames)) NA_integer_ else 0L
+      ),
+      class = "dnaEPICO_probeExclusion_ids"
+    ))
+  }
+
+  file_results <- Map(
+    f = function(path, column) {
+      readProbeExclusionFileIdsMinfiEwasWater(
+        probeExclusionPath = path,
+        probeExclusionIdColumn = column,
+        featureNames = featureNames
+      )
+    },
+    path = paths,
+    column = columns
+  )
+
+  ids <- unique(unlist(lapply(file_results, `[[`, "ids"), use.names = FALSE))
+  overlap <- NA_integer_
+  if (!is.null(featureNames)) {
+    overlap <- sum(ids %in% featureNames)
+  }
+
+  files <- do.call(
+    rbind,
+    lapply(file_results, function(result) {
+      data.frame(
+        path = result$path,
+        column = ifelse(nzchar(result$column), result$column, "<blank>"),
+        source = result$source,
+        nRows = result$nRows,
+        nIds = result$nIds,
+        overlap = result$overlap,
+        stringsAsFactors = FALSE
+      )
+    })
+  )
+
+  structure(
+    list(
+      ids = ids,
+      files = files,
+      nIds = length(ids),
+      overlap = overlap
+    ),
+    class = "dnaEPICO_probeExclusion_ids"
+  )
+}
+
+#' @keywords internal
+#' @noRd
+readCrossReactiveIdsMinfiEwasWater <- function(
+    crossReactivePath,
+    crossReactiveIdColumn = NULL,
+    featureNames = NULL
+) {
+  readProbeExclusionIdsMinfiEwasWater(
+    probeExclusionPath = crossReactivePath,
+    probeExclusionIdColumn = crossReactiveIdColumn,
+    featureNames = featureNames
+  )
+}
+
+normalizeEpicV2ManifestFlagsMinfiEwasWater <- function(epicV2ManifestFlags) {
+  default_flags <- c(
+    CH_WGBS_evidence = TRUE,
+    CH_BLAT = TRUE,
+    MissingPos = TRUE,
+    MismatchPos = FALSE
+  )
+
+  if (length(epicV2ManifestFlags) == 0L || all(is.na(epicV2ManifestFlags))) {
+    return(default_flags)
+  }
+
+  if (is.logical(epicV2ManifestFlags)) {
+    if (is.null(names(epicV2ManifestFlags))) {
+      if (length(epicV2ManifestFlags) != length(default_flags)) {
+        stop(
+          "Unnamed epicV2ManifestFlags must have ",
+          length(default_flags),
+          " values.",
+          call. = FALSE
+        )
+      }
+      names(epicV2ManifestFlags) <- names(default_flags)
+    }
+
+    unknown_flags <- setdiff(names(epicV2ManifestFlags), names(default_flags))
+    if (length(unknown_flags) > 0L) {
+      stop(
+        "Unknown EPICv2 manifest flag(s): ",
+        paste(unknown_flags, collapse = ", "),
+        call. = FALSE
+      )
+    }
+
+    if (anyNA(epicV2ManifestFlags)) {
+      stop("epicV2ManifestFlags must contain only TRUE or FALSE values.", call. = FALSE)
+    }
+
+    default_flags[names(epicV2ManifestFlags)] <- epicV2ManifestFlags
+    return(default_flags)
+  }
+
+  flag_values <- splitOptionMinfiEwasWater(epicV2ManifestFlags, sep = ";")
+  if (length(flag_values) == 0L) {
+    return(default_flags)
+  }
+
+  flag_names <- sub("=.*$", "", flag_values)
+  flag_enabled <- rep(TRUE, length(flag_values))
+  has_equals <- grepl("=", flag_values, fixed = TRUE)
+  flag_enabled[has_equals] <- as.logical(toupper(sub("^.*=", "", flag_values[has_equals])))
+  if (anyNA(flag_enabled)) {
+    stop("epicV2ManifestFlags must contain only TRUE or FALSE values.", call. = FALSE)
+  }
+
+  names(flag_enabled) <- flag_names
+  normalizeEpicV2ManifestFlagsMinfiEwasWater(flag_enabled)
+}
+
+extractEpicV2ManifestExclusionIdsMinfiEwasWater <- function(
+    manifest,
+    epicV2ManifestFlags = c(
+      CH_WGBS_evidence = TRUE,
+      CH_BLAT = TRUE,
+      MissingPos = TRUE,
+      MismatchPos = FALSE
+    ),
+    featureNames = NULL
+) {
+  flags <- normalizeEpicV2ManifestFlagsMinfiEwasWater(epicV2ManifestFlags)
+  enabled_flags <- names(flags)[!is.na(flags) & flags]
+
+  if (length(enabled_flags) == 0L) {
+    return(structure(
+      list(
+        ids = character(0),
+        flags = flags,
+        flagCounts = setNames(integer(0), character(0)),
+        nIds = 0L,
+        overlap = if (is.null(featureNames)) NA_integer_ else 0L
+      ),
+      class = "dnaEPICO_epicV2Manifest_ids"
+    ))
+  }
+
+  manifest <- as.data.frame(manifest, stringsAsFactors = FALSE)
+  missing_flags <- setdiff(enabled_flags, colnames(manifest))
+  if (length(missing_flags) > 0L) {
+    stop(
+      "EPICv2 manifest is missing requested flag column(s): ",
+      paste(missing_flags, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  ids <- rownames(manifest)
+  default_row_names <- identical(ids, as.character(seq_len(nrow(manifest))))
+  if (is.null(ids) || all(!nzchar(ids)) || isTRUE(default_row_names)) {
+    if (!("IlmnID" %in% colnames(manifest))) {
+      stop(
+        "EPICv2 manifest must have IlmnID row names or an IlmnID column.",
+        call. = FALSE
+      )
+    }
+    ids <- as.character(manifest$IlmnID)
+  }
+
+  selected <- rep(FALSE, nrow(manifest))
+  flag_counts <- setNames(integer(length(enabled_flags)), enabled_flags)
+  for (flag in enabled_flags) {
+    flag_values <- toupper(trimws(as.character(manifest[[flag]])))
+    flag_selected <- !is.na(flag_values) & flag_values %in% c("Y", "TRUE", "1")
+    flag_counts[[flag]] <- sum(flag_selected)
+    selected <- selected | flag_selected
+  }
+
+  selected_ids <- unique(ids[selected & !is.na(ids) & nzchar(ids)])
+  overlap <- NA_integer_
+  if (!is.null(featureNames)) {
+    overlap <- sum(selected_ids %in% featureNames)
+  }
+
+  structure(
+    list(
+      ids = selected_ids,
+      flags = flags,
+      flagCounts = flag_counts,
+      nIds = length(selected_ids),
+      overlap = overlap
+    ),
+    class = "dnaEPICO_epicV2Manifest_ids"
+  )
+}
+
+readEpicV2ManifestExclusionIdsMinfiEwasWater <- function(
+    useEpicV2Manifest = FALSE,
+    epicV2ManifestFlags = c(
+      CH_WGBS_evidence = TRUE,
+      CH_BLAT = TRUE,
+      MissingPos = TRUE,
+      MismatchPos = FALSE
+    ),
+    featureNames = NULL
+) {
+  if (!isTRUE(useEpicV2Manifest)) {
+    return(extractEpicV2ManifestExclusionIdsMinfiEwasWater(
+      manifest = data.frame(row.names = character(0)),
+      epicV2ManifestFlags = setNames(rep(FALSE, 4L), c(
+        "CH_WGBS_evidence",
+        "CH_BLAT",
+        "MissingPos",
+        "MismatchPos"
+      )),
+      featureNames = featureNames
+    ))
+  }
+
+  if (!requireNamespace("AnnotationHub", quietly = TRUE)) {
+    stop(
+      "AnnotationHub is required when useEpicV2Manifest = TRUE. ",
+      "Install AnnotationHub or set useEpicV2Manifest = FALSE.",
+      call. = FALSE
+    )
+  }
+
+  hub <- AnnotationHub::AnnotationHub()
+  manifest <- hub[["AH116484"]]
+
+  extractEpicV2ManifestExclusionIdsMinfiEwasWater(
+    manifest = manifest,
+    epicV2ManifestFlags = epicV2ManifestFlags,
+    featureNames = featureNames
   )
 }
 
 #' Filter probes from a normalized methylation object
 #'
-#' Apply detection P-value, chromosome, SNP, and cross-reactive probe filters
-#' to the primary normalized object and return the filtered result.
+#' Apply detection P-value, chromosome, SNP, and probe-exclusion filters to the
+#' primary normalized object and return the filtered result.
 #'
 #' @param normData Object returned by `normalizeMinfiEwasWater()`.
 #' @param RGSet Filtered `RGChannelSet` aligned with `normData`.
@@ -1215,12 +1536,20 @@ readCrossReactiveIdsMinfiEwasWater <- function(
 #'   types to remove, for example `"SBE,CpG"`.
 #' @param mafThreshold Numeric. Minor allele frequency threshold passed to
 #'   `minfi::dropLociWithSnps()`.
-#' @param crossReactivePath Character. Path to a CSV file containing
-#'   cross-reactive probes to remove.
-#' @param crossReactiveIdColumn Character or `NULL`. Column containing
-#'   cross-reactive probe IDs. When `NULL` or `""`, the function auto-detects
-#'   `ProbeID`, `TargetID`, `IlmnID`, or `Name`, then falls back to an unlabeled
-#'   or probe-like first column.
+#' @param probeExclusionPath Character vector or semicolon-separated string of
+#'   CSV files containing probe IDs to remove.
+#' @param probeExclusionIdColumn Character or `NULL`. Column containing probe
+#'   IDs. When `NULL` or `""`, each file is auto-detected using `ProbeID`,
+#'   `TargetID`, `IlmnID`, or `Name`, then falling back to an unlabeled or
+#'   probe-like first column.
+#' @param useEpicV2Manifest Logical. If `TRUE`, also remove EPICv2 probes
+#'   flagged in the Peters et al. expanded manifest from AnnotationHub resource
+#'   `AH116484`.
+#' @param epicV2ManifestFlags Named logical vector controlling which EPICv2
+#'   manifest flags are removed. Defaults remove `CH_WGBS_evidence`, `CH_BLAT`,
+#'   and `MissingPos`, but not `MismatchPos`.
+#' @param crossReactivePath Deprecated alias for `probeExclusionPath`.
+#' @param crossReactiveIdColumn Deprecated alias for `probeExclusionIdColumn`.
 #' @param detPtype Character. Detection P-value mode passed to
 #'   `minfi::detectionP()` for the probe filter. Common values in minfi
 #'   workflows are `"m+u"` and `"negative"`.
@@ -1242,12 +1571,12 @@ readCrossReactiveIdsMinfiEwasWater <- function(
 #'   chrToRemove = "chrY",
 #'   snpsToRemove = "SBE",
 #'   mafThreshold = 1,
-#'   crossReactivePath = ex$crossReactivePath,
+#'   probeExclusionPath = ex$probeExclusionPath,
 #'   detPtype = "m+u",
 #'   verbose = FALSE,
 #'   logs = FALSE
 #' )
-#' filtered_data$counts[["crossReactive"]]
+#' filtered_data$counts[["probeExclusion"]]
 #'
 #' @export
 filterProbesMinfiEwasWater <- function(
@@ -1257,14 +1586,30 @@ filterProbesMinfiEwasWater <- function(
     chrToRemove = "chrX,chrY",
     snpsToRemove = "SBE,CpG",
     mafThreshold = 0.1,
-    crossReactivePath,
-    crossReactiveIdColumn = NULL,
+    probeExclusionPath,
+    probeExclusionIdColumn = NULL,
+    useEpicV2Manifest = FALSE,
+    epicV2ManifestFlags = c(
+      CH_WGBS_evidence = TRUE,
+      CH_BLAT = TRUE,
+      MissingPos = TRUE,
+      MismatchPos = FALSE
+    ),
     detPtype = "m+u",
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_filterProbesMinfiEwasWater.txt"
+    log_file = "log_filterProbesMinfiEwasWater.txt",
+    crossReactivePath = NULL,
+    crossReactiveIdColumn = NULL
 ) {
+  if (!is.null(crossReactivePath)) {
+    probeExclusionPath <- crossReactivePath
+  }
+  if (!is.null(crossReactiveIdColumn)) {
+    probeExclusionIdColumn <- crossReactiveIdColumn
+  }
+
   log_path <- resolveLogPathMinfiEwasWater(
     logs = logs,
     log_dir = log_dir,
@@ -1295,30 +1640,70 @@ filterProbesMinfiEwasWater <- function(
     maf = mafThreshold
   )
 
-  cross_reactive_ids <- readCrossReactiveIdsMinfiEwasWater(
-    crossReactivePath = crossReactivePath,
-    crossReactiveIdColumn = crossReactiveIdColumn,
+  probe_file_ids <- readProbeExclusionIdsMinfiEwasWater(
+    probeExclusionPath = probeExclusionPath,
+    probeExclusionIdColumn = probeExclusionIdColumn,
+    featureNames = Biobase::featureNames(filtered_snp)
+  )
+  epicv2_manifest_ids <- readEpicV2ManifestExclusionIdsMinfiEwasWater(
+    useEpicV2Manifest = useEpicV2Manifest,
+    epicV2ManifestFlags = epicV2ManifestFlags,
     featureNames = Biobase::featureNames(filtered_snp)
   )
 
-  if (isTRUE(!is.na(cross_reactive_ids$overlap)) && identical(cross_reactive_ids$overlap, 0L)) {
+  probe_exclusion_ids <- unique(c(probe_file_ids$ids, epicv2_manifest_ids$ids))
+  probe_exclusion_overlap <- NA_integer_
+  if (length(probe_exclusion_ids) > 0L) {
+    probe_exclusion_overlap <- sum(
+      probe_exclusion_ids %in% Biobase::featureNames(filtered_snp)
+    )
+  }
+
+  if (
+    length(probe_exclusion_ids) > 0L &&
+      isTRUE(!is.na(probe_exclusion_overlap)) &&
+      identical(probe_exclusion_overlap, 0L)
+  ) {
     warning(
-      "No cross-reactive probe IDs overlap the filtered array feature names. ",
-      "Check that crossReactivePath and crossReactiveIdColumn match the array platform.",
+      "No probe-exclusion IDs overlap the filtered array feature names. ",
+      "Check that probeExclusionPath, probeExclusionIdColumn, and manifest ",
+      "settings match the array platform.",
       call. = FALSE
     )
   }
 
-  keep_cross <- !(Biobase::featureNames(filtered_snp) %in% cross_reactive_ids$ids)
-  filtered_final <- filtered_snp[keep_cross, ]
+  keep_probe_exclusion <- !(Biobase::featureNames(filtered_snp) %in% probe_exclusion_ids)
+  filtered_final <- filtered_snp[keep_probe_exclusion, ]
 
   counts <- c(
     start = nrow(normData$primary),
     detP = nrow(filtered_detp),
     chromosome = nrow(filtered_chr),
     snp = nrow(filtered_snp),
-    crossReactive = nrow(filtered_final)
+    probeExclusion = nrow(filtered_final)
   )
+
+  probe_file_lines <- if (nrow(probe_file_ids$files) > 0L) {
+    apply(probe_file_ids$files, 1L, function(row) {
+      paste0(
+        "  - ", row[["path"]],
+        " [", row[["column"]], "; ", row[["source"]],
+        "; IDs=", row[["nIds"]],
+        "; overlap=", row[["overlap"]],
+        "]"
+      )
+    })
+  } else {
+    "  - none"
+  }
+  epicv2_flag_lines <- if (isTRUE(useEpicV2Manifest)) {
+    paste0(
+      "  - ", names(epicv2_manifest_ids$flagCounts),
+      ": ", epicv2_manifest_ids$flagCounts
+    )
+  } else {
+    "  - disabled"
+  }
 
   emitLogMinfiEwasWater(
     c(
@@ -1326,20 +1711,19 @@ filterProbesMinfiEwasWater <- function(
       paste("Chromosomes removed:       ", paste(chr_list, collapse = ", ")),
       paste("SNP filters removed:       ", paste(snp_list, collapse = ", ")),
       paste("MAF threshold:             ", mafThreshold),
-      paste("Cross-reactive file:       ", crossReactivePath),
-      paste(
-        "Cross-reactive ID column:  ",
-        ifelse(nzchar(cross_reactive_ids$column), cross_reactive_ids$column, "<blank>"),
-        " (",
-        cross_reactive_ids$source,
-        ")"
-      ),
-      paste("Cross-reactive IDs loaded: ", cross_reactive_ids$nIds),
-      paste("Cross-reactive IDs overlap:", cross_reactive_ids$overlap),
+      "Probe-exclusion files:",
+      probe_file_lines,
+      paste("Probe-exclusion file IDs: ", probe_file_ids$nIds),
+      paste("EPICv2 manifest enabled:  ", useEpicV2Manifest),
+      "EPICv2 manifest flag counts:",
+      epicv2_flag_lines,
+      paste("EPICv2 manifest IDs:      ", epicv2_manifest_ids$nIds),
+      paste("Probe-exclusion IDs total:", length(probe_exclusion_ids)),
+      paste("Probe-exclusion overlap:  ", probe_exclusion_overlap),
       paste("Probes after detP filter:  ", counts[["detP"]]),
       paste("Probes after chr filter:   ", counts[["chromosome"]]),
       paste("Probes after SNP filter:   ", counts[["snp"]]),
-      paste("Probes after cross filter: ", counts[["crossReactive"]]),
+      paste("Probes after exclusion:    ", counts[["probeExclusion"]]),
       "======================================================================="
     ),
     verbose = verbose,
@@ -1358,9 +1742,18 @@ filterProbesMinfiEwasWater <- function(
       chrToRemove = chr_list,
       snpsToRemove = snp_list,
       mafThreshold = mafThreshold,
-      crossReactivePath = crossReactivePath,
-      crossReactiveIdColumn = cross_reactive_ids$column,
-      crossReactiveIds = cross_reactive_ids
+      probeExclusionPath = probeExclusionPath,
+      probeExclusionIdColumn = probeExclusionIdColumn,
+      probeExclusionIds = probe_exclusion_ids,
+      probeExclusionFileIds = probe_file_ids,
+      epicV2ManifestIds = epicv2_manifest_ids,
+      useEpicV2Manifest = useEpicV2Manifest,
+      epicV2ManifestFlags = normalizeEpicV2ManifestFlagsMinfiEwasWater(
+        epicV2ManifestFlags
+      ),
+      crossReactivePath = probeExclusionPath,
+      crossReactiveIdColumn = probeExclusionIdColumn,
+      crossReactiveIds = probe_file_ids
     ),
     class = "dnaEPICO_minfiEwasWater_filter"
   )

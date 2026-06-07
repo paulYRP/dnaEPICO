@@ -11,7 +11,7 @@
 # Data sources
 # -----------------------------------------------------------
 
-# 1. Cross-reactive probe list:
+# 1. Probe-exclusion list:
 #   12864_2024_10027_MOESM8_ESM.csv
 #
 # This file was obtained from the supplementary material of the
