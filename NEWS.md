@@ -1,7 +1,11 @@
-CHANGES IN VERSION 0.99.27
+CHANGES IN VERSION 0.99.28
 ------------------------
 
 NEW FEATURES
+
+    o [07-06-2026] Made the svaEnmix matrix plot adapt to larger
+      surrogate-variable matrices, paginate oversized matrices, and suppress
+      oversized SentrixID legends with an explicit log note.
 
     o [07-06-2026] Renamed cross-reactive probe inputs to probe-exclusion inputs,
       with support for multiple files and optional EPICv2 manifest flags.
