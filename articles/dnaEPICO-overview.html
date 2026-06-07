@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.26</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.27</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-06</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-07</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-overview.Rmd" class="external-link"><code>vignettes/dnaEPICO-overview.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-overview.Rmd</code></div>
@@ -147,14 +147,40 @@ structures.</p>
 <p>If you are asking yourself the question “Where do I start using
 Bioconductor?”, you might be interested in <a href="https://www.bioconductor.org/install/" class="external-link">this blog post</a>.</p>
 <div class="section level3">
-<h3 id="cross-reactive-probe-reference-files">Cross-reactive probe reference files<a class="anchor" aria-label="anchor" href="#cross-reactive-probe-reference-files"></a>
+<h3 id="probe-exclusion-reference-files">Probe-exclusion reference files<a class="anchor" aria-label="anchor" href="#probe-exclusion-reference-files"></a>
 </h3>
-<p>The lists of excluded probes depend on the platform. For Illumina
-HumanMethylationEPIC v2.0, use the cross-reactive probe file from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323" class="external-link">Peters
-et al. (2024)</a>; for Illumina MethylationEPIC (a.k.a. 850k array), use
-<a href="https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334" class="external-link">Pidsley
-et al. (2016)</a>; and for Illumina HumanMethylation450k, use <a href="https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205" class="external-link">Chen
-et al. (2013)</a>.</p>
+<p>The lists of excluded probes depend on the Illumina methylation-array
+platform.</p>
+<ul>
+<li><p>For <strong>Illumina HumanMethylationEPIC v2.0</strong>, use the
+cross-reactive probe-exclusion file from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323" class="external-link">Peters
+et al. (2024)</a>.</p></li>
+<li><p>For <strong>Illumina MethylationEPIC</strong>, also known as the
+<strong>850k array</strong>, use the probe-exclusion resources from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334" class="external-link">Pidsley
+et al. (2016)</a>. The supplementary files commonly used together are <a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM1_ESM.csv" class="external-link">13059_2016_1066_MOESM1_ESM.csv</a>,
+<a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM4_ESM.csv" class="external-link">13059_2016_1066_MOESM4_ESM.csv</a>,
+<a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM5_ESM.csv" class="external-link">13059_2016_1066_MOESM5_ESM.csv</a>,
+and <a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM6_ESM.csv" class="external-link">13059_2016_1066_MOESM6_ESM.csv</a>.</p></li>
+<li><p>For <strong>Illumina HumanMethylation450k</strong>, use the
+cross-reactive and polymorphic probe resources from <a href="https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205" class="external-link">Chen
+et al. (2013)</a>.</p></li>
+<li><p>Multiple probe-exclusion files can be supplied as a
+semicolon-separated value in <code>probeExclusionPath</code>.
+<code>dnaEPICO</code> reads probe IDs from each file, uses
+<code>probeExclusionIdColumn</code> when supplied, or otherwise
+auto-detects common probe-ID columns such as <code>ProbeID</code>,
+<code>TargetID</code>, <code>IlmnID</code>, and <code>Name</code>. The
+unique union of all probe IDs is then used to filter the normalised
+object.</p></li>
+<li><p>For <strong>EPICv2</strong>, setting
+<code>useEpicV2Manifest = TRUE</code> also retrieves the expanded Peters
+et al. manifest from AnnotationHub resource <a href="https://bioconductor.org/packages/release/data/annotation/vignettes/EPICv2manifest/inst/doc/EPICv2manifest.html" class="external-link">AH116484</a>.
+Probes flagged in selected manifest columns are added to the same
+exclusion set. By default, probes flagged by
+<code>CH_WGBS_evidence</code>, <code>CH_BLAT</code>, or
+<code>MissingPos</code> are removed, while <code>MismatchPos</code> is
+retained unless explicitly enabled.</p></li>
+</ul>
 <style>
 .overview-figure {
   margin: 1.5rem 0 2rem;
@@ -528,9 +554,9 @@ tables,</li>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-06-06 00:44:18 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-06-07 01:33:57 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 0.614 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 0.619 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -555,7 +581,7 @@ tables,</li>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dnaEPICO_0.99.26 BiocStyle_2.34.0</span></span>
+<span><span class="co">#&gt; [1] dnaEPICO_0.99.27 BiocStyle_2.34.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] cli_3.6.6           knitr_1.51          rlang_1.2.0        </span></span>

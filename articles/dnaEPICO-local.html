@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.26</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.27</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-06</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-07</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-local.Rmd" class="external-link"><code>vignettes/dnaEPICO-local.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-local.Rmd</code></div>
@@ -157,14 +157,40 @@ workflows, and Illumina IDAT file structures.</p>
 <p>If you are asking yourself the question “Where do I start using
 Bioconductor?”, you might be interested in <a href="https://www.bioconductor.org/install/" class="external-link">this post</a>.</p>
 <div class="section level3">
-<h3 id="cross-reactive-probe-reference-files">Cross-reactive probe reference files<a class="anchor" aria-label="anchor" href="#cross-reactive-probe-reference-files"></a>
+<h3 id="probe-exclusion-reference-files">Probe-exclusion reference files<a class="anchor" aria-label="anchor" href="#probe-exclusion-reference-files"></a>
 </h3>
-<p>The lists of excluded probes depend on the platform. For Illumina
-HumanMethylationEPIC v2.0, use the cross-reactive probe file from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323" class="external-link">Peters
-et al. (2024)</a>; for Illumina MethylationEPIC (a.k.a. 850k array), use
-<a href="https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334" class="external-link">Pidsley
-et al. (2016)</a>; and for Illumina HumanMethylation450k, use <a href="https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205" class="external-link">Chen
-et al. (2013)</a>.</p>
+<p>The lists of excluded probes depend on the Illumina methylation-array
+platform.</p>
+<ul>
+<li><p>For <strong>Illumina HumanMethylationEPIC v2.0</strong>, use the
+cross-reactive probe-exclusion file from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323" class="external-link">Peters
+et al. (2024)</a>.</p></li>
+<li><p>For <strong>Illumina MethylationEPIC</strong>, also known as the
+<strong>850k array</strong>, use the probe-exclusion resources from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334" class="external-link">Pidsley
+et al. (2016)</a>. The supplementary files commonly used together are <a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM1_ESM.csv" class="external-link">13059_2016_1066_MOESM1_ESM.csv</a>,
+<a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM4_ESM.csv" class="external-link">13059_2016_1066_MOESM4_ESM.csv</a>,
+<a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM5_ESM.csv" class="external-link">13059_2016_1066_MOESM5_ESM.csv</a>,
+and <a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM6_ESM.csv" class="external-link">13059_2016_1066_MOESM6_ESM.csv</a>.</p></li>
+<li><p>For <strong>Illumina HumanMethylation450k</strong>, use the
+cross-reactive and polymorphic probe resources from <a href="https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205" class="external-link">Chen
+et al. (2013)</a>.</p></li>
+<li><p>Multiple probe-exclusion files can be supplied as a
+semicolon-separated value in <code>probeExclusionPath</code>.
+<code>dnaEPICO</code> reads probe IDs from each file, uses
+<code>probeExclusionIdColumn</code> when supplied, or otherwise
+auto-detects common probe-ID columns such as <code>ProbeID</code>,
+<code>TargetID</code>, <code>IlmnID</code>, and <code>Name</code>. The
+unique union of all probe IDs is then used to filter the normalised
+object.</p></li>
+<li><p>For <strong>EPICv2</strong>, setting
+<code>useEpicV2Manifest = TRUE</code> also retrieves the expanded Peters
+et al. manifest from AnnotationHub resource <a href="https://bioconductor.org/packages/release/data/annotation/vignettes/EPICv2manifest/inst/doc/EPICv2manifest.html" class="external-link">AH116484</a>.
+Probes flagged in selected manifest columns are added to the same
+exclusion set. By default, probes flagged by
+<code>CH_WGBS_evidence</code>, <code>CH_BLAT</code>, or
+<code>MissingPos</code> are removed, while <code>MismatchPos</code> is
+retained unless explicitly enabled.</p></li>
+</ul>
 </div>
 </div>
 <div class="section level2">
@@ -199,23 +225,23 @@ names, and a preview of the filtered phenotype table.</p>
 </h4>
 <p>The next chunk shows how to recreate the temporary files used in this
 example. It writes a small phenotype table to a temporary directory,
-copies a small set of IDAT files, and records the cross-reactive probe
+copies a small set of IDAT files, and records the probe-exclusion
 reference used during probe filtering.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">preprocessing_inputs</span> <span class="op">&lt;-</span> <span class="fu">dnaEPICO</span><span class="fu">:::</span><span class="fu">exampleMinfiIdatInputsDnaEpico</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">6L</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "tempDir"           "idatFolder"        "phenoFile"        </span></span>
-<span><span class="co">#&gt; [4] "targets"           "arrayType"         "annotationVersion"</span></span>
-<span><span class="co">#&gt; [7] "crossReactivePath"</span></span>
+<span><span class="co">#&gt; [1] "tempDir"            "idatFolder"         "phenoFile"         </span></span>
+<span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
+<span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp5X0UQB/dnaEPICO-idat-example-20584b692b7e"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmp4DkrHK/dnaEPICO-idat-example-205e1b6f8610"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "5723646052_R02C02_Grn.idat" "5723646052_R02C02_Red.idat"</span></span>
 <span><span class="co">#&gt; [3] "5723646052_R04C01_Grn.idat" "5723646052_R04C01_Red.idat"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">crossReactivePath</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">probeExclusionPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "12864_2024_10027_MOESM8_ESM.csv"</span></span></code></pre></div>
 <p><code>preprocessing_inputs</code> is a small list returned by the
 internal example helper. <code>names(preprocessing_inputs)</code> shows
@@ -225,8 +251,8 @@ files, <code>phenoFile</code> is the phenotype table used by the
 function, <code>targets</code> is the same phenotype information already
 loaded into memory, <code>arrayType</code> and
 <code>annotationVersion</code> describe the array platform, and
-<code>crossReactivePath</code> points to the cross-reactive probe
-reference used later during filtering.</p>
+<code>probeExclusionPath</code> points to the probe-exclusion reference
+used later during filtering.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">preprocessResult</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater</a></span><span class="op">(</span></span>
 <span>  phenoFile <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span>,</span>
@@ -246,7 +272,7 @@ reference used later during filtering.</p>
 <span>  chrToRemove <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  snpsToRemove <span class="op">=</span> <span class="st">"SBE"</span>,</span>
 <span>  mafThreshold <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  crossReactivePath <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">crossReactivePath</span>,</span>
+<span>  probeExclusionPath <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">probeExclusionPath</span>,</span>
 <span>  plotGroupVar <span class="op">=</span> <span class="st">"Sex"</span>,</span>
 <span>  lcRef <span class="op">=</span> <span class="st">"saliva"</span>,</span>
 <span>  phenoOrder <span class="op">=</span> <span class="st">"Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position"</span>,</span>
@@ -303,7 +329,7 @@ the array platform being processed.</li>
 <code>snpsToRemove</code>, and <code>mafThreshold</code> control quality
 filtering and probe filtering.</li>
 <li>
-<code>crossReactivePath</code> supplies the cross-reactive probe
+<code>probeExclusionPath</code> supplies the probe-exclusion
 reference used during filtering.</li>
 <li>
 <code>sexColumn</code>, <code>plotGroupVar</code>,
@@ -362,7 +388,7 @@ phenotype table.</p>
 <span><span class="va">sva_rgset_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">sva_temp_dir</span>, <span class="st">"sva_RGSet.RData"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sva_inputs</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "RGSet"             "targets"           "crossReactivePath"</span></span>
+<span><span class="co">#&gt; [1] "RGSet"              "targets"            "probeExclusionPath"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">sva_inputs</span><span class="op">$</span><span class="va">RGSet</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "RGChannelSet"</span></span>
 <span><span class="co">#&gt; attr(,"package")</span></span>
@@ -378,7 +404,7 @@ phenotype table.</p>
 <p><code>sva_inputs</code> is another helper list used to make the
 vignette self-contained. <code>names(sva_inputs)</code> shows that it
 provides the in-memory <code>RGSet</code>, the matching
-<code>targets</code> table, and a <code>crossReactivePath</code>
+<code>targets</code> table, and a <code>probeExclusionPath</code>
 reference. In this step, the function needs file inputs rather than the
 in-memory objects, so the chunk writes <code>targets</code> to
 <code>sva_targets.csv</code> and saves the <code>RGSet</code> object to
@@ -486,7 +512,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp5X0UQB/dnaEPICO-preprocessingPheno-example-20586abb7c23"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmp4DkrHK/dnaEPICO-preprocessingPheno-example-205e749b8927"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -627,9 +653,9 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-06-06 00:44:15 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-06-07 01:33:53 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 49.971 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 50.377 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -673,7 +699,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.26                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.27                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
