@@ -178,7 +178,8 @@ findCoefficientRowsMethylationGLM <- function(
 buildFormulaMethylationGLM <- function(
     phenotype,
     covariates = character(0),
-    interactionTerm = NULL
+    interactionTerm = NULL,
+    responseVar = "beta"
 ) {
   quoted_phenotype <- quoteNamesMethylationGLM(phenotype)
   quoted_covariates <- quoteNamesMethylationGLM(covariates)
@@ -198,7 +199,7 @@ buildFormulaMethylationGLM <- function(
     stop("At least one phenotype or covariate term is required.", call. = FALSE)
   }
 
-  paste("beta ~", paste(terms, collapse = " + "))
+  paste(responseVar, "~", paste(terms, collapse = " + "))
 }
 
 #' Fit a single CpG-level Gaussian GLM for methylationGLM helpers
@@ -222,12 +223,13 @@ fitCpGModelMethylationGLM <- function(
     data,
     modelVars,
     formulaText,
-    factorVars = character(0)
+    factorVars = character(0),
+    responseVar = "beta"
 ) {
   tryCatch(
     {
       model_data <- data[, modelVars, drop = FALSE]
-      model_data$beta <- as.numeric(data[[cpg]])
+      model_data[[responseVar]] <- as.numeric(data[[cpg]])
 
       for (var in intersect(factorVars, colnames(model_data))) {
         model_data[[var]] <- as.factor(model_data[[var]])
@@ -467,12 +469,13 @@ fitCpGModelMethylationGLMPrepared <- function(
     cpg,
     cpgValues,
     modelData,
-    formulaText
+    formulaText,
+    responseVar = "beta"
 ) {
   tryCatch(
     {
       model_data <- modelData
-      model_data$beta <- as.numeric(cpgValues)
+      model_data[[responseVar]] <- as.numeric(cpgValues)
 
       fit <- glm2::glm2(
         formula = stats::as.formula(formulaText),
@@ -502,7 +505,8 @@ fitMethylationGLMBatch <- function(
     modelData,
     formulaText,
     phenotype,
-    interactionTerm = NULL
+    interactionTerm = NULL,
+    responseVar = "beta"
 ) {
   fits <- vector("list", length(cpgBatch))
   names(fits) <- cpgBatch
@@ -514,7 +518,8 @@ fitMethylationGLMBatch <- function(
       cpg = cpg,
       cpgValues = data[[cpg]],
       modelData = modelData,
-      formulaText = formulaText
+      formulaText = formulaText,
+      responseVar = responseVar
     )
     fits[[cpg]] <- model_obj
     summaries[[cpg]] <- summarizeCpGFitMethylationGLM(
@@ -700,7 +705,7 @@ buildAnnotatedWorkbookDictionaryMethylationGLM <- function(
   display_formula <- function(column) {
     formula_text <- select_formula(column)
     formula_text <- sub(
-      "^\\s*`?beta`?\\s*~",
+      "^\\s*[^~]+\\s*~",
       paste(responseLabel, "~"),
       formula_text,
       ignore.case = TRUE
@@ -880,6 +885,7 @@ prepareMethylationGLMData <- function(
   methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
   methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
   methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
+  response_column <- methylationScaleResponseColumnDnaEpico(methylation_scale)
   analysis_data <- loadSavedObjectPreprocessingPheno(inputPheno, preferred_name = "phenoBT1")
 
   if (!is.data.frame(analysis_data)) {
@@ -957,10 +963,7 @@ prepareMethylationGLMData <- function(
   log_lines <- c(
     "=======================================================================",
     paste("Loaded phenotype + methylation data from:", inputPheno),
-    paste("Methylation scale:          ", methylation_label),
     paste("Merged modeling object:     ", methylation_prefix, "*"),
-    paste("Displayed response label:   ", methylation_label),
-    "Internal response column:   beta",
     paste("Data dimensions:             ", paste(dim(analysis_data), collapse = " x ")),
     paste("Phenotypes:                  ", paste(phenotype_list, collapse = ", ")),
     paste("Covariates:                  ", paste(covariate_list, collapse = ", ")),
@@ -993,7 +996,7 @@ prepareMethylationGLMData <- function(
       methylationScale = methylation_scale,
       responseLabel = methylation_label,
       methylationObjectPrefix = methylation_prefix,
-      internalResponseColumn = "beta",
+      internalResponseColumn = response_column,
       prsMap = prs_map,
       interactionTerm = resolved_interaction,
       requestedInteractionTerm = interactionTerm,
@@ -1266,7 +1269,8 @@ fitMethylationGLMModels <- function(
     formula_text <- buildFormulaMethylationGLM(
       phenotype = phenotype,
       covariates = covariates,
-      interactionTerm = preparedData$interactionTerm
+      interactionTerm = preparedData$interactionTerm,
+      responseVar = preparedData$internalResponseColumn
     )
 
     base_model_data <- analysis_data[, model_vars, drop = FALSE]
@@ -1281,6 +1285,7 @@ fitMethylationGLMModels <- function(
     )
     batch_worker <- fitMethylationGLMBatch
     resolved_interaction <- preparedData$interactionTerm
+    response_var <- preparedData$internalResponseColumn
 
     if (!identical(backend, "serial") && length(cpg_batches) > 1L) {
       cluster_size <- min(n_cores, length(cpg_batches))
@@ -1299,7 +1304,8 @@ fitMethylationGLMModels <- function(
               modelData = base_model_data,
               formulaText = formula_text,
               phenotype = phenotype,
-              interactionTerm = resolved_interaction
+              interactionTerm = resolved_interaction,
+              responseVar = response_var
             )
           },
           mc.cores = cluster_size,
@@ -1317,6 +1323,7 @@ fitMethylationGLMModels <- function(
                 "formula_text",
                 "phenotype",
                 "resolved_interaction",
+                "response_var",
                 "batch_worker",
                 "libPath",
                 "glm_lib_list",
@@ -1347,7 +1354,8 @@ fitMethylationGLMModels <- function(
                   modelData = base_model_data,
                   formulaText = formula_text,
                   phenotype = phenotype,
-                  interactionTerm = resolved_interaction
+                  interactionTerm = resolved_interaction,
+                  responseVar = response_var
                 )
               }
             )
@@ -1371,7 +1379,8 @@ fitMethylationGLMModels <- function(
             modelData = base_model_data,
             formulaText = formula_text,
             phenotype = phenotype,
-            interactionTerm = resolved_interaction
+            interactionTerm = resolved_interaction,
+            responseVar = response_var
           )
         }
       )

@@ -53,6 +53,15 @@ methylationScaleResponseLabelDnaEpico <- function(methylationScale = "beta") {
   )
 }
 
+methylationScaleResponseColumnDnaEpico <- function(methylationScale = "beta") {
+  switch(
+    normalizeMethylationScaleDnaEpico(methylationScale),
+    beta = "beta",
+    m = "m",
+    cn = "cn"
+  )
+}
+
 #' Extract a preferred named element from a loaded object
 #'
 #' @param object Loaded object.
@@ -378,7 +387,6 @@ splitTimepointsPreprocessingPheno <- function(
       "Requested timepoints:      ",
       paste(requested_timepoints, collapse = ", ")
     ),
-    paste("Modeling methylation scale:", methylation_label),
     paste("Available values in", timeVar, "column:")
   )
   summary_lines <- c(
@@ -570,7 +578,6 @@ combineTimepointsPreprocessingPheno <- function(
         paste(requested_timepoints, collapse = ", ")
       ),
       paste("Combined phenotype rows:   ", nrow(combined_pheno)),
-      paste("Modeling methylation scale:", methylation_label),
       paste("Combined ", methylation_prefix, " rows:   ", nrow(combined_pheno_beta), sep = ""),
       paste("Combined suffix:           ", combine_suffix),
       "======================================================================="

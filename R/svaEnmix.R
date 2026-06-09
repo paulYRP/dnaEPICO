@@ -388,8 +388,6 @@ svaEnmix <- function(
       paste("Script label:             ", scriptLabel),
       paste("TIFF dimensions (WxH):    ", tiffWidth, " x ", tiffHeight, " @ ", tiffRes),
       paste("Display plots:            ", display),
-      paste("Verbose messages:         ", verbose),
-      paste("Write logs:               ", logs),
       paste("Save outputs:             ", saveOutputs),
       "======================================================================="
     ),

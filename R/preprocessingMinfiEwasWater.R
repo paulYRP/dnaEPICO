@@ -285,8 +285,6 @@ preprocessingMinfiEwasWater <- function(
       paste("  Reference:              ", lcRef),
       paste("  Leading pheno order:    ", phenoOrder),
       paste("Display plots:            ", display),
-      paste("Verbose messages:         ", verbose),
-      paste("Write logs:               ", logs),
       paste("Save outputs:             ", saveOutputs),
       "======================================================================="
     ),

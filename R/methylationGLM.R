@@ -210,6 +210,7 @@ methylationGLM <- function(
   methylationScale <- normalizeMethylationScaleDnaEpico(methylationScale)
   methylationLabel <- methylationScaleResponseLabelDnaEpico(methylationScale)
   methylationObjectPrefix <- methylationScaleObjectPrefixDnaEpico(methylationScale)
+  responseColumn <- methylationScaleResponseColumnDnaEpico(methylationScale)
   log_file <- "log_methylationGLM.txt"
 
   if (is.null(libPath)) {
@@ -227,11 +228,7 @@ methylationGLM <- function(
       "==== Starting DNAm GLM Analysis ====",
       paste("Start time:                ", format(Sys.time())),
       paste("Input phenotype + methylation:", inputPheno),
-      paste("Methylation scale:         ", methylationLabel),
       paste("Merged modeling object:    ", methylationObjectPrefix, "*"),
-      paste("Displayed response label:  ", methylationLabel),
-      "Internal response column:  beta",
-      "Pipeline step label:       methylationGLM",
       paste("Output RData folder:       ", outputRData),
       paste("Output logs folder:        ", outputLogs),
       paste("Output plots folder:       ", outputPlots),
@@ -250,8 +247,6 @@ methylationGLM <- function(
       paste("FDR threshold:             ", fdrThreshold),
       paste("P-value adjustment method: ", padjmethod),
       paste("Display plots:             ", isTRUE(display)),
-      paste("Verbose messages:          ", isTRUE(verbose)),
-      paste("Write logs:                ", isTRUE(logs)),
       paste("Save outputs:              ", isTRUE(saveOutputs)),
       "======================================================================="
     ),
@@ -405,7 +400,7 @@ methylationGLM <- function(
             methylationScale = methylationScale,
             methylationLabel = methylationLabel,
             methylationObjectPrefix = methylationObjectPrefix,
-            internalResponseColumn = "beta"
+            internalResponseColumn = responseColumn
           )
         ),
         class = "dnaEPICO_methylationGLM"

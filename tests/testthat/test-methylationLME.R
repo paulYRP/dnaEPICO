@@ -105,6 +105,38 @@ test_that("methylationLME returns in-memory results quietly by default", {
     expect_false(dir.exists(file.path(tmp, "figures", "methylationLME")))
 })
 
+test_that("methylationLME updates the internal response column for copy-number runs", {
+    testthat::skip_if_not_installed("lmerTest")
+
+    tmp <- withr::local_tempdir()
+    example_data <- create_methylation_lme_example(tmp, include_person = TRUE)
+
+    prepared <- prepareMethylationLMEData(
+        inputPheno = example_data$inputPheno,
+        personVar = "person",
+        timeVar = "Timepoint",
+        phenotypes = "score",
+        covariates = "sex",
+        factorVars = "sex",
+        cpgLimit = 1,
+        methylationScale = "cn",
+        verbose = FALSE,
+        logs = FALSE
+    )
+    fits <- fitMethylationLMEModels(
+        preparedData = prepared,
+        lmeLibs = "lme4,lmerTest",
+        nCores = 1,
+        verbose = FALSE,
+        logs = FALSE
+    )
+
+    expect_equal(prepared$internalResponseColumn, "cn")
+    expect_equal(prepared$responseLabel, "Copy number values")
+    expect_equal(fits$settings$internalResponseColumn, "cn")
+    expect_equal(unname(fits$formulas["score"]), "cn ~ `score` + `sex` + (1 | `person` )")
+})
+
 test_that("methylationLME can write outputs and derive person IDs on request", {
     testthat::skip_if_not_installed("IlluminaHumanMethylation450kanno.ilmn12.hg19")
     testthat::skip_if_not_installed("lmerTest")

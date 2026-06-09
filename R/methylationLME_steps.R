@@ -76,7 +76,8 @@ buildFormulaMethylationLME <- function(
     personVar,
     covariates = character(0),
     interactionTerm = NULL,
-    includeRandomTerm = TRUE
+    includeRandomTerm = TRUE,
+    responseVar = "beta"
 ) {
   quoted_phenotype <- quoteNamesMethylationGLM(phenotype)
   quoted_person <- quoteNamesMethylationGLM(personVar)
@@ -98,7 +99,8 @@ buildFormulaMethylationLME <- function(
   }
 
   formula_text <- paste(
-    "beta ~",
+    responseVar,
+    "~",
     paste(fixed_formula_terms, collapse = " + ")
   )
 
@@ -357,12 +359,13 @@ fitCpGModelMethylationLME <- function(
     factorVars = character(0),
     lmeEngine = "lme4",
     correlationStructure = "none",
-    correlationTimeVar = NULL
+    correlationTimeVar = NULL,
+    responseVar = "beta"
 ) {
   tryCatch(
     {
       model_data <- data[, modelVars, drop = FALSE]
-      model_data$beta <- as.numeric(data[[cpg]])
+      model_data[[responseVar]] <- as.numeric(data[[cpg]])
       model_data[[personVar]] <- as.factor(model_data[[personVar]])
 
       for (var in intersect(factorVars, colnames(model_data))) {
@@ -506,12 +509,13 @@ fitCpGModelMethylationLMEPrepared <- function(
     personVar,
     lmeEngine = "lme4",
     correlationStructure = "none",
-    correlationTimeVar = NULL
+    correlationTimeVar = NULL,
+    responseVar = "beta"
 ) {
   tryCatch(
     {
       model_data <- modelData
-      model_data$beta <- as.numeric(cpgValues)
+      model_data[[responseVar]] <- as.numeric(cpgValues)
 
       if (identical(lmeEngine, "nlme")) {
         fit <- nlme::lme(
@@ -575,7 +579,8 @@ fitMethylationLMEBatch <- function(
     correlationStructure = "none",
     correlationTimeVar = NULL,
     phenotype,
-    interactionTerm = NULL
+    interactionTerm = NULL,
+    responseVar = "beta"
 ) {
   fits <- vector("list", length(cpgBatch))
   names(fits) <- cpgBatch
@@ -591,7 +596,8 @@ fitMethylationLMEBatch <- function(
       personVar = personVar,
       lmeEngine = lmeEngine,
       correlationStructure = correlationStructure,
-      correlationTimeVar = correlationTimeVar
+      correlationTimeVar = correlationTimeVar,
+      responseVar = responseVar
     )
     fits[[cpg]] <- model_obj
     summaries[[cpg]] <- summarizeCpGFitMethylationLME(
@@ -789,6 +795,7 @@ prepareMethylationLMEData <- function(
   methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
   methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
   methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
+  response_column <- methylationScaleResponseColumnDnaEpico(methylation_scale)
   analysis_data <- loadSavedObjectPreprocessingPheno(inputPheno, preferred_name = "phenoBT1T2")
 
   if (!is.data.frame(analysis_data)) {
@@ -875,10 +882,7 @@ prepareMethylationLMEData <- function(
   log_lines <- c(
     "=======================================================================",
     paste("Loaded longitudinal phenotype + methylation data from:", inputPheno),
-    paste("Methylation scale:                 ", methylation_label),
     paste("Merged modeling object:            ", methylation_prefix, "*"),
-    paste("Displayed response label:          ", methylation_label),
-    "Internal response column:          beta",
     paste("Data dimensions:                  ", paste(dim(analysis_data), collapse = " x ")),
     paste("Person variable:                  ", personVar),
     paste("Time variable:                    ", timeVar),
@@ -928,7 +932,7 @@ prepareMethylationLMEData <- function(
       methylationScale = methylation_scale,
       responseLabel = methylation_label,
       methylationObjectPrefix = methylation_prefix,
-      internalResponseColumn = "beta",
+      internalResponseColumn = response_column,
       interactionTerm = resolved_interaction,
       requestedInteractionTerm = interactionTerm,
       personCreated = person_data$personCreated,
@@ -1062,14 +1066,16 @@ fitMethylationLMEModels <- function(
       personVar = preparedData$personVar,
       covariates = covariates,
       interactionTerm = preparedData$interactionTerm,
-      includeRandomTerm = TRUE
+      includeRandomTerm = TRUE,
+      responseVar = preparedData$internalResponseColumn
     )
     formula_text <- buildFormulaMethylationLME(
       phenotype = phenotype,
       personVar = preparedData$personVar,
       covariates = covariates,
       interactionTerm = preparedData$interactionTerm,
-      includeRandomTerm = !identical(lme_engine, "nlme")
+      includeRandomTerm = !identical(lme_engine, "nlme"),
+      responseVar = preparedData$internalResponseColumn
     )
 
     base_model_data <- analysis_data[, model_vars, drop = FALSE]
@@ -1095,6 +1101,7 @@ fitMethylationLMEModels <- function(
     )
     batch_worker <- fitMethylationLMEBatch
     resolved_interaction <- preparedData$interactionTerm
+    response_var <- preparedData$internalResponseColumn
 
     if (!identical(backend, "serial") && length(cpg_batches) > 1L) {
       cluster_size <- min(n_cores, length(cpg_batches))
@@ -1117,7 +1124,8 @@ fitMethylationLMEModels <- function(
               correlationStructure = correlation_structure,
               correlationTimeVar = correlation_time_var,
               phenotype = phenotype,
-              interactionTerm = resolved_interaction
+              interactionTerm = resolved_interaction,
+              responseVar = response_var
             )
           },
           mc.cores = cluster_size,
@@ -1139,6 +1147,7 @@ fitMethylationLMEModels <- function(
                 "lme_engine",
                 "correlation_structure",
                 "correlation_time_var",
+                "response_var",
                 "batch_worker",
                 "libPath",
                 "required_lme_lib_list",
@@ -1176,7 +1185,8 @@ fitMethylationLMEModels <- function(
                   correlationStructure = correlation_structure,
                   correlationTimeVar = correlation_time_var,
                   phenotype = phenotype,
-                  interactionTerm = resolved_interaction
+                  interactionTerm = resolved_interaction,
+                  responseVar = response_var
                 )
               }
             )
@@ -1204,7 +1214,8 @@ fitMethylationLMEModels <- function(
             correlationStructure = correlation_structure,
             correlationTimeVar = correlation_time_var,
             phenotype = phenotype,
-            interactionTerm = resolved_interaction
+            interactionTerm = resolved_interaction,
+            responseVar = response_var
           )
         }
       )

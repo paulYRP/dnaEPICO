@@ -62,6 +62,33 @@ test_that("methylationGLM returns in-memory results quietly by default", {
     expect_false(dir.exists(file.path(tmp, "figures", "methylationGLM")))
 })
 
+test_that("methylationGLM updates the internal response column for M-value runs", {
+    tmp <- withr::local_tempdir()
+    example_data <- create_methylation_glm_t1_example(tmp)
+
+    prepared <- prepareMethylationGLMData(
+        inputPheno = example_data$inputPheno,
+        phenotypes = "status",
+        covariates = "sex",
+        factorVars = "status,sex",
+        cpgLimit = 1,
+        methylationScale = "m",
+        verbose = FALSE,
+        logs = FALSE
+    )
+    fits <- fitMethylationGLMModels(
+        preparedData = prepared,
+        nCores = 1,
+        verbose = FALSE,
+        logs = FALSE
+    )
+
+    expect_equal(prepared$internalResponseColumn, "m")
+    expect_equal(prepared$responseLabel, "M-values")
+    expect_equal(fits$settings$internalResponseColumn, "m")
+    expect_equal(unname(fits$formulas["status"]), "m ~ `status` + `sex`")
+})
+
 test_that("methylationGLM can write outputs and logs on request", {
     testthat::skip_if_not_installed("IlluminaHumanMethylation450kanno.ilmn12.hg19")
 
@@ -129,6 +156,10 @@ test_that("methylationGLM can write outputs and logs on request", {
 
 test_that("annotated workbook dictionary reports M-values when the fitted response uses M scale", {
     model_results <- list(
+        settings = list(
+            methylationScale = "m",
+            internalResponseColumn = "m"
+        ),
         fits = list(
             status = list(
                 cg00000029 = list(
@@ -137,7 +168,7 @@ test_that("annotated workbook dictionary reports M-values when the fitted respon
                 )
             )
         ),
-        formulas = c(status = "beta ~ `status` + `sex`")
+        formulas = c(status = "m ~ `status` + `sex`")
     )
 
     dictionary <- dnaEPICO:::buildAnnotatedWorkbookDictionaryMethylationGLM(
@@ -156,8 +187,11 @@ test_that("annotated workbook dictionary reports M-values when the fitted respon
 
 test_that("annotated workbook dictionary reports copy number when requested", {
     model_results <- list(
-        settings = list(methylationScale = "cn"),
-        formulas = c(status = "beta ~ `status` + `sex`")
+        settings = list(
+            methylationScale = "cn",
+            internalResponseColumn = "cn"
+        ),
+        formulas = c(status = "cn ~ `status` + `sex`")
     )
 
     dictionary <- dnaEPICO:::buildAnnotatedWorkbookDictionaryMethylationGLM(
