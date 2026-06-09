@@ -19,8 +19,8 @@
 #'   \item [preprocessingMinfiEwasWater()]
 #'   \item [svaEnmix()]
 #'   \item [preprocessingPheno()]
-#'   \item [methylationGLM_T1()]
-#'   \item [methylationGLMM_T1T2()]
+#'   \item [methylationGLM()]
+#'   \item [methylationLME()]
 #'   \item [dnamReport()]
 #' }
 #'

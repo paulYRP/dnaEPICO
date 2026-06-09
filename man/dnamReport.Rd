@@ -12,7 +12,7 @@ dnamReport(
   svaTab = file.path("figures", "svaEnmix"),
   metricTab = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
   glmTab = NULL,
-  lmerTab = NULL,
+  lmeTab = NULL,
   logTab = outputDir,
   verbose = FALSE,
   logs = FALSE,
@@ -43,7 +43,7 @@ When \code{NULL}, the path is inferred from the Makefile output layout.}
 \item{glmTab}{Character or \code{NULL}. XLSX workbook shown in the GLM Analysis tab.
 When \code{NULL}, the path is inferred from the Makefile output layout.}
 
-\item{lmerTab}{Character or \code{NULL}. XLSX workbook shown in the LMER Analysis tab.
+\item{lmeTab}{Character or \code{NULL}. XLSX workbook shown in the LME Analysis tab.
 When \code{NULL}, the path is inferred from the Makefile output layout.}
 
 \item{logTab}{Character. Directory containing workflow logs shown in the Logs

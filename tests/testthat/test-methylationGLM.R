@@ -17,18 +17,18 @@ create_methylation_glm_t1_example <- function(path) {
     )
 }
 
-test_that("methylationGLM_T1 returns in-memory results quietly by default", {
+test_that("methylationGLM returns in-memory results quietly by default", {
     testthat::skip_if_not_installed("IlluminaHumanMethylation450kanno.ilmn12.hg19")
 
     tmp <- withr::local_tempdir()
     example_data <- create_methylation_glm_t1_example(tmp)
 
     expect_message(
-        result <- methylationGLM_T1(
+        result <- methylationGLM(
             inputPheno = example_data$inputPheno,
             outputLogs = file.path(tmp, "logs"),
-            outputRData = file.path(tmp, "rData", "methylationGLM_T1", "models"),
-            outputPlots = file.path(tmp, "figures", "methylationGLM_T1"),
+            outputRData = file.path(tmp, "rData", "methylationGLM", "models"),
+            outputPlots = file.path(tmp, "figures", "methylationGLM"),
             phenotypes = "status",
             covariates = "sex",
             factorVars = "status,sex",
@@ -48,28 +48,32 @@ test_that("methylationGLM_T1 returns in-memory results quietly by default", {
         NA
     )
 
-    expect_s3_class(result, "dnaEPICO_methylationGLM_T1")
+    expect_s3_class(result, "dnaEPICO_methylationGLM")
     expect_null(result$savedFiles)
     expect_true("status" %in% names(result$modelFits$fits))
     expect_true("status" %in% names(result$modelSummaries$summaries))
+    expect_equal(result$modelFits$settings$parallelBackend, "serial")
+    expect_equal(nrow(result$modelFits$summaryCache$status), 2)
     expect_s3_class(result$distributionPlots$phenotypes$status, "ggplot")
     expect_s3_class(result$diagnosticPlots$plots$status$qqplot, "ggplot")
     expect_true("IlmnID" %in% colnames(result$annotation$data))
-    expect_false(dir.exists(file.path(tmp, "figures", "methylationGLM_T1")))
+    expect_equal(result$runSettings$analysisLabel, "methylationGLM")
+    expect_equal(result$runSettings$internalResponseColumn, "beta")
+    expect_false(dir.exists(file.path(tmp, "figures", "methylationGLM")))
 })
 
-test_that("methylationGLM_T1 can write outputs and logs on request", {
+test_that("methylationGLM can write outputs and logs on request", {
     testthat::skip_if_not_installed("IlluminaHumanMethylation450kanno.ilmn12.hg19")
 
     tmp <- withr::local_tempdir()
     example_data <- create_methylation_glm_t1_example(tmp)
 
     expect_message(
-        result <- methylationGLM_T1(
+        result <- methylationGLM(
             inputPheno = example_data$inputPheno,
             outputLogs = file.path(tmp, "logs"),
-            outputRData = file.path(tmp, "rData", "methylationGLM_T1", "models"),
-            outputPlots = file.path(tmp, "figures", "methylationGLM_T1"),
+            outputRData = file.path(tmp, "rData", "methylationGLM", "models"),
+            outputPlots = file.path(tmp, "figures", "methylationGLM"),
             phenotypes = "status",
             covariates = "sex",
             factorVars = "status,sex",
@@ -77,13 +81,13 @@ test_that("methylationGLM_T1 can write outputs and logs on request", {
             nCores = 1,
             summaryPval = 1,
             saveSignificantCpGs = TRUE,
-            significantCpGDir = file.path(tmp, "results", "cpgs", "methylationGLM_T1"),
+            significantCpGDir = file.path(tmp, "results", "cpgs", "methylationGLM"),
             significantCpGPval = 1,
             saveTxtSummaries = TRUE,
-            summaryTxtDir = file.path(tmp, "results", "summary", "methylationGLM_T1"),
+            summaryTxtDir = file.path(tmp, "results", "summary", "methylationGLM"),
             annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
             annotationCols = "Name,chr,pos",
-            annotatedGLMOut = file.path(tmp, "data", "methylationGLM_T1"),
+            annotatedGLMOut = file.path(tmp, "data", "methylationGLM"),
             display = FALSE,
             verbose = TRUE,
             logs = TRUE,
@@ -92,8 +96,14 @@ test_that("methylationGLM_T1 can write outputs and logs on request", {
         "Starting DNAm GLM Analysis"
     )
 
-    expect_s3_class(result$savedFiles, "dnaEPICO_methylationGLM_T1_paths")
-    expect_true(file.exists(file.path(tmp, "logs", "log_methylationGLM_T1.txt")))
+    expect_s3_class(result$savedFiles, "dnaEPICO_methylationGLM_paths")
+    log_file <- file.path(tmp, "logs", "log_methylationGLM.txt")
+    expect_true(file.exists(log_file))
+    log_text <- paste(readLines(log_file, warn = FALSE), collapse = "\n")
+    expect_match(log_text, "Fit-time summary rows cached")
+    expect_match(log_text, "Summary source:\\s+fit-time cache")
+    expect_equal(result$runSettings$methylationObjectPrefix, "phenoBeta")
+    expect_equal(result$modelFits$settings$internalResponseColumn, "beta")
     expect_true(file.exists(result$savedFiles$modelFiles[["status"]]))
     expect_true(file.exists(result$savedFiles$summaryFiles[["status"]]))
     expect_true(file.exists(result$savedFiles$summaryTxtFiles[["status"]]))
@@ -111,8 +121,8 @@ test_that("methylationGLM_T1 can write outputs and logs on request", {
     expect_equal(colnames(dictionary), c("Column", "Description", "Formula"))
     expect_true(any(dictionary$Description == "Pvalue from GLM model"))
     expect_true(any(dictionary$Formula == "GLM: Beta values ~ `status` + `sex`"))
-    expect_true(file.exists(file.path(tmp, "figures", "methylationGLM_T1", "bar_status.tiff")))
-    expect_true(file.exists(file.path(tmp, "figures", "methylationGLM_T1", "qqplot_status.tiff")))
+    expect_true(file.exists(file.path(tmp, "figures", "methylationGLM", "bar_status.tiff")))
+    expect_true(file.exists(file.path(tmp, "figures", "methylationGLM", "qqplot_status.tiff")))
     expect_true(length(result$savedFiles$significantCpGFiles$status) >= 1)
     expect_true(all(file.exists(result$savedFiles$significantCpGFiles$status)))
 })
@@ -130,12 +140,12 @@ test_that("annotated workbook dictionary reports M-values when the fitted respon
         formulas = c(status = "beta ~ `status` + `sex`")
     )
 
-    dictionary <- dnaEPICO:::buildAnnotatedWorkbookDictionaryMethylationGLM_T1(
+    dictionary <- dnaEPICO:::buildAnnotatedWorkbookDictionaryMethylationGLM(
         columns = c("CpG", "statusCaseP.Value"),
         modelDescription = "Pvalue from GLM model",
         formulaText = model_results$formulas,
         modelLabel = "GLM",
-        responseLabel = dnaEPICO:::inferMethylationValueLabelMethylationGLM_T1(model_results)
+        responseLabel = dnaEPICO:::inferMethylationValueLabelMethylationGLM(model_results)
     )
 
     expect_equal(
@@ -144,12 +154,32 @@ test_that("annotated workbook dictionary reports M-values when the fitted respon
     )
 })
 
-test_that("annotateMethylationGLM_T1Summaries accepts annotation package names", {
+test_that("annotated workbook dictionary reports copy number when requested", {
+    model_results <- list(
+        settings = list(methylationScale = "cn"),
+        formulas = c(status = "beta ~ `status` + `sex`")
+    )
+
+    dictionary <- dnaEPICO:::buildAnnotatedWorkbookDictionaryMethylationGLM(
+        columns = c("CpG", "statusCaseP.Value"),
+        modelDescription = "Pvalue from GLM model",
+        formulaText = model_results$formulas,
+        modelLabel = "GLM",
+        responseLabel = dnaEPICO:::inferMethylationValueLabelMethylationGLM(model_results)
+    )
+
+    expect_equal(
+        dictionary$Formula[dictionary$Column == "statusCaseP.Value"],
+        "GLM: Copy number values ~ `status` + `sex`"
+    )
+})
+
+test_that("annotateMethylationGLMSummaries accepts annotation package names", {
     testthat::skip_if_not_installed("IlluminaHumanMethylation450kanno.ilmn12.hg19")
 
     ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 
-    annotation_data <- annotateMethylationGLM_T1Summaries(
+    annotation_data <- annotateMethylationGLMSummaries(
         modelSummaries = ex$modelSummaries,
         annotationObject = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
         annotationCols = "Name,chr,pos",
@@ -157,6 +187,6 @@ test_that("annotateMethylationGLM_T1Summaries accepts annotation package names",
         logs = FALSE
     )
 
-    expect_s3_class(annotation_data, "dnaEPICO_methylationGLM_T1_annotation")
+    expect_s3_class(annotation_data, "dnaEPICO_methylationGLM_annotation")
     expect_true("IlmnID" %in% colnames(annotation_data$data))
 })

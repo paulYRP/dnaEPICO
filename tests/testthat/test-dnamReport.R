@@ -4,10 +4,10 @@ create_dnam_report_example <- function(path) {
         preprocessingDir = file.path(path, "figures", "preprocessingMinfiEwasWater", "qc"),
         postprocessingDir = file.path(path, "figures", "preprocessingMinfiEwasWater", "metrics"),
         svaDir = file.path(path, "figures", "svaEnmix"),
-        glmDir = file.path(path, "figures", "methylationGLM_T1"),
-        glmmDir = file.path(path, "figures", "methylationGLMM_T1T2"),
-        glmTableDir = file.path(path, "data", "qpasst1", "methylationGLM_T1"),
-        lmerTableDir = file.path(path, "data", "qpasst1", "methylationGLMM_T1T2"),
+        glmDir = file.path(path, "figures", "methylationGLM"),
+        lmeDir = file.path(path, "figures", "methylationLME"),
+        glmTableDir = file.path(path, "data", "qpasst1", "methylationGLM"),
+        lmeTableDir = file.path(path, "data", "qpasst1", "methylationLME"),
         phenoTabDir = file.path(path, "data", "qpasst1", "preprocessingMinfiEwasWater"),
         figDir = file.path(path, "reports", "figures"),
         outputDir = file.path(path, "reports"),
@@ -17,19 +17,19 @@ create_dnam_report_example <- function(path) {
     invisible(lapply(dirs, dir.create, recursive = TRUE, showWarnings = FALSE))
 
     glm_subdir <- file.path(dirs$glmDir, "status")
-    glmm_subdir <- file.path(dirs$glmmDir, "score")
+    lme_subdir <- file.path(dirs$lmeDir, "score")
     dir.create(glm_subdir, recursive = TRUE, showWarnings = FALSE)
-    dir.create(glmm_subdir, recursive = TRUE, showWarnings = FALSE)
+    dir.create(lme_subdir, recursive = TRUE, showWarnings = FALSE)
 
     file.create(file.path(dirs$qcDir, "qc_1.jpg"))
     file.create(file.path(dirs$preprocessingDir, "pre_1.tiff"))
     file.create(file.path(dirs$postprocessingDir, "post_1.tiff"))
     file.create(file.path(dirs$svaDir, "sva_1.tiff"))
     file.create(file.path(glm_subdir, "qqplot_status.tiff"))
-    file.create(file.path(glmm_subdir, "qqplot_score.tiff"))
+    file.create(file.path(lme_subdir, "qqplot_score.tiff"))
 
     dirs$glmTablePath <- file.path(dirs$glmTableDir, "annotatedGLM.xlsx")
-    dirs$lmerTablePath <- file.path(dirs$lmerTableDir, "annotatedLME.xlsx")
+    dirs$lmeTablePath <- file.path(dirs$lmeTableDir, "annotatedLME.xlsx")
     dirs$phenoTab <- file.path(dirs$phenoTabDir, "phenoLC.csv")
     utils::write.csv(
         data.frame(
@@ -77,7 +77,7 @@ create_dnam_report_example <- function(path) {
         dirs$glmTablePath,
         overwrite = TRUE
     )
-    lmer_dictionary <- data.frame(
+    lme_dictionary <- data.frame(
         Column = c("phenotype:Timepoint P.Value", "IlmnID", "Name", "chr", "pos"),
         Description = c(
             "Pvalue from LME model",
@@ -109,9 +109,9 @@ create_dnam_report_example <- function(path) {
             GencodeV41_Group = "gene body",
             check.names = FALSE
             ),
-            dictionary = lmer_dictionary
+            dictionary = lme_dictionary
         ),
-        dirs$lmerTablePath,
+        dirs$lmeTablePath,
         overwrite = TRUE
     )
 
@@ -130,7 +130,7 @@ test_that("prepareDnamReportInputs returns a structured inventory quietly", {
             postprocessingDir = example_dirs$postprocessingDir,
             svaDir = example_dirs$svaDir,
             glmDir = example_dirs$glmDir,
-            glmmDir = example_dirs$glmmDir,
+            lmeDir = example_dirs$lmeDir,
             figDir = example_dirs$figDir,
             verbose = FALSE,
             logs = FALSE
@@ -141,7 +141,7 @@ test_that("prepareDnamReportInputs returns a structured inventory quietly", {
     expect_s3_class(result, "dnaEPICO_dnamReport_prepared")
     expect_equal(result$figureInventory$qc$count, 1)
     expect_equal(result$figureInventory$glm$count, 1)
-    expect_equal(result$figureInventory$glmm$count, 1)
+    expect_equal(result$figureInventory$lme$count, 1)
     expect_length(result$missingFigureDirectories, 0)
     expect_match(result$outputFile, "docs/index\\.html$")
 })
@@ -159,7 +159,7 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
             svaTab = example_dirs$svaDir,
             metricTab = example_dirs$postprocessingDir,
             glmTab = example_dirs$glmTablePath,
-            lmerTab = example_dirs$lmerTablePath,
+            lmeTab = example_dirs$lmeTablePath,
             verbose = TRUE,
             logs = TRUE,
             logTab = example_dirs$logDir
@@ -176,10 +176,10 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
         expect_true(file.exists(result$outputFile))
     }
     expect_true(any(grepl("glm\\.qmd$", result$sourceFiles)))
-    expect_true(any(grepl("lmer\\.qmd$", result$sourceFiles)))
+    expect_true(any(grepl("lme\\.qmd$", result$sourceFiles)))
 
     glm_qmd <- readLines(file.path(result$projectDir, "glm.qmd"), warn = FALSE)
-    lmer_qmd <- readLines(file.path(result$projectDir, "lmer.qmd"), warn = FALSE)
+    lme_qmd <- readLines(file.path(result$projectDir, "lme.qmd"), warn = FALSE)
     expect_true(any(grepl(
         "Table 1. Generalised Linear Model Results and Genomic Annotation of CpG Sites by Phenotype(s)",
         glm_qmd,
@@ -191,13 +191,13 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     expect_true(any(grepl("annotatedGLM", glm_qmd, fixed = TRUE)))
     expect_true(any(grepl(
         "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and Timepoint",
-        lmer_qmd,
+        lme_qmd,
         fixed = TRUE
     )))
-    expect_true(any(grepl("`Table 1` presents", lmer_qmd, fixed = TRUE)))
-    expect_true(any(grepl("`lmer` package", lmer_qmd, fixed = TRUE)))
-    expect_true(any(grepl("annotatedLME", lmer_qmd, fixed = TRUE)))
-    expect_true(any(grepl("annotatedLME.xlsx", lmer_qmd, fixed = TRUE)))
+    expect_true(any(grepl("`Table 1` presents", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("`lmer` package", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("annotatedLME", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("annotatedLME.xlsx", lme_qmd, fixed = TRUE)))
 
     enmix_qmd <- readLines(file.path(result$projectDir, "enmix-qc.qmd"), warn = FALSE)
     metrics_qmd <- readLines(file.path(result$projectDir, "metrics.qmd"), warn = FALSE)
@@ -208,16 +208,16 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     expect_true(any(grepl("Displays the phenotype preparation log", logs_qmd, fixed = TRUE)))
     expect_true(any(grepl("Displays the hidden-effect and surrogate-variable analysis log", logs_qmd, fixed = TRUE)))
     expect_true(any(grepl("### GLM Analysis", logs_qmd, fixed = TRUE)))
-    expect_true(any(grepl("methylationGLM_T1.txt", logs_qmd, fixed = TRUE)))
-    expect_true(any(grepl("### LMER Analysis", logs_qmd, fixed = TRUE)))
-    expect_true(any(grepl("methylationGLMM_T1T2.txt", logs_qmd, fixed = TRUE)))
+    expect_true(any(grepl("methylationGLM.txt", logs_qmd, fixed = TRUE)))
+    expect_true(any(grepl("### LME Analysis", logs_qmd, fixed = TRUE)))
+    expect_true(any(grepl("methylationLME.txt", logs_qmd, fixed = TRUE)))
 
     report_qmd <- readLines(file.path(result$projectDir, "report.qmd"), warn = FALSE)
     expect_true(any(grepl("The table has 2 rows and 2 columns.", report_qmd, fixed = TRUE)))
     expect_false(any(grepl("The Data tab summarises", report_qmd, fixed = TRUE)))
     expect_false(any(grepl("The ENmix QC tab summarises", report_qmd, fixed = TRUE)))
     expect_false(any(grepl("The GLM Analysis tab summarises", report_qmd, fixed = TRUE)))
-    expect_false(any(grepl("The LMER Analysis tab summarises", report_qmd, fixed = TRUE)))
+    expect_false(any(grepl("The LME Analysis tab summarises", report_qmd, fixed = TRUE)))
     expect_false(any(grepl("The Logs tab summarises", report_qmd, fixed = TRUE)))
     expect_false(any(grepl("Generated Outputs", report_qmd, fixed = TRUE)))
 

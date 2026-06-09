@@ -1,8 +1,9 @@
 #' Fit CpG-wise linear mixed-effects models for longitudinal methylation analyses
 #'
-#' @param inputPheno Character. Path to the merged longitudinal phenotype-plus-beta
-#'   `.RData` or `.rds` object created by `preprocessingPheno()`. The default
-#'   points to the combined timepoint object produced by the package workflow.
+#' @param inputPheno Character. Path to the merged longitudinal
+#'   phenotype-plus-methylation `.RData` or `.rds` object created by
+#'   `preprocessingPheno()`. The default points to the combined timepoint object
+#'   produced by the package workflow.
 #' @param outputLogs Character. Directory used for optional log files.
 #' @param outputRData Character. Directory used for optional serialized mixed-model
 #'   and summary outputs.
@@ -10,25 +11,34 @@
 #' @param personVar Character. Subject identifier variable used for the random
 #'   intercept. When this column is missing, it is derived from `SID` using the
 #'   package's existing sample naming convention.
-#' @param timeVar Character. Name of the longitudinal time variable included as a
-#'   fixed effect in every model.
+#' @param timeVar Character. Name of the longitudinal time variable used for
+#'   timepoint summaries and preprocessing checks.
 #' @param phenotypes Character vector or comma-separated phenotype variables to
 #'   model.
 #' @param covariates Character. Comma-separated fixed-effect covariates included
 #'   in every mixed model.
 #' @param factorVars Character. Comma-separated variables that should be coerced
-#'   to factors before modeling. This usually includes categorical covariates and
-#'   `timeVar`.
+#'   to factors before modeling. This usually includes categorical phenotypes,
+#'   covariates, or interaction variables.
 #' @param lmeLibs Character. Comma-separated package names to validate on worker
-#'   processes. The default is `"lme4,lmerTest"`.
+#'   processes and select the LME backend. Use `"lme4,lmerTest"` or `"lme4"`
+#'   for the `lmerTest`/`lme4` path, or `"nlme"` for the `nlme::lme()` path.
+#' @param correlationStructure Character. Residual correlation structure used
+#'   when `lmeLibs = "nlme"`. One of `"none"`, `"AR1"`, or `"CAR1"`. The
+#'   default is `"none"`.
+#' @param correlationVar Character or `NULL`. Variable used to order repeated
+#'   observations within `personVar` for `AR1` or `CAR1` residual correlation
+#'   structures. Must be supplied explicitly for `AR1` or `CAR1`.
 #' @param prsMap Character or `NULL`. Optional phenotype-to-PRS mapping in the
 #'   form `"Phenotype1:PRS_1,Phenotype2:PRS_2"`.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded to
 #'   worker processes. By default, the current `.libPaths()` are used.
 #' @param cpgPrefix Character. Prefix used to identify methylation columns in the
-#'   merged phenotype-plus-beta input object. The default is `"cg"`.
+#'   merged phenotype-plus-methylation input object. The default is `"cg"`.
 #' @param cpgLimit Integer or `NA`. Maximum number of CpGs to analyse. Use `NA`
 #'   to keep all CpGs matching `cpgPrefix`.
+#' @param methylationScale Character. Methylation metric represented by the CpG
+#'   columns. One of `"beta"`, `"m"`, or `"cn"`. The default is `"beta"`.
 #' @param nCores Integer. Number of worker processes to use while fitting models
 #'   and extracting summaries.
 #' @param summaryPval Numeric or `NA`. Optional p-value threshold applied to the
@@ -69,41 +79,44 @@
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`. The
 #'   default is `FALSE`, so the function is quiet unless requested.
 #' @param logs Logical. If `TRUE`, write the same progress messages to
-#'   `file.path(outputLogs, "log_methylationGLMM_T1T2.txt")`.
+#'   `file.path(outputLogs, "log_methylationLME.txt")`.
 #' @param saveOutputs Logical. If `TRUE`, write optional serialized model files,
 #'   summary tables, significant-interaction tables, annotated results, and TIFF
 #'   plots to the requested output directories. The default is `FALSE`, so the
 #'   function returns in-memory results without writing files.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2"`.
+#' @return A list with class `"dnaEPICO_methylationLME"`.
 #' \describe{
-#'   \item{preparedData}{Object returned by [prepareMethylationGLMM_T1T2Data()]
-#'   containing the merged longitudinal phenotype-plus-beta analysis table and
+#'   \item{preparedData}{Object returned by [prepareMethylationLMEData()]
+#'   containing the merged longitudinal phenotype-plus-methylation analysis table and
 #'   modeling metadata.}
-#'   \item{modelFits}{Object returned by [fitMethylationGLMM_T1T2Models()]
+#'   \item{modelFits}{Object returned by [fitMethylationLMEModels()]
 #'   containing the per-phenotype CpG mixed-effects model fits.}
 #'   \item{modelSummaries}{Object returned by
-#'   [summarizeMethylationGLMM_T1T2Models()] containing the combined CpG summary
+#'   [summarizeMethylationLMEModels()] containing the combined CpG summary
 #'   tables used for reporting and annotation.}
 #'   \item{significantInteractions}{Object returned by
-#'   [collectSignificantInteractionsMethylationGLMM_T1T2()] containing optional
+#'   [collectSignificantInteractionsMethylationLME()] containing optional
 #'   phenotype-specific significant-interaction tables.}
 #'   \item{diagnosticPlots}{Object returned by
-#'   [plotMethylationGLMM_T1T2Diagnostics()] describing the diagnostic plot
+#'   [plotMethylationLMEDiagnostics()] describing the diagnostic plot
 #'   objects and any written TIFF files.}
 #'   \item{annotation}{Object returned by
-#'   [annotateMethylationGLMM_T1T2Summaries()] containing the annotated combined
+#'   [annotateMethylationLMESummaries()] containing the annotated combined
 #'   summary table.}
 #'   \item{savedFiles}{Object returned by
-#'   [writeMethylationGLMM_T1T2Outputs()] when `saveOutputs = TRUE`, otherwise
+#'   [writeMethylationLMEOutputs()] when `saveOutputs = TRUE`, otherwise
 #'   `NULL`.}
+#'   \item{runSettings}{High-level run metadata including the generic analysis
+#'   label, methylation scale, display label, selected merged-object prefix,
+#'   internal response-column name, and longitudinal time variable.}
 #' }
-#' See [dnaEPICO_methylationGLMM_T1T2-class] for a class-level overview.
+#' See [dnaEPICO_methylationLME-class] for a class-level overview.
 #'
 #' @description
-#' `methylationGLMM_T1T2()` is the high-level coordinator for the longitudinal
+#' `methylationLME()` is the high-level coordinator for the longitudinal
 #' linear mixed-effects stage of the `dnaEPICO` workflow. It prepares the merged
-#' phenotype-plus-beta input, fits one mixed-effects model per CpG for each
+#' phenotype-plus-methylation input, fits one mixed-effects model per CpG for each
 #' requested phenotype, extracts phenotype-specific coefficient summaries,
 #' optionally collects significant interaction tables, generates diagnostic plots,
 #' annotates the combined summary table, and optionally writes legacy-style
@@ -130,11 +143,11 @@
 #'   )
 #'   save(phenoBT1T2, file = toy_path)
 #'
-#'   result <- methylationGLMM_T1T2(
+#'   result <- methylationLME(
 #'     inputPheno = toy_path,
 #'     phenotypes = "score",
 #'     covariates = "sex",
-#'     factorVars = "sex,Timepoint",
+#'     factorVars = "sex",
 #'     cpgLimit = 2,
 #'     nCores = 1,
 #'     summaryPval = 1,
@@ -149,14 +162,14 @@
 #'   class(result)
 #' }
 #'
-#' @seealso [dnaEPICO_methylationGLMM_T1T2-class]
+#' @seealso [dnaEPICO_methylationLME-class]
 #'
 #' @export
-methylationGLMM_T1T2 <- function(
+methylationLME <- function(
     inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
     outputLogs = "logs",
-    outputRData = "rData/methylationGLMM_T1T2/models",
-    outputPlots = "figures/methylationGLMM_T1T2",
+    outputRData = "rData/methylationLME/models",
+    outputPlots = "figures/methylationLME",
     personVar = "person",
     timeVar = "Timepoint",
     phenotypes = c(
@@ -168,12 +181,15 @@ methylationGLMM_T1T2 <- function(
       "BRS_TotalScore"
     ),
     covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
-    factorVars = "Sex,Ethnicity,TraumaDefinition,Timepoint",
+    factorVars = "Sex,Ethnicity,TraumaDefinition",
     lmeLibs = "lme4,lmerTest",
+    correlationStructure = "none",
+    correlationVar = NULL,
     prsMap = NULL,
     libPath = NULL,
     cpgPrefix = "cg",
     cpgLimit = NA,
+    methylationScale = "beta",
     nCores = 32,
     summaryPval = NA,
     plotWidth = 2000,
@@ -181,11 +197,11 @@ methylationGLMM_T1T2 <- function(
     plotDPI = 150,
     interactionTerm = NULL,
     saveSignificantInteractions = TRUE,
-    significantInteractionDir = "preliminaryResults/cpgs/methylationGLMM_T1T2",
+    significantInteractionDir = "preliminaryResults/cpgs/methylationLME",
     significantInteractionPval = 0.05,
     saveTxtSummaries = TRUE,
     chunkSize = NULL,
-    summaryTxtDir = "preliminaryResults/summary/methylationGLMM_T1T2/lmer",
+    summaryTxtDir = "preliminaryResults/summary/methylationLME",
     fdrThreshold = 0.05,
     padjmethod = "fdr",
     annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
@@ -198,15 +214,31 @@ methylationGLMM_T1T2 <- function(
       "Relation_to_Island",
       "GencodeV41_Group"
     ),
-    annotatedLMEOut = "data/methylationGLMM_T1T2",
+    annotatedLMEOut = "data/methylationLME",
     display = FALSE,
     verbose = FALSE,
     logs = FALSE,
     saveOutputs = FALSE
 ) {
-  cpgLimit <- normalizeOptionalNumericMethylationGLM_T1(cpgLimit)
-  summaryPval <- normalizeOptionalNumericMethylationGLM_T1(summaryPval)
-  chunkSize <- normalizeChunkSizeMethylationGLM_T1(chunkSize)
+  cpgLimit <- normalizeOptionalNumericMethylationGLM(cpgLimit)
+  summaryPval <- normalizeOptionalNumericMethylationGLM(summaryPval)
+  chunkSize <- normalizeChunkSizeMethylationGLM(chunkSize)
+  correlationStructure <- normalizeCorrelationStructureMethylationLME(correlationStructure)
+  correlationVar <- normalizeCorrelationVariableMethylationLME(
+    correlationVar = correlationVar
+  )
+  if (!identical(correlationStructure, "none")) {
+    if (is.null(correlationVar)) {
+      stop(
+        "correlationVar must be supplied when correlationStructure is AR1 or CAR1.",
+        call. = FALSE
+      )
+    }
+  }
+  methylationScale <- normalizeMethylationScaleDnaEpico(methylationScale)
+  methylationLabel <- methylationScaleResponseLabelDnaEpico(methylationScale)
+  methylationObjectPrefix <- methylationScaleObjectPrefixDnaEpico(methylationScale)
+  log_file <- "log_methylationLME.txt"
 
   if (is.null(libPath)) {
     libPath <- .libPaths()
@@ -215,14 +247,19 @@ methylationGLMM_T1T2 <- function(
   log_path <- resolveLogPathMinfiEwasWater(
     logs = logs,
     log_dir = outputLogs,
-    log_file = "log_methylationGLMM_T1T2.txt"
+    log_file = log_file
   )
 
   emitLogMinfiEwasWater(
     c(
-      "==== Starting DNAm LME Analysis (Timepoint 1 vs 2) ====",
+      "==== Starting DNAm LME Analysis ====",
       paste("Start time:                     ", format(Sys.time())),
-      paste("Input phenotype + beta:         ", inputPheno),
+      paste("Input phenotype + methylation:  ", inputPheno),
+      paste("Methylation scale:              ", methylationLabel),
+      paste("Merged modeling object:         ", methylationObjectPrefix, "*"),
+      paste("Displayed response label:       ", methylationLabel),
+      "Internal response column:       beta",
+      "Pipeline step label:            methylationLME",
       paste("Output RData folder:            ", outputRData),
       paste("Output logs folder:             ", outputLogs),
       paste("Output plots folder:            ", outputPlots),
@@ -232,6 +269,11 @@ methylationGLMM_T1T2 <- function(
       paste("Covariates:                     ", covariates),
       paste("Factor variables:               ", factorVars),
       paste("LME libraries:                  ", lmeLibs),
+      paste("Correlation structure:          ", correlationStructure),
+      paste(
+        "Correlation variable:           ",
+        if (identical(correlationStructure, "none")) "None" else correlationVar
+      ),
       paste("PRS mapping:                    ", if (is.null(prsMap)) "None" else prsMap),
       paste("CpG column prefix:              ", cpgPrefix),
       paste("CpG limit:                      ", if (is.na(cpgLimit)) "All" else cpgLimit),
@@ -256,7 +298,7 @@ methylationGLMM_T1T2 <- function(
 
   withLoggedErrorsMinfiEwasWater(
     expr = {
-      preparedData <- prepareMethylationGLMM_T1T2Data(
+      preparedData <- prepareMethylationLMEData(
         inputPheno = inputPheno,
         personVar = personVar,
         timeVar = timeVar,
@@ -266,25 +308,28 @@ methylationGLMM_T1T2 <- function(
         prsMap = prsMap,
         cpgPrefix = cpgPrefix,
         cpgLimit = cpgLimit,
+        methylationScale = methylationScale,
         interactionTerm = interactionTerm,
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLMM_T1T2.txt"
+        log_file = log_file
       )
 
-      modelFits <- fitMethylationGLMM_T1T2Models(
+      modelFits <- fitMethylationLMEModels(
         preparedData = preparedData,
         nCores = nCores,
         libPath = libPath,
         lmeLibs = lmeLibs,
+        correlationStructure = correlationStructure,
+        correlationVar = correlationVar,
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLMM_T1T2.txt"
+        log_file = log_file
       )
 
-      modelSummaries <- summarizeMethylationGLMM_T1T2Models(
+      modelSummaries <- summarizeMethylationLMEModels(
         modelResults = modelFits,
         preparedData = preparedData,
         summaryPval = summaryPval,
@@ -293,23 +338,23 @@ methylationGLMM_T1T2 <- function(
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLMM_T1T2.txt"
+        log_file = log_file
       )
 
       significantInteractions <- NULL
       if (isTRUE(saveSignificantInteractions)) {
-        significantInteractions <- collectSignificantInteractionsMethylationGLMM_T1T2(
+        significantInteractions <- collectSignificantInteractionsMethylationLME(
           modelResults = modelFits,
           pvalThreshold = significantInteractionPval,
           interactionTerm = preparedData$interactionTerm,
           verbose = verbose,
           logs = logs,
           log_dir = outputLogs,
-          log_file = "log_methylationGLMM_T1T2.txt"
+          log_file = log_file
         )
       }
 
-      diagnosticPlots <- plotMethylationGLMM_T1T2Diagnostics(
+      diagnosticPlots <- plotMethylationLMEDiagnostics(
         modelSummaries = modelSummaries,
         preparedData = preparedData,
         fdrThreshold = fdrThreshold,
@@ -322,22 +367,22 @@ methylationGLMM_T1T2 <- function(
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLMM_T1T2.txt"
+        log_file = log_file
       )
 
-      annotation <- annotateMethylationGLMM_T1T2Summaries(
+      annotation <- annotateMethylationLMESummaries(
         modelSummaries = modelSummaries,
         annotationObject = annotationPackage,
         annotationCols = annotationCols,
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLMM_T1T2.txt"
+        log_file = log_file
       )
 
       savedFiles <- NULL
       if (isTRUE(saveOutputs)) {
-        savedFiles <- writeMethylationGLMM_T1T2Outputs(
+        savedFiles <- writeMethylationLMEOutputs(
           modelResults = modelFits,
           modelSummaries = modelSummaries,
           annotatedResults = annotation,
@@ -351,14 +396,14 @@ methylationGLMM_T1T2 <- function(
           verbose = verbose,
           logs = logs,
           log_dir = outputLogs,
-          log_file = "log_methylationGLMM_T1T2.txt"
+          log_file = log_file
         )
       }
 
       emitLogMinfiEwasWater(
         c(
           "=======================================================================",
-          paste("Finished DNAm LME Analysis (Timepoint 1 vs 2):", format(Sys.time())),
+          paste("Finished DNAm LME Analysis:", format(Sys.time())),
           if (isTRUE(saveOutputs)) {
             paste("Annotated LME output:          ", savedFiles$annotatedLME)
           } else {
@@ -378,13 +423,27 @@ methylationGLMM_T1T2 <- function(
           significantInteractions = significantInteractions,
           diagnosticPlots = diagnosticPlots,
           annotation = annotation,
-          savedFiles = savedFiles
+          savedFiles = savedFiles,
+          runSettings = list(
+            analysisLabel = "methylationLME",
+            methylationScale = methylationScale,
+            methylationLabel = methylationLabel,
+            methylationObjectPrefix = methylationObjectPrefix,
+            internalResponseColumn = "beta",
+            timeVar = timeVar,
+            correlationStructure = correlationStructure,
+            correlationVar = if (identical(correlationStructure, "none")) {
+              NULL
+            } else {
+              correlationVar
+            }
+          )
         ),
-        class = "dnaEPICO_methylationGLMM_T1T2"
+        class = "dnaEPICO_methylationLME"
       )
     },
     log_path = log_path,
     verbose = verbose,
-    context = "methylationGLMM_T1T2"
+    context = "methylationLME"
   )
 }

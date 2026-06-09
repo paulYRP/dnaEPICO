@@ -1,6 +1,6 @@
 #' Fit CpG-wise GLMs for one-timepoint methylation analyses
 #'
-#' @param inputPheno Character. Path to the merged phenotype-plus-beta `.RData`
+#' @param inputPheno Character. Path to the merged phenotype-plus-methylation `.RData`
 #'   or `.rds` object created by `preprocessingPheno()`. The default points to
 #'   the timepoint-1 object produced by the package workflow.
 #' @param outputLogs Character. Directory used for optional log files.
@@ -14,9 +14,11 @@
 #' @param factorVars Character. Comma-separated variables that should be treated
 #'   as factors before modeling.
 #' @param cpgPrefix Character. Prefix used to identify methylation columns in the
-#'   merged phenotype-plus-beta input object. The default is `"cg"`.
+#'   merged phenotype-plus-methylation input object. The default is `"cg"`.
 #' @param cpgLimit Integer or `NA`. Maximum number of CpGs to analyse. Use `NA`
 #'   to keep all CpGs matching `cpgPrefix`.
+#' @param methylationScale Character. Methylation metric represented by the CpG
+#'   columns. One of `"beta"`, `"m"`, or `"cn"`. The default is `"beta"`.
 #' @param nCores Integer. Number of worker processes to use while fitting models
 #'   and extracting summaries.
 #' @param plotWidth Integer. TIFF width in pixels when plots are written to disk.
@@ -67,42 +69,45 @@
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #'   The default is `FALSE`, so the function is quiet unless requested.
 #' @param logs Logical. If `TRUE`, write the same progress messages to
-#'   `file.path(outputLogs, "log_methylationGLM_T1.txt")`.
+#'   `file.path(outputLogs, "log_methylationGLM.txt")`.
 #' @param saveOutputs Logical. If `TRUE`, write optional serialized model files,
 #'   summary tables, significant-CpG tables, annotated results, and TIFF plots to
 #'   the requested output directories. The default is `FALSE`, so the function
 #'   returns in-memory results without writing files.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLM_T1"`.
+#' @return A list with class `"dnaEPICO_methylationGLM"`.
 #' \describe{
-#'   \item{preparedData}{Object returned by [prepareMethylationGLM_T1Data()]
-#'   containing the merged phenotype-plus-beta analysis table and modeling
+#'   \item{preparedData}{Object returned by [prepareMethylationGLMData()]
+#'   containing the merged phenotype-plus-methylation analysis table and modeling
 #'   metadata.}
 #'   \item{distributionPlots}{Object returned by
-#'   [plotMethylationGLM_T1Distributions()] describing any exploratory plots that
+#'   [plotMethylationGLMDistributions()] describing any exploratory plots that
 #'   were generated or written.}
-#'   \item{modelFits}{Object returned by [fitMethylationGLM_T1Models()]
+#'   \item{modelFits}{Object returned by [fitMethylationGLMModels()]
 #'   containing the per-phenotype CpG model fits.}
 #'   \item{modelSummaries}{Object returned by
-#'   [summarizeMethylationGLM_T1Models()] containing the combined CpG summary
+#'   [summarizeMethylationGLMModels()] containing the combined CpG summary
 #'   tables used for reporting and annotation.}
 #'   \item{significantCpGs}{Object returned by
-#'   [collectSignificantCpGsMethylationGLM_T1()] containing optional
+#'   [collectSignificantCpGsMethylationGLM()] containing optional
 #'   phenotype-specific significant-CpG tables.}
 #'   \item{diagnosticPlots}{Object returned by
-#'   [plotMethylationGLM_T1Diagnostics()] describing the diagnostic plot objects
+#'   [plotMethylationGLMDiagnostics()] describing the diagnostic plot objects
 #'   and any written TIFF files.}
 #'   \item{annotation}{Object returned by
-#'   [annotateMethylationGLM_T1Summaries()] containing the annotated combined
+#'   [annotateMethylationGLMSummaries()] containing the annotated combined
 #'   summary table.}
-#'   \item{savedFiles}{Object returned by [writeMethylationGLM_T1Outputs()] when
+#'   \item{savedFiles}{Object returned by [writeMethylationGLMOutputs()] when
 #'   `saveOutputs = TRUE`, otherwise `NULL`.}
+#'   \item{runSettings}{High-level run metadata including the generic analysis
+#'   label, methylation scale, display label, selected merged-object prefix, and
+#'   internal response-column name.}
 #' }
-#' See [dnaEPICO_methylationGLM_T1-class] for a class-level overview.
+#' See [dnaEPICO_methylationGLM-class] for a class-level overview.
 #'
 #' @description
-#' `methylationGLM_T1()` is the high-level coordinator for the one-timepoint GLM
-#' stage of the `dnaEPICO` workflow. It prepares the merged phenotype-plus-beta
+#' `methylationGLM()` is the high-level coordinator for the methylation GLM
+#' stage of the `dnaEPICO` workflow. It prepares the merged phenotype-plus-methylation
 #' input, optionally creates exploratory plots, fits one Gaussian GLM per CpG for
 #' each requested phenotype, extracts CpG-level summaries, optionally collects
 #' significant CpG coefficient tables, generates diagnostic plots, annotates the
@@ -125,7 +130,7 @@
 #'   )
 #'   save(phenoBT1, file = toy_path)
 #'
-#'   result <- methylationGLM_T1(
+#'   result <- methylationGLM(
 #'     inputPheno = toy_path,
 #'     phenotypes = "status",
 #'     covariates = "sex",
@@ -144,14 +149,14 @@
 #'   class(result)
 #' }
 #'
-#' @seealso [dnaEPICO_methylationGLM_T1-class]
+#' @seealso [dnaEPICO_methylationGLM-class]
 #'
 #' @export
-methylationGLM_T1 <- function(
+methylationGLM <- function(
     inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1.RData",
     outputLogs = "logs",
-    outputRData = "rData/methylationGLM_T1/models",
-    outputPlots = "figures/methylationGLM_T1",
+    outputRData = "rData/methylationGLM/models",
+    outputPlots = "figures/methylationGLM",
     phenotypes = c(
       "DASS_Depression",
       "DASS_Anxiety",
@@ -164,6 +169,7 @@ methylationGLM_T1 <- function(
     factorVars = "Sex,Ethnicity,TraumaDefinition",
     cpgPrefix = "cg",
     cpgLimit = NA,
+    methylationScale = "beta",
     nCores = 32,
     plotWidth = 2000,
     plotHeight = 1000,
@@ -175,11 +181,11 @@ methylationGLM_T1 <- function(
     summaryPval = NA,
     summaryResidualSD = TRUE,
     saveSignificantCpGs = FALSE,
-    significantCpGDir = "preliminaryResults/cpgs/methylationGLM_T1",
+    significantCpGDir = "preliminaryResults/cpgs/methylationGLM",
     significantCpGPval = 0.05,
     saveTxtSummaries = TRUE,
     chunkSize = NULL,
-    summaryTxtDir = "preliminaryResults/summary/methylationGLM_T1/glm",
+    summaryTxtDir = "preliminaryResults/summary/methylationGLM",
     fdrThreshold = 0.05,
     padjmethod = "fdr",
     annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
@@ -192,15 +198,19 @@ methylationGLM_T1 <- function(
       "Relation_to_Island",
       "GencodeV41_Group"
     ),
-    annotatedGLMOut = "data/methylationGLM_T1",
+    annotatedGLMOut = "data/methylationGLM",
     display = FALSE,
     verbose = FALSE,
     logs = FALSE,
     saveOutputs = FALSE
 ) {
-  cpgLimit <- normalizeOptionalNumericMethylationGLM_T1(cpgLimit)
-  summaryPval <- normalizeOptionalNumericMethylationGLM_T1(summaryPval)
-  chunkSize <- normalizeChunkSizeMethylationGLM_T1(chunkSize)
+  cpgLimit <- normalizeOptionalNumericMethylationGLM(cpgLimit)
+  summaryPval <- normalizeOptionalNumericMethylationGLM(summaryPval)
+  chunkSize <- normalizeChunkSizeMethylationGLM(chunkSize)
+  methylationScale <- normalizeMethylationScaleDnaEpico(methylationScale)
+  methylationLabel <- methylationScaleResponseLabelDnaEpico(methylationScale)
+  methylationObjectPrefix <- methylationScaleObjectPrefixDnaEpico(methylationScale)
+  log_file <- "log_methylationGLM.txt"
 
   if (is.null(libPath)) {
     libPath <- .libPaths()
@@ -209,14 +219,19 @@ methylationGLM_T1 <- function(
   log_path <- resolveLogPathMinfiEwasWater(
     logs = logs,
     log_dir = outputLogs,
-    log_file = "log_methylationGLM_T1.txt"
+    log_file = log_file
   )
 
   emitLogMinfiEwasWater(
     c(
-      "==== Starting DNAm GLM Analysis (Timepoint 1) ====",
+      "==== Starting DNAm GLM Analysis ====",
       paste("Start time:                ", format(Sys.time())),
-      paste("Input phenotype + beta:    ", inputPheno),
+      paste("Input phenotype + methylation:", inputPheno),
+      paste("Methylation scale:         ", methylationLabel),
+      paste("Merged modeling object:    ", methylationObjectPrefix, "*"),
+      paste("Displayed response label:  ", methylationLabel),
+      "Internal response column:  beta",
+      "Pipeline step label:       methylationGLM",
       paste("Output RData folder:       ", outputRData),
       paste("Output logs folder:        ", outputLogs),
       paste("Output plots folder:       ", outputPlots),
@@ -246,22 +261,23 @@ methylationGLM_T1 <- function(
 
   withLoggedErrorsMinfiEwasWater(
     expr = {
-      preparedData <- prepareMethylationGLM_T1Data(
+      preparedData <- prepareMethylationGLMData(
         inputPheno = inputPheno,
         phenotypes = phenotypes,
         covariates = covariates,
         factorVars = factorVars,
         cpgPrefix = cpgPrefix,
         cpgLimit = cpgLimit,
+        methylationScale = methylationScale,
         interactionTerm = interactionTerm,
         prsMap = prsMap,
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLM_T1.txt"
+        log_file = log_file
       )
 
-      distributionPlots <- plotMethylationGLM_T1Distributions(
+      distributionPlots <- plotMethylationGLMDistributions(
         preparedData = preparedData,
         plotWidth = plotWidth,
         plotHeight = plotHeight,
@@ -271,10 +287,10 @@ methylationGLM_T1 <- function(
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLM_T1.txt"
+        log_file = log_file
       )
 
-      modelFits <- fitMethylationGLM_T1Models(
+      modelFits <- fitMethylationGLMModels(
         preparedData = preparedData,
         nCores = nCores,
         libPath = libPath,
@@ -282,10 +298,10 @@ methylationGLM_T1 <- function(
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLM_T1.txt"
+        log_file = log_file
       )
 
-      modelSummaries <- summarizeMethylationGLM_T1Models(
+      modelSummaries <- summarizeMethylationGLMModels(
         modelResults = modelFits,
         preparedData = preparedData,
         summaryResidualSD = summaryResidualSD,
@@ -297,23 +313,23 @@ methylationGLM_T1 <- function(
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLM_T1.txt"
+        log_file = log_file
       )
 
       significantCpGs <- NULL
       if (isTRUE(saveSignificantCpGs)) {
-        significantCpGs <- collectSignificantCpGsMethylationGLM_T1(
+        significantCpGs <- collectSignificantCpGsMethylationGLM(
           modelResults = modelFits,
           pvalThreshold = significantCpGPval,
           interactionTerm = preparedData$interactionTerm,
           verbose = verbose,
           logs = logs,
           log_dir = outputLogs,
-          log_file = "log_methylationGLM_T1.txt"
+          log_file = log_file
         )
       }
 
-      diagnosticPlots <- plotMethylationGLM_T1Diagnostics(
+      diagnosticPlots <- plotMethylationGLMDiagnostics(
         modelSummaries = modelSummaries,
         preparedData = preparedData,
         fdrThreshold = fdrThreshold,
@@ -326,22 +342,22 @@ methylationGLM_T1 <- function(
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLM_T1.txt"
+        log_file = log_file
       )
 
-      annotation <- annotateMethylationGLM_T1Summaries(
+      annotation <- annotateMethylationGLMSummaries(
         modelSummaries = modelSummaries,
         annotationObject = annotationPackage,
         annotationCols = annotationCols,
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
-        log_file = "log_methylationGLM_T1.txt"
+        log_file = log_file
       )
 
       savedFiles <- NULL
       if (isTRUE(saveOutputs)) {
-        savedFiles <- writeMethylationGLM_T1Outputs(
+        savedFiles <- writeMethylationGLMOutputs(
           modelResults = modelFits,
           modelSummaries = modelSummaries,
           annotatedResults = annotation,
@@ -355,14 +371,14 @@ methylationGLM_T1 <- function(
           verbose = verbose,
           logs = logs,
           log_dir = outputLogs,
-          log_file = "log_methylationGLM_T1.txt"
+          log_file = log_file
         )
       }
 
       emitLogMinfiEwasWater(
         c(
           "=======================================================================",
-          paste("Finished DNAm GLM Analysis (Timepoint 1):", format(Sys.time())),
+          paste("Finished DNAm GLM Analysis:", format(Sys.time())),
           if (isTRUE(saveOutputs)) {
             paste("Annotated GLM output:         ", savedFiles$annotatedGLM)
           } else {
@@ -383,13 +399,20 @@ methylationGLM_T1 <- function(
           significantCpGs = significantCpGs,
           diagnosticPlots = diagnosticPlots,
           annotation = annotation,
-          savedFiles = savedFiles
+          savedFiles = savedFiles,
+          runSettings = list(
+            analysisLabel = "methylationGLM",
+            methylationScale = methylationScale,
+            methylationLabel = methylationLabel,
+            methylationObjectPrefix = methylationObjectPrefix,
+            internalResponseColumn = "beta"
+          )
         ),
-        class = "dnaEPICO_methylationGLM_T1"
+        class = "dnaEPICO_methylationGLM"
       )
     },
     log_path = log_path,
     verbose = verbose,
-    context = "methylationGLM_T1"
+    context = "methylationGLM"
   )
 }

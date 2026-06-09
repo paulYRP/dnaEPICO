@@ -20,8 +20,8 @@ resource_files:
   - preprocessingMinfiEwasWater_pipeline_overview.svg
   - svaEnmix_pipeline_overview.svg
   - preprocessingPheno_pipeline_overview.svg
-  - methylationGLM_T1_pipeline_overview.svg
-  - methylationGLMM_T1T2_pipeline_overview.svg
+  - methylationGLM_pipeline_overview.svg
+  - methylationLME_pipeline_overview.svg
   - dnamReport_pipeline_overview.svg
 vignette: >
   %\VignetteIndexEntry{1. dnaEPICO Overview}
@@ -211,10 +211,10 @@ overview_svgs <- c(
     "svaEnmix_pipeline_overview.svg",
   preprocessingPheno =
     "preprocessingPheno_pipeline_overview.svg",
-  methylationGLM_T1 =
-    "methylationGLM_T1_pipeline_overview.svg",
-  methylationGLMM_T1T2 =
-    "methylationGLMM_T1T2_pipeline_overview.svg",
+  methylationGLM =
+    "methylationGLM_pipeline_overview.svg",
+  methylationLME =
+    "methylationLME_pipeline_overview.svg",
   dnamReport =
     "dnamReport_pipeline_overview.svg"
 )
@@ -344,9 +344,9 @@ svg_to_html(
   overview_svgs[["preprocessingPheno"]])
 ```
 
-## methylationGLM_T1()
+## methylationGLM()
 
-`methylationGLM_T1()` fits cross-sectional methylation association models. It
+`methylationGLM()` fits cross-sectional methylation association models. It
 is designed for analyses where one phenotype is tested against CpG-level
 methylation while adjusting for selected covariates.
 
@@ -359,14 +359,14 @@ Its role is to run single-timepoint association testing:
 - Outputs: model objects, summary tables, diagnostic figures,
   significant-CpG exports, and annotated workbooks.
 
-```{r methylationGLM_T1-overview, echo = FALSE, results = "asis"}
+```{r methylationGLM-overview, echo = FALSE, results = "asis"}
 svg_to_html(
-  overview_svgs[["methylationGLM_T1"]])
+  overview_svgs[["methylationGLM"]])
 ```
 
-## methylationGLMM_T1T2()
+## methylationLME()
 
-`methylationGLMM_T1T2()` fits longitudinal mixed-effects models. It supports
+`methylationLME()` fits longitudinal mixed-effects models. It supports
 repeated-measures designs by including participant-level random effects and
 timepoint-related terms.
 
@@ -381,9 +381,9 @@ Its role is to model methylation change across repeated observations:
 - Outputs: mixed-model objects, interaction summaries, diagnostic figures,
   significant-interaction exports, and annotated longitudinal workbooks.
 
-```{r methylationGLMM_T1T2-overview, echo = FALSE, results = "asis"}
+```{r methylationLME-overview, echo = FALSE, results = "asis"}
 svg_to_html(
-  overview_svgs[["methylationGLMM_T1T2"]])
+  overview_svgs[["methylationLME"]])
 ```
 
 ## dnamReport()
@@ -419,7 +419,7 @@ In practice, the main functions are:
   outputs,
 - run `svaEnmix()` when control-probe surrogate variables are needed,
 - run `preprocessingPheno()` to prepare modelling tables,
-- run `methylationGLM_T1()` or `methylationGLMM_T1T2()` for association
+- run `methylationGLM()` or `methylationLME()` for association
   testing, and
 - run `dnamReport()` to review the completed outputs.
 

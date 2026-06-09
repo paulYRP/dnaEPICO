@@ -1423,7 +1423,7 @@ extractEpicV2ManifestExclusionIdsMinfiEwasWater <- function(
       list(
         ids = character(0),
         flags = flags,
-        flagCounts = setNames(integer(0), character(0)),
+        flagCounts = stats::setNames(integer(0), character(0)),
         nIds = 0L,
         overlap = if (is.null(featureNames)) NA_integer_ else 0L
       ),
@@ -1454,7 +1454,7 @@ extractEpicV2ManifestExclusionIdsMinfiEwasWater <- function(
   }
 
   selected <- rep(FALSE, nrow(manifest))
-  flag_counts <- setNames(integer(length(enabled_flags)), enabled_flags)
+  flag_counts <- stats::setNames(integer(length(enabled_flags)), enabled_flags)
   for (flag in enabled_flags) {
     flag_values <- toupper(trimws(as.character(manifest[[flag]])))
     flag_selected <- !is.na(flag_values) & flag_values %in% c("Y", "TRUE", "1")
@@ -1493,7 +1493,7 @@ readEpicV2ManifestExclusionIdsMinfiEwasWater <- function(
   if (!isTRUE(useEpicV2Manifest)) {
     return(extractEpicV2ManifestExclusionIdsMinfiEwasWater(
       manifest = data.frame(row.names = character(0)),
-      epicV2ManifestFlags = setNames(rep(FALSE, 4L), c(
+      epicV2ManifestFlags = stats::setNames(rep(FALSE, 4L), c(
         "CH_WGBS_evidence",
         "CH_BLAT",
         "MissingPos",

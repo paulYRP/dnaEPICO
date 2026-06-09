@@ -22,6 +22,37 @@ parseTimepointsPreprocessingPheno <- function(values, label = "timepoints") {
   parsed
 }
 
+normalizeMethylationScaleDnaEpico <- function(methylationScale = "beta") {
+  if (length(methylationScale) != 1L || is.na(methylationScale)) {
+    stop("methylationScale must be one of: beta, m, cn.", call. = FALSE)
+  }
+
+  methylation_scale <- tolower(trimws(as.character(methylationScale)))
+  if (!(methylation_scale %in% c("beta", "m", "cn"))) {
+    stop("methylationScale must be one of: beta, m, cn.", call. = FALSE)
+  }
+
+  methylation_scale
+}
+
+methylationScaleObjectPrefixDnaEpico <- function(methylationScale = "beta") {
+  switch(
+    normalizeMethylationScaleDnaEpico(methylationScale),
+    beta = "phenoBeta",
+    m = "phenoM",
+    cn = "phenoCN"
+  )
+}
+
+methylationScaleResponseLabelDnaEpico <- function(methylationScale = "beta") {
+  switch(
+    normalizeMethylationScaleDnaEpico(methylationScale),
+    beta = "Beta values",
+    m = "M-values",
+    cn = "Copy number values"
+  )
+}
+
 #' Extract a preferred named element from a loaded object
 #'
 #' @param object Loaded object.
@@ -110,51 +141,75 @@ loadSavedObjectPreprocessingPheno <- function(path, preferred_name = NULL) {
   )
 }
 
-#' Merge phenotype rows with beta values for preprocessingPheno helpers
+#' Merge phenotype rows with methylation values for preprocessingPheno helpers
 #'
 #' @param phenoFrame Data frame containing phenotype rows.
-#' @param betaMatrix Numeric matrix with probes in rows and samples in columns.
+#' @param methylationMatrix Numeric matrix with probes in rows and samples in
+#'   columns.
 #' @param id Character. Name of the sample identifier column in `phenoFrame`.
+#' @param methylationScale Character. Selected methylation scale.
 #'
-#' @return A data frame with phenotype columns followed by transposed beta
+#' @return A data frame with phenotype columns followed by transposed methylation
 #'   values.
 #'
 #' @description
-#' Internal helper that aligns phenotype rows with beta-matrix columns before
+#' Internal helper that aligns phenotype rows with methylation-matrix columns before
 #' building merged objects used by downstream modeling functions.
 #'
 #' @keywords internal
 #' @noRd
-mergePhenoBetaPreprocessingPheno <- function(
+mergePhenoMethylationPreprocessingPheno <- function(
     phenoFrame,
-    betaMatrix,
-    id = "Sample_Name"
+    methylationMatrix,
+    id = "Sample_Name",
+    methylationScale = "beta"
 ) {
+  methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
+  methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
+
   if (!(id %in% colnames(phenoFrame))) {
     stop("Sample identifier column not found in phenotype data: ", id, call. = FALSE)
   }
 
   sample_ids <- as.character(phenoFrame[[id]])
-  matched_ids <- sample_ids[sample_ids %in% colnames(betaMatrix)]
+  matched_ids <- sample_ids[sample_ids %in% colnames(methylationMatrix)]
 
   if (length(matched_ids) == 0L) {
-    stop("No matching sample identifiers were found between phenotype and beta data.", call. = FALSE)
+    stop(
+      "No matching sample identifiers were found between phenotype data and ",
+      methylation_label,
+      ".",
+      call. = FALSE
+    )
   }
 
   if (anyDuplicated(matched_ids) > 0L) {
     stop(
-      "Duplicate sample identifiers were found while merging phenotype and beta data: ",
+      "Duplicate sample identifiers were found while merging phenotype and methylation data: ",
       paste(unique(matched_ids[duplicated(matched_ids)]), collapse = ", "),
       call. = FALSE
     )
   }
 
   phenoFrame <- phenoFrame[match(matched_ids, sample_ids), , drop = FALSE]
-  betaMatrix <- betaMatrix[, matched_ids, drop = FALSE]
+  methylationMatrix <- methylationMatrix[, matched_ids, drop = FALSE]
 
   cbind(
     phenoFrame,
-    as.data.frame(t(betaMatrix), stringsAsFactors = FALSE)
+    as.data.frame(t(methylationMatrix), stringsAsFactors = FALSE)
+  )
+}
+
+mergePhenoBetaPreprocessingPheno <- function(
+    phenoFrame,
+    betaMatrix,
+    id = "Sample_Name"
+) {
+  mergePhenoMethylationPreprocessingPheno(
+    phenoFrame = phenoFrame,
+    methylationMatrix = betaMatrix,
+    id = id,
+    methylationScale = "beta"
   )
 }
 
@@ -245,6 +300,8 @@ loadMetricsPreprocessingPheno <- function(
 #' @param timeVar Character. Name of the timepoint column in `pheno`.
 #' @param timepoints Character vector or comma-separated string of timepoints to
 #'   retain.
+#' @param methylationScale Character. Methylation metric to use for the merged
+#'   modeling table. One of `"beta"`, `"m"`, or `"cn"`.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
@@ -279,6 +336,7 @@ splitTimepointsPreprocessingPheno <- function(
     SampleID = "Sample_Name",
     timeVar = "Timepoint",
     timepoints = "1,2",
+    methylationScale = "beta",
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
@@ -289,6 +347,9 @@ splitTimepointsPreprocessingPheno <- function(
     log_dir = log_dir,
     log_file = log_file
   )
+  methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
+  methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
+  methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
 
   if (!(SampleID %in% colnames(pheno))) {
     stop("SampleID column not found in phenotype data: ", SampleID, call. = FALSE)
@@ -317,6 +378,7 @@ splitTimepointsPreprocessingPheno <- function(
       "Requested timepoints:      ",
       paste(requested_timepoints, collapse = ", ")
     ),
+    paste("Modeling methylation scale:", methylation_label),
     paste("Available values in", timeVar, "column:")
   )
   summary_lines <- c(
@@ -366,24 +428,31 @@ splitTimepointsPreprocessingPheno <- function(
     beta_subset <- metricsData$beta[, common_ids, drop = FALSE]
     m_subset <- metricsData$m[, common_ids, drop = FALSE]
     cn_subset <- metricsData$cn[, common_ids, drop = FALSE]
-    pheno_beta <- mergePhenoBetaPreprocessingPheno(
+    selected_subset <- metricsData[[methylation_scale]][, common_ids, drop = FALSE]
+    pheno_methylation <- mergePhenoMethylationPreprocessingPheno(
       phenoFrame = pheno_subset,
-      betaMatrix = beta_subset,
-      id = SampleID
+      methylationMatrix = selected_subset,
+      id = SampleID,
+      methylationScale = methylation_scale
     )
 
-    subsets[[tp]] <- list(
+    subset_data <- list(
       pheno = pheno_subset,
       beta = beta_subset,
       m = m_subset,
       cn = cn_subset,
-      phenoBeta = pheno_beta
+      phenoMethylation = pheno_methylation,
+      methylationScale = methylation_scale,
+      methylationObjectPrefix = methylation_prefix
     )
+    subset_data[[methylation_prefix]] <- pheno_methylation
+    subsets[[tp]] <- subset_data
 
     summary_lines <- c(
       summary_lines,
       paste("Timepoint ", tp, " rows:          ", nrow(pheno_subset), sep = ""),
-      paste("Timepoint ", tp, " matched samples:", length(common_ids), sep = " ")
+      paste("Timepoint ", tp, " matched samples:", length(common_ids), sep = " "),
+      paste("Timepoint ", tp, " merged object:  ", methylation_prefix, "T", tp, sep = "")
     )
   }
 
@@ -396,7 +465,9 @@ splitTimepointsPreprocessingPheno <- function(
   structure(
     list(
       timepoints = requested_timepoints,
-      data = subsets
+      data = subsets,
+      methylationScale = methylation_scale,
+      methylationObjectPrefix = methylation_prefix
     ),
     class = "dnaEPICO_preprocessingPheno_timepoints"
   )
@@ -407,6 +478,8 @@ splitTimepointsPreprocessingPheno <- function(
 #' @param timepointData Object returned by `splitTimepointsPreprocessingPheno()`.
 #' @param combineTimepoints Character vector or comma-separated string of
 #'   timepoints to combine.
+#' @param methylationScale Character. Methylation metric used in the merged
+#'   modeling table. One of `"beta"`, `"m"`, or `"cn"`.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
@@ -436,6 +509,7 @@ splitTimepointsPreprocessingPheno <- function(
 combineTimepointsPreprocessingPheno <- function(
     timepointData,
     combineTimepoints = "1,2",
+    methylationScale = "beta",
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
@@ -446,6 +520,13 @@ combineTimepointsPreprocessingPheno <- function(
     log_dir = log_dir,
     log_file = log_file
   )
+  methylation_scale <- if (!is.null(timepointData$methylationScale)) {
+    normalizeMethylationScaleDnaEpico(timepointData$methylationScale)
+  } else {
+    normalizeMethylationScaleDnaEpico(methylationScale)
+  }
+  methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
+  methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
 
   requested_timepoints <- parseTimepointsPreprocessingPheno(
     values = combineTimepoints,
@@ -469,7 +550,16 @@ combineTimepointsPreprocessingPheno <- function(
   )
   combined_pheno_beta <- do.call(
     rbind,
-    lapply(requested_timepoints, function(tp) timepointData$data[[tp]]$phenoBeta)
+    lapply(
+      requested_timepoints,
+      function(tp) {
+        tp_data <- timepointData$data[[tp]]
+        if (!is.null(tp_data$phenoMethylation)) {
+          return(tp_data$phenoMethylation)
+        }
+        tp_data[[methylation_prefix]]
+      }
+    )
   )
   combine_suffix <- paste0("T", paste(requested_timepoints, collapse = "T"))
 
@@ -480,7 +570,8 @@ combineTimepointsPreprocessingPheno <- function(
         paste(requested_timepoints, collapse = ", ")
       ),
       paste("Combined phenotype rows:   ", nrow(combined_pheno)),
-      paste("Combined phenoBeta rows:   ", nrow(combined_pheno_beta)),
+      paste("Modeling methylation scale:", methylation_label),
+      paste("Combined ", methylation_prefix, " rows:   ", nrow(combined_pheno_beta), sep = ""),
       paste("Combined suffix:           ", combine_suffix),
       "======================================================================="
     ),
@@ -488,13 +579,18 @@ combineTimepointsPreprocessingPheno <- function(
     log_path = log_path
   )
 
+  combined_data <- list(
+    timepoints = requested_timepoints,
+    suffix = combine_suffix,
+    pheno = combined_pheno,
+    phenoMethylation = combined_pheno_beta,
+    methylationScale = methylation_scale,
+    methylationObjectPrefix = methylation_prefix
+  )
+  combined_data[[methylation_prefix]] <- combined_pheno_beta
+
   structure(
-    list(
-      timepoints = requested_timepoints,
-      suffix = combine_suffix,
-      pheno = combined_pheno,
-      phenoBeta = combined_pheno_beta
-    ),
+    combined_data,
     class = "dnaEPICO_preprocessingPheno_combined"
   )
 }
@@ -681,6 +777,15 @@ writePreprocessingPhenoOutputs <- function(
   dir.create(outputRDataMerge, recursive = TRUE, showWarnings = FALSE)
   dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
 
+  methylation_scale <- if (!is.null(preprocessingData$methylationScale)) {
+    normalizeMethylationScaleDnaEpico(preprocessingData$methylationScale)
+  } else if (!is.null(preprocessingData$combinedData$methylationScale)) {
+    normalizeMethylationScaleDnaEpico(preprocessingData$combinedData$methylationScale)
+  } else {
+    normalizeMethylationScaleDnaEpico("beta")
+  }
+  methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
+
   timepoint_paths <- list()
 
   for (tp in preprocessingData$timepointData$timepoints) {
@@ -689,23 +794,34 @@ writePreprocessingPhenoOutputs <- function(
     pheno_path <- file.path(outputPheno, paste0("phenoT", tp, ".csv"))
     beta_path <- file.path(outputRData, paste0("betaT", tp, ".RData"))
     m_path <- file.path(outputRData, paste0("mT", tp, ".RData"))
-    merged_path <- file.path(outputRDataMerge, paste0("phenoBetaT", tp, ".RData"))
+    cn_path <- file.path(outputRData, paste0("cnT", tp, ".RData"))
+    merged_path <- file.path(outputRDataMerge, paste0(methylation_prefix, "T", tp, ".RData"))
+    merged_object_name <- paste0(methylation_prefix, "T", tp)
+    merged_data <- if (!is.null(tp_data$phenoMethylation)) {
+      tp_data$phenoMethylation
+    } else {
+      tp_data[[methylation_prefix]]
+    }
 
     utils::write.csv(tp_data$pheno, file = pheno_path, row.names = FALSE)
     saveNamedObjectMinfiEwasWater(tp_data$beta, paste0("betaT", tp), beta_path)
     saveNamedObjectMinfiEwasWater(tp_data$m, paste0("mT", tp), m_path)
+    saveNamedObjectMinfiEwasWater(tp_data$cn, paste0("cnT", tp), cn_path)
     saveNamedObjectMinfiEwasWater(
-      tp_data$phenoBeta,
-      paste0("phenoBetaT", tp),
+      merged_data,
+      merged_object_name,
       merged_path
     )
 
-    timepoint_paths[[tp]] <- list(
+    tp_paths <- list(
       pheno = pheno_path,
       beta = beta_path,
       m = m_path,
-      phenoBeta = merged_path
+      cn = cn_path,
+      phenoMethylation = merged_path
     )
+    tp_paths[[methylation_prefix]] <- merged_path
+    timepoint_paths[[tp]] <- tp_paths
   }
 
   combined_pheno_path <- file.path(
@@ -714,8 +830,14 @@ writePreprocessingPhenoOutputs <- function(
   )
   combined_merge_path <- file.path(
     outputRDataMerge,
-    paste0("phenoBeta", preprocessingData$combinedData$suffix, ".RData")
+    paste0(methylation_prefix, preprocessingData$combinedData$suffix, ".RData")
   )
+  combined_merge_object_name <- paste0(methylation_prefix, preprocessingData$combinedData$suffix)
+  combined_merge_data <- if (!is.null(preprocessingData$combinedData$phenoMethylation)) {
+    preprocessingData$combinedData$phenoMethylation
+  } else {
+    preprocessingData$combinedData[[methylation_prefix]]
+  }
   beta_csv_path <- file.path(outputDir, "beta.csv")
   zip_path <- file.path(outputDir, "beta.zip")
   pheno_cf_path <- file.path(outputDir, "phenoCF.csv")
@@ -726,8 +848,8 @@ writePreprocessingPhenoOutputs <- function(
     row.names = FALSE
   )
   saveNamedObjectMinfiEwasWater(
-    preprocessingData$combinedData$phenoBeta,
-    paste0("phenoBeta", preprocessingData$combinedData$suffix),
+    combined_merge_data,
+    combined_merge_object_name,
     combined_merge_path
   )
   utils::write.csv(
@@ -754,7 +876,7 @@ writePreprocessingPhenoOutputs <- function(
       paste("RData merge dir:          ", outputRDataMerge),
       paste("Clock Foundation dir:     ", outputDir),
       paste("Saved combined phenotype: ", combined_pheno_path),
-      paste("Saved combined phenoBeta: ", combined_merge_path),
+      paste("Saved combined ", methylation_prefix, ": ", combined_merge_path, sep = ""),
       paste("Saved beta CSV:           ", beta_csv_path),
       if (is.null(beta_zip_path)) {
         "Beta ZIP file was not created."
@@ -769,15 +891,26 @@ writePreprocessingPhenoOutputs <- function(
     log_path = log_path
   )
 
+  output_paths <- list(
+    timepoints = timepoint_paths,
+    combinedPheno = combined_pheno_path,
+    combinedPhenoMethylation = combined_merge_path,
+    methylationScale = methylation_scale,
+    methylationObjectPrefix = methylation_prefix,
+    betaCSV = beta_csv_path,
+    betaZIP = beta_zip_path,
+    phenoCF = pheno_cf_path
+  )
+  combined_key <- switch(
+    methylation_scale,
+    beta = "combinedPhenoBeta",
+    m = "combinedPhenoM",
+    cn = "combinedPhenoCN"
+  )
+  output_paths[[combined_key]] <- combined_merge_path
+
   structure(
-    list(
-      timepoints = timepoint_paths,
-      combinedPheno = combined_pheno_path,
-      combinedPhenoBeta = combined_merge_path,
-      betaCSV = beta_csv_path,
-      betaZIP = beta_zip_path,
-      phenoCF = pheno_cf_path
-    ),
+    output_paths,
     class = "dnaEPICO_preprocessingPheno_paths"
   )
 }

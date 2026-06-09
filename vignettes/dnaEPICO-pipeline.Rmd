@@ -42,7 +42,7 @@ can_run_glm <- requireNamespace(
   "IlluminaHumanMethylation450kanno.ilmn12.hg19",
   quietly = TRUE
 )
-can_run_glmm <- can_run_glm && requireNamespace("lmerTest", quietly = TRUE)
+can_run_lme <- can_run_glm && requireNamespace("lmerTest", quietly = TRUE)
 ```
 
 # Introduction
@@ -427,7 +427,7 @@ names(phenoPipelineResult$savedFiles$timepoints)
 basename(unlist(phenoPipelineResult$savedFiles$timepoints[["1"]]))
 basename(unlist(phenoPipelineResult$savedFiles[c(
   "combinedPheno",
-  "combinedPhenoBeta",
+  "combinedPhenoMethylation",
   "betaCSV",
   "phenoCF"
 )]))
@@ -438,10 +438,11 @@ functions. `names(phenoPipelineResult$savedFiles)` shows the high-level output
 groups returned by the function. `names(phenoPipelineResult$savedFiles$timepoints)`
 lists the available timepoint-specific subsets. The `basename(...)` calls then
 show examples of the concrete files written for one timepoint and for the
-combined outputs. In this structure, `combinedPhenoBeta` is the merged
-phenotype-plus-beta object that becomes the direct input to the GLM and GLMM
-functions, while `betaCSV`, `betaZIP`, and `phenoCF` are the Clock Foundation
-exports.
+combined outputs. In this structure, `combinedPhenoMethylation` is the merged
+phenotype-plus-methylation object that becomes the direct input to the GLM and
+LME functions. It defaults to beta values, but can be written as M-values or
+copy-number values when `methylationScale` is changed. The `betaCSV`, `betaZIP`,
+and `phenoCF` outputs remain beta-based Clock Foundation exports.
 
 Arguments:
 
@@ -451,6 +452,9 @@ Arguments:
 - `timeVar = "Timepoint"`, `timepoints = "1,2"`, and
   `combineTimepoints = "1,2"` determine the timepoint-specific outputs and the
   combined longitudinal object.
+- `methylationScale = "beta"` selects the merged modeling scale. Use `"m"` for
+  M-values or `"cn"` for copy-number values. Clock Foundation exports continue
+  to use beta values.
 - `outputPheno`, `outputRData`, `outputRDataMerge`, and `outputDir` define the
   directories used for phenotype exports, metric objects, merged objects, and
   Clock Foundation inputs.
@@ -484,7 +488,7 @@ objects produced during helper construction: `preparedData`, `modelResults`, and
 `modelSummaries`.
 
 ```{r glm-pipeline, eval = can_run_glm, message = FALSE, warning = FALSE}
-glmPipelineResult <- methylationGLM_T1(
+glmPipelineResult <- methylationGLM(
   inputPheno = glm_inputs$inputPath,
   phenotypes = "status",
   covariates = "sex,age",
@@ -548,64 +552,64 @@ tables, and interaction-specific result files.
 The next chunk shows how to recreate the temporary combined longitudinal
 phenotype-plus-beta input file used by the LME example.
 
-```{r glmm-pipeline-inputs, eval = can_run_glmm, message = FALSE, warning = FALSE}
-glmm_inputs <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
+```{r lme-pipeline-inputs, eval = can_run_lme, message = FALSE, warning = FALSE}
+lme_inputs <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 
-names(glmm_inputs)
-glmm_inputs$tempDir
-basename(glmm_inputs$inputPath)
-file.exists(glmm_inputs$inputPath)
+names(lme_inputs)
+lme_inputs$tempDir
+basename(lme_inputs$inputPath)
+file.exists(lme_inputs$inputPath)
 ```
 
-`glmm_inputs` plays the same role for the longitudinal example. The helper
+`lme_inputs` plays the same role for the longitudinal example. The helper
 returns a list with the temporary directory, the saved combined longitudinal
 input file (`inputPath`), and the in-memory objects used to build that example:
 `preparedData`, `modelResults`, and `modelSummaries`.
 
-```{r glmm-pipeline, eval = can_run_glmm, message = FALSE, warning = FALSE}
-glmmPipelineResult <- methylationGLMM_T1T2(
-  inputPheno = glmm_inputs$inputPath,
-  outputLogs = file.path(glmm_inputs$tempDir, "logs"),
-  outputRData = file.path(glmm_inputs$tempDir, "rData", "models"),
-  outputPlots = file.path(glmm_inputs$tempDir, "figures"),
+```{r lme-pipeline, eval = can_run_lme, message = FALSE, warning = FALSE}
+lmePipelineResult <- methylationLME(
+  inputPheno = lme_inputs$inputPath,
+  outputLogs = file.path(lme_inputs$tempDir, "logs"),
+  outputRData = file.path(lme_inputs$tempDir, "rData", "models"),
+  outputPlots = file.path(lme_inputs$tempDir, "figures"),
   personVar = "person",
   timeVar = "Timepoint",
   phenotypes = "score",
   covariates = "sex",
-  factorVars = "sex,Timepoint",
+  factorVars = "sex",
   cpgLimit = 2,
   nCores = 1,
   summaryPval = 1,
   saveSignificantInteractions = TRUE,
   significantInteractionDir = file.path(
-    glmm_inputs$tempDir,
+    lme_inputs$tempDir,
     "results",
     "cpgs",
-    "methylationGLMM_T1T2"
+    "methylationLME"
   ),
   significantInteractionPval = 1,
   saveTxtSummaries = TRUE,
   summaryTxtDir = file.path(
-    glmm_inputs$tempDir,
+    lme_inputs$tempDir,
     "results",
     "summary",
-    "methylationGLMM_T1T2"
+    "methylationLME"
   ),
   annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
   annotationCols = "Name,chr,pos",
-  annotatedLMEOut = file.path(glmm_inputs$tempDir, "annotated"),
+  annotatedLMEOut = file.path(lme_inputs$tempDir, "annotated"),
   display = FALSE,
   verbose = FALSE,
   logs = TRUE,
   saveOutputs = TRUE
 )
 
-class(glmmPipelineResult$savedFiles)
-names(glmmPipelineResult$savedFiles)
+class(lmePipelineResult$savedFiles)
+names(lmePipelineResult$savedFiles)
 ```
 
 The returned `savedFiles` object records the groups of outputs written by the
-LME step. `names(glmmPipelineResult$savedFiles)` typically includes the model
+LME step. `names(lmePipelineResult$savedFiles)` typically includes the model
 files, summary files, diagnostic plot files, summary text files, significant
 interaction exports, and the annotated longitudinal results table. This is the
 object to inspect when you want to confirm which longitudinal modeling outputs
@@ -615,9 +619,10 @@ Arguments:
 
 - `inputPheno` points to the combined longitudinal phenotype-plus-beta object.
 - `personVar` defines the participant identifier used for the random effect.
-- `timeVar` defines the repeated-measures time variable.
-- `phenotypes`, `covariates`, and `factorVars` define the fixed-effect portion
-  of the mixed model.
+- `timeVar` defines the repeated-measures time variable used for longitudinal
+  summaries and preprocessing checks.
+- `phenotypes`, `covariates`, and optional `interactionTerm` define the
+  fixed-effect portion of the mixed model.
 - `cpgLimit = 2` keeps the example short by fitting only two CpG models.
 - `nCores = 1` keeps the example lightweight; production HPC runs usually use
   higher parallel settings.
@@ -679,8 +684,8 @@ report_logs <- c(
   ),
   file.path(pheno_inputs$tempDir, "logs", "log_preprocessingPheno.txt"),
   file.path(preprocessing_inputs$tempDir, "logs", "log_svaEnmix.txt"),
-  file.path(glm_inputs$tempDir, "logs", "log_methylationGLM_T1.txt"),
-  file.path(glmm_inputs$tempDir, "logs", "log_methylationGLMM_T1T2.txt")
+  file.path(glm_inputs$tempDir, "logs", "log_methylationGLM.txt"),
+  file.path(lme_inputs$tempDir, "logs", "log_methylationLME.txt")
 )
 
 existing_logs <- report_logs[file.exists(report_logs)]
@@ -716,7 +721,7 @@ reportResult <- dnamReport(
     "metrics"
   ),
   glmTab = glmPipelineResult$savedFiles$annotatedGLM,
-  lmerTab = glmmPipelineResult$savedFiles$annotatedLME,
+  lmeTab = lmePipelineResult$savedFiles$annotatedLME,
   logTab = report_log_dir,
   detPPath = file.path(
     preprocessing_inputs$tempDir,
@@ -735,7 +740,7 @@ reportResult$outputFile
 
 ## GLM model structure and PRS terms
 
-For each CpG, `methylationGLM_T1()` fits a regression model of the form:
+For each CpG, `methylationGLM()` fits a regression model of the form:
 
 $$
 \text{Methylation}_{CpG_i} =
@@ -788,7 +793,7 @@ requested interaction to the fixed-effect portion of the model.
 
 ## Longitudinal mixed-effects structure
 
-The longitudinal function `methylationGLMM_T1T2()` follows the same file-based
+The longitudinal function `methylationLME()` follows the same file-based
 pattern, but uses a mixed-effects model with a participant-level random
 intercept. In schematic form:
 
@@ -797,10 +802,8 @@ $$
 \text{Methylation}_{CpG_i} =\;&
 \beta_0 +
 \beta_1 \cdot \text{Phenotype} +
-\beta_2 \cdot \text{Timepoint} +
-\beta_3 \cdot (\text{Phenotype} \times \text{Timepoint}) \\
-&+
-\sum_{k = 1}^{K} \beta_{k + 3} \cdot \text{Covariate}_k +
+\beta_2 \cdot (\text{Phenotype} \times \text{Interaction}) +
+\sum_{k = 1}^{K} \beta_{k + 2} \cdot \text{Covariate}_k +
 \beta_{\text{PRS}} \cdot \text{PRS} +
 b_{\text{person}} +
 \varepsilon
@@ -815,8 +818,9 @@ Common arguments in this longitudinal stage are:
 
 - `inputPheno` for the combined longitudinal phenotype-plus-beta object
 - `personVar` for the participant identifier used in the random effect
-- `timeVar` for the repeated-measures variable
-- `phenotypes`, `covariates`, and `factorVars` for the fixed-effect structure
+- `timeVar` for repeated-measures summaries and preprocessing checks
+- `phenotypes`, `covariates`, and optional `interactionTerm` for the fixed-effect
+  structure
 - `prsMap` for phenotype-specific PRS terms
 - `cpgLimit` and `nCores` for computational control
 - `annotationPackage` and `annotationCols` for annotated summaries
@@ -922,7 +926,7 @@ available.
 
 For example, the `f3` route builds the report from the Data, ENmix QC, Quality
 Control, Batch Effect, Metrics, Report, and Logs inputs. The `f4`, `f3lme`, and
-`all` routes additionally make the GLM and LMER tables available when the
+`all` routes additionally make the GLM and LME tables available when the
 corresponding model outputs exist.
 
 The report target reads the same types of outputs generated in the examples
@@ -1032,6 +1036,9 @@ These parameters are shared across multiple workflow steps.
 - `BASENAME_COLUMN`: column holding the array basename.
 - `TIME_VAR`: phenotype column used for repeated-measures or longitudinal
   workflows.
+- `METHYLATION_SCALE`: methylation metric used in merged modeling tables;
+  choose `beta`, `m`, or `cn`. The default is `beta`; Clock Foundation exports
+  continue to use beta values.
 - `PHENO_ORDER`: desired order of key phenotype columns in exported tables.
 
 ### Step 4 and Step 5 shared modeling parameters
@@ -1091,6 +1098,8 @@ variables.
 - `TIMEPOINTS`: comma-separated timepoints exported separately.
 - `COMBINE_TIMEPOINTS`: comma-separated timepoints combined into the
   longitudinal object.
+- `METHYLATION_SCALE`: methylation metric used for the merged GLM/LME input.
+  `beta` writes `phenoBeta*`, `m` writes `phenoM*`, and `cn` writes `phenoCN*`.
 
 These values determine how `preprocessingPheno()` splits and recombines the
 phenotype-methylation data.
@@ -1098,8 +1107,8 @@ phenotype-methylation data.
 ## Step 4 parameters
 
 - `PHENOTYPES_GLM`: comma-separated phenotype variables that will be modelled
-  one at a time by `methylationGLM_T1()`.
-- `GLM_LIBS`: GLM implementation used by `methylationGLM_T1()`.
+  one at a time by `methylationGLM()`.
+- `GLM_LIBS`: GLM implementation used by `methylationGLM()`.
 - `INTERACTION_GLM`: optional interaction term added to the fixed-effect part
   of the GLM; `NULL` omits the interaction.
 - `SUMMARY_RESIDUAL_SD`: whether residual standard deviations are reported in
@@ -1111,10 +1120,14 @@ phenotype-methylation data.
 ## Step 5 parameters
 
 - `PHENOTYPES_LME`: comma-separated phenotype variables that will be modelled
-  one at a time by `methylationGLMM_T1T2()`.
+  one at a time by `methylationLME()`.
 - `PERSON_VAR`: participant identifier used as the random effect grouping
   factor.
-- `LME_LIBS`: mixed-effects libraries used by `methylationGLMM_T1T2()`.
+- `LME_LIBS`: mixed-effects libraries used by `methylationLME()`.
+- `LME_CORRELATION_STRUCTURE`: residual correlation structure for the `nlme`
+  LME backend; use `none`, `AR1`, or `CAR1`.
+- `LME_CORRELATION_VAR`: variable used to order repeated observations within
+  participant for `AR1` or `CAR1`; required for those structures.
 - `INTERACTION_LME`: optional interaction term used in the longitudinal model;
   `NULL` omits the interaction.
 - `SAVE_SIGNIFICANT_INTERACTIONS`: whether significant interaction tables are

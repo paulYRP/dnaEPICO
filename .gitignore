@@ -60,6 +60,9 @@ desktop.ini
 # ---- R CMD check artefacts ----
 *.tar.gz
 *.Rcheck/
+.codex-check-lib/
+.codex-check-output/
+dnaEPICO.BiocCheck/
 
 # ---- Coverage / testing ----
 coverage.xml

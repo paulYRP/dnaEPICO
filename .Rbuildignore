@@ -10,3 +10,6 @@
 ^pkgdown$
 ^\.positai$
 ^\.claude$
+^\.codex-check-lib$
+^\.codex-check-output$
+^dnaEPICO[.]BiocCheck$

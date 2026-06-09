@@ -45,7 +45,7 @@ device.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-Invisibly returns \code{file} when a TIFF is written, otherwise \code{NULL}.
+Invisibly returns saved TIFF path(s), otherwise \code{NULL}.
 }
 \description{
 Draw one of the standard surrogate-variable plots used by \code{svaEnmix()}.

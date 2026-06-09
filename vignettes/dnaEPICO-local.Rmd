@@ -399,15 +399,16 @@ phenoResult <- preprocessingPheno(
 class(phenoResult)
 names(phenoResult)
 names(phenoResult$combinedData)
-head(phenoResult$combinedData$phenoBeta[, 1:6])
+head(phenoResult$combinedData$phenoMethylation[, 1:6])
 ```
 
 The returned object has class `dnaEPICO_preprocessingPheno`, and
 `names(phenoResult)` shows the main returned components. The
 `combinedData` element groups the combined longitudinal objects, and
-`phenoResult$combinedData$phenoBeta` is the key downstream table for modeling.
-It combines phenotype columns and CpG beta values in a single data frame that
-can be passed to the GLM or GLMM functions.
+`phenoResult$combinedData$phenoMethylation` is the key downstream table for
+modeling. By default it combines phenotype columns and CpG beta values in a
+single data frame that can be passed to the GLM or LME functions. Set
+`methylationScale = "m"` for M-values or `"cn"` for copy-number values.
 
 Arguments:
 

@@ -7,6 +7,7 @@
 combineTimepointsPreprocessingPheno(
   timepointData,
   combineTimepoints = "1,2",
+  methylationScale = "beta",
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
@@ -18,6 +19,9 @@ combineTimepointsPreprocessingPheno(
 
 \item{combineTimepoints}{Character vector or comma-separated string of
 timepoints to combine.}
+
+\item{methylationScale}{Character. Methylation metric used in the merged
+modeling table. One of \code{"beta"}, \code{"m"}, or \code{"cn"}.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 

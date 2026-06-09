@@ -15,7 +15,7 @@
 #'
 #' @keywords internal
 #' @noRd
-ensurePersonColumnMethylationGLMM_T1T2 <- function(
+ensurePersonColumnMethylationLME <- function(
     data,
     personVar = "person",
     sidVar = "SID"
@@ -55,12 +55,11 @@ ensurePersonColumnMethylationGLMM_T1T2 <- function(
   )
 }
 
-#' Build a mixed-effects formula for methylationGLMM_T1T2 helpers
+#' Build a mixed-effects formula for methylationLME helpers
 #'
 #' @param phenotype Character. Phenotype variable of interest.
 #' @param personVar Character. Subject identifier variable used as a random
 #'   intercept.
-#' @param timeVar Character. Time variable included as a fixed effect.
 #' @param covariates Character vector of additional fixed-effect covariates.
 #' @param interactionTerm Character or `NULL`. Optional interaction term.
 #'
@@ -68,29 +67,29 @@ ensurePersonColumnMethylationGLMM_T1T2 <- function(
 #'
 #' @description
 #' Internal helper that builds the per-CpG linear mixed-effects formula used by
-#' `methylationGLMM_T1T2()` and its modular helpers.
+#' `methylationLME()` and its modular helpers.
 #'
 #' @keywords internal
 #' @noRd
-buildFormulaMethylationGLMM_T1T2 <- function(
+buildFormulaMethylationLME <- function(
     phenotype,
     personVar,
-    timeVar,
     covariates = character(0),
-    interactionTerm = NULL
+    interactionTerm = NULL,
+    includeRandomTerm = TRUE
 ) {
-  quoted_phenotype <- quoteNamesMethylationGLM_T1(phenotype)
-  quoted_person <- quoteNamesMethylationGLM_T1(personVar)
-  fixed_terms <- unique(c(timeVar, covariates))
+  quoted_phenotype <- quoteNamesMethylationGLM(phenotype)
+  quoted_person <- quoteNamesMethylationGLM(personVar)
+  fixed_terms <- unique(c(covariates))
 
   if (!is.null(interactionTerm) && nzchar(interactionTerm)) {
-    quoted_interaction <- quoteNamesMethylationGLM_T1(interactionTerm)
+    quoted_interaction <- quoteNamesMethylationGLM(interactionTerm)
     interaction_part <- paste(quoted_phenotype, quoted_interaction, sep = " * ")
     fixed_terms <- setdiff(fixed_terms, c(interactionTerm, phenotype))
-    fixed_formula_terms <- c(interaction_part, quoteNamesMethylationGLM_T1(fixed_terms))
+    fixed_formula_terms <- c(interaction_part, quoteNamesMethylationGLM(fixed_terms))
   } else {
     fixed_terms <- setdiff(fixed_terms, phenotype)
-    fixed_formula_terms <- c(quoted_phenotype, quoteNamesMethylationGLM_T1(fixed_terms))
+    fixed_formula_terms <- c(quoted_phenotype, quoteNamesMethylationGLM(fixed_terms))
   }
 
   fixed_formula_terms <- unique(fixed_formula_terms[nzchar(fixed_formula_terms)])
@@ -98,13 +97,202 @@ buildFormulaMethylationGLMM_T1T2 <- function(
     stop("At least one fixed-effect term is required.", call. = FALSE)
   }
 
-  paste(
+  formula_text <- paste(
     "beta ~",
-    paste(fixed_formula_terms, collapse = " + "),
-    "+ (1 |",
-    quoted_person,
-    ")"
+    paste(fixed_formula_terms, collapse = " + ")
   )
+
+  if (isTRUE(includeRandomTerm)) {
+    formula_text <- paste(
+      formula_text,
+      "+ (1 |",
+      quoted_person,
+      ")"
+    )
+  }
+
+  formula_text
+}
+
+normalizeCorrelationStructureMethylationLME <- function(
+    correlationStructure = "none"
+) {
+  if (length(correlationStructure) == 0L || all(is.na(correlationStructure))) {
+    return("none")
+  }
+
+  structure_value <- tolower(trimws(as.character(correlationStructure[[1L]])))
+  if (structure_value %in% c("", "none", "null", "na")) {
+    return("none")
+  }
+  if (identical(structure_value, "ar1")) {
+    return("AR1")
+  }
+  if (identical(structure_value, "car1")) {
+    return("CAR1")
+  }
+
+  stop(
+    "correlationStructure must be one of: none, AR1, CAR1.",
+    call. = FALSE
+  )
+}
+
+normalizeCorrelationVariableMethylationLME <- function(
+    correlationVar = NULL
+) {
+  if (is.null(correlationVar) || length(correlationVar) == 0L || all(is.na(correlationVar))) {
+    return(NULL)
+  }
+
+  parsed <- splitOptionMinfiEwasWater(correlationVar, sep = ",")
+  if (length(parsed) == 0L) {
+    return(NULL)
+  }
+  if (length(parsed) > 1L) {
+    stop("correlationVar must contain a single variable name.", call. = FALSE)
+  }
+
+  parsed <- trimws(as.character(parsed[[1L]]))
+  if (!nzchar(parsed) || tolower(parsed) %in% c("null", "na")) {
+    return(NULL)
+  }
+
+  parsed
+}
+
+resolveLmeLibrariesMethylationLME <- function(
+    lmeLibs = "lme4,lmerTest"
+) {
+  requested <- splitOptionMinfiEwasWater(lmeLibs, sep = ",")
+  if (length(requested) == 0L) {
+    requested <- c("lme4", "lmerTest")
+  }
+
+  requested_lower <- tolower(requested)
+  has_nlme <- "nlme" %in% requested_lower
+  has_lme4 <- any(requested_lower %in% c("lme4", "lmertest"))
+
+  if (isTRUE(has_nlme) && isTRUE(has_lme4)) {
+    stop(
+      "lmeLibs must choose either 'lme4,lmerTest' or 'nlme', not both.",
+      call. = FALSE
+    )
+  }
+
+  if (isTRUE(has_nlme)) {
+    return(list(
+      engine = "nlme",
+      requestedPackages = requested,
+      requiredPackages = "nlme"
+    ))
+  }
+
+  if (isTRUE(has_lme4)) {
+    return(list(
+      engine = "lme4",
+      requestedPackages = requested,
+      requiredPackages = unique(c(requested, "lme4", "lmerTest"))
+    ))
+  }
+
+  stop(
+    "lmeLibs must contain either 'lme4'/'lmerTest' or 'nlme'.",
+    call. = FALSE
+  )
+}
+
+coerceCorrelationTimeMethylationLME <- function(x) {
+  if (is.numeric(x)) {
+    return(as.numeric(x))
+  }
+
+  character_x <- trimws(as.character(x))
+  non_missing <- !is.na(x)
+  numeric_pattern <- "^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?$"
+  is_numeric_text <- grepl(numeric_pattern, character_x)
+
+  if (all(is_numeric_text[non_missing])) {
+    numeric_x <- rep(NA_real_, length(x))
+    numeric_x[non_missing] <- as.numeric(character_x[non_missing])
+    return(numeric_x)
+  }
+
+  as.numeric(factor(x, levels = unique(x)))
+}
+
+addCorrelationTimeVariableMethylationLME <- function(
+    modelData,
+    correlationVar
+) {
+  correlation_time_var <- "dnaEPICO_lme_correlation_time"
+  while (correlation_time_var %in% colnames(modelData)) {
+    correlation_time_var <- paste0(correlation_time_var, "_")
+  }
+
+  modelData[[correlation_time_var]] <- coerceCorrelationTimeMethylationLME(
+    modelData[[correlationVar]]
+  )
+
+  list(
+    data = modelData,
+    correlationTimeVar = correlation_time_var
+  )
+}
+
+buildCorrelationMethylationLME <- function(
+    correlationStructure = "none",
+    correlationTimeVar = NULL,
+    personVar
+) {
+  if (identical(correlationStructure, "none")) {
+    return(NULL)
+  }
+
+  if (is.null(correlationTimeVar) || !nzchar(correlationTimeVar)) {
+    stop(
+      "An internal correlation time variable is required for AR1/CAR1 models.",
+      call. = FALSE
+    )
+  }
+
+  correlation_formula <- stats::as.formula(paste(
+    "~",
+    quoteNamesMethylationGLM(correlationTimeVar),
+    "|",
+    quoteNamesMethylationGLM(personVar)
+  ))
+
+  switch(
+    correlationStructure,
+    AR1 = nlme::corAR1(form = correlation_formula),
+    CAR1 = nlme::corCAR1(form = correlation_formula),
+    stop("Unsupported correlation structure.", call. = FALSE)
+  )
+}
+
+coerceCoefficientTableMethylationLME <- function(
+    coefTable,
+    engine = "lme4"
+) {
+  coef_table <- as.data.frame(coefTable, check.names = FALSE)
+
+  if (identical(engine, "nlme")) {
+    rename_map <- c(
+      Value = "Estimate",
+      Std.Error = "Std. Error",
+      DF = "df",
+      `t-value` = "t value",
+      `p-value` = "Pr(>|t|)"
+    )
+    for (old_name in names(rename_map)) {
+      if (old_name %in% colnames(coef_table)) {
+        colnames(coef_table)[colnames(coef_table) == old_name] <- rename_map[[old_name]]
+      }
+    }
+  }
+
+  as.matrix(coef_table)
 }
 
 #' Find coefficient rows for a longitudinal phenotype effect or interaction
@@ -121,16 +309,16 @@ buildFormulaMethylationGLMM_T1T2 <- function(
 #'
 #' @keywords internal
 #' @noRd
-findCoefficientRowsMethylationGLMM_T1T2 <- function(
+findCoefficientRowsMethylationLME <- function(
     coefNames,
     phenotype,
     interactionTerm = NULL
 ) {
   normalized_names <- gsub("`", "", coefNames, fixed = TRUE)
-  phenotype_pattern <- escapeRegexMethylationGLM_T1(phenotype)
+  phenotype_pattern <- escapeRegexMethylationGLM(phenotype)
 
   if (!is.null(interactionTerm) && nzchar(interactionTerm)) {
-    interaction_pattern <- escapeRegexMethylationGLM_T1(interactionTerm)
+    interaction_pattern <- escapeRegexMethylationGLM(interactionTerm)
     matches <- grepl(
       paste0("^", phenotype_pattern, ".*:", interaction_pattern),
       normalized_names
@@ -142,7 +330,7 @@ findCoefficientRowsMethylationGLMM_T1T2 <- function(
   coefNames[matches]
 }
 
-#' Fit a single CpG-level mixed-effects model for methylationGLMM_T1T2 helpers
+#' Fit a single CpG-level mixed-effects model for methylationLME helpers
 #'
 #' @param cpg Character. CpG column name.
 #' @param data Data frame containing phenotype and beta columns.
@@ -160,13 +348,16 @@ findCoefficientRowsMethylationGLMM_T1T2 <- function(
 #'
 #' @keywords internal
 #' @noRd
-fitCpGModelMethylationGLMM_T1T2 <- function(
+fitCpGModelMethylationLME <- function(
     cpg,
     data,
     modelVars,
     personVar,
     formulaText,
-    factorVars = character(0)
+    factorVars = character(0),
+    lmeEngine = "lme4",
+    correlationStructure = "none",
+    correlationTimeVar = NULL
 ) {
   tryCatch(
     {
@@ -178,25 +369,53 @@ fitCpGModelMethylationGLMM_T1T2 <- function(
         model_data[[var]] <- as.factor(model_data[[var]])
       }
 
-      fit <- lmerTest::lmer(
-        formula = stats::as.formula(formulaText),
-        data = model_data,
-        na.action = stats::na.exclude,
-        REML = TRUE
-      )
+      if (identical(lmeEngine, "nlme")) {
+        fit <- nlme::lme(
+          fixed = stats::as.formula(formulaText),
+          random = stats::as.formula(paste("~ 1 |", quoteNamesMethylationGLM(personVar))),
+          correlation = buildCorrelationMethylationLME(
+            correlationStructure = correlationStructure,
+            correlationTimeVar = correlationTimeVar,
+            personVar = personVar
+          ),
+          data = model_data,
+          na.action = stats::na.exclude,
+          method = "REML",
+          control = nlme::lmeControl(returnObject = TRUE)
+        )
+        coef_table <- coerceCoefficientTableMethylationLME(
+          summary(fit)$tTable,
+          engine = lmeEngine
+        )
+        ranef_values <- nlme::ranef(fit)
+        fixef_values <- nlme::fixef(fit)
+      } else {
+        fit <- lmerTest::lmer(
+          formula = stats::as.formula(formulaText),
+          data = model_data,
+          na.action = stats::na.exclude,
+          REML = TRUE
+        )
+        coef_table <- coerceCoefficientTableMethylationLME(
+          summary(fit)$coefficients,
+          engine = lmeEngine
+        )
+        ranef_values <- lme4::ranef(fit)
+        fixef_values <- lme4::fixef(fit)
+      }
 
       list(
-        coef = summary(fit)$coefficients,
+        coef = coef_table,
         residuals = stats::residuals(fit),
         fitted = stats::fitted(fit),
-        ranef = lme4::ranef(fit),
-        fixef = lme4::fixef(fit)
+        ranef = ranef_values,
+        fixef = fixef_values
       )
     },
     error = function(error) {
       structure(
         list(error = conditionMessage(error)),
-        class = "dnaEPICO_methylationGLMM_T1T2_fit_error"
+        class = "dnaEPICO_methylationLME_fit_error"
       )
     }
   )
@@ -205,7 +424,7 @@ fitCpGModelMethylationGLMM_T1T2 <- function(
 #' Summarize a single CpG-level mixed-effects model fit
 #'
 #' @param cpg Character. CpG identifier.
-#' @param modelObj List returned by `fitCpGModelMethylationGLMM_T1T2()`.
+#' @param modelObj List returned by `fitCpGModelMethylationLME()`.
 #' @param phenotype Character. Phenotype variable of interest.
 #' @param interactionTerm Character or `NULL`. Optional interaction term.
 #'
@@ -217,13 +436,13 @@ fitCpGModelMethylationGLMM_T1T2 <- function(
 #'
 #' @keywords internal
 #' @noRd
-summarizeCpGFitMethylationGLMM_T1T2 <- function(
+summarizeCpGFitMethylationLME <- function(
     cpg,
     modelObj,
     phenotype,
     interactionTerm = NULL
 ) {
-  if (is.null(modelObj) || inherits(modelObj, "dnaEPICO_methylationGLMM_T1T2_fit_error")) {
+  if (is.null(modelObj) || inherits(modelObj, "dnaEPICO_methylationLME_fit_error")) {
     return(NULL)
   }
 
@@ -232,7 +451,7 @@ summarizeCpGFitMethylationGLMM_T1T2 <- function(
     return(NULL)
   }
 
-  matched_terms <- findCoefficientRowsMethylationGLMM_T1T2(
+  matched_terms <- findCoefficientRowsMethylationLME(
     coefNames = rownames(coef_table),
     phenotype = phenotype,
     interactionTerm = interactionTerm
@@ -262,6 +481,139 @@ summarizeCpGFitMethylationGLMM_T1T2 <- function(
   )
 }
 
+filterSummaryByPvalueMethylationLME <- function(
+    summaryDf,
+    pValueFilter
+) {
+  summary_df <- summaryDf
+  if (is.null(summary_df) || nrow(summary_df) == 0L) {
+    return(data.frame())
+  }
+
+  if (nrow(summary_df) > 0L && !is.na(pValueFilter)) {
+    summary_df <- summary_df[summary_df$P.value < pValueFilter, , drop = FALSE]
+  }
+  rownames(summary_df) <- NULL
+
+  summary_df
+}
+
+fitCpGModelMethylationLMEPrepared <- function(
+    cpg,
+    cpgValues,
+    modelData,
+    formulaText,
+    personVar,
+    lmeEngine = "lme4",
+    correlationStructure = "none",
+    correlationTimeVar = NULL
+) {
+  tryCatch(
+    {
+      model_data <- modelData
+      model_data$beta <- as.numeric(cpgValues)
+
+      if (identical(lmeEngine, "nlme")) {
+        fit <- nlme::lme(
+          fixed = stats::as.formula(formulaText),
+          random = stats::as.formula(paste("~ 1 |", quoteNamesMethylationGLM(personVar))),
+          correlation = buildCorrelationMethylationLME(
+            correlationStructure = correlationStructure,
+            correlationTimeVar = correlationTimeVar,
+            personVar = personVar
+          ),
+          data = model_data,
+          na.action = stats::na.exclude,
+          method = "REML",
+          control = nlme::lmeControl(returnObject = TRUE)
+        )
+        coef_table <- coerceCoefficientTableMethylationLME(
+          summary(fit)$tTable,
+          engine = lmeEngine
+        )
+        ranef_values <- nlme::ranef(fit)
+        fixef_values <- nlme::fixef(fit)
+      } else {
+        fit <- lmerTest::lmer(
+          formula = stats::as.formula(formulaText),
+          data = model_data,
+          na.action = stats::na.exclude,
+          REML = TRUE
+        )
+        coef_table <- coerceCoefficientTableMethylationLME(
+          summary(fit)$coefficients,
+          engine = lmeEngine
+        )
+        ranef_values <- lme4::ranef(fit)
+        fixef_values <- lme4::fixef(fit)
+      }
+
+      list(
+        coef = coef_table,
+        residuals = stats::residuals(fit),
+        fitted = stats::fitted(fit),
+        ranef = ranef_values,
+        fixef = fixef_values
+      )
+    },
+    error = function(error) {
+      structure(
+        list(error = conditionMessage(error)),
+        class = "dnaEPICO_methylationLME_fit_error"
+      )
+    }
+  )
+}
+
+fitMethylationLMEBatch <- function(
+    cpgBatch,
+    data,
+    modelData,
+    formulaText,
+    personVar,
+    lmeEngine = "lme4",
+    correlationStructure = "none",
+    correlationTimeVar = NULL,
+    phenotype,
+    interactionTerm = NULL
+) {
+  fits <- vector("list", length(cpgBatch))
+  names(fits) <- cpgBatch
+  summaries <- vector("list", length(cpgBatch))
+  names(summaries) <- cpgBatch
+
+  for (cpg in cpgBatch) {
+    model_obj <- fitCpGModelMethylationLMEPrepared(
+      cpg = cpg,
+      cpgValues = data[[cpg]],
+      modelData = modelData,
+      formulaText = formulaText,
+      personVar = personVar,
+      lmeEngine = lmeEngine,
+      correlationStructure = correlationStructure,
+      correlationTimeVar = correlationTimeVar
+    )
+    fits[[cpg]] <- model_obj
+    summaries[[cpg]] <- summarizeCpGFitMethylationLME(
+      cpg = cpg,
+      modelObj = model_obj,
+      phenotype = phenotype,
+      interactionTerm = interactionTerm
+    )
+  }
+
+  summaries <- Filter(Negate(is.null), summaries)
+  summary_df <- if (length(summaries) == 0L) {
+    data.frame()
+  } else {
+    out <- do.call(rbind, summaries)
+    rownames(out) <- NULL
+    out
+  }
+
+  list(fits = fits, summaries = summary_df)
+}
+
 #' Summarize phenotype values by timepoint for longitudinal methylation analyses
 #'
 #' @param data Data frame containing the longitudinal phenotype-plus-beta data.
@@ -283,8 +635,8 @@ summarizeCpGFitMethylationGLMM_T1T2 <- function(
 #' phenotypes are reported with non-missing counts and the observed levels.
 #'
 #' @examples
-#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#' timepoint_summary <- summarizeTimepointsMethylationGLMM_T1T2(
+#' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
+#' timepoint_summary <- summarizeTimepointsMethylationLME(
 #'   data = ex$preparedData$data,
 #'   timeVar = "Timepoint",
 #'   phenotypes = "score",
@@ -294,14 +646,14 @@ summarizeCpGFitMethylationGLMM_T1T2 <- function(
 #' nrow(timepoint_summary)
 #'
 #' @export
-summarizeTimepointsMethylationGLMM_T1T2 <- function(
+summarizeTimepointsMethylationLME <- function(
     data,
     timeVar = "Timepoint",
     phenotypes,
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLMM_T1T2.txt"
+    log_file = "log_methylationLME.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   phenotype_list <- splitOptionMinfiEwasWater(phenotypes, sep = ",")
@@ -359,10 +711,10 @@ summarizeTimepointsMethylationGLMM_T1T2 <- function(
   summary_df
 }
 
-#' Prepare longitudinal phenotype-plus-beta data for mixed-effects analyses
+#' Prepare longitudinal phenotype-plus-methylation data for mixed-effects analyses
 #'
 #' @param inputPheno Character. Path to the merged longitudinal phenotype-plus-
-#'   beta object created by `preprocessingPheno()`.
+#'   methylation object created by `preprocessingPheno()`.
 #' @param personVar Character. Name of the subject identifier column.
 #' @param timeVar Character. Name of the time variable.
 #' @param phenotypes Character vector or comma-separated string of phenotype
@@ -376,6 +728,8 @@ summarizeTimepointsMethylationGLMM_T1T2 <- function(
 #' @param cpgPrefix Character. Prefix used to identify methylation columns.
 #' @param cpgLimit Integer or `NA`. Maximum number of CpGs to retain. `NA`
 #'   keeps all matching CpGs.
+#' @param methylationScale Character. Methylation metric represented by the CpG
+#'   columns. One of `"beta"`, `"m"`, or `"cn"`.
 #' @param interactionTerm Character or `NULL`. Optional interaction term.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
@@ -383,25 +737,25 @@ summarizeTimepointsMethylationGLMM_T1T2 <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2_data"` containing
+#' @return A list with class `"dnaEPICO_methylationLME_data"` containing
 #'   the prepared analysis data, parsed variable selections, CpG columns,
 #'   timepoint summaries, and subject-ID diagnostics.
 #'
 #' @description
-#' Load the merged longitudinal phenotype-plus-beta object, ensure that a subject
+#' Load the merged longitudinal phenotype-plus-methylation object, ensure that a subject
 #' identifier column is available, validate the requested modeling variables,
 #' convert selected variables to factors, and return a single in-memory object
 #' for downstream mixed-effects modeling helpers.
 #'
 #' @examples
-#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#' prepared_data <- prepareMethylationGLMM_T1T2Data(
+#' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
+#' prepared_data <- prepareMethylationLMEData(
 #'   inputPheno = ex$inputPath,
 #'   personVar = "person",
 #'   timeVar = "Timepoint",
 #'   phenotypes = "score",
 #'   covariates = "sex",
-#'   factorVars = "sex,Timepoint",
+#'   factorVars = "sex",
 #'   cpgLimit = 2,
 #'   verbose = FALSE,
 #'   logs = FALSE
@@ -409,7 +763,7 @@ summarizeTimepointsMethylationGLMM_T1T2 <- function(
 #' names(prepared_data)
 #'
 #' @export
-prepareMethylationGLMM_T1T2Data <- function(
+prepareMethylationLMEData <- function(
     inputPheno,
     personVar = "person",
     timeVar = "Timepoint",
@@ -419,25 +773,29 @@ prepareMethylationGLMM_T1T2Data <- function(
     prsMap = NULL,
     cpgPrefix = "cg",
     cpgLimit = NA,
+    methylationScale = "beta",
     interactionTerm = NULL,
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLMM_T1T2.txt"
+    log_file = "log_methylationLME.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   phenotype_list <- splitOptionMinfiEwasWater(phenotypes, sep = ",")
   covariate_list <- splitOptionMinfiEwasWater(covariates, sep = ",")
   factor_list <- splitOptionMinfiEwasWater(factorVars, sep = ",")
-  prs_map <- parsePrsMapMethylationGLM_T1(prsMap)
-  cpg_limit <- normalizeOptionalNumericMethylationGLM_T1(cpgLimit)
+  prs_map <- parsePrsMapMethylationGLM(prsMap)
+  cpg_limit <- normalizeOptionalNumericMethylationGLM(cpgLimit)
+  methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
+  methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
+  methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
   analysis_data <- loadSavedObjectPreprocessingPheno(inputPheno, preferred_name = "phenoBT1T2")
 
   if (!is.data.frame(analysis_data)) {
     analysis_data <- as.data.frame(analysis_data, stringsAsFactors = FALSE)
   }
 
-  person_data <- ensurePersonColumnMethylationGLMM_T1T2(
+  person_data <- ensurePersonColumnMethylationLME(
     data = analysis_data,
     personVar = personVar
   )
@@ -495,7 +853,7 @@ prepareMethylationGLMM_T1T2Data <- function(
   }
 
   cpg_columns <- grep(
-    paste0("^", escapeRegexMethylationGLM_T1(cpgPrefix)),
+    paste0("^", escapeRegexMethylationGLM(cpgPrefix)),
     colnames(analysis_data),
     value = TRUE
   )
@@ -506,7 +864,7 @@ prepareMethylationGLMM_T1T2Data <- function(
     stop("No CpG columns were found with prefix '", cpgPrefix, "'.", call. = FALSE)
   }
 
-  timepoint_summary <- summarizeTimepointsMethylationGLMM_T1T2(
+  timepoint_summary <- summarizeTimepointsMethylationLME(
     data = analysis_data,
     timeVar = timeVar,
     phenotypes = phenotype_list,
@@ -516,7 +874,11 @@ prepareMethylationGLMM_T1T2Data <- function(
 
   log_lines <- c(
     "=======================================================================",
-    paste("Loaded longitudinal phenotype + beta data from:", inputPheno),
+    paste("Loaded longitudinal phenotype + methylation data from:", inputPheno),
+    paste("Methylation scale:                 ", methylation_label),
+    paste("Merged modeling object:            ", methylation_prefix, "*"),
+    paste("Displayed response label:          ", methylation_label),
+    "Internal response column:          beta",
     paste("Data dimensions:                  ", paste(dim(analysis_data), collapse = " x ")),
     paste("Person variable:                  ", personVar),
     paste("Time variable:                    ", timeVar),
@@ -563,6 +925,10 @@ prepareMethylationGLMM_T1T2Data <- function(
       cpgColumns = cpg_columns,
       cpgPrefix = cpgPrefix,
       cpgLimit = cpg_limit,
+      methylationScale = methylation_scale,
+      responseLabel = methylation_label,
+      methylationObjectPrefix = methylation_prefix,
+      internalResponseColumn = "beta",
       interactionTerm = resolved_interaction,
       requestedInteractionTerm = interactionTerm,
       personCreated = person_data$personCreated,
@@ -570,34 +936,39 @@ prepareMethylationGLMM_T1T2Data <- function(
       personMappingPreview = person_data$mappingPreview,
       timepointSummary = timepoint_summary
     ),
-    class = "dnaEPICO_methylationGLMM_T1T2_data"
+    class = "dnaEPICO_methylationLME_data"
   )
 }
 #' Fit CpG-wise mixed-effects models for longitudinal methylation analyses
 #'
-#' @param preparedData Object returned by `prepareMethylationGLMM_T1T2Data()`.
+#' @param preparedData Object returned by `prepareMethylationLMEData()`.
 #' @param nCores Integer. Number of worker processes to use.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded
 #'   to worker processes.
 #' @param lmeLibs Character vector or comma-separated string of package names to
 #'   check on worker processes. The default is `"lme4,lmerTest"`.
+#' @param correlationStructure Character. Residual correlation structure used
+#'   when `lmeLibs` selects `"nlme"`. One of `"none"`, `"AR1"`, or `"CAR1"`.
+#' @param correlationVar Character or `NULL`. Variable used to order repeated
+#'   observations within `personVar` for `AR1` or `CAR1` residual correlation
+#'   structures. Must be supplied explicitly for `AR1` or `CAR1`.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2_models"`
+#' @return A list with class `"dnaEPICO_methylationLME_models"`
 #'   containing fitted model lists, model formulas, and counts of failed CpG
 #'   fits.
 #'
 #' @description
 #' Fit one linear mixed-effects model per CpG for each phenotype requested in the
-#' object returned by `prepareMethylationGLMM_T1T2Data()`.
+#' object returned by `prepareMethylationLMEData()`.
 #'
 #' @examples
-#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#' model_results <- fitMethylationGLMM_T1T2Models(
+#' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
+#' model_results <- fitMethylationLMEModels(
 #'   preparedData = ex$preparedData,
 #'   nCores = 1,
 #'   verbose = FALSE,
@@ -606,15 +977,17 @@ prepareMethylationGLMM_T1T2Data <- function(
 #' names(model_results$fits)
 #'
 #' @export
-fitMethylationGLMM_T1T2Models <- function(
+fitMethylationLMEModels <- function(
     preparedData,
     nCores = 1L,
     libPath = NULL,
     lmeLibs = "lme4,lmerTest",
+    correlationStructure = "none",
+    correlationVar = NULL,
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLMM_T1T2.txt"
+    log_file = "log_methylationLME.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
 
@@ -622,17 +995,37 @@ fitMethylationGLMM_T1T2Models <- function(
     libPath <- .libPaths()
   }
 
-  lme_lib_list <- splitOptionMinfiEwasWater(lmeLibs, sep = ",")
-  if (length(lme_lib_list) == 0L) {
-    lme_lib_list <- c("lme4", "lmerTest")
+  lme_config <- resolveLmeLibrariesMethylationLME(lmeLibs)
+  lme_lib_list <- lme_config$requestedPackages
+  required_lme_lib_list <- lme_config$requiredPackages
+  lme_engine <- lme_config$engine
+  correlation_structure <- normalizeCorrelationStructureMethylationLME(correlationStructure)
+  correlation_var <- normalizeCorrelationVariableMethylationLME(
+    correlationVar = correlationVar
+  )
+  if (!identical(lme_engine, "nlme") && !identical(correlation_structure, "none")) {
+    stop(
+      "correlationStructure can only be AR1 or CAR1 when lmeLibs selects 'nlme'.",
+      call. = FALSE
+    )
+  }
+  if (!identical(correlation_structure, "none")) {
+    if (is.null(correlation_var)) {
+      stop(
+        "correlationVar must be supplied when correlationStructure is AR1 or CAR1.",
+        call. = FALSE
+      )
+    }
   }
 
   analysis_data <- preparedData$data
   cpg_columns <- preparedData$cpgColumns
   n_cores <- max(1L, as.integer(nCores))
   fits <- list()
+  summary_cache <- list()
   formulas <- stats::setNames(character(length(preparedData$phenotypes)), preparedData$phenotypes)
   failure_counts <- stats::setNames(integer(length(preparedData$phenotypes)), preparedData$phenotypes)
+  backend <- resolveParallelBackendMethylationModels(n_cores)
 
   for (phenotype in preparedData$phenotypes) {
     prs_var <- character(0)
@@ -642,10 +1035,14 @@ fitMethylationGLMM_T1T2Models <- function(
     covariates <- unique(c(preparedData$covariates, prs_var))
     model_vars <- unique(c(
       preparedData$personVar,
-      preparedData$timeVar,
       phenotype,
       covariates,
-      preparedData$interactionTerm
+      preparedData$interactionTerm,
+      if (!identical(correlation_structure, "none")) {
+        correlation_var
+      } else {
+        character(0)
+      }
     ))
     model_vars <- model_vars[!is.na(model_vars) & nzchar(model_vars)]
 
@@ -660,105 +1057,195 @@ fitMethylationGLMM_T1T2Models <- function(
       )
     }
 
-    formula_text <- buildFormulaMethylationGLMM_T1T2(
+    display_formula_text <- buildFormulaMethylationLME(
       phenotype = phenotype,
       personVar = preparedData$personVar,
-      timeVar = preparedData$timeVar,
       covariates = covariates,
-      interactionTerm = preparedData$interactionTerm
+      interactionTerm = preparedData$interactionTerm,
+      includeRandomTerm = TRUE
+    )
+    formula_text <- buildFormulaMethylationLME(
+      phenotype = phenotype,
+      personVar = preparedData$personVar,
+      covariates = covariates,
+      interactionTerm = preparedData$interactionTerm,
+      includeRandomTerm = !identical(lme_engine, "nlme")
     )
 
-    fit_worker <- fitCpGModelMethylationGLMM_T1T2
+    base_model_data <- analysis_data[, model_vars, drop = FALSE]
     factor_vars <- preparedData$factorVars
     person_var <- preparedData$personVar
-
-    if (n_cores > 1L && length(cpg_columns) > 1L) {
-      cluster_size <- min(n_cores, length(cpg_columns))
-      cl <- parallel::makeCluster(cluster_size)
-      on.exit(parallel::stopCluster(cl), add = TRUE)
-
-      parallel::clusterExport(
-        cl,
-        varlist = c(
-          "analysis_data",
-          "model_vars",
-          "person_var",
-          "formula_text",
-          "factor_vars",
-          "fit_worker",
-          "libPath",
-          "lme_lib_list"
-        ),
-        envir = environment()
+    base_model_data[[person_var]] <- as.factor(base_model_data[[person_var]])
+    for (var in intersect(factor_vars, colnames(base_model_data))) {
+      base_model_data[[var]] <- as.factor(base_model_data[[var]])
+    }
+    correlation_time_var <- NULL
+    if (!identical(correlation_structure, "none")) {
+      correlation_data <- addCorrelationTimeVariableMethylationLME(
+        modelData = base_model_data,
+        correlationVar = correlation_var
       )
+      base_model_data <- correlation_data$data
+      correlation_time_var <- correlation_data$correlationTimeVar
+    }
+    cpg_batches <- chunkCpGColumnsMethylationModels(
+      cpgColumns = cpg_columns,
+      nCores = n_cores,
+      batchesPerCore = 8L
+    )
+    batch_worker <- fitMethylationLMEBatch
+    resolved_interaction <- preparedData$interactionTerm
 
-      parallel::clusterEvalQ(
-        cl,
-        {
-          if (!is.null(libPath)) {
-            .libPaths(unique(c(libPath, .libPaths())))
+    if (!identical(backend, "serial") && length(cpg_batches) > 1L) {
+      cluster_size <- min(n_cores, length(cpg_batches))
+
+      if (identical(backend, "fork")) {
+        batch_results <- parallel::mclapply(
+          cpg_batches,
+          function(batch) {
+            validateWorkerPackagesMethylationModels(
+              libPath = libPath,
+              packages = required_lme_lib_list
+            )
+            batch_worker(
+              cpgBatch = batch,
+              data = analysis_data,
+              modelData = base_model_data,
+              formulaText = formula_text,
+              personVar = person_var,
+              lmeEngine = lme_engine,
+              correlationStructure = correlation_structure,
+              correlationTimeVar = correlation_time_var,
+              phenotype = phenotype,
+              interactionTerm = resolved_interaction
+            )
+          },
+          mc.cores = cluster_size,
+          mc.preschedule = FALSE
+        )
+      } else {
+        cl <- makePsockClusterMethylationModels(cluster_size)
+        batch_results <- tryCatch(
+          {
+            parallel::clusterExport(
+              cl,
+              varlist = c(
+                "analysis_data",
+                "base_model_data",
+                "formula_text",
+                "phenotype",
+                "resolved_interaction",
+                "person_var",
+                "lme_engine",
+                "correlation_structure",
+                "correlation_time_var",
+                "batch_worker",
+                "libPath",
+                "required_lme_lib_list",
+                "validateWorkerPackagesMethylationModels",
+                "fitCpGModelMethylationLMEPrepared",
+                "buildCorrelationMethylationLME",
+                "coerceCoefficientTableMethylationLME",
+                "summarizeCpGFitMethylationLME",
+                "findCoefficientRowsMethylationLME",
+                "quoteNamesMethylationGLM",
+                "escapeRegexMethylationGLM"
+              ),
+              envir = environment()
+            )
+
+            parallel::clusterEvalQ(
+              cl,
+              validateWorkerPackagesMethylationModels(
+                libPath = libPath,
+                packages = required_lme_lib_list
+              )
+            )
+
+            parallel::parLapplyLB(
+              cl,
+              cpg_batches,
+              function(batch) {
+                batch_worker(
+                  cpgBatch = batch,
+                  data = analysis_data,
+                  modelData = base_model_data,
+                  formulaText = formula_text,
+                  personVar = person_var,
+                  lmeEngine = lme_engine,
+                  correlationStructure = correlation_structure,
+                  correlationTimeVar = correlation_time_var,
+                  phenotype = phenotype,
+                  interactionTerm = resolved_interaction
+                )
+              }
+            )
+          },
+          finally = {
+            parallel::stopCluster(cl)
           }
-
-          for (pkg in lme_lib_list) {
-            if (!requireNamespace(pkg, quietly = TRUE)) {
-              stop("Package not installed: ", pkg, call. = FALSE)
-            }
-          }
-
-          NULL
-        }
-      )
-
-      fit_list <- parallel::parLapply(
-        cl,
-        cpg_columns,
-        function(cpg) {
-          fit_worker(
-            cpg = cpg,
-            data = analysis_data,
-            modelVars = model_vars,
-            personVar = person_var,
-            formulaText = formula_text,
-            factorVars = factor_vars
-          )
-        }
-      )
-      parallel::stopCluster(cl)
-      on.exit(NULL, add = FALSE)
+        )
+      }
     } else {
-      fit_list <- lapply(
-        cpg_columns,
-        function(cpg) {
-          fit_worker(
-            cpg = cpg,
+      validateWorkerPackagesMethylationModels(
+        libPath = libPath,
+        packages = required_lme_lib_list
+      )
+      batch_results <- lapply(
+        cpg_batches,
+        function(batch) {
+          batch_worker(
+            cpgBatch = batch,
             data = analysis_data,
-            modelVars = model_vars,
-            personVar = person_var,
+            modelData = base_model_data,
             formulaText = formula_text,
-            factorVars = factor_vars
+            personVar = person_var,
+            lmeEngine = lme_engine,
+            correlationStructure = correlation_structure,
+            correlationTimeVar = correlation_time_var,
+            phenotype = phenotype,
+            interactionTerm = resolved_interaction
           )
         }
       )
     }
 
-    names(fit_list) <- cpg_columns
+    combined_results <- combineFitBatchResultsMethylationModels(
+      batchResults = batch_results,
+      cpgColumns = cpg_columns
+    )
+    fit_list <- combined_results$fits
+    phenotype_summary_cache <- filterSummaryByPvalueMethylationLME(
+      summaryDf = combined_results$summaries,
+      pValueFilter = NA_real_
+    )
     failures <- vapply(
       fit_list,
-      function(x) inherits(x, "dnaEPICO_methylationGLMM_T1T2_fit_error"),
+      function(x) inherits(x, "dnaEPICO_methylationLME_fit_error"),
       logical(1)
     )
 
     fits[[phenotype]] <- fit_list
-    formulas[[phenotype]] <- formula_text
+    summary_cache[[phenotype]] <- phenotype_summary_cache
+    formulas[[phenotype]] <- display_formula_text
     failure_counts[[phenotype]] <- sum(failures)
 
     emitLogMinfiEwasWater(
       c(
         "=======================================================================",
         paste("Fitted phenotype:            ", phenotype),
-        paste("Formula:                     ", formula_text),
+        paste("Formula:                     ", display_formula_text),
+        paste("Correlation structure:       ", correlation_structure),
+        paste(
+          "Correlation variable:        ",
+          if (identical(correlation_structure, "none")) "None" else correlation_var
+        ),
         paste("CpGs attempted:              ", length(cpg_columns)),
         paste("Failed CpG fits:             ", failure_counts[[phenotype]]),
+        paste("Parallel backend:            ", backend),
+        paste("Fit batches:                 ", length(cpg_batches)),
+        paste("Fit batch size:              ", if (length(cpg_batches) == 0L) 0L else max(vapply(cpg_batches, length, integer(1)))),
+        paste("Fit-time summary rows cached:", nrow(phenotype_summary_cache)),
         "======================================================================="
       ),
       verbose = verbose,
@@ -769,24 +1256,38 @@ fitMethylationGLMM_T1T2Models <- function(
   structure(
     list(
       fits = fits,
+      summaryCache = summary_cache,
       formulas = formulas,
       phenotypes = names(fits),
       failureCounts = failure_counts,
       settings = list(
         nCores = n_cores,
+        parallelBackend = backend,
+        fitBatchCount = length(chunkCpGColumnsMethylationModels(cpg_columns, n_cores, 8L)),
         libPath = libPath,
         lmeLibs = lme_lib_list,
+        correlationStructure = correlation_structure,
+        correlationVar = if (identical(correlation_structure, "none")) {
+          NULL
+        } else {
+          correlation_var
+        },
+        methylationScale = preparedData$methylationScale,
+        methylationObjectPrefix = preparedData$methylationObjectPrefix,
+        responseLabel = preparedData$responseLabel,
+        internalResponseColumn = preparedData$internalResponseColumn,
         interactionTerm = preparedData$interactionTerm
-      )
+      ),
+      responseLabel = preparedData$responseLabel
     ),
-    class = "dnaEPICO_methylationGLMM_T1T2_models"
+    class = "dnaEPICO_methylationLME_models"
   )
 }
 
 #' Summarize CpG-wise mixed-effects model fits for longitudinal analyses
 #'
-#' @param modelResults Object returned by `fitMethylationGLMM_T1T2Models()`.
-#' @param preparedData Object returned by `prepareMethylationGLMM_T1T2Data()`.
+#' @param modelResults Object returned by `fitMethylationLMEModels()`.
+#' @param preparedData Object returned by `prepareMethylationLMEData()`.
 #' @param summaryPval Numeric or `NA`. Optional p-value filter applied to the
 #'   returned summary tables. `NA` keeps all rows.
 #' @param nCores Integer. Number of worker processes to use while extracting
@@ -799,16 +1300,16 @@ fitMethylationGLMM_T1T2Models <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2_summaries"`
+#' @return A list with class `"dnaEPICO_methylationLME_summaries"`
 #'   containing one CpG-level summary data frame per phenotype.
 #'
 #' @description
 #' Extract phenotype-specific fixed-effect tables from the fitted mixed-effects
-#' model object returned by `fitMethylationGLMM_T1T2Models()`.
+#' model object returned by `fitMethylationLMEModels()`.
 #'
 #' @examples
-#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#' summary_results <- summarizeMethylationGLMM_T1T2Models(
+#' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
+#' summary_results <- summarizeMethylationLMEModels(
 #'   modelResults = ex$modelResults,
 #'   preparedData = ex$preparedData,
 #'   summaryPval = NA,
@@ -819,7 +1320,7 @@ fitMethylationGLMM_T1T2Models <- function(
 #' names(summary_results$summaries)
 #'
 #' @export
-summarizeMethylationGLMM_T1T2Models <- function(
+summarizeMethylationLMEModels <- function(
     modelResults,
     preparedData,
     summaryPval = NA,
@@ -828,15 +1329,44 @@ summarizeMethylationGLMM_T1T2Models <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLMM_T1T2.txt"
+    log_file = "log_methylationLME.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
-  p_value_filter <- normalizeOptionalNumericMethylationGLM_T1(summaryPval)
-  chunk_size <- normalizeChunkSizeMethylationGLM_T1(chunkSize)
+  p_value_filter <- normalizeOptionalNumericMethylationGLM(summaryPval)
+  chunk_size <- normalizeChunkSizeMethylationGLM(chunkSize)
   n_cores <- max(1L, as.integer(nCores))
   summaries <- list()
 
   for (phenotype in names(modelResults$fits)) {
+    if (
+      !is.null(modelResults$summaryCache) &&
+        !is.null(modelResults$summaryCache[[phenotype]])
+    ) {
+      summary_df <- filterSummaryByPvalueMethylationLME(
+        summaryDf = modelResults$summaryCache[[phenotype]],
+        pValueFilter = p_value_filter
+      )
+      summaries[[phenotype]] <- summary_df
+
+      emitLogMinfiEwasWater(
+        c(
+          "=======================================================================",
+          paste("Summarized phenotype:        ", phenotype),
+          paste("LME summary rows returned:   ", nrow(summary_df)),
+          "Summary source:              fit-time cache",
+          if (is.na(p_value_filter)) {
+            "P-value filter:              none"
+          } else {
+            paste("P-value filter:              ", p_value_filter)
+          },
+          "======================================================================="
+        ),
+        verbose = verbose,
+        log_path = log_path
+      )
+      next
+    }
+
     fit_list <- modelResults$fits[[phenotype]]
     cpg_names <- names(fit_list)
 
@@ -847,7 +1377,7 @@ summarizeMethylationGLMM_T1T2Models <- function(
     local_chunk_size <- max(1L, as.integer(local_chunk_size))
     cpg_chunks <- split(cpg_names, ceiling(seq_along(cpg_names) / local_chunk_size))
 
-    summary_worker <- summarizeCpGFitMethylationGLMM_T1T2
+    summary_worker <- summarizeCpGFitMethylationLME
     resolved_interaction <- preparedData$interactionTerm
 
     if (n_cores > 1L && length(cpg_chunks) > 1L) {
@@ -957,13 +1487,13 @@ summarizeMethylationGLMM_T1T2Models <- function(
         interactionTerm = preparedData$interactionTerm
       )
     ),
-    class = "dnaEPICO_methylationGLMM_T1T2_summaries"
+    class = "dnaEPICO_methylationLME_summaries"
   )
 }
 
 #' Collect significant longitudinal model terms from fitted mixed-effects models
 #'
-#' @param modelResults Object returned by `fitMethylationGLMM_T1T2Models()`.
+#' @param modelResults Object returned by `fitMethylationLMEModels()`.
 #' @param pvalThreshold Numeric. Threshold applied to the extracted phenotype or
 #'   interaction p-values.
 #' @param interactionTerm Character or `NULL`. Optional interaction term. When
@@ -974,7 +1504,7 @@ summarizeMethylationGLMM_T1T2Models <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2_significant"`
+#' @return A list with class `"dnaEPICO_methylationLME_significant"`
 #'   containing the retained coefficient tables for each phenotype.
 #'
 #' @description
@@ -982,8 +1512,8 @@ summarizeMethylationGLMM_T1T2Models <- function(
 #' requested interaction p-value passes the chosen threshold.
 #'
 #' @examples
-#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#' significant_hits <- collectSignificantInteractionsMethylationGLMM_T1T2(
+#' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
+#' significant_hits <- collectSignificantInteractionsMethylationLME(
 #'   modelResults = ex$modelResults,
 #'   pvalThreshold = 1,
 #'   verbose = FALSE,
@@ -992,14 +1522,14 @@ summarizeMethylationGLMM_T1T2Models <- function(
 #' names(significant_hits)
 #'
 #' @export
-collectSignificantInteractionsMethylationGLMM_T1T2 <- function(
+collectSignificantInteractionsMethylationLME <- function(
     modelResults,
     pvalThreshold = 0.05,
     interactionTerm = NULL,
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLMM_T1T2.txt"
+    log_file = "log_methylationLME.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   threshold <- as.numeric(pvalThreshold[[1L]])
@@ -1008,10 +1538,36 @@ collectSignificantInteractionsMethylationGLMM_T1T2 <- function(
   for (phenotype in names(modelResults$fits)) {
     fit_list <- modelResults$fits[[phenotype]]
     phenotype_hits <- list()
+    if (
+      !is.null(modelResults$summaryCache) &&
+        !is.null(modelResults$summaryCache[[phenotype]]) &&
+        optionalTermMatchesMethylationModels(
+          requested = interactionTerm,
+          cached = modelResults$settings$interactionTerm
+        )
+    ) {
+      cached_summary <- modelResults$summaryCache[[phenotype]]
+      if (nrow(cached_summary) > 0L && !is.na(threshold)) {
+        hit_cpgs <- unique(cached_summary$CpG[cached_summary$P.value < threshold])
+        hit_cpgs <- hit_cpgs[!is.na(hit_cpgs) & hit_cpgs %in% names(fit_list)]
+        for (cpg in hit_cpgs) {
+          model_obj <- fit_list[[cpg]]
+          if (is.null(model_obj) || inherits(model_obj, "dnaEPICO_methylationLME_fit_error")) {
+            next
+          }
+          if (!is.null(model_obj$coef)) {
+            phenotype_hits[[cpg]] <- as.data.frame(model_obj$coef)
+          }
+        }
+      }
+
+      retained[[phenotype]] <- phenotype_hits
+      next
+    }
 
     for (cpg in names(fit_list)) {
       model_obj <- fit_list[[cpg]]
-      if (is.null(model_obj) || inherits(model_obj, "dnaEPICO_methylationGLMM_T1T2_fit_error")) {
+      if (is.null(model_obj) || inherits(model_obj, "dnaEPICO_methylationLME_fit_error")) {
         next
       }
 
@@ -1020,7 +1576,7 @@ collectSignificantInteractionsMethylationGLMM_T1T2 <- function(
         next
       }
 
-      matched_rows <- findCoefficientRowsMethylationGLMM_T1T2(
+      matched_rows <- findCoefficientRowsMethylationLME(
         coefNames = rownames(coef_table),
         phenotype = phenotype,
         interactionTerm = interactionTerm
@@ -1050,12 +1606,12 @@ collectSignificantInteractionsMethylationGLMM_T1T2 <- function(
     log_path = log_path
   )
 
-  structure(retained, class = "dnaEPICO_methylationGLMM_T1T2_significant")
+  structure(retained, class = "dnaEPICO_methylationLME_significant")
 }
 #' Plot longitudinal mixed-effects model diagnostics
 #'
-#' @param modelSummaries Object returned by `summarizeMethylationGLMM_T1T2Models()`.
-#' @param preparedData Object returned by `prepareMethylationGLMM_T1T2Data()`.
+#' @param modelSummaries Object returned by `summarizeMethylationLMEModels()`.
+#' @param preparedData Object returned by `prepareMethylationLMEData()`.
 #' @param fdrThreshold Numeric. False-discovery-rate threshold used to highlight
 #'   CpGs in the diagnostic plots.
 #' @param padjmethod Character. P-value adjustment method passed to
@@ -1074,17 +1630,17 @@ collectSignificantInteractionsMethylationGLMM_T1T2 <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2_diagnostic_plots"`
+#' @return A list with class `"dnaEPICO_methylationLME_diagnostic_plots"`
 #'   containing the generated `ggplot2` objects, genomic inflation factors, and
 #'   any saved TIFF file paths.
 #'
 #' @description
 #' Create Q-Q and standard-error diagnostic plots from the mixed-effects summary
-#' tables returned by `summarizeMethylationGLMM_T1T2Models()`.
+#' tables returned by `summarizeMethylationLMEModels()`.
 #'
 #' @examples
-#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#' diagnostic_plots <- plotMethylationGLMM_T1T2Diagnostics(
+#' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
+#' diagnostic_plots <- plotMethylationLMEDiagnostics(
 #'   modelSummaries = ex$modelSummaries,
 #'   preparedData = ex$preparedData,
 #'   display = FALSE,
@@ -1094,7 +1650,7 @@ collectSignificantInteractionsMethylationGLMM_T1T2 <- function(
 #' names(diagnostic_plots$plots)
 #'
 #' @export
-plotMethylationGLMM_T1T2Diagnostics <- function(
+plotMethylationLMEDiagnostics <- function(
     modelSummaries,
     preparedData,
     fdrThreshold = 0.05,
@@ -1107,7 +1663,7 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLMM_T1T2.txt"
+    log_file = "log_methylationLME.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   summary_list <- modelSummaries$summaries
@@ -1261,14 +1817,14 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
       inflationFactors = inflation_factors,
       files = saved_files
     ),
-    class = "dnaEPICO_methylationGLMM_T1T2_diagnostic_plots"
+    class = "dnaEPICO_methylationLME_diagnostic_plots"
   )
 }
 
 #' Annotate longitudinal mixed-effects summary tables with array annotation metadata
 #'
 #' @param modelSummaries Object returned by
-#'   `summarizeMethylationGLMM_T1T2Models()` or a named list of summary data
+#'   `summarizeMethylationLMEModels()` or a named list of summary data
 #'   frames.
 #' @param annotationObject Character package/object name, annotation data frame,
 #'   or annotation object understood by `minfi::getAnnotation()`.
@@ -1280,7 +1836,7 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2_annotation"`
+#' @return A list with class `"dnaEPICO_methylationLME_annotation"`
 #'   containing the annotated summary table and any requested annotation columns
 #'   that were unavailable in the chosen annotation object.
 #'
@@ -1289,8 +1845,8 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
 #' metadata and return a single annotated result table.
 #'
 #' @examples
-#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#' annotation_data <- annotateMethylationGLMM_T1T2Summaries(
+#' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
+#' annotation_data <- annotateMethylationLMESummaries(
 #'   modelSummaries = ex$modelSummaries,
 #'   annotationObject = ex$annotationData,
 #'   annotationCols = "Name,chr,pos",
@@ -1300,7 +1856,7 @@ plotMethylationGLMM_T1T2Diagnostics <- function(
 #' names(annotation_data)
 #'
 #' @export
-annotateMethylationGLMM_T1T2Summaries <- function(
+annotateMethylationLMESummaries <- function(
     modelSummaries,
     annotationObject,
     annotationCols = c(
@@ -1315,7 +1871,7 @@ annotateMethylationGLMM_T1T2Summaries <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLMM_T1T2.txt"
+    log_file = "log_methylationLME.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   summary_list <- modelSummaries
@@ -1324,7 +1880,7 @@ annotateMethylationGLMM_T1T2Summaries <- function(
   }
 
   annotation_cols <- splitOptionMinfiEwasWater(annotationCols, sep = ",")
-  annotation_df <- coerceAnnotationDataMethylationGLM_T1(annotationObject)
+  annotation_df <- coerceAnnotationDataMethylationGLM(annotationObject)
 
   cleaned_summaries <- lapply(
     names(summary_list),
@@ -1346,7 +1902,7 @@ annotateMethylationGLMM_T1T2Summaries <- function(
           interaction_suffix <- clean_term
           if (startsWith(clean_term, paste0(model_name, "."))) {
             interaction_suffix <- sub(
-              paste0("^", escapeRegexMethylationGLM_T1(model_name), "\\."),
+              paste0("^", escapeRegexMethylationGLM(model_name), "\\."),
               "",
               clean_term
             )
@@ -1404,18 +1960,18 @@ annotateMethylationGLMM_T1T2Summaries <- function(
       annotationColumnsUsed = available_annotation_cols,
       missingAnnotationCols = missing_annotation_cols
     ),
-    class = "dnaEPICO_methylationGLMM_T1T2_annotation"
+    class = "dnaEPICO_methylationLME_annotation"
   )
 }
 
 #' Write optional disk outputs for longitudinal mixed-effects analyses
 #'
-#' @param modelResults Object returned by `fitMethylationGLMM_T1T2Models()`.
-#' @param modelSummaries Object returned by `summarizeMethylationGLMM_T1T2Models()`.
+#' @param modelResults Object returned by `fitMethylationLMEModels()`.
+#' @param modelSummaries Object returned by `summarizeMethylationLMEModels()`.
 #' @param annotatedResults Object returned by
-#'   `annotateMethylationGLMM_T1T2Summaries()` or a compatible data frame.
+#'   `annotateMethylationLMESummaries()` or a compatible data frame.
 #' @param significantInteractions Object returned by
-#'   `collectSignificantInteractionsMethylationGLMM_T1T2()` or `NULL`.
+#'   `collectSignificantInteractionsMethylationLME()` or `NULL`.
 #' @param outputRData Character. Directory used for serialized model and summary
 #'   outputs.
 #' @param summaryTxtDir Character. Directory used for tab-delimited summary
@@ -1433,7 +1989,7 @@ annotateMethylationGLMM_T1T2Summaries <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLMM_T1T2_paths"`
+#' @return A list with class `"dnaEPICO_methylationLME_paths"`
 #'   containing the paths of the files written to disk.
 #'
 #' @description
@@ -1441,21 +1997,21 @@ annotateMethylationGLMM_T1T2Summaries <- function(
 #' tables, and annotated results from the longitudinal mixed-effects workflow.
 #'
 #' @examples
-#' ex <- dnaEPICO:::exampleMethylationGLMMStateDnaEpico()
-#' annotation_data <- annotateMethylationGLMM_T1T2Summaries(
+#' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
+#' annotation_data <- annotateMethylationLMESummaries(
 #'   modelSummaries = ex$modelSummaries,
 #'   annotationObject = ex$annotationData,
 #'   annotationCols = "Name,chr,pos",
 #'   verbose = FALSE,
 #'   logs = FALSE
 #' )
-#' significant_hits <- collectSignificantInteractionsMethylationGLMM_T1T2(
+#' significant_hits <- collectSignificantInteractionsMethylationLME(
 #'   modelResults = ex$modelResults,
 #'   pvalThreshold = 1,
 #'   verbose = FALSE,
 #'   logs = FALSE
 #' )
-#' output_paths <- writeMethylationGLMM_T1T2Outputs(
+#' output_paths <- writeMethylationLMEOutputs(
 #'   modelResults = ex$modelResults,
 #'   modelSummaries = ex$modelSummaries,
 #'   annotatedResults = annotation_data,
@@ -1472,7 +2028,7 @@ annotateMethylationGLMM_T1T2Summaries <- function(
 #' names(output_paths)
 #'
 #' @export
-writeMethylationGLMM_T1T2Outputs <- function(
+writeMethylationLMEOutputs <- function(
     modelResults,
     modelSummaries,
     annotatedResults,
@@ -1486,7 +2042,7 @@ writeMethylationGLMM_T1T2Outputs <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLMM_T1T2.txt"
+    log_file = "log_methylationLME.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   dir.create(outputRData, recursive = TRUE, showWarnings = FALSE)
@@ -1551,14 +2107,14 @@ writeMethylationGLMM_T1T2Outputs <- function(
     annotated_df <- annotatedResults$data
   }
   annotated_file <- file.path(annotatedLMEOut, "annotatedLME.xlsx")
-  dictionary <- buildAnnotatedWorkbookDictionaryMethylationGLM_T1(
+  dictionary <- buildAnnotatedWorkbookDictionaryMethylationGLM(
     columns = colnames(annotated_df),
     modelDescription = "Pvalue from LME model",
     formulaText = modelResults$formulas,
     modelLabel = "LME",
-    responseLabel = inferMethylationValueLabelMethylationGLM_T1(modelResults)
+    responseLabel = inferMethylationValueLabelMethylationGLM(modelResults)
   )
-  writeAnnotatedWorkbookMethylationGLM_T1(
+  writeAnnotatedWorkbookMethylationGLM(
     annotated_df = annotated_df,
     file = annotated_file,
     resultSheet = "annotatedLME",
@@ -1595,6 +2151,6 @@ writeMethylationGLMM_T1T2Outputs <- function(
       significantInteractionFiles = significant_files,
       annotatedLME = annotated_file
     ),
-    class = "dnaEPICO_methylationGLMM_T1T2_paths"
+    class = "dnaEPICO_methylationLME_paths"
   )
 }

@@ -10,8 +10,8 @@ prepareDnamReportInputs(
   preprocessingDir = file.path("figures", "preprocessingMinfiEwasWater", "qc"),
   postprocessingDir = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
   svaDir = file.path("figures", "svaEnmix"),
-  glmDir = file.path("figures", "methylationGLM_T1"),
-  glmmDir = file.path("figures", "methylationGLMM_T1T2"),
+  glmDir = file.path("figures", "methylationGLM"),
+  lmeDir = file.path("figures", "methylationLME"),
   figDir = file.path(outputDir, "assets", "figures"),
   verbose = FALSE,
   logs = FALSE,
@@ -33,7 +33,7 @@ figures.}
 
 \item{glmDir}{Character. Directory containing GLM figures.}
 
-\item{glmmDir}{Character. Directory containing GLMM figures.}
+\item{lmeDir}{Character. Directory containing LME figures.}
 
 \item{figDir}{Character. Directory used for generated report figure assets.}
 

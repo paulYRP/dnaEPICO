@@ -26,8 +26,8 @@ The main high-level entry points are:
 \item \code{\link[=preprocessingMinfiEwasWater]{preprocessingMinfiEwasWater()}}
 \item \code{\link[=svaEnmix]{svaEnmix()}}
 \item \code{\link[=preprocessingPheno]{preprocessingPheno()}}
-\item \code{\link[=methylationGLM_T1]{methylationGLM_T1()}}
-\item \code{\link[=methylationGLMM_T1T2]{methylationGLMM_T1T2()}}
+\item \code{\link[=methylationGLM]{methylationGLM()}}
+\item \code{\link[=methylationLME]{methylationLME()}}
 \item \code{\link[=dnamReport]{dnamReport()}}
 }
 }

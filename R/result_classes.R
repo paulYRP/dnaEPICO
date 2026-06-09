@@ -82,63 +82,63 @@ NULL
 #' @docType class
 NULL
 
-#' Result class returned by methylationGLM_T1
+#' Result class returned by methylationGLM
 #'
-#' Objects of class `"dnaEPICO_methylationGLM_T1"` are list-based results
-#' returned by [methylationGLM_T1()]. They collect the prepared analysis table,
+#' Objects of class `"dnaEPICO_methylationGLM"` are list-based results
+#' returned by [methylationGLM()]. They collect the prepared analysis table,
 #' fitted models, summaries, diagnostics, annotations, and optional saved files.
 #'
 #' @section Structure:
 #' \describe{
-#'   \item{preparedData}{Object returned by [prepareMethylationGLM_T1Data()].}
+#'   \item{preparedData}{Object returned by [prepareMethylationGLMData()].}
 #'   \item{distributionPlots}{Object returned by
-#'   [plotMethylationGLM_T1Distributions()].}
-#'   \item{modelFits}{Object returned by [fitMethylationGLM_T1Models()].}
+#'   [plotMethylationGLMDistributions()].}
+#'   \item{modelFits}{Object returned by [fitMethylationGLMModels()].}
 #'   \item{modelSummaries}{Object returned by
-#'   [summarizeMethylationGLM_T1Models()].}
+#'   [summarizeMethylationGLMModels()].}
 #'   \item{significantCpGs}{Object returned by
-#'   [collectSignificantCpGsMethylationGLM_T1()].}
+#'   [collectSignificantCpGsMethylationGLM()].}
 #'   \item{diagnosticPlots}{Object returned by
-#'   [plotMethylationGLM_T1Diagnostics()].}
+#'   [plotMethylationGLMDiagnostics()].}
 #'   \item{annotation}{Object returned by
-#'   [annotateMethylationGLM_T1Summaries()].}
-#'   \item{savedFiles}{Object returned by [writeMethylationGLM_T1Outputs()] when
+#'   [annotateMethylationGLMSummaries()].}
+#'   \item{savedFiles}{Object returned by [writeMethylationGLMOutputs()] when
 #'   `saveOutputs = TRUE`, otherwise `NULL`.}
 #' }
 #'
-#' @seealso [methylationGLM_T1()]
-#' @name dnaEPICO_methylationGLM_T1-class
-#' @aliases dnaEPICO_methylationGLM_T1
+#' @seealso [methylationGLM()]
+#' @name dnaEPICO_methylationGLM-class
+#' @aliases dnaEPICO_methylationGLM
 #' @docType class
 NULL
 
-#' Result class returned by methylationGLMM_T1T2
+#' Result class returned by methylationLME
 #'
-#' Objects of class `"dnaEPICO_methylationGLMM_T1T2"` are list-based results
-#' returned by [methylationGLMM_T1T2()]. They collect the prepared longitudinal
+#' Objects of class `"dnaEPICO_methylationLME"` are list-based results
+#' returned by [methylationLME()]. They collect the prepared longitudinal
 #' analysis table, fitted mixed models, summaries, diagnostics, annotations, and
 #' optional saved files.
 #'
 #' @section Structure:
 #' \describe{
-#'   \item{preparedData}{Object returned by [prepareMethylationGLMM_T1T2Data()].}
-#'   \item{modelFits}{Object returned by [fitMethylationGLMM_T1T2Models()].}
+#'   \item{preparedData}{Object returned by [prepareMethylationLMEData()].}
+#'   \item{modelFits}{Object returned by [fitMethylationLMEModels()].}
 #'   \item{modelSummaries}{Object returned by
-#'   [summarizeMethylationGLMM_T1T2Models()].}
+#'   [summarizeMethylationLMEModels()].}
 #'   \item{significantInteractions}{Object returned by
-#'   [collectSignificantInteractionsMethylationGLMM_T1T2()].}
+#'   [collectSignificantInteractionsMethylationLME()].}
 #'   \item{diagnosticPlots}{Object returned by
-#'   [plotMethylationGLMM_T1T2Diagnostics()].}
+#'   [plotMethylationLMEDiagnostics()].}
 #'   \item{annotation}{Object returned by
-#'   [annotateMethylationGLMM_T1T2Summaries()].}
+#'   [annotateMethylationLMESummaries()].}
 #'   \item{savedFiles}{Object returned by
-#'   [writeMethylationGLMM_T1T2Outputs()] when `saveOutputs = TRUE`, otherwise
+#'   [writeMethylationLMEOutputs()] when `saveOutputs = TRUE`, otherwise
 #'   `NULL`.}
 #' }
 #'
-#' @seealso [methylationGLMM_T1T2()]
-#' @name dnaEPICO_methylationGLMM_T1T2-class
-#' @aliases dnaEPICO_methylationGLMM_T1T2
+#' @seealso [methylationLME()]
+#' @name dnaEPICO_methylationLME-class
+#' @aliases dnaEPICO_methylationLME
 #' @docType class
 NULL
 

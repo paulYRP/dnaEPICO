@@ -16,6 +16,7 @@ preprocessingPheno(
   timeVar = "Timepoint",
   timepoints = "1,2",
   combineTimepoints = "1,2",
+  methylationScale = "beta",
   outputPheno = "data/preprocessingPheno",
   outputRData = "rData/preprocessingPheno/metrics",
   outputRDataMerge = "rData/preprocessingPheno/mergeData",
@@ -53,7 +54,12 @@ labels.}
 retain and split into separate in-memory subsets.}
 
 \item{combineTimepoints}{Character vector or comma-separated string of
-timepoints to combine into the longitudinal phenotype-plus-beta object.}
+timepoints to combine into the longitudinal phenotype-plus-methylation
+object.}
+
+\item{methylationScale}{Character. Methylation metric to use in merged
+modeling tables. One of \code{"beta"}, \code{"m"}, or \code{"cn"}. The default is
+\code{"beta"}. Beta values are always used for Clock Foundation exports.}
 
 \item{outputPheno}{Character. Directory used for saved phenotype CSV files
 when \code{saveOutputs = TRUE}.}
@@ -62,7 +68,7 @@ when \code{saveOutputs = TRUE}.}
 when \code{saveOutputs = TRUE}.}
 
 \item{outputRDataMerge}{Character. Directory used for saved merged
-phenotype-plus-beta \code{.RData} files when \code{saveOutputs = TRUE}.}
+phenotype-plus-methylation \code{.RData} files when \code{saveOutputs = TRUE}.}
 
 \item{sexColumn}{Character. Name of the phenotype sex column used when
 building Clock Foundation exports.}
@@ -93,7 +99,7 @@ containing the beta-value, M-value, and copy-number matrices loaded from
 containing per-timepoint phenotype tables and methylation matrices.}
 \item{combinedData}{Object returned by
 \code{\link[=combineTimepointsPreprocessingPheno]{combineTimepointsPreprocessingPheno()}} containing the merged longitudinal
-phenotype-plus-beta object and the timepoint combination metadata.}
+phenotype-plus-methylation object and the timepoint combination metadata.}
 \item{clockFoundation}{Object returned by
 \code{\link[=buildClockFoundationInputsPreprocessingPheno]{buildClockFoundationInputsPreprocessingPheno()}} containing the beta table
 and phenotype table prepared for Clock Foundation export.}
@@ -107,7 +113,8 @@ See \linkS4class{dnaEPICO_preprocessingPheno} for a class-level overview.
 \description{
 Read the phenotype table and the preprocessed beta, M-value, and copy-number
 matrices; align them by sample identifier; split them by timepoint; prepare
-combined longitudinal objects; and build Clock Foundation export tables. The
+combined longitudinal objects for a selected modeling scale; and build Clock
+Foundation export tables. The
 function returns a structured in-memory result, while legacy files are
 written only when \code{saveOutputs = TRUE}.
 }

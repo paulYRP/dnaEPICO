@@ -27,6 +27,8 @@ create_preprocessing_pheno_example <- function(path) {
     list(
         pheno = pheno,
         beta = beta,
+        m = m,
+        cn = cn,
         phenoFile = pheno_file,
         betaPath = beta_path,
         mPath = m_path,
@@ -103,4 +105,68 @@ test_that("preprocessingPheno can write legacy outputs and logs on request", {
     expect_true(file.exists(file.path(tmp, "rData", "preprocessingPheno", "mergeData", "phenoBetaT1.RData")))
     expect_true(file.exists(file.path(tmp, "clockFoundation", "beta.csv")))
     expect_true(file.exists(file.path(tmp, "clockFoundation", "phenoCF.csv")))
+})
+
+test_that("preprocessingPheno selects M and CN modeling scales without changing Clock Foundation beta", {
+    tmp <- withr::local_tempdir()
+    example_data <- create_preprocessing_pheno_example(tmp)
+
+    result_m <- preprocessingPheno(
+        phenoFile = example_data$phenoFile,
+        betaPath = example_data$betaPath,
+        mPath = example_data$mPath,
+        cnPath = example_data$cnPath,
+        SampleID = "Sample_Name",
+        timeVar = "Timepoint",
+        timepoints = "1,2",
+        combineTimepoints = "1,2",
+        methylationScale = "m",
+        outputPheno = file.path(tmp, "data", "preprocessingPhenoM"),
+        outputRData = file.path(tmp, "rData", "preprocessingPhenoM", "metrics"),
+        outputRDataMerge = file.path(tmp, "rData", "preprocessingPhenoM", "mergeData"),
+        sexColumn = "Sex",
+        outputLogs = file.path(tmp, "logs"),
+        outputDir = file.path(tmp, "clockFoundationM"),
+        saveOutputs = FALSE
+    )
+
+    expect_equal(result_m$methylationScale, "m")
+    expect_true("phenoM" %in% names(result_m$combinedData))
+    expect_equal(result_m$combinedData$phenoM$cg1, c(1, 3, 5))
+    expect_equal(
+        result_m$clockFoundation$betaCSV$S1,
+        c(0.10, 0.20)
+    )
+
+    result_cn <- preprocessingPheno(
+        phenoFile = example_data$phenoFile,
+        betaPath = example_data$betaPath,
+        mPath = example_data$mPath,
+        cnPath = example_data$cnPath,
+        SampleID = "Sample_Name",
+        timeVar = "Timepoint",
+        timepoints = "1,2",
+        combineTimepoints = "1,2",
+        methylationScale = "cn",
+        outputPheno = file.path(tmp, "data", "preprocessingPhenoCN"),
+        outputRData = file.path(tmp, "rData", "preprocessingPhenoCN", "metrics"),
+        outputRDataMerge = file.path(tmp, "rData", "preprocessingPhenoCN", "mergeData"),
+        sexColumn = "Sex",
+        outputLogs = file.path(tmp, "logs"),
+        outputDir = file.path(tmp, "clockFoundationCN"),
+        saveOutputs = TRUE
+    )
+
+    pheno_cn_t1 <- file.path(tmp, "rData", "preprocessingPhenoCN", "mergeData", "phenoCNT1.RData")
+    pheno_cn_t1t2 <- file.path(tmp, "rData", "preprocessingPhenoCN", "mergeData", "phenoCNT1T2.RData")
+    expect_true(file.exists(pheno_cn_t1))
+    expect_true(file.exists(pheno_cn_t1t2))
+    merge_files <- basename(list.files(file.path(tmp, "rData", "preprocessingPhenoCN", "mergeData")))
+    expect_false("phenoCnT1.RData" %in% merge_files)
+    expect_equal(result_cn$savedFiles$combinedPhenoCN, pheno_cn_t1t2)
+
+    loaded <- new.env(parent = emptyenv())
+    load(pheno_cn_t1, envir = loaded)
+    expect_true("phenoCNT1" %in% ls(loaded))
+    expect_equal(loaded$phenoCNT1$cg1, c(10, 30))
 })

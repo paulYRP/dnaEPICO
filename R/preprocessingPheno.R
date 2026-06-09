@@ -2,7 +2,8 @@
 #'
 #' Read the phenotype table and the preprocessed beta, M-value, and copy-number
 #' matrices; align them by sample identifier; split them by timepoint; prepare
-#' combined longitudinal objects; and build Clock Foundation export tables. The
+#' combined longitudinal objects for a selected modeling scale; and build Clock
+#' Foundation export tables. The
 #' function returns a structured in-memory result, while legacy files are
 #' written only when `saveOutputs = TRUE`.
 #'
@@ -23,13 +24,17 @@
 #' @param timepoints Character vector or comma-separated string of timepoints to
 #'   retain and split into separate in-memory subsets.
 #' @param combineTimepoints Character vector or comma-separated string of
-#'   timepoints to combine into the longitudinal phenotype-plus-beta object.
+#'   timepoints to combine into the longitudinal phenotype-plus-methylation
+#'   object.
+#' @param methylationScale Character. Methylation metric to use in merged
+#'   modeling tables. One of `"beta"`, `"m"`, or `"cn"`. The default is
+#'   `"beta"`. Beta values are always used for Clock Foundation exports.
 #' @param outputPheno Character. Directory used for saved phenotype CSV files
 #'   when `saveOutputs = TRUE`.
 #' @param outputRData Character. Directory used for saved metric `.RData` files
 #'   when `saveOutputs = TRUE`.
 #' @param outputRDataMerge Character. Directory used for saved merged
-#'   phenotype-plus-beta `.RData` files when `saveOutputs = TRUE`.
+#'   phenotype-plus-methylation `.RData` files when `saveOutputs = TRUE`.
 #' @param sexColumn Character. Name of the phenotype sex column used when
 #'   building Clock Foundation exports.
 #' @param outputLogs Character. Directory used for log files when `logs = TRUE`.
@@ -53,7 +58,7 @@
 #'   containing per-timepoint phenotype tables and methylation matrices.}
 #'   \item{combinedData}{Object returned by
 #'   [combineTimepointsPreprocessingPheno()] containing the merged longitudinal
-#'   phenotype-plus-beta object and the timepoint combination metadata.}
+#'   phenotype-plus-methylation object and the timepoint combination metadata.}
 #'   \item{clockFoundation}{Object returned by
 #'   [buildClockFoundationInputsPreprocessingPheno()] containing the beta table
 #'   and phenotype table prepared for Clock Foundation export.}
@@ -122,6 +127,7 @@ preprocessingPheno <- function(
     timeVar = "Timepoint",
     timepoints = "1,2",
     combineTimepoints = "1,2",
+    methylationScale = "beta",
     outputPheno = "data/preprocessingPheno",
     outputRData = "rData/preprocessingPheno/metrics",
     outputRDataMerge = "rData/preprocessingPheno/mergeData",
@@ -132,6 +138,9 @@ preprocessingPheno <- function(
     logs = FALSE,
     saveOutputs = FALSE
 ) {
+  methylationScale <- normalizeMethylationScaleDnaEpico(methylationScale)
+  methylationLabel <- methylationScaleResponseLabelDnaEpico(methylationScale)
+  methylationObjectPrefix <- methylationScaleObjectPrefixDnaEpico(methylationScale)
   log_file <- "log_preprocessingPheno.txt"
   log_path <- resolveLogPathMinfiEwasWater(
     logs = logs,
@@ -163,6 +172,10 @@ preprocessingPheno <- function(
       paste("Timepoint column:         ", timeVar),
       paste("Timepoints:               ", timepoints),
       paste("Combine timepoints:       ", combineTimepoints),
+      paste("Modeling methylation scale:", methylationLabel),
+      paste("Merged modeling object:   ", methylationObjectPrefix, "*"),
+      "Generic modeling object key: phenoMethylation",
+      "Clock Foundation scale:     Beta values",
       paste("Sex column:               ", sexColumn),
       paste("Output phenotype dir:     ", outputPheno),
       paste("RData metrics dir:        ", outputRData),
@@ -203,6 +216,7 @@ preprocessingPheno <- function(
         SampleID = SampleID,
         timeVar = timeVar,
         timepoints = timepoints,
+        methylationScale = methylationScale,
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
@@ -211,6 +225,7 @@ preprocessingPheno <- function(
       combinedData <- combineTimepointsPreprocessingPheno(
         timepointData = timepointData,
         combineTimepoints = combineTimepoints,
+        methylationScale = methylationScale,
         verbose = verbose,
         logs = logs,
         log_dir = outputLogs,
@@ -232,6 +247,9 @@ preprocessingPheno <- function(
         metricsData = metricsData,
         timepointData = timepointData,
         combinedData = combinedData,
+        methylationScale = methylationScale,
+        methylationLabel = methylationLabel,
+        methylationObjectPrefix = methylationObjectPrefix,
         clockFoundation = clockFoundation,
         savedFiles = NULL,
         logFile = log_path

@@ -1,4 +1,4 @@
-#' Normalize optional numeric inputs for methylationGLM_T1 helpers
+#' Normalize optional numeric inputs for methylationGLM helpers
 #'
 #' @param value Numeric, character, or `NA` input.
 #'
@@ -10,7 +10,7 @@
 #'
 #' @keywords internal
 #' @noRd
-normalizeOptionalNumericMethylationGLM_T1 <- function(value) {
+normalizeOptionalNumericMethylationGLM <- function(value) {
   if (is.null(value) || length(value) == 0L) {
     return(NA_real_)
   }
@@ -26,7 +26,7 @@ normalizeOptionalNumericMethylationGLM_T1 <- function(value) {
   as.numeric(value[[1L]])
 }
 
-#' Normalize optional chunk-size inputs for methylationGLM_T1 helpers
+#' Normalize optional chunk-size inputs for methylationGLM helpers
 #'
 #' @param chunkSize Integer, character, or `NULL` input.
 #'
@@ -38,7 +38,7 @@ normalizeOptionalNumericMethylationGLM_T1 <- function(value) {
 #'
 #' @keywords internal
 #' @noRd
-normalizeChunkSizeMethylationGLM_T1 <- function(chunkSize) {
+normalizeChunkSizeMethylationGLM <- function(chunkSize) {
   if (is.null(chunkSize) || length(chunkSize) == 0L) {
     return(NULL)
   }
@@ -54,7 +54,7 @@ normalizeChunkSizeMethylationGLM_T1 <- function(chunkSize) {
   as.integer(chunkSize[[1L]])
 }
 
-#' Escape regular-expression metacharacters for methylationGLM_T1 helpers
+#' Escape regular-expression metacharacters for methylationGLM helpers
 #'
 #' @param x Character scalar to escape.
 #'
@@ -66,11 +66,11 @@ normalizeChunkSizeMethylationGLM_T1 <- function(chunkSize) {
 #'
 #' @keywords internal
 #' @noRd
-escapeRegexMethylationGLM_T1 <- function(x) {
+escapeRegexMethylationGLM <- function(x) {
   gsub("([][{}()+*^$|\\?.])", "\\\\\\1", x)
 }
 
-#' Backtick variable names for methylationGLM_T1 formulas
+#' Backtick variable names for methylationGLM formulas
 #'
 #' @param x Character vector of variable names.
 #'
@@ -82,11 +82,11 @@ escapeRegexMethylationGLM_T1 <- function(x) {
 #'
 #' @keywords internal
 #' @noRd
-quoteNamesMethylationGLM_T1 <- function(x) {
+quoteNamesMethylationGLM <- function(x) {
   paste0("`", gsub("`", "", x, fixed = TRUE), "`")
 }
 
-#' Parse phenotype-to-PRS mappings for methylationGLM_T1 helpers
+#' Parse phenotype-to-PRS mappings for methylationGLM helpers
 #'
 #' @param prsMap Character scalar or vector describing mappings in the form
 #'   `"Phenotype:PRS"`.
@@ -98,7 +98,7 @@ quoteNamesMethylationGLM_T1 <- function(x) {
 #'
 #' @keywords internal
 #' @noRd
-parsePrsMapMethylationGLM_T1 <- function(prsMap = NULL) {
+parsePrsMapMethylationGLM <- function(prsMap = NULL) {
   if (is.null(prsMap) || length(prsMap) == 0L) {
     return(stats::setNames(character(0), character(0)))
   }
@@ -137,16 +137,16 @@ parsePrsMapMethylationGLM_T1 <- function(prsMap = NULL) {
 #'
 #' @keywords internal
 #' @noRd
-findCoefficientRowsMethylationGLM_T1 <- function(
+findCoefficientRowsMethylationGLM <- function(
     coefNames,
     variable,
     interactionTerm = NULL
 ) {
   normalized_names <- gsub("`", "", coefNames, fixed = TRUE)
-  variable_pattern <- escapeRegexMethylationGLM_T1(variable)
+  variable_pattern <- escapeRegexMethylationGLM(variable)
 
   if (!is.null(interactionTerm) && nzchar(interactionTerm)) {
-    interaction_pattern <- escapeRegexMethylationGLM_T1(interactionTerm)
+    interaction_pattern <- escapeRegexMethylationGLM(interactionTerm)
     matches <- grepl(
       paste0("^", variable_pattern, ".*:", interaction_pattern),
       normalized_names
@@ -162,7 +162,7 @@ findCoefficientRowsMethylationGLM_T1 <- function(
   coefNames[matches]
 }
 
-#' Build a GLM formula string for methylationGLM_T1 helpers
+#' Build a GLM formula string for methylationGLM helpers
 #'
 #' @param phenotype Character. Phenotype variable of interest.
 #' @param covariates Character vector of covariate variables.
@@ -175,19 +175,19 @@ findCoefficientRowsMethylationGLM_T1 <- function(
 #'
 #' @keywords internal
 #' @noRd
-buildFormulaMethylationGLM_T1 <- function(
+buildFormulaMethylationGLM <- function(
     phenotype,
     covariates = character(0),
     interactionTerm = NULL
 ) {
-  quoted_phenotype <- quoteNamesMethylationGLM_T1(phenotype)
-  quoted_covariates <- quoteNamesMethylationGLM_T1(covariates)
+  quoted_phenotype <- quoteNamesMethylationGLM(phenotype)
+  quoted_covariates <- quoteNamesMethylationGLM(covariates)
 
   if (!is.null(interactionTerm) && nzchar(interactionTerm)) {
-    quoted_interaction <- quoteNamesMethylationGLM_T1(interactionTerm)
+    quoted_interaction <- quoteNamesMethylationGLM(interactionTerm)
     interaction_part <- paste(quoted_phenotype, quoted_interaction, sep = " * ")
     fixed_terms <- setdiff(covariates, interactionTerm)
-    quoted_fixed_terms <- quoteNamesMethylationGLM_T1(fixed_terms)
+    quoted_fixed_terms <- quoteNamesMethylationGLM(fixed_terms)
     terms <- c(interaction_part, quoted_fixed_terms)
   } else {
     terms <- c(quoted_phenotype, quoted_covariates)
@@ -201,7 +201,7 @@ buildFormulaMethylationGLM_T1 <- function(
   paste("beta ~", paste(terms, collapse = " + "))
 }
 
-#' Fit a single CpG-level Gaussian GLM for methylationGLM_T1 helpers
+#' Fit a single CpG-level Gaussian GLM for methylationGLM helpers
 #'
 #' @param cpg Character. CpG column name.
 #' @param data Data frame containing phenotype and beta columns.
@@ -217,7 +217,7 @@ buildFormulaMethylationGLM_T1 <- function(
 #'
 #' @keywords internal
 #' @noRd
-fitCpGModelMethylationGLM_T1 <- function(
+fitCpGModelMethylationGLM <- function(
     cpg,
     data,
     modelVars,
@@ -249,7 +249,7 @@ fitCpGModelMethylationGLM_T1 <- function(
     error = function(error) {
       structure(
         list(error = conditionMessage(error)),
-        class = "dnaEPICO_methylationGLM_T1_fit_error"
+        class = "dnaEPICO_methylationGLM_fit_error"
       )
     }
   )
@@ -258,7 +258,7 @@ fitCpGModelMethylationGLM_T1 <- function(
 #' Summarize a single CpG-level GLM fit
 #'
 #' @param cpg Character. CpG identifier.
-#' @param modelObj List returned by `fitCpGModelMethylationGLM_T1()`.
+#' @param modelObj List returned by `fitCpGModelMethylationGLM()`.
 #' @param variable Character. Phenotype variable of interest.
 #' @param interactionTerm Character or `NULL`. Optional interaction term.
 #' @param includeResidualSD Logical. If `TRUE`, append residual standard
@@ -272,14 +272,14 @@ fitCpGModelMethylationGLM_T1 <- function(
 #'
 #' @keywords internal
 #' @noRd
-summarizeCpGFitMethylationGLM_T1 <- function(
+summarizeCpGFitMethylationGLM <- function(
     cpg,
     modelObj,
     variable,
     interactionTerm = NULL,
     includeResidualSD = TRUE
 ) {
-  if (is.null(modelObj) || inherits(modelObj, "dnaEPICO_methylationGLM_T1_fit_error")) {
+  if (is.null(modelObj) || inherits(modelObj, "dnaEPICO_methylationGLM_fit_error")) {
     return(NULL)
   }
 
@@ -288,7 +288,7 @@ summarizeCpGFitMethylationGLM_T1 <- function(
     return(NULL)
   }
 
-  matched_rows <- findCoefficientRowsMethylationGLM_T1(
+  matched_rows <- findCoefficientRowsMethylationGLM(
     coefNames = rownames(coef_table),
     variable = variable,
     interactionTerm = interactionTerm
@@ -308,7 +308,237 @@ summarizeCpGFitMethylationGLM_T1 <- function(
   summary_df
 }
 
-#' Create a distribution plot used by methylationGLM_T1 helpers
+resolveParallelBackendMethylationModels <- function(nCores) {
+  n_cores <- max(1L, as.integer(nCores))
+  requested_backend <- tolower(Sys.getenv("DNAEPICO_PARALLEL_BACKEND", "auto"))
+  if (!(requested_backend %in% c("auto", "fork", "psock", "serial"))) {
+    requested_backend <- "auto"
+  }
+
+  if (n_cores <= 1L || identical(requested_backend, "serial")) {
+    return("serial")
+  }
+
+  fork_supported <- !identical(.Platform$OS.type, "windows")
+  if (identical(requested_backend, "fork")) {
+    return(if (fork_supported) "fork" else "psock")
+  }
+  if (identical(requested_backend, "psock")) {
+    return("psock")
+  }
+
+  if (fork_supported) {
+    return("fork")
+  }
+
+  "psock"
+}
+
+chunkCpGColumnsMethylationModels <- function(
+    cpgColumns,
+    nCores = 1L,
+    batchesPerCore = 8L
+) {
+  if (length(cpgColumns) == 0L) {
+    return(list())
+  }
+
+  n_cores <- max(1L, as.integer(nCores))
+  batches_per_core <- max(1L, as.integer(batchesPerCore))
+  target_batches <- min(length(cpgColumns), max(1L, n_cores * batches_per_core))
+  chunk_size <- max(1L, ceiling(length(cpgColumns) / target_batches))
+
+  split(cpgColumns, ceiling(seq_along(cpgColumns) / chunk_size))
+}
+
+validateWorkerPackagesMethylationModels <- function(
+    libPath = NULL,
+    packages = character(0)
+) {
+  if (!is.null(libPath)) {
+    .libPaths(unique(c(libPath, .libPaths())))
+  }
+
+  packages <- packages[!is.na(packages) & nzchar(packages)]
+  for (pkg in packages) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      stop("Failed to load package: ", pkg, call. = FALSE)
+    }
+  }
+
+  invisible(TRUE)
+}
+
+makePsockClusterMethylationModels <- function(clusterSize) {
+  tryCatch(
+    parallel::makeCluster(
+      clusterSize,
+      type = "PSOCK",
+      useXDR = FALSE,
+      methods = FALSE
+    ),
+    error = function(error) {
+      parallel::makeCluster(clusterSize, type = "PSOCK")
+    }
+  )
+}
+
+combineFitBatchResultsMethylationModels <- function(
+    batchResults,
+    cpgColumns
+) {
+  fit_chunks <- lapply(batchResults, function(result) result$fits)
+  fit_chunks <- Filter(function(x) !is.null(x) && length(x) > 0L, fit_chunks)
+  fit_list <- if (length(fit_chunks) == 0L) {
+    list()
+  } else {
+    out <- list()
+    for (chunk in fit_chunks) {
+      for (cpg in names(chunk)) {
+        out[[cpg]] <- chunk[[cpg]]
+      }
+    }
+    out
+  }
+  fit_list <- fit_list[cpgColumns[cpgColumns %in% names(fit_list)]]
+
+  summary_chunks <- lapply(batchResults, function(result) result$summaries)
+  summary_chunks <- Filter(function(x) !is.null(x) && nrow(x) > 0L, summary_chunks)
+  summary_df <- if (length(summary_chunks) == 0L) {
+    data.frame()
+  } else {
+    out <- do.call(rbind, summary_chunks)
+    rownames(out) <- NULL
+    out
+  }
+
+  list(fits = fit_list, summaries = summary_df)
+}
+
+optionalTermMatchesMethylationModels <- function(
+    requested,
+    cached
+) {
+  normalize <- function(value) {
+    if (is.null(value) || length(value) == 0L || is.na(value[[1L]])) {
+      return("")
+    }
+    value <- as.character(value[[1L]])
+    if (!nzchar(value)) {
+      return("")
+    }
+    value
+  }
+
+  identical(normalize(requested), normalize(cached))
+}
+
+filterSummaryByPvalueMethylationGLM <- function(
+    summaryDf,
+    pValueFilter,
+    includeResidualSD = TRUE
+) {
+  summary_df <- summaryDf
+  if (is.null(summary_df) || nrow(summary_df) == 0L) {
+    return(data.frame())
+  }
+
+  ordered_columns <- c(
+    "CpG",
+    "Coefficient",
+    "Estimate",
+    "Std. Error",
+    "t value",
+    "Pr(>|t|)",
+    if (isTRUE(includeResidualSD)) "ResidualSD"
+  )
+  ordered_columns <- intersect(ordered_columns, colnames(summary_df))
+  summary_df <- summary_df[, ordered_columns, drop = FALSE]
+
+  if (nrow(summary_df) > 0L && !is.na(pValueFilter)) {
+    summary_df <- summary_df[summary_df[["Pr(>|t|)"]] < pValueFilter, , drop = FALSE]
+  }
+  rownames(summary_df) <- NULL
+
+  summary_df
+}
+
+fitCpGModelMethylationGLMPrepared <- function(
+    cpg,
+    cpgValues,
+    modelData,
+    formulaText
+) {
+  tryCatch(
+    {
+      model_data <- modelData
+      model_data$beta <- as.numeric(cpgValues)
+
+      fit <- glm2::glm2(
+        formula = stats::as.formula(formulaText),
+        data = model_data,
+        family = stats::gaussian(),
+        na.action = stats::na.exclude
+      )
+
+      list(
+        coef = summary(fit)$coefficients,
+        residuals = stats::residuals(fit),
+        fitted = stats::fitted(fit)
+      )
+    },
+    error = function(error) {
+      structure(
+        list(error = conditionMessage(error)),
+        class = "dnaEPICO_methylationGLM_fit_error"
+      )
+    }
+  )
+}
+
+fitMethylationGLMBatch <- function(
+    cpgBatch,
+    data,
+    modelData,
+    formulaText,
+    phenotype,
+    interactionTerm = NULL
+) {
+  fits <- vector("list", length(cpgBatch))
+  names(fits) <- cpgBatch
+  summaries <- vector("list", length(cpgBatch))
+  names(summaries) <- cpgBatch
+
+  for (cpg in cpgBatch) {
+    model_obj <- fitCpGModelMethylationGLMPrepared(
+      cpg = cpg,
+      cpgValues = data[[cpg]],
+      modelData = modelData,
+      formulaText = formulaText
+    )
+    fits[[cpg]] <- model_obj
+    summaries[[cpg]] <- summarizeCpGFitMethylationGLM(
+      cpg = cpg,
+      modelObj = model_obj,
+      variable = phenotype,
+      interactionTerm = interactionTerm,
+      includeResidualSD = TRUE
+    )
+  }
+
+  summaries <- Filter(Negate(is.null), summaries)
+  summary_df <- if (length(summaries) == 0L) {
+    data.frame()
+  } else {
+    out <- do.call(rbind, summaries)
+    rownames(out) <- NULL
+    out
+  }
+
+  list(fits = fits, summaries = summary_df)
+}
+
+#' Create a distribution plot used by methylationGLM helpers
 #'
 #' @param values Vector of phenotype or covariate values to plot.
 #' @param variable Character. Variable label.
@@ -322,7 +552,7 @@ summarizeCpGFitMethylationGLM_T1 <- function(
 #'
 #' @keywords internal
 #' @noRd
-createDistributionPlotMethylationGLM_T1 <- function(
+createDistributionPlotMethylationGLM <- function(
     values,
     variable,
     type = c("hist", "bar"),
@@ -355,7 +585,7 @@ createDistributionPlotMethylationGLM_T1 <- function(
     ggplot2::theme_minimal()
 }
 
-#' Resolve an annotation object for methylationGLM_T1 helpers
+#' Resolve an annotation object for methylationGLM helpers
 #'
 #' @param annotationObject Character package/object name, annotation data frame,
 #'   or annotation object understood by `minfi::getAnnotation()`.
@@ -368,7 +598,7 @@ createDistributionPlotMethylationGLM_T1 <- function(
 #'
 #' @keywords internal
 #' @noRd
-resolveAnnotationObjectMethylationGLM_T1 <- function(annotationObject) {
+resolveAnnotationObjectMethylationGLM <- function(annotationObject) {
   if (!is.character(annotationObject) || length(annotationObject) != 1L) {
     return(annotationObject)
   }
@@ -409,7 +639,7 @@ resolveAnnotationObjectMethylationGLM_T1 <- function(annotationObject) {
   )
 }
 
-coerceAnnotationDataMethylationGLM_T1 <- function(annotationObject) {
+coerceAnnotationDataMethylationGLM <- function(annotationObject) {
   if (is.data.frame(annotationObject)) {
     annotation_df <- annotationObject
     if (!("CpG" %in% colnames(annotation_df))) {
@@ -428,13 +658,13 @@ coerceAnnotationDataMethylationGLM_T1 <- function(annotationObject) {
     return(annotation_df)
   }
 
-  annotation_source <- resolveAnnotationObjectMethylationGLM_T1(annotationObject)
+  annotation_source <- resolveAnnotationObjectMethylationGLM(annotationObject)
   annotation_df <- as.data.frame(minfi::getAnnotation(annotation_source))
   annotation_df$CpG <- rownames(annotation_df)
   annotation_df
 }
 
-buildAnnotatedWorkbookDictionaryMethylationGLM_T1 <- function(
+buildAnnotatedWorkbookDictionaryMethylationGLM <- function(
     columns,
     modelDescription,
     formulaText,
@@ -454,7 +684,7 @@ buildAnnotatedWorkbookDictionaryMethylationGLM_T1 <- function(
     formula_names <- names(formula_values)
     if (!is.null(formula_names) && any(nzchar(formula_names))) {
       for (formula_name in formula_names[nzchar(formula_names)]) {
-        if (grepl(paste0("^", escapeRegexMethylationGLM_T1(formula_name)), column)) {
+        if (grepl(paste0("^", escapeRegexMethylationGLM(formula_name)), column)) {
           return(unname(formula_values[[formula_name]]))
         }
       }
@@ -503,7 +733,7 @@ buildAnnotatedWorkbookDictionaryMethylationGLM_T1 <- function(
   )
 }
 
-writeAnnotatedWorkbookMethylationGLM_T1 <- function(
+writeAnnotatedWorkbookMethylationGLM <- function(
     annotated_df,
     file,
     resultSheet,
@@ -519,7 +749,15 @@ writeAnnotatedWorkbookMethylationGLM_T1 <- function(
   invisible(file)
 }
 
-inferMethylationValueLabelMethylationGLM_T1 <- function(modelResults) {
+inferMethylationValueLabelMethylationGLM <- function(modelResults) {
+  if (!is.null(modelResults$responseLabel) && nzchar(modelResults$responseLabel)) {
+    return(modelResults$responseLabel)
+  }
+
+  if (!is.null(modelResults$settings$methylationScale)) {
+    return(methylationScaleResponseLabelDnaEpico(modelResults$settings$methylationScale))
+  }
+
   if (is.null(modelResults$fits) || length(modelResults$fits) == 0L) {
     return("Beta values")
   }
@@ -533,8 +771,8 @@ inferMethylationValueLabelMethylationGLM_T1 <- function(modelResults) {
     for (fit_object in fit_group) {
       if (
         !is.list(fit_object) ||
-          inherits(fit_object, "dnaEPICO_methylationGLM_T1_fit_error") ||
-          inherits(fit_object, "dnaEPICO_methylationGLMM_T1T2_fit_error") ||
+          inherits(fit_object, "dnaEPICO_methylationGLM_fit_error") ||
+          inherits(fit_object, "dnaEPICO_methylationLME_fit_error") ||
           is.null(fit_object$fitted) ||
           is.null(fit_object$residuals)
       ) {
@@ -571,9 +809,9 @@ inferMethylationValueLabelMethylationGLM_T1 <- function(modelResults) {
   "Beta values"
 }
 
-#' Prepare phenotype-plus-beta data for one-timepoint GLM analyses
+#' Prepare phenotype-plus-methylation data for one-timepoint GLM analyses
 #'
-#' @param inputPheno Character. Path to the merged phenotype-plus-beta object
+#' @param inputPheno Character. Path to the merged phenotype-plus-methylation object
 #'   created by `preprocessingPheno()`.
 #' @param phenotypes Character vector or comma-separated string of phenotype
 #'   variables to model.
@@ -584,6 +822,8 @@ inferMethylationValueLabelMethylationGLM_T1 <- function(modelResults) {
 #' @param cpgPrefix Character. Prefix used to identify methylation columns.
 #' @param cpgLimit Integer or `NA`. Maximum number of CpGs to retain. `NA`
 #'   keeps all matching CpGs.
+#' @param methylationScale Character. Methylation metric represented by the CpG
+#'   columns. One of `"beta"`, `"m"`, or `"cn"`.
 #' @param interactionTerm Character or `NULL`. Optional interaction term.
 #' @param prsMap Character vector or comma-separated string of phenotype-to-PRS
 #'   mappings in the form `"Phenotype:PRS"`.
@@ -593,18 +833,18 @@ inferMethylationValueLabelMethylationGLM_T1 <- function(modelResults) {
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLM_T1_data"` containing the
+#' @return A list with class `"dnaEPICO_methylationGLM_data"` containing the
 #'   prepared analysis data, parsed variable selections, CpG columns, and
 #'   exploratory summaries.
 #'
 #' @description
-#' Load the merged phenotype-plus-beta input object, validate the requested
+#' Load the merged phenotype-plus-methylation input object, validate the requested
 #' modeling variables, convert selected variables to factors, and return a
 #' single in-memory object for downstream helpers.
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#' prepared_data <- prepareMethylationGLM_T1Data(
+#' prepared_data <- prepareMethylationGLMData(
 #'   inputPheno = ex$inputPath,
 #'   phenotypes = "status",
 #'   covariates = "sex,age",
@@ -616,26 +856,30 @@ inferMethylationValueLabelMethylationGLM_T1 <- function(modelResults) {
 #' names(prepared_data)
 #'
 #' @export
-prepareMethylationGLM_T1Data <- function(
+prepareMethylationGLMData <- function(
     inputPheno,
     phenotypes,
     covariates,
     factorVars,
     cpgPrefix = "cg",
     cpgLimit = NA,
+    methylationScale = "beta",
     interactionTerm = NULL,
     prsMap = NULL,
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLM_T1.txt"
+    log_file = "log_methylationGLM.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   phenotype_list <- splitOptionMinfiEwasWater(phenotypes, sep = ",")
   covariate_list <- splitOptionMinfiEwasWater(covariates, sep = ",")
   factor_list <- splitOptionMinfiEwasWater(factorVars, sep = ",")
-  prs_map <- parsePrsMapMethylationGLM_T1(prsMap)
-  cpg_limit <- normalizeOptionalNumericMethylationGLM_T1(cpgLimit)
+  prs_map <- parsePrsMapMethylationGLM(prsMap)
+  cpg_limit <- normalizeOptionalNumericMethylationGLM(cpgLimit)
+  methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
+  methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
+  methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
   analysis_data <- loadSavedObjectPreprocessingPheno(inputPheno, preferred_name = "phenoBT1")
 
   if (!is.data.frame(analysis_data)) {
@@ -687,7 +931,7 @@ prepareMethylationGLM_T1Data <- function(
   }
 
   cpg_columns <- grep(
-    paste0("^", escapeRegexMethylationGLM_T1(cpgPrefix)),
+    paste0("^", escapeRegexMethylationGLM(cpgPrefix)),
     colnames(analysis_data),
     value = TRUE
   )
@@ -712,7 +956,11 @@ prepareMethylationGLM_T1Data <- function(
 
   log_lines <- c(
     "=======================================================================",
-    paste("Loaded phenotype + beta data from:", inputPheno),
+    paste("Loaded phenotype + methylation data from:", inputPheno),
+    paste("Methylation scale:          ", methylation_label),
+    paste("Merged modeling object:     ", methylation_prefix, "*"),
+    paste("Displayed response label:   ", methylation_label),
+    "Internal response column:   beta",
     paste("Data dimensions:             ", paste(dim(analysis_data), collapse = " x ")),
     paste("Phenotypes:                  ", paste(phenotype_list, collapse = ", ")),
     paste("Covariates:                  ", paste(covariate_list, collapse = ", ")),
@@ -742,6 +990,10 @@ prepareMethylationGLM_T1Data <- function(
       cpgColumns = cpg_columns,
       cpgPrefix = cpgPrefix,
       cpgLimit = cpg_limit,
+      methylationScale = methylation_scale,
+      responseLabel = methylation_label,
+      methylationObjectPrefix = methylation_prefix,
+      internalResponseColumn = "beta",
       prsMap = prs_map,
       interactionTerm = resolved_interaction,
       requestedInteractionTerm = interactionTerm,
@@ -749,12 +1001,12 @@ prepareMethylationGLM_T1Data <- function(
       variableSummary = variable_summary,
       interactionTable = interaction_table
     ),
-    class = "dnaEPICO_methylationGLM_T1_data"
+    class = "dnaEPICO_methylationGLM_data"
   )
 }
 #' Plot phenotype and covariate distributions for one-timepoint GLM analyses
 #'
-#' @param preparedData Object returned by `prepareMethylationGLM_T1Data()`.
+#' @param preparedData Object returned by `prepareMethylationGLMData()`.
 #' @param plotWidth Integer. TIFF width in pixels when plots are written to disk.
 #' @param plotHeight Integer. TIFF height in pixels when plots are written to
 #'   disk.
@@ -769,16 +1021,16 @@ prepareMethylationGLM_T1Data <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLM_T1_distribution_plots"`
+#' @return A list with class `"dnaEPICO_methylationGLM_distribution_plots"`
 #'   containing the generated `ggplot2` objects and any saved TIFF file paths.
 #'
 #' @description
 #' Create phenotype, factor-variable, and numeric-covariate distribution plots
-#' from the object returned by `prepareMethylationGLM_T1Data()`.
+#' from the object returned by `prepareMethylationGLMData()`.
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#' distribution_plots <- plotMethylationGLM_T1Distributions(
+#' distribution_plots <- plotMethylationGLMDistributions(
 #'   preparedData = ex$preparedData,
 #'   display = FALSE,
 #'   verbose = FALSE,
@@ -787,7 +1039,7 @@ prepareMethylationGLM_T1Data <- function(
 #' names(distribution_plots)
 #'
 #' @export
-plotMethylationGLM_T1Distributions <- function(
+plotMethylationGLMDistributions <- function(
     preparedData,
     plotWidth = 2000L,
     plotHeight = 1000L,
@@ -797,7 +1049,7 @@ plotMethylationGLM_T1Distributions <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLM_T1.txt"
+    log_file = "log_methylationGLM.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   analysis_data <- preparedData$data
@@ -812,7 +1064,7 @@ plotMethylationGLM_T1Distributions <- function(
     }
 
     plot_type <- if (is.numeric(analysis_data[[var]])) "hist" else "bar"
-    plot_object <- createDistributionPlotMethylationGLM_T1(
+    plot_object <- createDistributionPlotMethylationGLM(
       values = analysis_data[[var]],
       variable = var,
       type = plot_type,
@@ -844,7 +1096,7 @@ plotMethylationGLM_T1Distributions <- function(
 
   factor_vars <- intersect(preparedData$factorVars, colnames(analysis_data))
   for (var in factor_vars) {
-    plot_object <- createDistributionPlotMethylationGLM_T1(
+    plot_object <- createDistributionPlotMethylationGLM(
       values = analysis_data[[var]],
       variable = var,
       type = "bar",
@@ -874,7 +1126,7 @@ plotMethylationGLM_T1Distributions <- function(
   numeric_covariates <- setdiff(preparedData$covariates, preparedData$factorVars)
   numeric_covariates <- intersect(numeric_covariates, colnames(analysis_data))
   for (var in numeric_covariates) {
-    plot_object <- createDistributionPlotMethylationGLM_T1(
+    plot_object <- createDistributionPlotMethylationGLM(
       values = analysis_data[[var]],
       variable = var,
       type = "hist",
@@ -925,13 +1177,13 @@ plotMethylationGLM_T1Distributions <- function(
       covariates = covariate_plots,
       files = saved_files
     ),
-    class = "dnaEPICO_methylationGLM_T1_distribution_plots"
+    class = "dnaEPICO_methylationGLM_distribution_plots"
   )
 }
 
 #' Fit CpG-wise Gaussian GLMs for one-timepoint methylation analyses
 #'
-#' @param preparedData Object returned by `prepareMethylationGLM_T1Data()`.
+#' @param preparedData Object returned by `prepareMethylationGLMData()`.
 #' @param nCores Integer. Number of worker processes to use.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded
 #'   to worker processes.
@@ -943,16 +1195,16 @@ plotMethylationGLM_T1Distributions <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLM_T1_models"` containing
+#' @return A list with class `"dnaEPICO_methylationGLM_models"` containing
 #'   fitted model lists, model formulas, and counts of failed CpG fits.
 #'
 #' @description
 #' Fit one Gaussian GLM per CpG for each phenotype requested in the object
-#' returned by `prepareMethylationGLM_T1Data()`.
+#' returned by `prepareMethylationGLMData()`.
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#' model_results <- fitMethylationGLM_T1Models(
+#' model_results <- fitMethylationGLMModels(
 #'   preparedData = ex$preparedData,
 #'   nCores = 1,
 #'   verbose = FALSE,
@@ -961,7 +1213,7 @@ plotMethylationGLM_T1Distributions <- function(
 #' names(model_results$fits)
 #'
 #' @export
-fitMethylationGLM_T1Models <- function(
+fitMethylationGLMModels <- function(
     preparedData,
     nCores = 1L,
     libPath = NULL,
@@ -969,7 +1221,7 @@ fitMethylationGLM_T1Models <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLM_T1.txt"
+    log_file = "log_methylationGLM.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
 
@@ -986,8 +1238,10 @@ fitMethylationGLM_T1Models <- function(
   cpg_columns <- preparedData$cpgColumns
   n_cores <- max(1L, as.integer(nCores))
   fits <- list()
+  summary_cache <- list()
   formulas <- stats::setNames(character(length(preparedData$phenotypes)), preparedData$phenotypes)
   failure_counts <- stats::setNames(integer(length(preparedData$phenotypes)), preparedData$phenotypes)
+  backend <- resolveParallelBackendMethylationModels(n_cores)
 
   for (phenotype in preparedData$phenotypes) {
     prs_var <- character(0)
@@ -1009,89 +1263,138 @@ fitMethylationGLM_T1Models <- function(
       )
     }
 
-    formula_text <- buildFormulaMethylationGLM_T1(
+    formula_text <- buildFormulaMethylationGLM(
       phenotype = phenotype,
       covariates = covariates,
       interactionTerm = preparedData$interactionTerm
     )
 
-    fit_worker <- fitCpGModelMethylationGLM_T1
+    base_model_data <- analysis_data[, model_vars, drop = FALSE]
     factor_vars <- preparedData$factorVars
+    for (var in intersect(factor_vars, colnames(base_model_data))) {
+      base_model_data[[var]] <- as.factor(base_model_data[[var]])
+    }
+    cpg_batches <- chunkCpGColumnsMethylationModels(
+      cpgColumns = cpg_columns,
+      nCores = n_cores,
+      batchesPerCore = 8L
+    )
+    batch_worker <- fitMethylationGLMBatch
+    resolved_interaction <- preparedData$interactionTerm
 
-    if (n_cores > 1L && length(cpg_columns) > 1L) {
-      cluster_size <- min(n_cores, length(cpg_columns))
-      cl <- parallel::makeCluster(cluster_size)
-      on.exit(parallel::stopCluster(cl), add = TRUE)
+    if (!identical(backend, "serial") && length(cpg_batches) > 1L) {
+      cluster_size <- min(n_cores, length(cpg_batches))
 
-      parallel::clusterExport(
-        cl,
-        varlist = c(
-          "analysis_data",
-          "model_vars",
-          "formula_text",
-          "factor_vars",
-          "fit_worker",
-          "libPath",
-          "glm_lib_list"
-        ),
-        envir = environment()
-      )
+      if (identical(backend, "fork")) {
+        batch_results <- parallel::mclapply(
+          cpg_batches,
+          function(batch) {
+            validateWorkerPackagesMethylationModels(
+              libPath = libPath,
+              packages = glm_lib_list
+            )
+            batch_worker(
+              cpgBatch = batch,
+              data = analysis_data,
+              modelData = base_model_data,
+              formulaText = formula_text,
+              phenotype = phenotype,
+              interactionTerm = resolved_interaction
+            )
+          },
+          mc.cores = cluster_size,
+          mc.preschedule = FALSE
+        )
+      } else {
+        cl <- makePsockClusterMethylationModels(cluster_size)
+        batch_results <- tryCatch(
+          {
+            parallel::clusterExport(
+              cl,
+              varlist = c(
+                "analysis_data",
+                "base_model_data",
+                "formula_text",
+                "phenotype",
+                "resolved_interaction",
+                "batch_worker",
+                "libPath",
+                "glm_lib_list",
+                "validateWorkerPackagesMethylationModels",
+                "fitCpGModelMethylationGLMPrepared",
+                "summarizeCpGFitMethylationGLM",
+                "findCoefficientRowsMethylationGLM",
+                "escapeRegexMethylationGLM"
+              ),
+              envir = environment()
+            )
 
-      parallel::clusterEvalQ(
-        cl,
-        {
-          if (!is.null(libPath)) {
-            .libPaths(unique(c(libPath, .libPaths())))
+            parallel::clusterEvalQ(
+              cl,
+              validateWorkerPackagesMethylationModels(
+                libPath = libPath,
+                packages = glm_lib_list
+              )
+            )
+
+            parallel::parLapplyLB(
+              cl,
+              cpg_batches,
+              function(batch) {
+                batch_worker(
+                  cpgBatch = batch,
+                  data = analysis_data,
+                  modelData = base_model_data,
+                  formulaText = formula_text,
+                  phenotype = phenotype,
+                  interactionTerm = resolved_interaction
+                )
+              }
+            )
+          },
+          finally = {
+            parallel::stopCluster(cl)
           }
-
-          for (pkg in glm_lib_list) {
-            if (!requireNamespace(pkg, quietly = TRUE)) {
-              stop("Failed to load package: ", pkg, call. = FALSE)
-            }
-          }
-
-          NULL
-        }
-      )
-
-      fit_list <- parallel::parLapply(
-        cl,
-        cpg_columns,
-        function(cpg) {
-          fit_worker(
-            cpg = cpg,
-            data = analysis_data,
-            modelVars = model_vars,
-            formulaText = formula_text,
-            factorVars = factor_vars
-          )
-        }
-      )
-      parallel::stopCluster(cl)
-      on.exit(NULL, add = FALSE)
+        )
+      }
     } else {
-      fit_list <- lapply(
-        cpg_columns,
-        function(cpg) {
-          fit_worker(
-            cpg = cpg,
+      validateWorkerPackagesMethylationModels(
+        libPath = libPath,
+        packages = glm_lib_list
+      )
+      batch_results <- lapply(
+        cpg_batches,
+        function(batch) {
+          batch_worker(
+            cpgBatch = batch,
             data = analysis_data,
-            modelVars = model_vars,
+            modelData = base_model_data,
             formulaText = formula_text,
-            factorVars = factor_vars
+            phenotype = phenotype,
+            interactionTerm = resolved_interaction
           )
         }
       )
     }
 
-    names(fit_list) <- cpg_columns
+    combined_results <- combineFitBatchResultsMethylationModels(
+      batchResults = batch_results,
+      cpgColumns = cpg_columns
+    )
+    fit_list <- combined_results$fits
+    phenotype_summary_cache <- filterSummaryByPvalueMethylationGLM(
+      summaryDf = combined_results$summaries,
+      pValueFilter = NA_real_,
+      includeResidualSD = TRUE
+    )
     failures <- vapply(
       fit_list,
-      function(x) inherits(x, "dnaEPICO_methylationGLM_T1_fit_error"),
+      function(x) inherits(x, "dnaEPICO_methylationGLM_fit_error"),
       logical(1)
     )
 
     fits[[phenotype]] <- fit_list
+    summary_cache[[phenotype]] <- phenotype_summary_cache
     formulas[[phenotype]] <- formula_text
     failure_counts[[phenotype]] <- sum(failures)
 
@@ -1102,6 +1405,10 @@ fitMethylationGLM_T1Models <- function(
         paste("Formula:                     ", formula_text),
         paste("CpGs attempted:              ", length(cpg_columns)),
         paste("Failed CpG fits:             ", failure_counts[[phenotype]]),
+        paste("Parallel backend:            ", backend),
+        paste("Fit batches:                 ", length(cpg_batches)),
+        paste("Fit batch size:              ", if (length(cpg_batches) == 0L) 0L else max(vapply(cpg_batches, length, integer(1)))),
+        paste("Fit-time summary rows cached:", nrow(phenotype_summary_cache)),
         "======================================================================="
       ),
       verbose = verbose,
@@ -1112,24 +1419,32 @@ fitMethylationGLM_T1Models <- function(
   structure(
     list(
       fits = fits,
+      summaryCache = summary_cache,
       formulas = formulas,
       phenotypes = names(fits),
       failureCounts = failure_counts,
       settings = list(
         nCores = n_cores,
+        parallelBackend = backend,
+        fitBatchCount = length(chunkCpGColumnsMethylationModels(cpg_columns, n_cores, 8L)),
         libPath = libPath,
         glmLibs = glm_lib_list,
+        methylationScale = preparedData$methylationScale,
+        methylationObjectPrefix = preparedData$methylationObjectPrefix,
+        responseLabel = preparedData$responseLabel,
+        internalResponseColumn = preparedData$internalResponseColumn,
         interactionTerm = preparedData$interactionTerm
-      )
+      ),
+      responseLabel = preparedData$responseLabel
     ),
-    class = "dnaEPICO_methylationGLM_T1_models"
+    class = "dnaEPICO_methylationGLM_models"
   )
 }
 
 #' Summarize CpG-wise Gaussian GLM fits for one-timepoint analyses
 #'
-#' @param modelResults Object returned by `fitMethylationGLM_T1Models()`.
-#' @param preparedData Object returned by `prepareMethylationGLM_T1Data()`.
+#' @param modelResults Object returned by `fitMethylationGLMModels()`.
+#' @param preparedData Object returned by `prepareMethylationGLMData()`.
 #' @param summaryResidualSD Logical. If `TRUE`, add residual standard deviations
 #'   to each CpG summary row.
 #' @param summaryPval Numeric or `NA`. Optional p-value filter applied to the
@@ -1148,16 +1463,16 @@ fitMethylationGLM_T1Models <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLM_T1_summaries"`
+#' @return A list with class `"dnaEPICO_methylationGLM_summaries"`
 #'   containing one CpG-level summary data frame per phenotype.
 #'
 #' @description
 #' Extract phenotype-specific CpG coefficient tables from the fitted model
-#' object returned by `fitMethylationGLM_T1Models()`.
+#' object returned by `fitMethylationGLMModels()`.
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#' summary_results <- summarizeMethylationGLM_T1Models(
+#' summary_results <- summarizeMethylationGLMModels(
 #'   modelResults = ex$modelResults,
 #'   preparedData = ex$preparedData,
 #'   summaryResidualSD = TRUE,
@@ -1169,7 +1484,7 @@ fitMethylationGLM_T1Models <- function(
 #' names(summary_results$summaries)
 #'
 #' @export
-summarizeMethylationGLM_T1Models <- function(
+summarizeMethylationGLMModels <- function(
     modelResults,
     preparedData,
     summaryResidualSD = TRUE,
@@ -1181,7 +1496,7 @@ summarizeMethylationGLM_T1Models <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLM_T1.txt"
+    log_file = "log_methylationGLM.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
 
@@ -1194,12 +1509,42 @@ summarizeMethylationGLM_T1Models <- function(
     glm_lib_list <- "glm2"
   }
 
-  p_value_filter <- normalizeOptionalNumericMethylationGLM_T1(summaryPval)
-  chunk_size <- normalizeChunkSizeMethylationGLM_T1(chunkSize)
+  p_value_filter <- normalizeOptionalNumericMethylationGLM(summaryPval)
+  chunk_size <- normalizeChunkSizeMethylationGLM(chunkSize)
   n_cores <- max(1L, as.integer(nCores))
   summaries <- list()
 
   for (phenotype in names(modelResults$fits)) {
+    if (
+      !is.null(modelResults$summaryCache) &&
+        !is.null(modelResults$summaryCache[[phenotype]])
+    ) {
+      summary_df <- filterSummaryByPvalueMethylationGLM(
+        summaryDf = modelResults$summaryCache[[phenotype]],
+        pValueFilter = p_value_filter,
+        includeResidualSD = isTRUE(summaryResidualSD)
+      )
+      summaries[[phenotype]] <- summary_df
+
+      emitLogMinfiEwasWater(
+        c(
+          "=======================================================================",
+          paste("Summarized phenotype:        ", phenotype),
+          paste("CpG summary rows returned:   ", nrow(summary_df)),
+          "Summary source:              fit-time cache",
+          if (is.na(p_value_filter)) {
+            "P-value filter:              none"
+          } else {
+            paste("P-value filter:              ", p_value_filter)
+          },
+          "======================================================================="
+        ),
+        verbose = verbose,
+        log_path = log_path
+      )
+      next
+    }
+
     fit_list <- modelResults$fits[[phenotype]]
     cpg_names <- names(fit_list)
 
@@ -1210,7 +1555,7 @@ summarizeMethylationGLM_T1Models <- function(
     local_chunk_size <- max(1L, as.integer(local_chunk_size))
     cpg_chunks <- split(cpg_names, ceiling(seq_along(cpg_names) / local_chunk_size))
 
-    summary_worker <- summarizeCpGFitMethylationGLM_T1
+    summary_worker <- summarizeCpGFitMethylationGLM
     resolved_interaction <- preparedData$interactionTerm
     include_residual_sd <- isTRUE(summaryResidualSD)
 
@@ -1352,13 +1697,13 @@ summarizeMethylationGLM_T1Models <- function(
         chunkSize = chunk_size
       )
     ),
-    class = "dnaEPICO_methylationGLM_T1_summaries"
+    class = "dnaEPICO_methylationGLM_summaries"
   )
 }
 
 #' Collect significant CpG coefficient tables from fitted one-timepoint GLMs
 #'
-#' @param modelResults Object returned by `fitMethylationGLM_T1Models()`.
+#' @param modelResults Object returned by `fitMethylationGLMModels()`.
 #' @param pvalThreshold Numeric. Threshold applied to phenotype main-effect or
 #'   interaction p-values.
 #' @param interactionTerm Character or `NULL`. Optional interaction term.
@@ -1368,7 +1713,7 @@ summarizeMethylationGLM_T1Models <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLM_T1_significant_cpgs"`.
+#' @return A list with class `"dnaEPICO_methylationGLM_significant_cpgs"`.
 #'
 #' @description
 #' Collect the raw coefficient tables for CpGs whose phenotype main effect or
@@ -1376,7 +1721,7 @@ summarizeMethylationGLM_T1Models <- function(
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#' significant_cpgs <- collectSignificantCpGsMethylationGLM_T1(
+#' significant_cpgs <- collectSignificantCpGsMethylationGLM(
 #'   modelResults = ex$modelResults,
 #'   pvalThreshold = 1,
 #'   verbose = FALSE,
@@ -1385,14 +1730,14 @@ summarizeMethylationGLM_T1Models <- function(
 #' names(significant_cpgs)
 #'
 #' @export
-collectSignificantCpGsMethylationGLM_T1 <- function(
+collectSignificantCpGsMethylationGLM <- function(
     modelResults,
     pvalThreshold = 0.05,
     interactionTerm = NULL,
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLM_T1.txt"
+    log_file = "log_methylationGLM.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   threshold <- as.numeric(pvalThreshold[[1L]])
@@ -1401,10 +1746,36 @@ collectSignificantCpGsMethylationGLM_T1 <- function(
   for (phenotype in names(modelResults$fits)) {
     fit_list <- modelResults$fits[[phenotype]]
     phenotype_hits <- list()
+    if (
+      !is.null(modelResults$summaryCache) &&
+        !is.null(modelResults$summaryCache[[phenotype]]) &&
+        optionalTermMatchesMethylationModels(
+          requested = interactionTerm,
+          cached = modelResults$settings$interactionTerm
+        )
+    ) {
+      cached_summary <- modelResults$summaryCache[[phenotype]]
+      if (nrow(cached_summary) > 0L && !is.na(threshold)) {
+        hit_cpgs <- unique(cached_summary$CpG[cached_summary[["Pr(>|t|)"]] < threshold])
+        hit_cpgs <- hit_cpgs[!is.na(hit_cpgs) & hit_cpgs %in% names(fit_list)]
+        for (cpg in hit_cpgs) {
+          model_obj <- fit_list[[cpg]]
+          if (is.null(model_obj) || inherits(model_obj, "dnaEPICO_methylationGLM_fit_error")) {
+            next
+          }
+          if (!is.null(model_obj$coef)) {
+            phenotype_hits[[cpg]] <- as.data.frame(model_obj$coef)
+          }
+        }
+      }
+
+      retained[[phenotype]] <- phenotype_hits
+      next
+    }
 
     for (cpg in names(fit_list)) {
       model_obj <- fit_list[[cpg]]
-      if (is.null(model_obj) || inherits(model_obj, "dnaEPICO_methylationGLM_T1_fit_error")) {
+      if (is.null(model_obj) || inherits(model_obj, "dnaEPICO_methylationGLM_fit_error")) {
         next
       }
 
@@ -1413,7 +1784,7 @@ collectSignificantCpGsMethylationGLM_T1 <- function(
         next
       }
 
-      matched_rows <- findCoefficientRowsMethylationGLM_T1(
+      matched_rows <- findCoefficientRowsMethylationGLM(
         coefNames = rownames(coef_table),
         variable = phenotype,
         interactionTerm = interactionTerm
@@ -1443,12 +1814,12 @@ collectSignificantCpGsMethylationGLM_T1 <- function(
     log_path = log_path
   )
 
-  structure(retained, class = "dnaEPICO_methylationGLM_T1_significant_cpgs")
+  structure(retained, class = "dnaEPICO_methylationGLM_significant_cpgs")
 }
 #' Plot diagnostic summaries for one-timepoint methylation GLMs
 #'
-#' @param modelSummaries Object returned by `summarizeMethylationGLM_T1Models()`.
-#' @param preparedData Object returned by `prepareMethylationGLM_T1Data()`.
+#' @param modelSummaries Object returned by `summarizeMethylationGLMModels()`.
+#' @param preparedData Object returned by `prepareMethylationGLMData()`.
 #' @param fdrThreshold Numeric. False-discovery-rate threshold used to highlight
 #'   CpGs in the diagnostic plots.
 #' @param padjmethod Character. P-value adjustment method passed to
@@ -1467,17 +1838,17 @@ collectSignificantCpGsMethylationGLM_T1 <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLM_T1_diagnostic_plots"`
+#' @return A list with class `"dnaEPICO_methylationGLM_diagnostic_plots"`
 #'   containing the generated `ggplot2` objects, genomic inflation factors, and
 #'   any saved TIFF file paths.
 #'
 #' @description
 #' Create Q-Q and residual-diagnostic plots from the CpG summary tables returned
-#' by `summarizeMethylationGLM_T1Models()`.
+#' by `summarizeMethylationGLMModels()`.
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#' diagnostic_plots <- plotMethylationGLM_T1Diagnostics(
+#' diagnostic_plots <- plotMethylationGLMDiagnostics(
 #'   modelSummaries = ex$modelSummaries,
 #'   preparedData = ex$preparedData,
 #'   display = FALSE,
@@ -1487,7 +1858,7 @@ collectSignificantCpGsMethylationGLM_T1 <- function(
 #' names(diagnostic_plots$plots)
 #'
 #' @export
-plotMethylationGLM_T1Diagnostics <- function(
+plotMethylationGLMDiagnostics <- function(
     modelSummaries,
     preparedData,
     fdrThreshold = 0.05,
@@ -1500,7 +1871,7 @@ plotMethylationGLM_T1Diagnostics <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLM_T1.txt"
+    log_file = "log_methylationGLM.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   summary_list <- modelSummaries$summaries
@@ -1665,13 +2036,13 @@ plotMethylationGLM_T1Diagnostics <- function(
       inflationFactors = inflation_factors,
       files = saved_files
     ),
-    class = "dnaEPICO_methylationGLM_T1_diagnostic_plots"
+    class = "dnaEPICO_methylationGLM_diagnostic_plots"
   )
 }
 
 #' Annotate one-timepoint GLM summary tables with array annotation metadata
 #'
-#' @param modelSummaries Object returned by `summarizeMethylationGLM_T1Models()`
+#' @param modelSummaries Object returned by `summarizeMethylationGLMModels()`
 #'   or a named list of CpG summary data frames.
 #' @param annotationObject Character package/object name, annotation data frame,
 #'   or annotation object understood by `minfi::getAnnotation()`.
@@ -1683,7 +2054,7 @@ plotMethylationGLM_T1Diagnostics <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLM_T1_annotation"`
+#' @return A list with class `"dnaEPICO_methylationGLM_annotation"`
 #'   containing the annotated summary table and any requested annotation columns
 #'   that were unavailable in the chosen annotation object.
 #'
@@ -1693,7 +2064,7 @@ plotMethylationGLM_T1Diagnostics <- function(
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#' annotation_data <- annotateMethylationGLM_T1Summaries(
+#' annotation_data <- annotateMethylationGLMSummaries(
 #'   modelSummaries = ex$modelSummaries,
 #'   annotationObject = ex$annotationData,
 #'   annotationCols = "Name,chr,pos",
@@ -1703,7 +2074,7 @@ plotMethylationGLM_T1Diagnostics <- function(
 #' names(annotation_data)
 #'
 #' @export
-annotateMethylationGLM_T1Summaries <- function(
+annotateMethylationGLMSummaries <- function(
     modelSummaries,
     annotationObject,
     annotationCols = c(
@@ -1718,7 +2089,7 @@ annotateMethylationGLM_T1Summaries <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLM_T1.txt"
+    log_file = "log_methylationGLM.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   summary_list <- modelSummaries
@@ -1727,7 +2098,7 @@ annotateMethylationGLM_T1Summaries <- function(
   }
 
   annotation_cols <- splitOptionMinfiEwasWater(annotationCols, sep = ",")
-  annotation_df <- coerceAnnotationDataMethylationGLM_T1(annotationObject)
+  annotation_df <- coerceAnnotationDataMethylationGLM(annotationObject)
 
   merged_summary_list <- lapply(
     names(summary_list),
@@ -1803,18 +2174,18 @@ annotateMethylationGLM_T1Summaries <- function(
       annotationColumnsUsed = available_annotation_cols,
       missingAnnotationCols = missing_annotation_cols
     ),
-    class = "dnaEPICO_methylationGLM_T1_annotation"
+    class = "dnaEPICO_methylationGLM_annotation"
   )
 }
 
 #' Write optional disk outputs for one-timepoint GLM analyses
 #'
-#' @param modelResults Object returned by `fitMethylationGLM_T1Models()`.
-#' @param modelSummaries Object returned by `summarizeMethylationGLM_T1Models()`.
+#' @param modelResults Object returned by `fitMethylationGLMModels()`.
+#' @param modelSummaries Object returned by `summarizeMethylationGLMModels()`.
 #' @param annotatedResults Object returned by
-#'   `annotateMethylationGLM_T1Summaries()` or a compatible data frame.
+#'   `annotateMethylationGLMSummaries()` or a compatible data frame.
 #' @param significantCpGs Object returned by
-#'   `collectSignificantCpGsMethylationGLM_T1()` or `NULL`.
+#'   `collectSignificantCpGsMethylationGLM()` or `NULL`.
 #' @param outputRData Character. Directory used for serialized model and summary
 #'   outputs.
 #' @param summaryTxtDir Character. Directory used for tab-delimited summary
@@ -1833,7 +2204,7 @@ annotateMethylationGLM_T1Summaries <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_methylationGLM_T1_paths"` containing
+#' @return A list with class `"dnaEPICO_methylationGLM_paths"` containing
 #'   the paths of the files written to disk.
 #'
 #' @description
@@ -1842,20 +2213,20 @@ annotateMethylationGLM_T1Summaries <- function(
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
-#' annotation_data <- annotateMethylationGLM_T1Summaries(
+#' annotation_data <- annotateMethylationGLMSummaries(
 #'   modelSummaries = ex$modelSummaries,
 #'   annotationObject = ex$annotationData,
 #'   annotationCols = "Name,chr,pos",
 #'   verbose = FALSE,
 #'   logs = FALSE
 #' )
-#' significant_cpgs <- collectSignificantCpGsMethylationGLM_T1(
+#' significant_cpgs <- collectSignificantCpGsMethylationGLM(
 #'   modelResults = ex$modelResults,
 #'   pvalThreshold = 1,
 #'   verbose = FALSE,
 #'   logs = FALSE
 #' )
-#' output_paths <- writeMethylationGLM_T1Outputs(
+#' output_paths <- writeMethylationGLMOutputs(
 #'   modelResults = ex$modelResults,
 #'   modelSummaries = ex$modelSummaries,
 #'   annotatedResults = annotation_data,
@@ -1872,7 +2243,7 @@ annotateMethylationGLM_T1Summaries <- function(
 #' names(output_paths)
 #'
 #' @export
-writeMethylationGLM_T1Outputs <- function(
+writeMethylationGLMOutputs <- function(
     modelResults,
     modelSummaries,
     annotatedResults,
@@ -1886,7 +2257,7 @@ writeMethylationGLM_T1Outputs <- function(
     verbose = FALSE,
     logs = FALSE,
     log_dir = NULL,
-    log_file = "log_methylationGLM_T1.txt"
+    log_file = "log_methylationGLM.txt"
 ) {
   log_path <- resolveLogPathMinfiEwasWater(logs = logs, log_dir = log_dir, log_file = log_file)
   dir.create(outputRData, recursive = TRUE, showWarnings = FALSE)
@@ -1951,14 +2322,14 @@ writeMethylationGLM_T1Outputs <- function(
     annotated_df <- annotatedResults$data
   }
   annotated_file <- file.path(annotatedGLMOut, "annotatedGLM.xlsx")
-  dictionary <- buildAnnotatedWorkbookDictionaryMethylationGLM_T1(
+  dictionary <- buildAnnotatedWorkbookDictionaryMethylationGLM(
     columns = colnames(annotated_df),
     modelDescription = "Pvalue from GLM model",
     formulaText = modelResults$formulas,
     modelLabel = "GLM",
-    responseLabel = inferMethylationValueLabelMethylationGLM_T1(modelResults)
+    responseLabel = inferMethylationValueLabelMethylationGLM(modelResults)
   )
-  writeAnnotatedWorkbookMethylationGLM_T1(
+  writeAnnotatedWorkbookMethylationGLM(
     annotated_df = annotated_df,
     file = annotated_file,
     resultSheet = "annotatedGLM",
@@ -1995,6 +2366,6 @@ writeMethylationGLM_T1Outputs <- function(
       significantCpGFiles = significant_files,
       annotatedGLM = annotated_file
     ),
-    class = "dnaEPICO_methylationGLM_T1_paths"
+    class = "dnaEPICO_methylationGLM_paths"
   )
 }

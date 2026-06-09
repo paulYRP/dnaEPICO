@@ -86,7 +86,7 @@ collectFigureInventoryDnamReport <- function(
 #'   figures.
 #' @param svaDir Character. Directory containing SVA or batch-effect figures.
 #' @param glmDir Character. Directory containing GLM figures.
-#' @param glmmDir Character. Directory containing GLMM figures.
+#' @param lmeDir Character. Directory containing LME figures.
 #' @param figDir Character. Directory used for generated report figure assets.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write progress messages to
@@ -128,8 +128,8 @@ prepareDnamReportInputs <- function(
     preprocessingDir = file.path("figures", "preprocessingMinfiEwasWater", "qc"),
     postprocessingDir = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
     svaDir = file.path("figures", "svaEnmix"),
-    glmDir = file.path("figures", "methylationGLM_T1"),
-    glmmDir = file.path("figures", "methylationGLMM_T1T2"),
+    glmDir = file.path("figures", "methylationGLM"),
+    lmeDir = file.path("figures", "methylationLME"),
     figDir = file.path(outputDir, "assets", "figures"),
     verbose = FALSE,
     logs = FALSE,
@@ -167,10 +167,10 @@ prepareDnamReportInputs <- function(
       patterns = c("\\.jpg$", "\\.jpeg$", "\\.png$", "\\.svg$", "\\.tif$", "\\.tiff$"),
       label = "GLM"
     ),
-    glmm = collectFigureInventoryDnamReport(
-      directory = glmmDir,
+    lme = collectFigureInventoryDnamReport(
+      directory = lmeDir,
       patterns = c("\\.jpg$", "\\.jpeg$", "\\.png$", "\\.svg$", "\\.tif$", "\\.tiff$"),
-      label = "GLMM"
+      label = "LME"
     )
   )
 
@@ -282,7 +282,7 @@ renderDnamReport <- function(
 #' @param metricTab Character. Directory containing Metrics figures.
 #' @param glmTab Character or `NULL`. XLSX workbook shown in the GLM Analysis tab.
 #'   When `NULL`, the path is inferred from the Makefile output layout.
-#' @param lmerTab Character or `NULL`. XLSX workbook shown in the LMER Analysis tab.
+#' @param lmeTab Character or `NULL`. XLSX workbook shown in the LME Analysis tab.
 #'   When `NULL`, the path is inferred from the Makefile output layout.
 #' @param logTab Character. Directory containing workflow logs shown in the Logs
 #'   tab.
@@ -364,7 +364,7 @@ dnamReport <- function(
     svaTab = file.path("figures", "svaEnmix"),
     metricTab = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
     glmTab = NULL,
-    lmerTab = NULL,
+    lmeTab = NULL,
     logTab = outputDir,
     verbose = FALSE,
     logs = FALSE,
@@ -411,6 +411,14 @@ resolve_report_path <- function(path, base = root_dir) {
   }
   normalizePath(file.path(base, path), winslash = "/", mustWork = FALSE)
 }
+resolve_first_existing_report_path <- function(paths, base = root_dir) {
+  resolved <- vapply(paths, resolve_report_path, character(1), base = base, USE.NAMES = FALSE)
+  existing <- resolved[file.exists(resolved)]
+  if (length(existing) > 0L) {
+    return(existing[[1L]])
+  }
+  resolved[[1L]]
+}
 
 project_name <- projectName
 qc_dir <- resolve_report_path(enmixTab)
@@ -455,17 +463,17 @@ sample_detection_path <- if (is.null(sampleDetectionPath) || !nzchar(sampleDetec
   resolve_report_path(sampleDetectionPath)
 }
 glm_table_path <- if (is.null(glmTab) || !nzchar(glmTab)) {
-  resolve_report_path(file.path("data", model_name, "methylationGLM_T1", "annotatedGLM.xlsx"))
+  resolve_report_path(file.path("data", model_name, "methylationGLM", "annotatedGLM.xlsx"))
 } else {
   resolve_report_path(glmTab)
 }
-lmer_table_path <- if (is.null(lmerTab) || !nzchar(lmerTab)) {
-  resolve_report_path(file.path("data", model_name, "methylationGLMM_T1T2", "annotatedLME.xlsx"))
+lme_table_path <- if (is.null(lmeTab) || !nzchar(lmeTab)) {
+  resolve_report_path(file.path("data", model_name, "methylationLME", "annotatedLME.xlsx"))
 } else {
-  resolve_report_path(lmerTab)
+  resolve_report_path(lmeTab)
 }
-glm_dir <- resolve_report_path(file.path("figures", model_name, "methylationGLM_T1"))
-glmm_dir <- resolve_report_path(file.path("figures", model_name, "methylationGLMM_T1T2"))
+glm_dir <- resolve_report_path(file.path("figures", model_name, "methylationGLM"))
+lme_dir <- resolve_report_path(file.path("figures", model_name, "methylationLME"))
 logo_candidates <- c(
   logoPath,
   system.file("extdata", "dnaEPICO.svg", package = "dnaEPICO"),
@@ -622,6 +630,12 @@ copy_log_asset <- function(src_path, output_name) {
     source_path = slash(src_path),
     asset_path = slash(file.path("assets", "logs", output_name))
   )
+}
+
+copy_first_existing_log_asset <- function(src_paths, output_name) {
+  existing <- src_paths[file.exists(src_paths)]
+  src_path <- if (length(existing) > 0L) existing[[1L]] else src_paths[[1L]]
+  copy_log_asset(src_path, output_name)
 }
 
 copy_figure_assets <- function(src_dir, asset_subdir) {
@@ -1484,7 +1498,7 @@ summarize_logs <- function(log_assets) {
     data = "Data Preparation",
     batch = "Batch Effect",
     glm = "GLM",
-    lmer = "LMER"
+    lme = "LME"
   )
   rows <- lapply(names(log_assets), function(name) {
     asset <- log_assets[[name]]
@@ -1655,14 +1669,14 @@ make_logs_notes <- function(log_summary) {
     data = "displays phenotype preparation, timepoint splitting, and methylation matrix export steps",
     batch = "displays the hidden-effect and surrogate-variable analysis workflow",
     glm = "displays the generalised linear model workflow and CpG annotation steps",
-    lmer = "displays the linear mixed-effects model workflow and CpG annotation steps"
+    lme = "displays the linear mixed-effects model workflow and CpG annotation steps"
   )
   labels <- c(
     methylation = "Methylation Analysis",
     data = "Data Preparation",
     batch = "Batch Effect",
     glm = "GLM Analysis",
-    lmer = "LMER Analysis"
+    lme = "LME Analysis"
   )
 
   notes <- c(
@@ -1724,7 +1738,7 @@ build_report_page <- function(
     batch_effect_notes,
     metrics_notes,
     glm_notes,
-    lmer_notes,
+    lme_notes,
     logs_notes
 ) {
   overview <- sprintf(
@@ -1737,7 +1751,7 @@ build_report_page <- function(
   batch_effect_paragraph <- tab_report_paragraph(batch_effect_notes, "displays SVA and batch-effect figures")
   metrics_paragraph <- tab_report_paragraph(metrics_notes, "displays post-filtering methylation metric figures")
   glm_paragraph <- tab_report_paragraph(glm_notes, "displays the annotated generalised linear model results table")
-  lmer_paragraph <- tab_report_paragraph(lmer_notes, "displays the annotated linear mixed-effects model results table")
+  lme_paragraph <- tab_report_paragraph(lme_notes, "displays the annotated linear mixed-effects model results table")
   logs_paragraph <- tab_report_paragraph(logs_notes, "displays workflow log files for each analysis stage")
 
   c(
@@ -1762,7 +1776,7 @@ build_report_page <- function(
     html_section("Batch Effect", batch_effect_paragraph),
     html_section("Metrics", metrics_paragraph),
     html_section("GLM", glm_paragraph),
-    html_section("LMER", lmer_paragraph),
+    html_section("LME", lme_paragraph),
     html_section("Logs", logs_paragraph),
     "</div>",
     "</div>",
@@ -1867,7 +1881,7 @@ post_process_dashboard_titles <- function(
     quality_control_titles = character(),
     batch_effect_titles = character(),
     glm_table_title = "Table 1. Generalised Linear Model Results and Genomic Annotation of CpG Sites by Phenotype(s)",
-    lmer_table_title = "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and Timepoint"
+    lme_table_title = "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and Timepoint"
 ) {
 rewrite_logo_links <- function(project_dir, href = "./index.html") {
   docs_dir <- file.path(project_dir, "docs")
@@ -1933,8 +1947,8 @@ rewrite_logo_links <- function(project_dir, href = "./index.html") {
   )
 
   inject_card_headers(
-    file.path(docs_dir, "lmer.html"),
-    lmer_table_title
+    file.path(docs_dir, "lme.html"),
+    lme_table_title
   )
 
   inject_card_headers(
@@ -1944,7 +1958,7 @@ rewrite_logo_links <- function(project_dir, href = "./index.html") {
       "Data Preparation",
       "Batch Effect",
       "GLM Analysis",
-      "LMER Analysis"
+      "LME Analysis"
     )
   )
   rewrite_logo_links(project_dir, href = "./index.html")
@@ -1957,7 +1971,7 @@ prepared_report <- prepareDnamReportInputs(
   postprocessingDir = postprocessing_dir,
   svaDir = sva_dir,
   glmDir = glm_dir,
-  glmmDir = glmm_dir,
+  lmeDir = lme_dir,
   figDir = fig_dir,
   verbose = FALSE,
   logs = FALSE,
@@ -1996,13 +2010,13 @@ log_assets <- list(
     file.path(logs_dir, "log_svaEnmix.txt"),
     "svaEnmix.txt"
   ),
-  glm = copy_log_asset(
-    file.path(logs_dir, "log_methylationGLM_T1.txt"),
-    "methylationGLM_T1.txt"
+  glm = copy_first_existing_log_asset(
+    file.path(logs_dir, "log_methylationGLM.txt"),
+    "methylationGLM.txt"
   ),
-  lmer = copy_log_asset(
-    file.path(logs_dir, "log_methylationGLMM_T1T2.txt"),
-    "methylationGLMM_T1T2.txt"
+  lme = copy_first_existing_log_asset(
+    file.path(logs_dir, "log_methylationLME.txt"),
+    "methylationLME.txt"
   )
 )
 
@@ -2099,8 +2113,8 @@ glm_table_description <- paste(
   "The Relation_to_Island column indicates whether the CpG site is located in an OpenSea, Shore, Shelf, or CpG island region.",
   "The GencodeV41_Group column provides additional gene-region annotation based on GENCODE version 41, including transcript or transcription start site information where applicable."
 )
-lmer_table_title <- "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and Timepoint"
-lmer_table_description <- paste(
+lme_table_title <- "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and Timepoint"
+lme_table_description <- paste(
   "`Table 1` presents CpG methylation probes analysed using a linear mixed-effects model with the `lmer` package to assess phenotype-related methylation changes across timepoints.",
   "Each row represents one CpG site, with model results and genomic annotation information.",
   "The IlmnID column gives the unique Illumina probe identifier, while Name provides the probe label used in the analysis or annotation file.",
@@ -2132,7 +2146,7 @@ batch_effect_notes <- make_batch_effect_notes(
   sva_summary
 )
 glm_notes <- glm_table_description
-lmer_notes <- lmer_table_description
+lme_notes <- lme_table_description
 logs_notes <- make_logs_notes(log_summary)
 
 if (file.exists(logo_source_path)) {
@@ -2167,8 +2181,8 @@ quarto_yml <- c(
   '        text: "Metrics"',
   "      - href: glm.qmd",
   '        text: "GLM Analysis"',
-  "      - href: lmer.qmd",
-  '        text: "LMER Analysis"',
+  "      - href: lme.qmd",
+  '        text: "LME Analysis"',
   "      - href: report.qmd",
   '        text: "Report"',
   "      - href: logs.qmd",
@@ -2617,17 +2631,17 @@ glm_page <- compose_page(
   )
 )
 
-lmer_page <- compose_page(
-  title = "LMER Analysis",
-  notes = lmer_notes,
+lme_page <- compose_page(
+  title = "LME Analysis",
+  notes = lme_notes,
   body_lines = c(
     build_xlsx_table_section(
-      title = lmer_table_title,
-      data_path = lmer_table_path,
+      title = lme_table_title,
+      data_path = lme_table_path,
       sheet = "annotatedLME",
       page_length = 10L,
       preview_rows = 25L,
-      var_prefix = "lmer_results",
+      var_prefix = "lme_results",
       interactive = TRUE
     )
   )
@@ -2701,14 +2715,14 @@ logs_page <- compose_page(
     sprintf("render_log_block(%s, 'GLM Analysis')", r_string(log_assets$glm$asset_path)),
     "```",
     "",
-    "### LMER Analysis",
+    "### LME Analysis",
     "",
     "Displays the linear mixed-effects model log, including timepoint interaction testing and CpG annotation steps.",
     "",
     "```{r}",
     "#| echo: false",
     "#| results: asis",
-    sprintf("render_log_block(%s, 'LMER Analysis')", r_string(log_assets$lmer$asset_path)),
+    sprintf("render_log_block(%s, 'LME Analysis')", r_string(log_assets$lme$asset_path)),
     "```"
   )
 )
@@ -2722,7 +2736,7 @@ report_page <- build_report_page(
   batch_effect_notes = batch_effect_notes,
   metrics_notes = metrics_notes,
   glm_notes = glm_notes,
-  lmer_notes = lmer_notes,
+  lme_notes = lme_notes,
   logs_notes = logs_notes
 )
 
@@ -2742,7 +2756,7 @@ write_utf8(file.path(project_dir, "metrics.qmd"), metrics_page)
 write_utf8(file.path(project_dir, "quality-control.qmd"), quality_control_page)
 write_utf8(file.path(project_dir, "batch-effect.qmd"), batch_effect_page)
 write_utf8(file.path(project_dir, "glm.qmd"), glm_page)
-write_utf8(file.path(project_dir, "lmer.qmd"), lmer_page)
+write_utf8(file.path(project_dir, "lme.qmd"), lme_page)
 write_utf8(file.path(project_dir, "report.qmd"), report_page)
 write_utf8(file.path(project_dir, "logs.qmd"), logs_page)
 
@@ -2758,7 +2772,7 @@ source_files <- file.path(
     "quality-control.qmd",
     "batch-effect.qmd",
     "glm.qmd",
-    "lmer.qmd",
+    "lme.qmd",
     "report.qmd",
     "logs.qmd"
   )
@@ -2808,7 +2822,7 @@ if (nzchar(quarto_bin)) {
       quality_control_titles = quality_control_figure_titles,
       batch_effect_titles = batch_effect_figure_titles,
       glm_table_title = glm_table_title,
-      lmer_table_title = lmer_table_title
+      lme_table_title = lme_table_title
     )
     emitLogMinfiEwasWater(
       c(

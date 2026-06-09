@@ -29,7 +29,7 @@ endif
 # ===============================================
 # DIRECTORIES
 # ===============================================
-LOGS_DIR := $(abspath logs)
+LOGS_DIR = logs
 DATA_DIR = data
 RDATA_DIR = rData
 RESULTS_DIR = results
@@ -37,8 +37,8 @@ FIGURES_DIR = figures
 STEP1 = preprocessingMinfiEwasWater
 STEP2 = svaEnmix
 STEP3 = preprocessingPheno
-STEP4 = methylationGLM_T1
-STEP5 = methylationGLMM_T1T2
+STEP4 = methylationGLM
+STEP5 = methylationLME
 STEP6 = reports
 METRICS_DIR = metrics
 IDAT_DIR = idats
@@ -72,6 +72,7 @@ SENTRIX_ID_COLUMN = Sentrix_ID
 SENTRIX_POSITION_COLUMN = Sentrix_Position
 BASENAME_COLUMN = Basename
 TIME_VAR = Timepoint
+METHYLATION_SCALE = beta
 PHENO_ORDER = $(SAMPLE_ID);$(TIME_VAR);$(SEX_COLUMN);PredSex;$(BASENAME_COLUMN);$(SENTRIX_ID_COLUMN);$(SENTRIX_POSITION_COLUMN)
 
 # STEP 4-5 PARAMETERS
@@ -106,7 +107,7 @@ EPICV2_MANIFEST_CH_BLAT = TRUE
 EPICV2_MANIFEST_MISSING_POS = TRUE
 EPICV2_MANIFEST_MISMATCH_POS = FALSE
 MAF_THRESHOLD = 0.1
-PLOT_GROUP_VAR = TreatvControl_Time1_vs_Time2
+PLOT_GROUP_VAR = TreatmentGroup
 LC_REF = salivaEPIC
 
 # ===============================================
@@ -137,7 +138,9 @@ SIGNIFICANT_CPG_PVAL = 0.1
 PHENOTYPES_LME = TreatmentGroup
 PERSON_VAR = person
 LME_LIBS = lme4,lmerTest
-INTERACTION_LME = TreatvControl_Time1_vs_Time2
+LME_CORRELATION_STRUCTURE = none
+LME_CORRELATION_VAR = NULL
+INTERACTION_LME = NULL
 SAVE_SIGNIFICANT_INTERACTIONS = TRUE
 SIGNIFICANT_INTERACTION_PVAL = 0.1
 
@@ -187,6 +190,16 @@ ifeq ($(INTERACTION_LME),NULL)
   INTERACTION_LME_ARG = NULL
 else
   INTERACTION_LME_ARG = '$(INTERACTION_LME)'
+endif
+
+ifeq ($(strip $(LME_CORRELATION_VAR)),)
+  LME_CORRELATION_VAR_ARG = NULL
+else
+ifeq ($(strip $(LME_CORRELATION_VAR)),NULL)
+  LME_CORRELATION_VAR_ARG = NULL
+else
+  LME_CORRELATION_VAR_ARG = '$(LME_CORRELATION_VAR)'
+endif
 endif
 
 # ===============================================

@@ -528,7 +528,7 @@ exampleMethylationGLMStateDnaEpico <- function() {
             )
             save(phenoBT1, file = input_path)
 
-            prepared_data <- prepareMethylationGLM_T1Data(
+            prepared_data <- prepareMethylationGLMData(
                 inputPheno = input_path,
                 phenotypes = "status",
                 covariates = "sex,age",
@@ -537,13 +537,13 @@ exampleMethylationGLMStateDnaEpico <- function() {
                 verbose = FALSE,
                 logs = FALSE
             )
-            model_results <- fitMethylationGLM_T1Models(
+            model_results <- fitMethylationGLMModels(
                 preparedData = prepared_data,
                 nCores = 1,
                 verbose = FALSE,
                 logs = FALSE
             )
-            model_summaries <- summarizeMethylationGLM_T1Models(
+            model_summaries <- summarizeMethylationGLMModels(
                 modelResults = model_results,
                 preparedData = prepared_data,
                 summaryResidualSD = TRUE,
@@ -571,11 +571,11 @@ exampleMethylationGLMStateDnaEpico <- function() {
     )
 }
 
-exampleMethylationGLMMStateDnaEpico <- function() {
+exampleMethylationLMEStateDnaEpico <- function() {
     getCachedExampleDnaEpico(
-        key = "methylation_glmm",
+        key = "methylation_lme",
         builder = function() {
-            temp_dir <- exampleTempDirDnaEpico("dnaEPICO-glmm-example-")
+            temp_dir <- exampleTempDirDnaEpico("dnaEPICO-lme-example-")
             input_path <- file.path(temp_dir, "phenoBT1T2.RData")
 
             phenoBT1T2 <- data.frame(
@@ -590,24 +590,24 @@ exampleMethylationGLMMStateDnaEpico <- function() {
             )
             save(phenoBT1T2, file = input_path)
 
-            prepared_data <- prepareMethylationGLMM_T1T2Data(
+            prepared_data <- prepareMethylationLMEData(
                 inputPheno = input_path,
                 personVar = "person",
                 timeVar = "Timepoint",
                 phenotypes = "score",
                 covariates = "sex",
-                factorVars = "sex,Timepoint",
+                factorVars = "sex",
                 cpgLimit = 2,
                 verbose = FALSE,
                 logs = FALSE
             )
-            model_results <- fitMethylationGLMM_T1T2Models(
+            model_results <- fitMethylationLMEModels(
                 preparedData = prepared_data,
                 nCores = 1,
                 verbose = FALSE,
                 logs = FALSE
             )
-            model_summaries <- summarizeMethylationGLMM_T1T2Models(
+            model_summaries <- summarizeMethylationLMEModels(
                 modelResults = model_results,
                 preparedData = prepared_data,
                 summaryPval = NA,
@@ -644,7 +644,7 @@ exampleDnamReportStateDnaEpico <- function() {
             postprocessing_dir <- file.path(temp_dir, "postprocessing")
             sva_dir <- file.path(temp_dir, "sva")
             glm_dir <- file.path(temp_dir, "glm")
-            glmm_dir <- file.path(temp_dir, "glmm")
+            lme_dir <- file.path(temp_dir, "lme")
             fig_dir <- file.path(temp_dir, "report-figures")
 
             createDummyImageDnaEpico(file.path(qc_dir, "qc.png"))
@@ -652,7 +652,7 @@ exampleDnamReportStateDnaEpico <- function() {
             createDummyImageDnaEpico(file.path(postprocessing_dir, "postprocessing.png"))
             createDummyImageDnaEpico(file.path(sva_dir, "sva.png"))
             createDummyImageDnaEpico(file.path(glm_dir, "glm.png"))
-            createDummyImageDnaEpico(file.path(glmm_dir, "glmm.png"))
+            createDummyImageDnaEpico(file.path(lme_dir, "lme.png"))
 
             prepared_report <- prepareDnamReportInputs(
                 outputDir = temp_dir,
@@ -661,7 +661,7 @@ exampleDnamReportStateDnaEpico <- function() {
                 postprocessingDir = postprocessing_dir,
                 svaDir = sva_dir,
                 glmDir = glm_dir,
-                glmmDir = glmm_dir,
+                lmeDir = lme_dir,
                 figDir = fig_dir,
                 verbose = FALSE,
                 logs = FALSE
