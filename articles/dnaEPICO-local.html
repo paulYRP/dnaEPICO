@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.28</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.29</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-07</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-local.Rmd" class="external-link"><code>vignettes/dnaEPICO-local.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-local.Rmd</code></div>
@@ -235,7 +235,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpt1GlM8/dnaEPICO-idat-example-206140a4916d"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpfXI1od/dnaEPICO-idat-example-205e1d6da46a"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -512,7 +512,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpt1GlM8/dnaEPICO-preprocessingPheno-example-20611ad73dda"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpfXI1od/dnaEPICO-preprocessingPheno-example-205e38ecb358"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -562,11 +562,17 @@ directory, the phenotype table, the three saved matrix files
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "dnaEPICO_preprocessingPheno"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "pheno"           "metricsData"     "timepointData"   "combinedData"   </span></span>
-<span><span class="co">#&gt; [5] "clockFoundation" "savedFiles"      "logFile"</span></span>
+<span><span class="co">#&gt;  [1] "pheno"                   "metricsData"            </span></span>
+<span><span class="co">#&gt;  [3] "timepointData"           "combinedData"           </span></span>
+<span><span class="co">#&gt;  [5] "methylationScale"        "methylationLabel"       </span></span>
+<span><span class="co">#&gt;  [7] "methylationObjectPrefix" "clockFoundation"        </span></span>
+<span><span class="co">#&gt;  [9] "savedFiles"              "logFile"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">$</span><span class="va">combinedData</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "timepoints" "suffix"     "pheno"      "phenoBeta"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">$</span><span class="va">combinedData</span><span class="op">$</span><span class="va">phenoBeta</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "timepoints"              "suffix"                 </span></span>
+<span><span class="co">#&gt; [3] "pheno"                   "phenoMethylation"       </span></span>
+<span><span class="co">#&gt; [5] "methylationScale"        "methylationObjectPrefix"</span></span>
+<span><span class="co">#&gt; [7] "phenoBeta"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">$</span><span class="va">combinedData</span><span class="op">$</span><span class="va">phenoMethylation</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Sample_Name Timepoint    Sex Age cg00000029 cg00000108</span></span>
 <span><span class="co">#&gt; 1          S1         1 Female  20       0.20       0.60</span></span>
 <span><span class="co">#&gt; 2          S2         1   Male  22       0.25       0.55</span></span>
@@ -576,10 +582,11 @@ directory, the phenotype table, the three saved matrix files
 <code>dnaEPICO_preprocessingPheno</code>, and
 <code>names(phenoResult)</code> shows the main returned components. The
 <code>combinedData</code> element groups the combined longitudinal
-objects, and <code>phenoResult$combinedData$phenoBeta</code> is the key
-downstream table for modeling. It combines phenotype columns and CpG
-beta values in a single data frame that can be passed to the GLM or GLMM
-functions.</p>
+objects, and <code>phenoResult$combinedData$phenoMethylation</code> is
+the key downstream table for modeling. By default it combines phenotype
+columns and CpG beta values in a single data frame that can be passed to
+the GLM or LME functions. Set <code>methylationScale = "m"</code> for
+M-values or <code>"cn"</code> for copy-number values.</p>
 <p>Arguments:</p>
 <ul>
 <li>
@@ -653,9 +660,9 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-06-07 09:08:58 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-06-09 07:47:50 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 47.812 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 54.279 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -699,7 +706,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.28                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.29                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>

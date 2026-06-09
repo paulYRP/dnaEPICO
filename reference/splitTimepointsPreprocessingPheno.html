@@ -19,7 +19,7 @@ modeling functions."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/a
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.28</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.29</span>
       </span>
     </div>
 
@@ -79,6 +79,7 @@ modeling functions.</p>
 <span>  SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span>,</span>
 <span>  timeVar <span class="op">=</span> <span class="st">"Timepoint"</span>,</span>
 <span>  timepoints <span class="op">=</span> <span class="st">"1,2"</span>,</span>
+<span>  methylationScale <span class="op">=</span> <span class="st">"beta"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  log_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -109,6 +110,11 @@ modeling functions.</p>
 <dt id="arg-timepoints">timepoints<a class="anchor" aria-label="anchor" href="#arg-timepoints"></a></dt>
 <dd><p>Character vector or comma-separated string of timepoints to
 retain.</p></dd>
+
+
+<dt id="arg-methylationscale">methylationScale<a class="anchor" aria-label="anchor" href="#arg-methylationscale"></a></dt>
+<dd><p>Character. Methylation metric to use for the merged
+modeling table. One of <code>"beta"</code>, <code>"m"</code>, or <code>"cn"</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>

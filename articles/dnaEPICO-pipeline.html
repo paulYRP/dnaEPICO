@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.28</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.29</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
                               <h4 data-toc-skip class="author">Divya
 Mehta</h4>
             <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-07</h4>
+      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-06-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-pipeline.Rmd" class="external-link"><code>vignettes/dnaEPICO-pipeline.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-pipeline.Rmd</code></div>
@@ -253,7 +253,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpLA1Jb4/dnaEPICO-idat-example-20cd58880a80"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpaBWm4H/dnaEPICO-idat-example-20ca3bc50c26"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -529,7 +529,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpLA1Jb4/dnaEPICO-preprocessingPheno-example-20cd3e718c40"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpaBWm4H/dnaEPICO-preprocessingPheno-example-20ca1f1c789b"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -576,16 +576,19 @@ files, and precomputed helper objects such as <code>metricsData</code>,
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phenoPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "timepoints"        "combinedPheno"     "combinedPhenoBeta"</span></span>
-<span><span class="co">#&gt; [4] "betaCSV"           "betaZIP"           "phenoCF"</span></span>
+<span><span class="co">#&gt; [1] "timepoints"               "combinedPheno"           </span></span>
+<span><span class="co">#&gt; [3] "combinedPhenoMethylation" "methylationScale"        </span></span>
+<span><span class="co">#&gt; [5] "methylationObjectPrefix"  "betaCSV"                 </span></span>
+<span><span class="co">#&gt; [7] "betaZIP"                  "phenoCF"                 </span></span>
+<span><span class="co">#&gt; [9] "combinedPhenoBeta"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phenoPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">$</span><span class="va">timepoints</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "1" "2"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">phenoPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">$</span><span class="va">timepoints</span><span class="op">[[</span><span class="st">"1"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoT1.csv"       "betaT1.RData"      "mT1.RData"        </span></span>
-<span><span class="co">#&gt; [4] "phenoBetaT1.RData"</span></span>
+<span><span class="co">#&gt; [4] "cnT1.RData"        "phenoBetaT1.RData" "phenoBetaT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">phenoPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"combinedPheno"</span>,</span>
-<span>  <span class="st">"combinedPhenoBeta"</span>,</span>
+<span>  <span class="st">"combinedPhenoMethylation"</span>,</span>
 <span>  <span class="st">"betaCSV"</span>,</span>
 <span>  <span class="st">"phenoCF"</span></span>
 <span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
@@ -598,10 +601,13 @@ shows the high-level output groups returned by the function.
 available timepoint-specific subsets. The <code>basename(...)</code>
 calls then show examples of the concrete files written for one timepoint
 and for the combined outputs. In this structure,
-<code>combinedPhenoBeta</code> is the merged phenotype-plus-beta object
-that becomes the direct input to the GLM and GLMM functions, while
-<code>betaCSV</code>, <code>betaZIP</code>, and <code>phenoCF</code> are
-the Clock Foundation exports.</p>
+<code>combinedPhenoMethylation</code> is the merged
+phenotype-plus-methylation object that becomes the direct input to the
+GLM and LME functions. It defaults to beta values, but can be written as
+M-values or copy-number values when <code>methylationScale</code> is
+changed. The <code>betaCSV</code>, <code>betaZIP</code>, and
+<code>phenoCF</code> outputs remain beta-based Clock Foundation
+exports.</p>
 <p>Arguments:</p>
 <ul>
 <li>
@@ -615,6 +621,11 @@ during alignment.</li>
 <code>timeVar = "Timepoint"</code>, <code>timepoints = "1,2"</code>,
 and <code>combineTimepoints = "1,2"</code> determine the
 timepoint-specific outputs and the combined longitudinal object.</li>
+<li>
+<code>methylationScale = "beta"</code> selects the merged modeling
+scale. Use <code>"m"</code> for M-values or <code>"cn"</code> for
+copy-number values. Clock Foundation exports continue to use beta
+values.</li>
 <li>
 <code>outputPheno</code>, <code>outputRData</code>,
 <code>outputRDataMerge</code>, and <code>outputDir</code> define the
@@ -645,7 +656,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpLA1Jb4/dnaEPICO-glm-example-20cddb0c6a0"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpaBWm4H/dnaEPICO-glm-example-20ca689cbc6d"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -657,7 +668,7 @@ directory, the saved merged phenotype-plus-beta input file
 produced during helper construction: <code>preparedData</code>,
 <code>modelResults</code>, and <code>modelSummaries</code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">glmPipelineResult</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/methylationGLM_T1.html">methylationGLM_T1</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">glmPipelineResult</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/methylationGLM.html">methylationGLM</a></span><span class="op">(</span></span>
 <span>  inputPheno <span class="op">=</span> <span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span>,</span>
 <span>  phenotypes <span class="op">=</span> <span class="st">"status"</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="st">"sex,age"</span>,</span>
@@ -681,7 +692,7 @@ produced during helper construction: <code>preparedData</code>,
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">glmPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "dnaEPICO_methylationGLM_T1_paths"</span></span>
+<span><span class="co">#&gt; [1] "dnaEPICO_methylationGLM_paths"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">glmPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "modelFiles"          "summaryFiles"        "summaryTxtFiles"    </span></span>
 <span><span class="co">#&gt; [4] "significantCpGFiles" "annotatedGLM"</span></span></code></pre></div>
@@ -739,69 +750,69 @@ longitudinal summary tables, and interaction-specific result files.</p>
 <p>The next chunk shows how to recreate the temporary combined
 longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">glmm_inputs</span> <span class="op">&lt;-</span> <span class="fu">dnaEPICO</span><span class="fu">:::</span><span class="fu">exampleMethylationGLMMStateDnaEpico</span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">lme_inputs</span> <span class="op">&lt;-</span> <span class="fu">dnaEPICO</span><span class="fu">:::</span><span class="fu">exampleMethylationLMEStateDnaEpico</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
-<span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpLA1Jb4/dnaEPICO-glmm-example-20cd7e80a9d8"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
+<span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpaBWm4H/dnaEPICO-lme-example-20ca117445d0"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p><code>glmm_inputs</code> plays the same role for the longitudinal
+<p><code>lme_inputs</code> plays the same role for the longitudinal
 example. The helper returns a list with the temporary directory, the
 saved combined longitudinal input file (<code>inputPath</code>), and the
 in-memory objects used to build that example: <code>preparedData</code>,
 <code>modelResults</code>, and <code>modelSummaries</code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">glmmPipelineResult</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2</a></span><span class="op">(</span></span>
-<span>  inputPheno <span class="op">=</span> <span class="va">glmm_inputs</span><span class="op">$</span><span class="va">inputPath</span>,</span>
-<span>  outputLogs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span><span class="op">)</span>,</span>
-<span>  outputRData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"rData"</span>, <span class="st">"models"</span><span class="op">)</span>,</span>
-<span>  outputPlots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"figures"</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">lmePipelineResult</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/methylationLME.html">methylationLME</a></span><span class="op">(</span></span>
+<span>  inputPheno <span class="op">=</span> <span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span>,</span>
+<span>  outputLogs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span><span class="op">)</span>,</span>
+<span>  outputRData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"rData"</span>, <span class="st">"models"</span><span class="op">)</span>,</span>
+<span>  outputPlots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"figures"</span><span class="op">)</span>,</span>
 <span>  personVar <span class="op">=</span> <span class="st">"person"</span>,</span>
 <span>  timeVar <span class="op">=</span> <span class="st">"Timepoint"</span>,</span>
 <span>  phenotypes <span class="op">=</span> <span class="st">"score"</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="st">"sex"</span>,</span>
-<span>  factorVars <span class="op">=</span> <span class="st">"sex,Timepoint"</span>,</span>
+<span>  factorVars <span class="op">=</span> <span class="st">"sex"</span>,</span>
 <span>  cpgLimit <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  nCores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  summaryPval <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  saveSignificantInteractions <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  significantInteractionDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
-<span>    <span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
+<span>    <span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
 <span>    <span class="st">"results"</span>,</span>
 <span>    <span class="st">"cpgs"</span>,</span>
-<span>    <span class="st">"methylationGLMM_T1T2"</span></span>
+<span>    <span class="st">"methylationLME"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  significantInteractionPval <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  saveTxtSummaries <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  summaryTxtDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
-<span>    <span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
+<span>    <span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
 <span>    <span class="st">"results"</span>,</span>
 <span>    <span class="st">"summary"</span>,</span>
-<span>    <span class="st">"methylationGLMM_T1T2"</span></span>
+<span>    <span class="st">"methylationLME"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  annotationPackage <span class="op">=</span> <span class="st">"IlluminaHumanMethylation450kanno.ilmn12.hg19"</span>,</span>
 <span>  annotationCols <span class="op">=</span> <span class="st">"Name,chr,pos"</span>,</span>
-<span>  annotatedLMEOut <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"annotated"</span><span class="op">)</span>,</span>
+<span>  annotatedLMEOut <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"annotated"</span><span class="op">)</span>,</span>
 <span>  display <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  saveOutputs <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">glmmPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "dnaEPICO_methylationGLMM_T1T2_paths"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">glmmPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">lmePipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "dnaEPICO_methylationLME_paths"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">lmePipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "modelFiles"                  "summaryFiles"               </span></span>
 <span><span class="co">#&gt; [3] "summaryTxtFiles"             "significantInteractionFiles"</span></span>
 <span><span class="co">#&gt; [5] "annotatedLME"</span></span></code></pre></div>
 <p>The returned <code>savedFiles</code> object records the groups of
 outputs written by the LME step.
-<code>names(glmmPipelineResult$savedFiles)</code> typically includes the
+<code>names(lmePipelineResult$savedFiles)</code> typically includes the
 model files, summary files, diagnostic plot files, summary text files,
 significant interaction exports, and the annotated longitudinal results
 table. This is the object to inspect when you want to confirm which
@@ -815,12 +826,12 @@ phenotype-plus-beta object.</li>
 <code>personVar</code> defines the participant identifier used for
 the random effect.</li>
 <li>
-<code>timeVar</code> defines the repeated-measures time
-variable.</li>
+<code>timeVar</code> defines the repeated-measures time variable
+used for longitudinal summaries and preprocessing checks.</li>
 <li>
-<code>phenotypes</code>, <code>covariates</code>, and
-<code>factorVars</code> define the fixed-effect portion of the mixed
-model.</li>
+<code>phenotypes</code>, <code>covariates</code>, and optional
+<code>interactionTerm</code> define the fixed-effect portion of the
+mixed model.</li>
 <li>
 <code>cpgLimit = 2</code> keeps the example short by fitting only
 two CpG models.</li>
@@ -887,8 +898,8 @@ executable path before calling <code><a href="../reference/dnamReport.html">dnam
 <span>  <span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span>, <span class="st">"log_preprocessingPheno.txt"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span>, <span class="st">"log_svaEnmix.txt"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span>, <span class="st">"log_methylationGLM_T1.txt"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">glmm_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span>, <span class="st">"log_methylationGLMM_T1T2.txt"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span>, <span class="st">"log_methylationGLM.txt"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span>, <span class="st">"log_methylationLME.txt"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">existing_logs</span> <span class="op">&lt;-</span> <span class="va">report_logs</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">report_logs</span><span class="op">)</span><span class="op">]</span></span>
@@ -924,7 +935,7 @@ executable path before calling <code><a href="../reference/dnamReport.html">dnam
 <span>    <span class="st">"metrics"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  glmTab <span class="op">=</span> <span class="va">glmPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">$</span><span class="va">annotatedGLM</span>,</span>
-<span>  lmerTab <span class="op">=</span> <span class="va">glmmPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">$</span><span class="va">annotatedLME</span>,</span>
+<span>  lmeTab <span class="op">=</span> <span class="va">lmePipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">$</span><span class="va">annotatedLME</span>,</span>
 <span>  logTab <span class="op">=</span> <span class="va">report_log_dir</span>,</span>
 <span>  detPPath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
 <span>    <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
@@ -943,8 +954,8 @@ executable path before calling <code><a href="../reference/dnamReport.html">dnam
 <div class="section level3">
 <h3 id="glm-model-structure-and-prs-terms">GLM model structure and PRS terms<a class="anchor" aria-label="anchor" href="#glm-model-structure-and-prs-terms"></a>
 </h3>
-<p>For each CpG, <code><a href="../reference/methylationGLM_T1.html">methylationGLM_T1()</a></code> fits a regression
-model of the form:</p>
+<p>For each CpG, <code><a href="../reference/methylationGLM.html">methylationGLM()</a></code> fits a regression model
+of the form:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>⋅</mo><msub><mtext mathvariant="normal">Covariate</mtext><mi>k</mi></msub><mo>+</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">
 \text{Methylation}_{CpG_i} =
 \beta_0 +
@@ -999,18 +1010,16 @@ of the model.</p>
 <div class="section level3">
 <h3 id="longitudinal-mixed-effects-structure">Longitudinal mixed-effects structure<a class="anchor" aria-label="anchor" href="#longitudinal-mixed-effects-structure"></a>
 </h3>
-<p>The longitudinal function <code><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2()</a></code> follows
-the same file-based pattern, but uses a mixed-effects model with a
+<p>The longitudinal function <code><a href="../reference/methylationLME.html">methylationLME()</a></code> follows the
+same file-based pattern, but uses a mixed-effects model with a
 participant-level random intercept. In schematic form:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Timepoint</mtext><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">Phenotype</mtext><mo>×</mo><mtext mathvariant="normal">Timepoint</mtext><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd><mtd columnalign="left" style="text-align: left"><mi>+</mi><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>3</mn></mrow></msub><mo>⋅</mo><msub><mtext mathvariant="normal">Covariate</mtext><mi>k</mi></msub><mo>+</mo><msub><mi>β</mi><mtext mathvariant="normal">PRS</mtext></msub><mo>⋅</mo><mtext mathvariant="normal">PRS</mtext><mo>+</mo><msub><mi>b</mi><mtext mathvariant="normal">person</mtext></msub><mo>+</mo><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">Phenotype</mtext><mo>×</mo><mtext mathvariant="normal">Interaction</mtext><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>2</mn></mrow></msub><mo>⋅</mo><msub><mtext mathvariant="normal">Covariate</mtext><mi>k</mi></msub><mo>+</mo><msub><mi>β</mi><mtext mathvariant="normal">PRS</mtext></msub><mo>⋅</mo><mtext mathvariant="normal">PRS</mtext><mo>+</mo><msub><mi>b</mi><mtext mathvariant="normal">person</mtext></msub><mo>+</mo><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
 \begin{aligned}
 \text{Methylation}_{CpG_i} =\;&amp;
 \beta_0 +
 \beta_1 \cdot \text{Phenotype} +
-\beta_2 \cdot \text{Timepoint} +
-\beta_3 \cdot (\text{Phenotype} \times \text{Timepoint}) \\
-&amp;+
-\sum_{k = 1}^{K} \beta_{k + 3} \cdot \text{Covariate}_k +
+\beta_2 \cdot (\text{Phenotype} \times \text{Interaction}) +
+\sum_{k = 1}^{K} \beta_{k + 2} \cdot \text{Covariate}_k +
 \beta_{\text{PRS}} \cdot \text{PRS} +
 b_{\text{person}} +
 \varepsilon
@@ -1030,10 +1039,11 @@ phenotype-plus-beta object</li>
 <code>personVar</code> for the participant identifier used in the
 random effect</li>
 <li>
-<code>timeVar</code> for the repeated-measures variable</li>
+<code>timeVar</code> for repeated-measures summaries and
+preprocessing checks</li>
 <li>
-<code>phenotypes</code>, <code>covariates</code>, and
-<code>factorVars</code> for the fixed-effect structure</li>
+<code>phenotypes</code>, <code>covariates</code>, and optional
+<code>interactionTerm</code> for the fixed-effect structure</li>
 <li>
 <code>prsMap</code> for phenotype-specific PRS terms</li>
 <li>
@@ -1163,7 +1173,7 @@ pipeline outputs are available.</p>
 <p>For example, the <code>f3</code> route builds the report from the
 Data, ENmix QC, Quality Control, Batch Effect, Metrics, Report, and Logs
 inputs. The <code>f4</code>, <code>f3lme</code>, and <code>all</code>
-routes additionally make the GLM and LMER tables available when the
+routes additionally make the GLM and LME tables available when the
 corresponding model outputs exist.</p>
 <p>The report target reads the same types of outputs generated in the
 examples above, organised under the Makefile project layout: the
@@ -1223,7 +1233,7 @@ endif
 # ===============================================
 # DIRECTORIES
 # ===============================================
-LOGS_DIR := $(abspath logs)
+LOGS_DIR = logs
 DATA_DIR = data
 RDATA_DIR = rData
 RESULTS_DIR = results
@@ -1231,8 +1241,8 @@ FIGURES_DIR = figures
 STEP1 = preprocessingMinfiEwasWater
 STEP2 = svaEnmix
 STEP3 = preprocessingPheno
-STEP4 = methylationGLM_T1
-STEP5 = methylationGLMM_T1T2
+STEP4 = methylationGLM
+STEP5 = methylationLME
 STEP6 = reports
 METRICS_DIR = metrics
 IDAT_DIR = idats
@@ -1266,6 +1276,7 @@ SENTRIX_ID_COLUMN = Sentrix_ID
 SENTRIX_POSITION_COLUMN = Sentrix_Position
 BASENAME_COLUMN = Basename
 TIME_VAR = Timepoint
+METHYLATION_SCALE = beta
 PHENO_ORDER = $(SAMPLE_ID);$(TIME_VAR);$(SEX_COLUMN);PredSex;$(BASENAME_COLUMN);$(SENTRIX_ID_COLUMN);$(SENTRIX_POSITION_COLUMN)
 
 # STEP 4-5 PARAMETERS
@@ -1300,7 +1311,7 @@ EPICV2_MANIFEST_CH_BLAT = TRUE
 EPICV2_MANIFEST_MISSING_POS = TRUE
 EPICV2_MANIFEST_MISMATCH_POS = FALSE
 MAF_THRESHOLD = 0.1
-PLOT_GROUP_VAR = TreatvControl_Time1_vs_Time2
+PLOT_GROUP_VAR = TreatmentGroup
 LC_REF = salivaEPIC
 
 # ===============================================
@@ -1331,7 +1342,9 @@ SIGNIFICANT_CPG_PVAL = 0.1
 PHENOTYPES_LME = TreatmentGroup
 PERSON_VAR = person
 LME_LIBS = lme4,lmerTest
-INTERACTION_LME = TreatvControl_Time1_vs_Time2
+LME_CORRELATION_STRUCTURE = none
+LME_CORRELATION_VAR = NULL
+INTERACTION_LME = NULL
 SAVE_SIGNIFICANT_INTERACTIONS = TRUE
 SIGNIFICANT_INTERACTION_PVAL = 0.1
 
@@ -1381,6 +1394,16 @@ ifeq ($(INTERACTION_LME),NULL)
   INTERACTION_LME_ARG = NULL
 else
   INTERACTION_LME_ARG = '$(INTERACTION_LME)'
+endif
+
+ifeq ($(strip $(LME_CORRELATION_VAR)),)
+  LME_CORRELATION_VAR_ARG = NULL
+else
+ifeq ($(strip $(LME_CORRELATION_VAR)),NULL)
+  LME_CORRELATION_VAR_ARG = NULL
+else
+  LME_CORRELATION_VAR_ARG = '$(LME_CORRELATION_VAR)'
+endif
 endif
 
 # ===============================================
@@ -1501,6 +1524,11 @@ basename.</li>
 <li>
 <code>TIME_VAR</code>: phenotype column used for repeated-measures
 or longitudinal workflows.</li>
+<li>
+<code>METHYLATION_SCALE</code>: methylation metric used in merged
+modeling tables; choose <code>beta</code>, <code>m</code>, or
+<code>cn</code>. The default is <code>beta</code>; Clock Foundation
+exports continue to use beta values.</li>
 <li>
 <code>PHENO_ORDER</code>: desired order of key phenotype columns in
 exported tables.</li>
@@ -1624,6 +1652,11 @@ separately.</li>
 <li>
 <code>COMBINE_TIMEPOINTS</code>: comma-separated timepoints combined
 into the longitudinal object.</li>
+<li>
+<code>METHYLATION_SCALE</code>: methylation metric used for the
+merged GLM/LME input. <code>beta</code> writes <code>phenoBeta*</code>,
+<code>m</code> writes <code>phenoM*</code>, and <code>cn</code> writes
+<code>phenoCN*</code>.</li>
 </ul>
 <p>These values determine how <code><a href="../reference/preprocessingPheno.html">preprocessingPheno()</a></code> splits
 and recombines the phenotype-methylation data.</p>
@@ -1635,10 +1668,10 @@ and recombines the phenotype-methylation data.</p>
 <li>
 <code>PHENOTYPES_GLM</code>: comma-separated phenotype variables
 that will be modelled one at a time by
-<code><a href="../reference/methylationGLM_T1.html">methylationGLM_T1()</a></code>.</li>
+<code><a href="../reference/methylationGLM.html">methylationGLM()</a></code>.</li>
 <li>
 <code>GLM_LIBS</code>: GLM implementation used by
-<code><a href="../reference/methylationGLM_T1.html">methylationGLM_T1()</a></code>.</li>
+<code><a href="../reference/methylationGLM.html">methylationGLM()</a></code>.</li>
 <li>
 <code>INTERACTION_GLM</code>: optional interaction term added to the
 fixed-effect part of the GLM; <code>NULL</code> omits the
@@ -1661,13 +1694,21 @@ significant-CpG exports.</li>
 <li>
 <code>PHENOTYPES_LME</code>: comma-separated phenotype variables
 that will be modelled one at a time by
-<code><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2()</a></code>.</li>
+<code><a href="../reference/methylationLME.html">methylationLME()</a></code>.</li>
 <li>
 <code>PERSON_VAR</code>: participant identifier used as the random
 effect grouping factor.</li>
 <li>
 <code>LME_LIBS</code>: mixed-effects libraries used by
-<code><a href="../reference/methylationGLMM_T1T2.html">methylationGLMM_T1T2()</a></code>.</li>
+<code><a href="../reference/methylationLME.html">methylationLME()</a></code>.</li>
+<li>
+<code>LME_CORRELATION_STRUCTURE</code>: residual correlation
+structure for the <code>nlme</code> LME backend; use <code>none</code>,
+<code>AR1</code>, or <code>CAR1</code>.</li>
+<li>
+<code>LME_CORRELATION_VAR</code>: variable used to order repeated
+observations within participant for <code>AR1</code> or
+<code>CAR1</code>; required for those structures.</li>
 <li>
 <code>INTERACTION_LME</code>: optional interaction term used in the
 longitudinal model; <code>NULL</code> omits the interaction.</li>
@@ -1736,9 +1777,9 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-06-07 09:10:34 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-06-09 07:49:33 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.516 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.623 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1782,7 +1823,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.28                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.29                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
