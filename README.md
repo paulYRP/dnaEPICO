@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dnaEPICO <img src="inst/extdata/dnaEPICORM.svg" align="right" width="140" />
+# dnaEPICO <img src="https://raw.githubusercontent.com/paulYRP/dnaEPICO/devel/inst/extdata/dnaEPICORM.svg" align="right" width="140" />
 
 <!-- badges: start -->
 
@@ -15,11 +15,11 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 <!-- badges: end -->
 
-<br clear="right" />
+<br clear="right" /> <br /> <br />
 
 <p align="center">
 
-<img src="inst/extdata/dnaEPICO.gif" alt="dnaEPICO workflow preview" width="650" />
+<img src="https://raw.githubusercontent.com/paulYRP/dnaEPICO/devel/inst/extdata/dnaEPICO.gif" alt="dnaEPICO workflow preview" width="650" />
 </p>
 
 dnaEPICO aims to provide a **modular and reproducible pipeline** for
