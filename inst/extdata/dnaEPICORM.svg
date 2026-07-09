@@ -1,7 +1,7 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="1024" height="1024" viewBox="0 0 1024 1024" enable-background="new 0 0 1024 1024" xml:space="preserve">
-<polygon points="512,24 990,262 990,762 512,1000 34,762 34,262"
-	fill="#1A81C2" stroke="#87B13F" stroke-width="36" stroke-linejoin="round"/>
+<polygon points="512,10 1024,266 1024,758 512,1014 0,758 0,266"
+	fill="#1A81C2" stroke="#87B13F" stroke-width="32" stroke-linejoin="round"/>
 <g transform="translate(92 92) scale(0.82)">
 <path fill="#FFFFFF" opacity="1.000000" stroke="none" 
 	d="
