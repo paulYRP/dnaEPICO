@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.30</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.31</span>
       </span>
     </div>
 
@@ -84,11 +84,14 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="dnaepico">dnaEPICO<a class="anchor" aria-label="anchor" href="#dnaepico"></a>
+<div class="page-header"><h1 id="dnaepico-">dnaEPICO <img src="inst/extdata/dnaEPICORM.svg" align="right" width="140"><a class="anchor" aria-label="anchor" href="#dnaepico-"></a>
 </h1></div>
 <!-- badges: start -->
 
 <!-- badges: end -->
+<p><br clear="right"></p>
+<p align="center">
+<img src="inst/extdata/dnaEPICO.gif" alt="dnaEPICO workflow preview" width="650"></p>
 <p>dnaEPICO aims to provide a <strong>modular and reproducible pipeline</strong> for preprocessing and statistically analysing Illumina DNA methylation array data from the EPICv2, EPIC, and 450K platforms.</p>
 <p>The package integrates preprocessing, quality control, phenotype merging, generalised linear models (GLM), linear mixed-effects models (LME), and automated report generation. It is designed to operate on both local machines and High-Performance Computing (HPC) environments through a <strong>GNU Make–based workflow</strong>.</p>
 <div class="section level2">
@@ -130,25 +133,25 @@
 </h2>
 <p>Below is the citation output from using <code>citation('dnaEPICO')</code> in R. Please run this yourself to check for any updates on how to cite <strong>dnaEPICO</strong>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"dnaEPICO"</span><span class="op">)</span>, bibtex <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data,</span></span>
-<span><span class="co">#&gt; generated as part of 10.3390/epigenomes9040039</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Ruiz P, Mehta D (2025). "dnaEPICO: Analysis Pipeline for Illumina DNA</span></span>
-<span><span class="co">#&gt;   Methylation Array Data." _Epigenomes_. doi:10.3390/epigenomes9040039</span></span>
-<span><span class="co">#&gt;   &lt;https://doi.org/10.3390/epigenomes9040039&gt;,</span></span>
-<span><span class="co">#&gt;   &lt;https://bioconductor.org/packages/dnaEPICO&gt;.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   @Article{,</span></span>
-<span><span class="co">#&gt;     title = {dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data},</span></span>
-<span><span class="co">#&gt;     doi = {10.3390/epigenomes9040039},</span></span>
-<span><span class="co">#&gt;     journal = {Epigenomes},</span></span>
-<span><span class="co">#&gt;     author = {Paul Ruiz and Divya Mehta},</span></span>
-<span><span class="co">#&gt;     year = {2025},</span></span>
-<span><span class="co">#&gt;     url = {https://bioconductor.org/packages/dnaEPICO},</span></span>
-<span><span class="co">#&gt;   }</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"dnaEPICO"</span><span class="op">)</span>, bibtex <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="do">## dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data,</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="do">## generated as part of 10.3390/epigenomes9040039</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="do">##   Ruiz P, Mehta D (2025). "dnaEPICO: Analysis Pipeline for Illumina DNA</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="do">##   Methylation Array Data." _Epigenomes_. doi:10.3390/epigenomes9040039</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="do">##   &lt;https://doi.org/10.3390/epigenomes9040039&gt;,</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="do">##   &lt;https://bioconductor.org/packages/dnaEPICO&gt;.</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="do">## A BibTeX entry for LaTeX users is</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="do">##   @Article{,</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="do">##     title = {dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data},</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="do">##     doi = {10.3390/epigenomes9040039},</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="do">##     journal = {Epigenomes},</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="do">##     author = {Paul Ruiz and Divya Mehta},</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="do">##     year = {2025},</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="do">##     url = {https://bioconductor.org/packages/dnaEPICO},</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="do">##   }</span></span></code></pre></div>
 <p>Please note that the <code>dnaEPICO</code> was only made possible thanks to many other R and bioinformatics software authors, which are cited either in the vignettes and/or the paper(s) describing this package.</p>
 </div>
 <div class="section level2">
@@ -236,7 +239,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer>
