@@ -4,16 +4,7 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-    collapse = TRUE,
-    comment = "#>",
-    fig.path = "man/figures/README-",
-    out.width = "100%"
-)
-```
-
-# dnaEPICO
+# dnaEPICO <img src="inst/extdata/dnaEPICORM.svg" align="right" width="140" />
 
 <!-- badges: start -->
 [![GitHub issues](https://img.shields.io/github/issues/paulYRP/dnaEPICO)](https://github.com/paulYRP/dnaEPICO/issues)
@@ -22,6 +13,10 @@ knitr::opts_chunk$set(
 [![codecov](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg?token=5ZD6K3SMHB)](https://codecov.io/gh/paulYRP/dnaEPICO)
 
 <!-- badges: end -->
+
+<br clear="right" />
+
+<p align="center"><img src="inst/extdata/dnaEPICO.gif" alt="dnaEPICO workflow preview" width="650" /></p>
 
 dnaEPICO aims to provide a **modular and reproducible pipeline** for preprocessing and statistically analysing Illumina DNA methylation array data from the EPICv2, EPIC, and 450K platforms.
 

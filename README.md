@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dnaEPICO
+# dnaEPICO <img src="inst/extdata/dnaEPICORM.svg" align="right" width="140" />
 
 <!-- badges: start -->
 
@@ -14,6 +14,13 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 [![codecov](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg?token=5ZD6K3SMHB)](https://codecov.io/gh/paulYRP/dnaEPICO)
 
 <!-- badges: end -->
+
+<br clear="right" />
+
+<p align="center">
+
+<img src="inst/extdata/dnaEPICO.gif" alt="dnaEPICO workflow preview" width="650" />
+</p>
 
 dnaEPICO aims to provide a **modular and reproducible pipeline** for
 preprocessing and statistically analysing Illumina DNA methylation array
@@ -75,25 +82,26 @@ Please run this yourself to check for any updates on how to cite
 
 ``` r
 print(citation("dnaEPICO"), bibtex = TRUE)
-#> dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data,
-#> generated as part of 10.3390/epigenomes9040039
-#> 
-#>   Ruiz P, Mehta D (2025). "dnaEPICO: Analysis Pipeline for Illumina DNA
-#>   Methylation Array Data." _Epigenomes_. doi:10.3390/epigenomes9040039
-#>   <https://doi.org/10.3390/epigenomes9040039>,
-#>   <https://bioconductor.org/packages/dnaEPICO>.
-#> 
-#> A BibTeX entry for LaTeX users is
-#> 
-#>   @Article{,
-#>     title = {dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data},
-#>     doi = {10.3390/epigenomes9040039},
-#>     journal = {Epigenomes},
-#>     author = {Paul Ruiz and Divya Mehta},
-#>     year = {2025},
-#>     url = {https://bioconductor.org/packages/dnaEPICO},
-#>   }
 ```
+
+    ## dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data,
+    ## generated as part of 10.3390/epigenomes9040039
+    ## 
+    ##   Ruiz P, Mehta D (2025). "dnaEPICO: Analysis Pipeline for Illumina DNA
+    ##   Methylation Array Data." _Epigenomes_. doi:10.3390/epigenomes9040039
+    ##   <https://doi.org/10.3390/epigenomes9040039>,
+    ##   <https://bioconductor.org/packages/dnaEPICO>.
+    ## 
+    ## A BibTeX entry for LaTeX users is
+    ## 
+    ##   @Article{,
+    ##     title = {dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data},
+    ##     doi = {10.3390/epigenomes9040039},
+    ##     journal = {Epigenomes},
+    ##     author = {Paul Ruiz and Divya Mehta},
+    ##     year = {2025},
+    ##     url = {https://bioconductor.org/packages/dnaEPICO},
+    ##   }
 
 Please note that the `dnaEPICO` was only made possible thanks to many
 other R and bioinformatics software authors, which are cited either in

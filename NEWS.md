@@ -1,4 +1,4 @@
-CHANGES IN VERSION 0.99.30
+CHANGES IN VERSION 0.99.31
 ------------------------
 
 NEW FEATURES
