@@ -72,6 +72,8 @@
 # -----------------------------------------------------------
 
 # `dnaEPICO.svg` is the packaged logo used by `dnamReport()`.
+# `dnaEPICORM.svg` is the logo used in Readme and vignette files.
+# `dnaEPICO.gif` is a rasterized version of the logo used in the package manual.
 
 # -----------------------------------------------------------
 # Final location in the package

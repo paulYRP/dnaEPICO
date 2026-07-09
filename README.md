@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dnaEPICO <img src="https://raw.githubusercontent.com/paulYRP/dnaEPICO/devel/inst/extdata/dnaEPICORM.svg" align="right" width="140" />
+# dnaEPICO <img src="https://raw.githubusercontent.com/paulYRP/dnaEPICO/devel/inst/extdata/dnaEPICORM.svg" align="right" width="140" style="width:140px; height:auto; float:right; margin:0 -12px 16px 20px;" />
 
 <!-- badges: start -->
 
