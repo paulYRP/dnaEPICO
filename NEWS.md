@@ -1,7 +1,11 @@
-CHANGES IN VERSION 0.99.32
+CHANGES IN VERSION 0.99.33
 ------------------------
 
 NEW FEATURES
+
+    o [14-07-2026] Improved dnamReport() with lightweight paged and filterable
+      tables, faster tab loading, and phenotype-labelled GLM, LME, and nlme
+      formula notes.
 
     o [09-06-2026] Added methylation-scale support for beta, M-value, and copy
       number phenotype inputs while retaining beta values for cell-composition

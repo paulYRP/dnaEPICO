@@ -485,6 +485,16 @@ logo_source_path <- logo_candidates[file.exists(logo_candidates)][1]
 if (is.na(logo_source_path)) {
   logo_source_path <- ""
 }
+viewer_js_candidates <- c(
+  system.file("extdata", "cpg-viewer.js", package = "dnaEPICO"),
+  file.path(getwd(), "inst", "extdata", "cpg-viewer.js"),
+  file.path(root_dir, "inst", "extdata", "cpg-viewer.js")
+)
+viewer_js_candidates <- viewer_js_candidates[nzchar(viewer_js_candidates)]
+viewer_js_source_path <- viewer_js_candidates[file.exists(viewer_js_candidates)][1]
+if (is.na(viewer_js_source_path)) {
+  viewer_js_source_path <- ""
+}
 
 project_dir <- resolve_report_path(outputDir)
 assets_dir <- file.path(project_dir, "assets")
@@ -600,18 +610,6 @@ callout_lines <- function(text, type = "note") {
     ":::",
     ""
   )
-}
-
-to_dashboard_data_path <- function(raw_path) {
-  if (!nzchar(raw_path)) {
-    return("")
-  }
-
-  if (grepl("^[A-Za-z]:[/\\\\]|^/", raw_path)) {
-    return(slash(raw_path))
-  }
-
-  slash(file.path("..", "..", raw_path))
 }
 
 copy_log_asset <- function(src_path, output_name) {
@@ -880,154 +878,600 @@ build_figure_cards <- function(
   lines
 }
 
-build_xlsx_table_section <- function(
-    title,
-    data_path,
-    sheet,
-    page_length = 10L,
-    preview_rows = 25L,
-    var_prefix = NULL,
-    interactive = TRUE
-) {
-  if (is.null(var_prefix) || !nzchar(var_prefix)) {
-    var_prefix <- gsub("-", "_", slugify(title))
+js_quote_result_values <- function(values) {
+  missing <- is.na(values)
+  values <- enc2utf8(as.character(values))
+  values <- gsub("\\", "\\\\", values, fixed = TRUE)
+  values <- gsub("\"", "\\\"", values, fixed = TRUE)
+  values <- gsub("\r", "\\r", values, fixed = TRUE)
+  values <- gsub("\n", "\\n", values, fixed = TRUE)
+  values <- gsub("\t", "\\t", values, fixed = TRUE)
+  values <- gsub("<", "\\u003c", values, fixed = TRUE)
+  values <- gsub(">", "\\u003e", values, fixed = TRUE)
+  values <- gsub("&", "\\u0026", values, fixed = TRUE)
+  values <- paste0('"', values, '"')
+  values[missing] <- "null"
+  values
+}
+
+js_result_array <- function(values) {
+  paste0("[", paste(js_quote_result_values(values), collapse = ","), "]")
+}
+
+read_optional_workbook_sheet <- function(path, sheets, sheet) {
+  if (!(sheet %in% sheets)) {
+    return(data.frame())
+  }
+  tryCatch(
+    openxlsx::read.xlsx(path, sheet = sheet, check.names = FALSE),
+    error = function(e) data.frame()
+  )
+}
+
+metadata_frame_to_list <- function(metadata) {
+  if (!is.data.frame(metadata) || !all(c("Key", "Value") %in% names(metadata))) {
+    return(list())
+  }
+  values <- as.character(metadata$Value)
+  names(values) <- as.character(metadata$Key)
+  as.list(values[nzchar(names(values))])
+}
+
+split_report_metadata_values <- function(value) {
+  if (is.null(value) || !length(value) || is.na(value[[1L]]) || !nzchar(value[[1L]])) {
+    return(character())
+  }
+  values <- trimws(unlist(strsplit(as.character(value[[1L]]), ",", fixed = TRUE), use.names = FALSE))
+  unique(values[nzchar(values)])
+}
+
+extract_report_formula_phenotype <- function(formula) {
+  formula <- as.character(formula[[1L]])
+  rhs <- trimws(sub("^[^~]*~", "", formula))
+  quoted_term <- regmatches(rhs, regexpr("`[^`]+`", rhs, perl = TRUE))
+  if (length(quoted_term) && nzchar(quoted_term) && !identical(quoted_term, character(0))) {
+    return(substring(quoted_term, 2L, nchar(quoted_term) - 1L))
+  }
+  trimws(sub("\\s*(?:\\+|\\*|:|\\|).*", "", rhs, perl = TRUE))
+}
+
+resolve_report_formula_records <- function(dictionary, metadata = list()) {
+  empty_records <- data.frame(
+    phenotype = character(),
+    result_column = character(),
+    formula = character(),
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  if (!is.data.frame(dictionary) || !("Formula" %in% names(dictionary))) {
+    return(empty_records)
   }
 
+  keep <- !is.na(dictionary$Formula) & nzchar(trimws(as.character(dictionary$Formula)))
+  if (!any(keep)) {
+    return(empty_records)
+  }
+  formula_rows <- dictionary[keep, , drop = FALSE]
+  formulas <- as.character(formula_rows$Formula)
+  result_columns <- if ("Column" %in% names(formula_rows)) {
+    as.character(formula_rows$Column)
+  } else {
+    rep("", length(formulas))
+  }
+  explicit_phenotypes <- if ("Phenotype" %in% names(formula_rows)) {
+    as.character(formula_rows$Phenotype)
+  } else {
+    rep("", length(formulas))
+  }
+  known_phenotypes <- split_report_metadata_values(metadata$phenotypes)
+
+  phenotype_labels <- vapply(seq_along(formulas), function(index) {
+    if (!is.na(explicit_phenotypes[[index]]) && nzchar(trimws(explicit_phenotypes[[index]]))) {
+      return(trimws(explicit_phenotypes[[index]]))
+    }
+    if (length(known_phenotypes)) {
+      matches <- known_phenotypes[vapply(known_phenotypes, function(phenotype) {
+        grepl(paste0("`", phenotype, "`"), formulas[[index]], fixed = TRUE) ||
+          startsWith(result_columns[[index]], phenotype)
+      }, logical(1))]
+      if (length(matches)) {
+        return(matches[[1L]])
+      }
+    }
+    extracted <- extract_report_formula_phenotype(formulas[[index]])
+    if (nzchar(extracted)) extracted else result_columns[[index]]
+  }, character(1))
+
+  records <- data.frame(
+    phenotype = phenotype_labels,
+    result_column = result_columns,
+    formula = formulas,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  duplicate_key <- paste(records$phenotype, records$formula, sep = "\r")
+  records <- records[!duplicated(duplicate_key), , drop = FALSE]
+  rownames(records) <- NULL
+  records
+}
+
+last_log_field <- function(path, label) {
+  if (!file.exists(path)) {
+    return("")
+  }
+  lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
+  matches <- grep(paste0("^", label, ":"), trimws(lines), value = TRUE)
+  if (!length(matches)) {
+    return("")
+  }
+  trimws(sub("^[^:]+:", "", matches[[length(matches)]]))
+}
+
+resolve_lme_report_metadata <- function(metadata, dictionary, log_path) {
+  values <- metadata_frame_to_list(metadata)
+  fallback <- list(
+    libraries = last_log_field(log_path, "LME libraries"),
+    correlation_structure = last_log_field(log_path, "Correlation structure"),
+    correlation_variable = last_log_field(log_path, "Correlation variable"),
+    interaction_term = last_log_field(log_path, "Interaction term"),
+    annotation_columns = last_log_field(log_path, "Annotation columns used"),
+    missing_annotation_columns = last_log_field(log_path, "Missing annotation columns")
+  )
+  for (key in names(fallback)) {
+    if (is.null(values[[key]]) || !nzchar(values[[key]])) {
+      values[[key]] <- fallback[[key]]
+    }
+  }
+
+  if (is.null(values$backend) || !nzchar(values$backend)) {
+    values$backend <- if (grepl("nlme", values$libraries, ignore.case = TRUE)) {
+      "nlme"
+    } else if (grepl("lme4|lmerTest", values$libraries, ignore.case = TRUE)) {
+      "lme4"
+    } else {
+      ""
+    }
+  }
+  if (is.null(values$fitting_function) || !nzchar(values$fitting_function)) {
+    values$fitting_function <- if (identical(values$backend, "nlme")) {
+      "nlme::lme"
+    } else if (identical(values$backend, "lme4")) {
+      "lmerTest::lmer"
+    } else {
+      ""
+    }
+  }
+  if (is.null(values$correlation_structure) || !nzchar(values$correlation_structure)) {
+    values$correlation_structure <- "none"
+  }
+  if (is.null(values$correlation_variable) || !nzchar(values$correlation_variable)) {
+    values$correlation_variable <- "None"
+  }
+  if (is.null(values$interaction_term) || !nzchar(values$interaction_term)) {
+    values$interaction_term <- "None"
+  }
+  values
+}
+
+same_report_path <- function(source, target) {
+  source <- normalizePath(source, winslash = "/", mustWork = FALSE)
+  target <- normalizePath(target, winslash = "/", mustWork = FALSE)
+  if (identical(.Platform$OS.type, "windows")) {
+    identical(tolower(source), tolower(target))
+  } else {
+    identical(source, target)
+  }
+}
+
+write_table_viewer_assets <- function(
+    table_data,
+    var_prefix,
+    id_column,
+    downloads,
+    chunk_size = 5000L,
+    item_singular = "CpG",
+    item_plural = "CpGs",
+    search_label = "Find CpG",
+    search_placeholder = "e.g. cg00000029"
+) {
+  table_data <- as.data.frame(table_data, stringsAsFactors = FALSE, check.names = FALSE)
+  chunk_size <- max(100L, as.integer(chunk_size))
+  result_dir <- file.path(assets_dir, "results", var_prefix)
+  dir.create(result_dir, recursive = TRUE, showWarnings = FALSE)
+  stale_chunks <- list.files(result_dir, pattern = "^chunk-[0-9]+\\.js$", full.names = TRUE)
+  if (length(stale_chunks)) {
+    unlink(stale_chunks, force = TRUE)
+  }
+
+  n_rows <- nrow(table_data)
+  n_chunks <- if (n_rows) ceiling(n_rows / chunk_size) else 0L
+  chunk_rows <- vector("list", n_chunks)
+  if (n_chunks) {
+    for (chunk_idx in seq_len(n_chunks)) {
+      start <- (chunk_idx - 1L) * chunk_size + 1L
+      end <- min(chunk_idx * chunk_size, n_rows)
+      chunk <- table_data[start:end, , drop = FALSE]
+      encoded_columns <- lapply(chunk, js_quote_result_values)
+      encoded_rows <- if (nrow(chunk)) {
+        do.call(paste, c(encoded_columns, sep = ","))
+      } else {
+        character()
+      }
+      chunk_key <- paste0(var_prefix, ":", chunk_idx)
+      write_utf8(
+        file.path(result_dir, sprintf("chunk-%04d.js", chunk_idx)),
+        paste0(
+          "window.dnaEPICOResultChunks=window.dnaEPICOResultChunks||{};",
+          "window.dnaEPICOResultChunks[",
+          js_quote_result_values(chunk_key),
+          "]={rows:[",
+          paste0("[", encoded_rows, "]", collapse = ","),
+          "]};"
+        )
+      )
+      ids <- if (nzchar(id_column)) as.character(chunk[[id_column]]) else rep("", nrow(chunk))
+      ids <- ids[!is.na(ids)]
+      chunk_rows[[chunk_idx]] <- data.frame(
+        number = chunk_idx,
+        first_id = if (length(ids)) ids[[1L]] else "",
+        last_id = if (length(ids)) ids[[length(ids)]] else "",
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  chunk_index <- if (length(chunk_rows)) do.call(rbind, chunk_rows) else data.frame()
+
+  chunk_objects <- if (nrow(chunk_index)) {
+    vapply(
+      seq_len(nrow(chunk_index)),
+      function(i) {
+        paste0(
+          '{"number":', chunk_index$number[[i]],
+          ',"firstId":', js_quote_result_values(chunk_index$first_id[[i]]),
+          ',"lastId":', js_quote_result_values(chunk_index$last_id[[i]]),
+          "}"
+        )
+      },
+      character(1)
+    )
+  } else {
+    character()
+  }
+  download_objects <- if (length(downloads)) {
+    vapply(
+      downloads,
+      function(download) {
+        paste0(
+          '{"href":', js_quote_result_values(download$href),
+          ',"label":', js_quote_result_values(download$label),
+          "}"
+        )
+      },
+      character(1)
+    )
+  } else {
+    character()
+  }
+  manifest <- paste0(
+    "window.dnaEPICOResultManifests=window.dnaEPICOResultManifests||{};",
+    "window.dnaEPICOResultManifests[", js_quote_result_values(var_prefix), "]={",
+    '"key":', js_quote_result_values(var_prefix), ",",
+    '"columns":', js_result_array(names(table_data)), ",",
+    '"totalRows":', n_rows, ",",
+    '"chunkSize":', chunk_size, ",",
+    '"idColumn":', js_quote_result_values(id_column), ",",
+    '"basePath":', js_quote_result_values(paste0("assets/results/", var_prefix)), ",",
+    '"itemSingular":', js_quote_result_values(item_singular), ",",
+    '"itemPlural":', js_quote_result_values(item_plural), ",",
+    '"downloads":[', paste(download_objects, collapse = ","), "],",
+    '"chunks":[', paste(chunk_objects, collapse = ","), "]};"
+  )
+  write_utf8(file.path(result_dir, "manifest.js"), manifest)
+
+  list(
+    key = var_prefix,
+    columns = names(table_data),
+    n_rows = n_rows,
+    n_cols = ncol(table_data),
+    id_column = id_column,
+    item_singular = item_singular,
+    item_plural = item_plural,
+    search_label = search_label,
+    search_placeholder = search_placeholder,
+    manifest_path = paste0("assets/results/", var_prefix, "/manifest.js")
+  )
+}
+
+prepare_xlsx_table_assets <- function(
+    data_path,
+    sheet,
+    var_prefix,
+    analysis = c("glm", "lme"),
+    chunk_size = 5000L,
+    model_log_path = ""
+) {
+  analysis <- match.arg(analysis)
   source_data_path <- if (grepl("^[A-Za-z]:[/\\\\]|^/", data_path)) {
     data_path
   } else {
     file.path(root_dir, data_path)
   }
-
   if (!file.exists(source_data_path)) {
-    return(c(
-      sprintf("### %s", title),
-      "",
-      callout_lines(
-        paste0("Data file not found at `", slash(source_data_path), "`."),
-        type = "warning"
+    return(list(
+      ok = FALSE,
+      error = paste0("Data file not found at `", slash(source_data_path), "`."),
+      source_path = source_data_path,
+      analysis = analysis,
+      metadata = list()
+    ))
+  }
+
+  # Read from a report-local copy. This avoids transient unzip failures when
+  # workbooks are stored on OneDrive, network shares, or other synchronised
+  # filesystems, and the same copy is exposed as the XLSX download.
+  result_dir <- file.path(assets_dir, "results", var_prefix)
+  dir.create(result_dir, recursive = TRUE, showWarnings = FALSE)
+  xlsx_name <- basename(source_data_path)
+  xlsx_target <- file.path(result_dir, xlsx_name)
+  staged <- same_report_path(source_data_path, xlsx_target) ||
+    isTRUE(file.copy(source_data_path, xlsx_target, overwrite = TRUE))
+  if (!staged || !file.exists(xlsx_target)) {
+    return(list(
+      ok = FALSE,
+      error = paste0("Could not copy the workbook into the report assets from `", slash(source_data_path), "`."),
+      source_path = source_data_path,
+      analysis = analysis,
+      metadata = list()
+    ))
+  }
+
+  sheets <- tryCatch(openxlsx::getSheetNames(xlsx_target), error = function(e) character())
+  table_data <- tryCatch(
+    openxlsx::read.xlsx(xlsx_target, sheet = sheet, check.names = FALSE),
+    error = function(e) e
+  )
+  if (inherits(table_data, "error")) {
+    return(list(
+      ok = FALSE,
+      error = conditionMessage(table_data),
+      source_path = source_data_path,
+      analysis = analysis,
+      metadata = list()
+    ))
+  }
+  table_data <- as.data.frame(table_data, stringsAsFactors = FALSE, check.names = FALSE)
+  dictionary <- read_optional_workbook_sheet(xlsx_target, sheets, "dictionary")
+  workbook_metadata <- read_optional_workbook_sheet(xlsx_target, sheets, "metadata")
+  metadata <- if (identical(analysis, "lme")) {
+    resolve_lme_report_metadata(workbook_metadata, dictionary, model_log_path)
+  } else {
+    metadata_frame_to_list(workbook_metadata)
+  }
+  metadata$formula_records <- resolve_report_formula_records(dictionary, metadata)
+  metadata$formulas <- unique(metadata$formula_records$formula)
+
+  id_column <- if ("IlmnID" %in% names(table_data)) {
+    "IlmnID"
+  } else if ("CpG" %in% names(table_data)) {
+    "CpG"
+  } else if (ncol(table_data)) {
+    names(table_data)[[1L]]
+  } else {
+    ""
+  }
+  if (nzchar(id_column) && nrow(table_data) > 1L) {
+    table_data <- table_data[order(as.character(table_data[[id_column]]), na.last = TRUE), , drop = FALSE]
+    rownames(table_data) <- NULL
+  }
+
+  text_name <- paste0(sheet, ".tsv.gz")
+  text_target <- file.path(result_dir, text_name)
+  data.table::fwrite(
+    table_data,
+    file = text_target,
+    sep = "\t",
+    quote = TRUE,
+    na = "",
+    compress = "gzip",
+    showProgress = FALSE
+  )
+
+  viewer_assets <- write_table_viewer_assets(
+    table_data = table_data,
+    var_prefix = var_prefix,
+    id_column = id_column,
+    downloads = list(
+      list(
+        href = paste0("assets/results/", var_prefix, "/", xlsx_name),
+        label = "Download all results (XLSX)"
+      ),
+      list(
+        href = paste0("assets/results/", var_prefix, "/", text_name),
+        label = "Download all results (TSV.gz)"
       )
+    ),
+    chunk_size = chunk_size
+  )
+
+  c(list(
+    ok = TRUE,
+    error = NULL,
+    source_path = source_data_path,
+    analysis = analysis,
+    dictionary = dictionary,
+    metadata = metadata,
+    xlsx_path = paste0("assets/results/", var_prefix, "/", xlsx_name),
+    text_path = paste0("assets/results/", var_prefix, "/", text_name)
+  ), viewer_assets)
+}
+
+prepare_csv_table_assets <- function(
+    data_path,
+    var_prefix,
+    front_columns = character(),
+    chunk_size = 5000L
+) {
+  source_data_path <- if (grepl("^[A-Za-z]:[/\\\\]|^/", data_path)) {
+    data_path
+  } else {
+    file.path(root_dir, data_path)
+  }
+  if (!file.exists(source_data_path)) {
+    return(list(
+      ok = FALSE,
+      error = paste0("Data file not found at `", slash(source_data_path), "`."),
+      source_path = source_data_path,
+      metadata = list()
     ))
   }
 
   table_data <- tryCatch(
-    openxlsx::read.xlsx(source_data_path, sheet = sheet, check.names = FALSE),
+    utils::read.csv(source_data_path, check.names = FALSE),
     error = function(e) e
   )
-
   if (inherits(table_data, "error")) {
-    return(c(
-      sprintf("### %s", title),
-      "",
-      callout_lines(conditionMessage(table_data), type = "warning")
+    return(list(
+      ok = FALSE,
+      error = conditionMessage(table_data),
+      source_path = source_data_path,
+      metadata = list()
+    ))
+  }
+  table_data <- as.data.frame(table_data, stringsAsFactors = FALSE, check.names = FALSE)
+  front_columns <- front_columns[nzchar(front_columns) & front_columns %in% names(table_data)]
+  table_data <- table_data[, c(front_columns, setdiff(names(table_data), front_columns)), drop = FALSE]
+  id_column <- if (length(front_columns)) {
+    front_columns[[1L]]
+  } else if (ncol(table_data)) {
+    names(table_data)[[1L]]
+  } else {
+    ""
+  }
+  sort_columns <- unique(c(id_column, front_columns[-1L]))
+  sort_columns <- sort_columns[nzchar(sort_columns) & sort_columns %in% names(table_data)]
+  if (length(sort_columns) && nrow(table_data) > 1L) {
+    sort_values <- lapply(table_data[sort_columns], as.character)
+    table_data <- table_data[do.call(order, c(sort_values, list(na.last = TRUE))), , drop = FALSE]
+    rownames(table_data) <- NULL
+  }
+
+  result_dir <- file.path(assets_dir, "results", var_prefix)
+  dir.create(result_dir, recursive = TRUE, showWarnings = FALSE)
+  csv_name <- basename(source_data_path)
+  csv_target <- file.path(result_dir, csv_name)
+  staged <- same_report_path(source_data_path, csv_target) ||
+    isTRUE(file.copy(source_data_path, csv_target, overwrite = TRUE))
+  if (!staged || !file.exists(csv_target)) {
+    return(list(
+      ok = FALSE,
+      error = paste0("Could not copy the data file into the report assets from `", slash(source_data_path), "`."),
+      source_path = source_data_path,
+      metadata = list()
     ))
   }
 
-  if (!isTRUE(interactive)) {
-    if (is.finite(preview_rows) && nrow(table_data) > as.integer(preview_rows)) {
-      table_data <- utils::head(table_data, as.integer(preview_rows))
-    }
+  search_label <- if (nzchar(id_column)) paste("Find", id_column) else "Find row"
+  first_id <- if (nzchar(id_column) && nrow(table_data)) as.character(table_data[[id_column]][[1L]]) else ""
+  viewer_assets <- write_table_viewer_assets(
+    table_data = table_data,
+    var_prefix = var_prefix,
+    id_column = id_column,
+    downloads = list(list(
+      href = paste0("assets/results/", var_prefix, "/", csv_name),
+      label = "Download data (CSV)"
+    )),
+    chunk_size = chunk_size,
+    item_singular = "record",
+    item_plural = "records",
+    search_label = search_label,
+    search_placeholder = if (nzchar(first_id)) paste("e.g.", first_id) else "Enter an identifier"
+  )
 
-    header_cells <- paste0("    <th>", html_escape(names(table_data)), "</th>")
-    body_rows <- unlist(
-      lapply(seq_len(nrow(table_data)), function(i) {
-        row_values <- vapply(
-          table_data[i, , drop = FALSE],
-          function(value) {
-            if (is.na(value)) "" else as.character(value)
-          },
-          character(1)
-        )
-        c(
-          "  <tr>",
-          paste0("    <td>", html_escape(row_values), "</td>"),
-          "  </tr>"
-        )
-      }),
-      use.names = FALSE
+  c(list(
+    ok = TRUE,
+    error = NULL,
+    source_path = source_data_path,
+    metadata = list(),
+    csv_path = paste0("assets/results/", var_prefix, "/", csv_name)
+  ), viewer_assets)
+}
+
+build_result_table_section <- function(title, table_assets) {
+  if (!isTRUE(table_assets$ok)) {
+    return(c(
+      sprintf("### %s", title),
+      "",
+      callout_lines(table_assets$error, type = "warning")
+    ))
+  }
+
+  search_label <- if (!is.null(table_assets$search_label) && nzchar(table_assets$search_label)) {
+    table_assets$search_label
+  } else {
+    "Find identifier"
+  }
+  search_placeholder <- if (
+    !is.null(table_assets$search_placeholder) && nzchar(table_assets$search_placeholder)
+  ) {
+    table_assets$search_placeholder
+  } else {
+    "Enter an identifier"
+  }
+  pagination_lines <- function(position) {
+    c(
+      sprintf('  <div class="dnaepico-viewer-pagination dnaepico-viewer-pagination-%s">', position),
+      '    <button type="button" data-role="first" title="First page" aria-label="First page">&laquo;</button>',
+      '    <button type="button" data-role="previous" title="Previous page" aria-label="Previous page">&lsaquo;</button>',
+      '    <label>Page <input data-role="page-number" type="number" min="1" value="1" /></label>',
+      '    <span data-role="page-count"></span>',
+      '    <button type="button" data-role="next" title="Next page" aria-label="Next page">&rsaquo;</button>',
+      '    <button type="button" data-role="last" title="Last page" aria-label="Last page">&raquo;</button>',
+      "  </div>"
     )
-
-    return(c(
-      sprintf("### %s", title),
-      "",
-      '<div class="table-responsive">',
-      '  <table class="table table-striped table-sm">',
-      "  <thead>",
-      "  <tr>",
-      header_cells,
-      "  </tr>",
-      "  </thead>",
-      "  <tbody>",
-      body_rows,
-      "  </tbody>",
-      "  </table>",
-      "</div>",
-      ""
-    ))
   }
-
-  path_var <- paste0(var_prefix, "_path")
-  path_display_var <- paste0(var_prefix, "_path_display")
-  data_var <- paste0(var_prefix, "_data")
-  error_var <- paste0(var_prefix, "_error")
-  sheet_var <- paste0(var_prefix, "_sheet")
-  dashboard_data_path <- to_dashboard_data_path(data_path)
 
   c(
     sprintf("### %s", title),
     "",
-    "```{r}",
-    "#| echo: false",
-    "#| include: false",
-    sprintf("%s <- %s", path_var, r_string(dashboard_data_path)),
-    sprintf("%s <- %s", path_display_var, r_string(dashboard_data_path)),
-    sprintf("%s <- %s", sheet_var, r_string(sheet)),
-    sprintf("%s <- NULL", data_var),
-    sprintf("%s <- NULL", error_var),
-    sprintf("if (!nzchar(%s)) {", path_var),
-    sprintf("  %s <- 'No data file path is configured for this table.'", error_var),
-    sprintf("} else if (!file.exists(%s)) {", path_var),
-    sprintf("  %s <- paste0('Data file not found at `', %s, '`.')", error_var, path_display_var),
-    "} else {",
-    sprintf("  %s <- tryCatch(", data_var),
-    sprintf("    openxlsx::read.xlsx(%s, sheet = %s, check.names = FALSE),", path_var, sheet_var),
-    "    error = function(e) {",
-    sprintf("      %s <<- conditionMessage(e)", error_var),
-    "      NULL",
-    "    }",
-    "  )",
-    "}",
+    sprintf(
+      '<div class="dnaepico-cpg-viewer" data-result-key="%s">',
+      html_escape(table_assets$key)
+    ),
+    "",
+    "```{=html}",
+    '  <div class="dnaepico-viewer-toolbar">',
+    '    <label>Rows per page <select data-role="page-size"><option>25</option><option>50</option><option>100</option></select></label>',
+    sprintf(
+      '    <label>%s <input data-role="cpg-search" type="search" placeholder="%s" /></label>',
+      html_escape(search_label),
+      html_escape(search_placeholder)
+    ),
+    '    <button type="button" data-role="find-cpg">Find</button>',
+    '  </div>',
+    '  <div class="dnaepico-viewer-filter">',
+    '    <label>Filter column <select data-role="filter-column"><option value="">Choose a column</option></select></label>',
+    '    <label>Condition <select data-role="filter-operator"><option value="contains">contains</option><option value="equals">equals</option><option value="lt">&lt;</option><option value="lte">&le;</option><option value="gt">&gt;</option><option value="gte">&ge;</option></select></label>',
+    '    <label>Value <input data-role="filter-value" type="text" placeholder="e.g. 0.05" /></label>',
+    '    <button type="button" data-role="apply-filter">Apply filter</button>',
+    '    <button type="button" data-role="clear-filter" disabled>Clear</button>',
+    '    <span data-role="filter-summary" aria-live="polite"></span>',
+    '  </div>',
+    '  <div class="dnaepico-viewer-downloads" data-role="downloads"></div>',
+    '  <div class="dnaepico-viewer-status" data-role="status" aria-live="polite">Loading results…</div>',
+    pagination_lines("top"),
+    '  <div class="dnaepico-viewer-table-wrap">',
+    '    <table class="table table-striped table-sm dnaepico-viewer-table">',
+    '      <thead data-role="head"></thead>',
+    '      <tbody data-role="body"></tbody>',
+    '    </table>',
+    '  </div>',
+    pagination_lines("bottom"),
+    '  <noscript>JavaScript is required for paged browsing. Use a complete-file download instead.</noscript>',
     "```",
     "",
-    "```{r}",
-    "#| echo: false",
-    "#| results: asis",
-    sprintf("if (is.null(%s)) {", data_var),
-    "  cat('::: {.callout-warning}\\n')",
-    sprintf("  cat(%s, '\\n')", error_var),
-    "  cat(':::\\n')",
-    "}",
-    "```",
-    "",
-    "```{r}",
-    "#| echo: false",
-    sprintf("if (!is.null(%s)) {", data_var),
-    sprintf("  if (%s && requireNamespace('DT', quietly = TRUE)) {", if (isTRUE(interactive)) "TRUE" else "FALSE"),
-    "    DT::datatable(",
-    sprintf("      %s,", data_var),
-    "      filter = 'top',",
-    sprintf("      options = list(pageLength = %d, scrollX = TRUE, autoWidth = TRUE),", as.integer(page_length)),
-    "      rownames = FALSE",
-    "    )",
-    "  } else {",
-    "    knitr::kable(",
-    sprintf("      utils::head(%s, %d),", data_var, as.integer(preview_rows)),
-    "      format = 'html',",
-    "      table.attr = \"class='table table-striped table-sm'\"",
-    "    )",
-    "  }",
-    "}",
-    "```",
+    "</div>",
+    sprintf('<script src="%s"></script>', table_assets$manifest_path),
+    '<script src="assets/cpg-viewer.js"></script>',
     ""
   )
 }
@@ -1088,6 +1532,57 @@ format_count <- function(value) {
     return("not available")
   }
   format(as.integer(round(value)), big.mark = ",", scientific = FALSE, trim = TRUE)
+}
+
+format_model_formula <- function(value) {
+  value <- paste(as.character(value), collapse = "")
+  value <- gsub("`", "", value, fixed = TRUE)
+  value <- gsub("\\s+", " ", value, perl = TRUE)
+  value <- gsub("\\s+\\)", ")", value, perl = TRUE)
+  trimws(value)
+}
+
+build_model_formula_notes <- function(formula_records, model_label) {
+  if (!is.data.frame(formula_records) || !nrow(formula_records)) {
+    return(character())
+  }
+
+  display_formulas <- vapply(formula_records$formula, format_model_formula, character(1))
+  if (identical(tolower(model_label), "nlme")) {
+    display_formulas <- sub("^LME:", "nlme:", display_formulas, ignore.case = TRUE)
+  }
+  if (nrow(formula_records) == 1L) {
+    return(paste0(
+      "The recorded model formula is <code class=\"dnaepico-model-formula\">",
+      html_escape(display_formulas[[1L]]),
+      "</code>."
+    ))
+  }
+
+  formula_items <- vapply(seq_len(nrow(formula_records)), function(index) {
+    phenotype <- formula_records$phenotype[[index]]
+    if (is.na(phenotype) || !nzchar(trimws(phenotype))) {
+      phenotype <- paste("Model", index)
+    }
+    paste0(
+      '<div class="dnaepico-model-formula-item">',
+      "<strong>", html_escape(phenotype), "</strong>",
+      '<code class="dnaepico-model-formula">', html_escape(display_formulas[[index]]), "</code>",
+      "</div>"
+    )
+  }, character(1))
+
+  c(
+    sprintf("%d phenotype-specific models were fitted.", nrow(formula_records)),
+    paste0(
+      '<details class="dnaepico-model-formulas">',
+      "<summary>View recorded model formulas (", nrow(formula_records), ")</summary>",
+      '<div class="dnaepico-model-formula-list">',
+      paste(formula_items, collapse = ""),
+      "</div>",
+      "</details>"
+    )
+  )
 }
 
 format_decimal <- function(value, digits = 2L) {
@@ -1663,7 +2158,7 @@ make_batch_effect_notes <- function(items, figure_titles, figure_descriptions, s
   notes
 }
 
-make_logs_notes <- function(log_summary) {
+make_logs_notes <- function(log_summary, lme_label = "LME Analysis") {
   descriptions <- c(
     methylation = "displays methylation preprocessing, including IDAT loading, normalisation, filtering, and cell composition estimation",
     data = "displays phenotype preparation, timepoint splitting, and methylation matrix export steps",
@@ -1676,7 +2171,7 @@ make_logs_notes <- function(log_summary) {
     data = "Data Preparation",
     batch = "Batch Effect",
     glm = "GLM Analysis",
-    lme = "LME Analysis"
+    lme = lme_label
   )
 
   notes <- c(
@@ -1708,6 +2203,7 @@ html_section <- function(title, paragraphs) {
 
 strip_inline_markdown <- function(text) {
   text <- gsub("`([^`]+)`", "\\1", text, perl = TRUE)
+  text <- gsub("<[^>]+>", "", text, perl = TRUE)
   text <- gsub("\\s+", " ", text)
   trimws(text)
 }
@@ -1720,6 +2216,7 @@ sentence_case <- function(text) {
 }
 
 tab_report_paragraph <- function(notes, fallback) {
+  notes <- notes[!grepl("dnaepico-model-formulas", notes, fixed = TRUE)]
   notes <- strip_inline_markdown(notes)
   notes <- notes[nzchar(notes)]
   if (!length(notes)) {
@@ -1739,7 +2236,8 @@ build_report_page <- function(
     metrics_notes,
     glm_notes,
     lme_notes,
-    logs_notes
+    logs_notes,
+    lme_label = "LME Analysis"
 ) {
   overview <- sprintf(
     "This report is generated automatically from the available datasets, figures, tables, and workflow logs for the project."
@@ -1776,7 +2274,7 @@ build_report_page <- function(
     html_section("Batch Effect", batch_effect_paragraph),
     html_section("Metrics", metrics_paragraph),
     html_section("GLM", glm_paragraph),
-    html_section("LME", lme_paragraph),
+    html_section(sub(" Analysis$", "", lme_label), lme_paragraph),
     html_section("Logs", logs_paragraph),
     "</div>",
     "</div>",
@@ -1880,8 +2378,10 @@ post_process_dashboard_titles <- function(
     metrics_titles = character(),
     quality_control_titles = character(),
     batch_effect_titles = character(),
+    data_table_title = "Data Preview",
     glm_table_title = "Table 1. Generalised Linear Model Results and Genomic Annotation of CpG Sites by Phenotype(s)",
-    lme_table_title = "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and Timepoint"
+    lme_table_title = "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s)",
+    lme_label = "LME Analysis"
 ) {
 rewrite_logo_links <- function(project_dir, href = "./index.html") {
   docs_dir <- file.path(project_dir, "docs")
@@ -1916,6 +2416,11 @@ rewrite_logo_links <- function(project_dir, href = "./index.html") {
     titles <- sub("^Figure\\s+[0-9]+:\\s*", "", titles)
     sprintf("Figure %s: %s", seq_along(titles), titles)
   }
+
+  inject_card_headers(
+    file.path(docs_dir, "index.html"),
+    data_table_title
+  )
 
   inject_card_headers(
     file.path(docs_dir, "enmix-qc.html"),
@@ -1958,7 +2463,7 @@ rewrite_logo_links <- function(project_dir, href = "./index.html") {
       "Data Preparation",
       "Batch Effect",
       "GLM Analysis",
-      "LME Analysis"
+      lme_label
     )
   )
   rewrite_logo_links(project_dir, href = "./index.html")
@@ -1977,8 +2482,6 @@ prepared_report <- prepareDnamReportInputs(
   logs = FALSE,
   logDir = logs_dir
 )
-
-data_path_for_qmd <- to_dashboard_data_path(pheno_file)
 
 enmix_items <- copy_figure_assets(
   qc_dir,
@@ -2102,28 +2605,134 @@ batch_effect_figure_descriptions <- c(
   "pairwise distributions of the first three surrogate variables by Sentrix ID and Sentrix position",
   "sample distribution across the first two surrogate variables by Sentrix position"
 )
+data_table_assets <- prepare_csv_table_assets(
+  data_path = pheno_file,
+  var_prefix = "phenotype_data",
+  front_columns = c(
+    if (is.null(data_summary$participant_col)) "" else data_summary$participant_col,
+    if (is.null(data_summary$timepoint_col)) "" else data_summary$timepoint_col
+  )
+)
+glm_table_assets <- prepare_xlsx_table_assets(
+  data_path = glm_table_path,
+  sheet = "annotatedGLM",
+  var_prefix = "glm_results",
+  analysis = "glm",
+  model_log_path = file.path(logs_dir, "log_methylationGLM.txt")
+)
+lme_table_assets <- prepare_xlsx_table_assets(
+  data_path = lme_table_path,
+  sheet = "annotatedLME",
+  var_prefix = "lme_results",
+  analysis = "lme",
+  model_log_path = file.path(logs_dir, "log_methylationLME.txt")
+)
+
+lme_backend <- lme_table_assets$metadata$backend
+if (is.null(lme_backend) || !nzchar(lme_backend)) {
+  lme_backend <- "lme4"
+}
+lme_backend <- tolower(lme_backend)
+lme_analysis_label <- if (identical(lme_backend, "nlme")) "nlme Analysis" else "LME Analysis"
+lme_interaction_term <- lme_table_assets$metadata$interaction_term
+has_lme_interaction <- !is.null(lme_interaction_term) &&
+  nzchar(lme_interaction_term) &&
+  !tolower(lme_interaction_term) %in% c("none", "null", "na")
+
 glm_table_title <- "Table 1. Generalised Linear Model Results and Genomic Annotation of CpG Sites by Phenotype(s)"
-glm_table_description <- paste(
-  "`Table 1` presents CpG methylation probes analysed using a generalised linear model with the `glm2` package to assess their association with the selected phenotype(s).",
-  "Each row represents one CpG site, with statistical results and genomic annotation information.",
-  "The IlmnID column gives the unique Illumina probe identifier, while Name provides the probe label used in the analysis or annotation file.",
-  "The P.Value column reports the statistical evidence for association between methylation at each CpG site and the phenotype(s), where smaller values indicate stronger evidence before multiple-testing correction.",
-  "The chr and pos columns indicate the chromosome and genomic position of the probe.",
-  "The UCSC_RefGene_Group and UCSC_RefGene_Name columns describe the gene-related annotation and associated gene name, when available.",
-  "The Relation_to_Island column indicates whether the CpG site is located in an OpenSea, Shore, Shelf, or CpG island region.",
-  "The GencodeV41_Group column provides additional gene-region annotation based on GENCODE version 41, including transcript or transcription start site information where applicable."
-)
-lme_table_title <- "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and Timepoint"
-lme_table_description <- paste(
-  "`Table 1` presents CpG methylation probes analysed using a linear mixed-effects model with the `lmer` package to assess phenotype-related methylation changes across timepoints.",
-  "Each row represents one CpG site, with model results and genomic annotation information.",
-  "The IlmnID column gives the unique Illumina probe identifier, while Name provides the probe label used in the analysis or annotation file.",
-  "The phenotype:Timepoint P.Value column reports the statistical evidence for an interaction between the selected phenotype(s) and timepoint, where smaller values suggest stronger evidence of time-dependent methylation differences.",
-  "The chr and pos columns indicate the chromosome and genomic position of the probe.",
-  "The UCSC_RefGene_Group and UCSC_RefGene_Name columns describe the gene-related annotation and associated gene name, when available.",
-  "The Relation_to_Island column indicates whether the CpG site is located in an OpenSea, Shore, Shelf, or CpG island region.",
-  "The GencodeV41_Group column provides additional gene-region annotation based on GENCODE version 41."
-)
+lme_table_title <- if (has_lme_interaction) {
+  sprintf(
+    "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and %s",
+    lme_interaction_term
+  )
+} else {
+  "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s)"
+}
+
+describe_available_annotations <- function(columns) {
+  notes <- character()
+  if (all(c("IlmnID", "Name") %in% columns)) {
+    notes <- c(notes, "The `IlmnID` and `Name` columns identify each Illumina CpG probe.")
+  } else if ("IlmnID" %in% columns) {
+    notes <- c(notes, "The `IlmnID` column identifies each Illumina CpG probe.")
+  }
+  if (all(c("chr", "pos") %in% columns)) {
+    notes <- c(notes, "The `chr` and `pos` columns give the probe's genomic position.")
+  }
+  if (any(c("UCSC_RefGene_Group", "UCSC_RefGene_Name") %in% columns)) {
+    notes <- c(notes, "Available `UCSC_RefGene` columns provide gene-related annotation.")
+  }
+  if ("Relation_to_Island" %in% columns) {
+    notes <- c(notes, "`Relation_to_Island` reports the probe's CpG-island context.")
+  }
+  if ("GencodeV41_Group" %in% columns) {
+    notes <- c(notes, "`GencodeV41_Group` provides GENCODE version 41 gene-region annotation.")
+  }
+  notes
+}
+
+glm_table_description <- if (isTRUE(glm_table_assets$ok)) {
+  glm_p_columns <- grep("P\\.Value$|P\\.value$", glm_table_assets$columns, value = TRUE)
+  c(
+    "CpGs were analysed using a generalised linear model fitted with `glm2`.",
+    build_model_formula_notes(glm_table_assets$metadata$formula_records, "GLM"),
+    if (length(glm_p_columns)) {
+      paste0("The result p-value column(s) are `", paste(glm_p_columns, collapse = "`, `"), "`.")
+    },
+    describe_available_annotations(glm_table_assets$columns)
+  )
+} else {
+  "The annotated GLM result workbook was not available when this report was generated."
+}
+
+lme_table_description <- if (isTRUE(lme_table_assets$ok)) {
+  lme_p_columns <- grep("P\\.Value$|P\\.value$", lme_table_assets$columns, value = TRUE)
+  fitting_description <- if (identical(lme_backend, "nlme")) {
+    "CpGs were analysed using `nlme::lme()`."
+  } else {
+    "CpGs were analysed using `lmerTest::lmer()` with the `lme4` mixed-effects framework."
+  }
+  correlation_structure <- lme_table_assets$metadata$correlation_structure
+  correlation_variable <- lme_table_assets$metadata$correlation_variable
+  correlation_description <- if (
+    identical(lme_backend, "nlme") &&
+      !is.null(correlation_structure) &&
+      nzchar(correlation_structure) &&
+      !tolower(correlation_structure) %in% c("none", "null", "na")
+  ) {
+    sprintf(
+      "The `%s` residual correlation structure orders repeated observations using `%s`.",
+      correlation_structure,
+      if (is.null(correlation_variable) || !nzchar(correlation_variable)) "the configured correlation variable" else correlation_variable
+    )
+  } else {
+    character()
+  }
+  interaction_description <- if (has_lme_interaction) {
+    sprintf(
+      "The reported phenotype terms test their interaction with `%s`.",
+      lme_interaction_term
+    )
+  } else {
+    "No phenotype-by-time interaction was fitted; the reported p-value column(s) correspond to phenotype coefficient(s)."
+  }
+  formula_description <- build_model_formula_notes(
+    lme_table_assets$metadata$formula_records,
+    if (identical(lme_backend, "nlme")) "nlme" else "LME"
+  )
+  c(
+    fitting_description,
+    correlation_description,
+    interaction_description,
+    formula_description,
+    if (length(lme_p_columns)) {
+      paste0("The result p-value column(s) are `", paste(lme_p_columns, collapse = "`, `"), "`.")
+    },
+    describe_available_annotations(lme_table_assets$columns)
+  )
+} else {
+  "The annotated LME result workbook was not available when this report was generated."
+}
 
 data_notes <- make_data_notes(data_summary)
 metrics_notes <- make_metrics_notes(
@@ -2147,7 +2756,7 @@ batch_effect_notes <- make_batch_effect_notes(
 )
 glm_notes <- glm_table_description
 lme_notes <- lme_table_description
-logs_notes <- make_logs_notes(log_summary)
+logs_notes <- make_logs_notes(log_summary, lme_label = lme_analysis_label)
 
 if (file.exists(logo_source_path)) {
   dir.create(assets_dir, recursive = TRUE, showWarnings = FALSE)
@@ -2155,6 +2764,15 @@ if (file.exists(logo_source_path)) {
   if (!ok) {
     warning("Failed to copy navbar logo: ", logo_source_path)
   }
+}
+if (file.exists(viewer_js_source_path)) {
+  dir.create(assets_dir, recursive = TRUE, showWarnings = FALSE)
+  ok <- file.copy(viewer_js_source_path, file.path(assets_dir, "cpg-viewer.js"), overwrite = TRUE)
+  if (!ok) {
+    warning("Failed to copy CpG viewer JavaScript: ", viewer_js_source_path)
+  }
+} else {
+  warning("CpG viewer JavaScript was not found in the installed package.")
 }
 
 quarto_yml <- c(
@@ -2182,7 +2800,7 @@ quarto_yml <- c(
   "      - href: glm.qmd",
   '        text: "GLM Analysis"',
   "      - href: lme.qmd",
-  '        text: "LME Analysis"',
+  sprintf('        text: "%s"', lme_analysis_label),
   "      - href: report.qmd",
   '        text: "Report"',
   "      - href: logs.qmd",
@@ -2466,6 +3084,179 @@ site_css <- c(
   "  font-size: 0.92rem;",
   "}",
   "",
+  ".dnaepico-cpg-viewer {",
+  "  display: flex !important;",
+  "  flex-direction: column !important;",
+  "  gap: 0.45rem;",
+  "  width: 100%;",
+  "  min-height: 0 !important;",
+  "}",
+  "",
+  ".dnaepico-viewer-toolbar,",
+  ".dnaepico-viewer-filter,",
+  ".dnaepico-viewer-pagination,",
+  ".dnaepico-viewer-downloads {",
+  "  display: flex !important;",
+  "  flex: 0 0 auto !important;",
+  "  flex-direction: row !important;",
+  "  align-items: center !important;",
+  "  flex-wrap: wrap !important;",
+  "  gap: 0.45rem;",
+  "  min-height: 0 !important;",
+  "}",
+  "",
+  ".dnaepico-viewer-toolbar label,",
+  ".dnaepico-viewer-filter label,",
+  ".dnaepico-viewer-pagination label {",
+  "  display: inline-flex !important;",
+  "  flex-direction: row !important;",
+  "  align-items: center !important;",
+  "  gap: 0.4rem;",
+  "  margin: 0;",
+  "}",
+  "",
+  ".dnaepico-viewer-filter {",
+  "  padding: 0.4rem 0.5rem;",
+  "  border: 1px solid #e2e8f0;",
+  "  border-radius: 0.4rem;",
+  "  background: #f8fafc;",
+  "}",
+  "",
+  ".dnaepico-viewer-toolbar input {",
+  "  min-width: 14rem;",
+  "}",
+  "",
+  ".dnaepico-viewer-filter input {",
+  "  width: 8rem;",
+  "}",
+  "",
+  ".dnaepico-viewer-pagination input {",
+  "  width: 4.5rem;",
+  "}",
+  "",
+  ".dnaepico-viewer-toolbar input,",
+  ".dnaepico-viewer-toolbar select,",
+  ".dnaepico-viewer-filter input,",
+  ".dnaepico-viewer-filter select,",
+  ".dnaepico-viewer-pagination input {",
+  "  border: 1px solid #ced4da;",
+  "  border-radius: 0.375rem;",
+  "  padding: 0.25rem 0.45rem;",
+  "  background: #fff;",
+  "}",
+  "",
+  ".dnaepico-viewer-toolbar button,",
+  ".dnaepico-viewer-filter button,",
+  ".dnaepico-viewer-pagination button {",
+  "  border: 1px solid #adb5bd;",
+  "  border-radius: 0.375rem;",
+  "  padding: 0.25rem 0.55rem;",
+  "  background: #fff;",
+  "  color: #212529;",
+  "}",
+  "",
+  ".dnaepico-viewer-toolbar button:hover,",
+  ".dnaepico-viewer-filter button:hover:not(:disabled),",
+  ".dnaepico-viewer-pagination button:hover:not(:disabled) {",
+  "  background: #eef3f8;",
+  "}",
+  "",
+  ".dnaepico-viewer-filter button:disabled,",
+  ".dnaepico-viewer-pagination button:disabled {",
+  "  opacity: 0.5;",
+  "}",
+  "",
+  ".dnaepico-viewer-pagination {",
+  "  justify-content: center !important;",
+  "  font-size: 0.88rem;",
+  "}",
+  "",
+  ".dnaepico-viewer-pagination button {",
+  "  width: 2rem;",
+  "  height: 1.85rem;",
+  "  padding: 0;",
+  "  font-size: 1rem;",
+  "  line-height: 1;",
+  "}",
+  "",
+  ".dnaepico-viewer-table-wrap {",
+  "  display: block !important;",
+  "  flex: 1 1 auto !important;",
+  "  overflow: auto !important;",
+  "  border: 1px solid var(--qpasst-border);",
+  "  border-radius: 0.4rem;",
+  "  height: clamp(28rem, 62vh, 52rem);",
+  "  min-height: 28rem !important;",
+  "  max-height: none;",
+  "}",
+  "",
+  ".dnaepico-viewer-table {",
+  "  margin-bottom: 0;",
+  "  white-space: nowrap;",
+  "}",
+  "",
+  ".dnaepico-viewer-table thead th {",
+  "  position: sticky;",
+  "  top: 0;",
+  "  z-index: 1;",
+  "  background: #f4f6f8;",
+  "}",
+  "",
+  ".dnaepico-viewer-status {",
+  "  display: block !important;",
+  "  flex: 0 0 auto !important;",
+  "  min-height: 0 !important;",
+  "  color: #495057;",
+  "}",
+  "",
+  ".dnaepico-viewer-filter [data-role='filter-summary'] {",
+  "  color: #495057;",
+  "  font-size: 0.9rem;",
+  "}",
+  "",
+  ".sidebar .dnaepico-model-formula {",
+  "  display: inline;",
+  "  white-space: normal !important;",
+  "  overflow-wrap: anywhere;",
+  "  word-break: normal;",
+  "}",
+  "",
+  ".sidebar .dnaepico-model-formulas {",
+  "  margin: 0.35rem 0;",
+  "}",
+  "",
+  ".sidebar .dnaepico-model-formulas summary {",
+  "  cursor: pointer;",
+  "  font-weight: 600;",
+  "  color: #2f3540;",
+  "}",
+  "",
+  ".sidebar .dnaepico-model-formula-list {",
+  "  display: grid;",
+  "  gap: 0.65rem;",
+  "  margin-top: 0.65rem;",
+  "}",
+  "",
+  ".sidebar .dnaepico-model-formula-item {",
+  "  padding: 0.55rem 0.65rem;",
+  "  border: 1px solid #e2e8f0;",
+  "  border-radius: 0.4rem;",
+  "  background: #f8fafc;",
+  "}",
+  "",
+  ".sidebar .dnaepico-model-formula-item strong,",
+  ".sidebar .dnaepico-model-formula-item code {",
+  "  display: block;",
+  "}",
+  "",
+  ".sidebar .dnaepico-model-formula-item code {",
+  "  margin-top: 0.3rem;",
+  "}",
+  "",
+  ".dnaepico-viewer-error {",
+  "  color: #b02a37;",
+  "}",
+  "",
   "pre code {",
   "  white-space: pre-wrap;",
   "  word-break: break-word;",
@@ -2475,6 +3266,9 @@ site_css <- c(
   "  .qpasst-gallery {",
   "    grid-template-columns: 1fr;",
   "  }",
+  "  .dnaepico-viewer-toolbar input {",
+  "    min-width: 10rem;",
+  "  }",
   "}"
 )
 
@@ -2483,67 +3277,10 @@ data_page <- compose_page(
   notes = data_notes,
   body_classes = "qpasst-data-page",
   body_lines = c(
-    "### Data Preview",
-    "",
-    "```{r}",
-    "#| echo: false",
-    "#| include: false",
-    sprintf("data_path <- %s", r_string(data_path_for_qmd)),
-    sprintf("data_path_display <- %s", r_string(if (nzchar(data_path_for_qmd)) data_path_for_qmd else "Not detected")),
-    sprintf("participant_col <- %s", r_string(if (is.null(data_summary$participant_col)) "" else data_summary$participant_col)),
-    sprintf("timepoint_col <- %s", r_string(if (is.null(data_summary$timepoint_col)) "" else data_summary$timepoint_col)),
-    "qp_data <- NULL",
-    "qp_data_error <- NULL",
-    "if (!nzchar(data_path)) {",
-    "  qp_data_error <- 'No data file path is configured for this dashboard.'",
-    "} else if (!file.exists(data_path)) {",
-    "  qp_data_error <- paste0('Data file not found at `', data_path_display, '`.')",
-    "} else {",
-    "  qp_data <- tryCatch(",
-    "    utils::read.csv(data_path, check.names = FALSE),",
-    "    error = function(e) {",
-    "      qp_data_error <<- conditionMessage(e)",
-    "      NULL",
-    "    }",
-    "  )",
-    "  if (!is.null(qp_data)) {",
-    "    front_cols <- c(participant_col, timepoint_col)",
-    "    front_cols <- front_cols[nzchar(front_cols) & front_cols %in% names(qp_data)]",
-    "    qp_data <- qp_data[, c(front_cols, setdiff(names(qp_data), front_cols)), drop = FALSE]",
-    "  }",
-    "}",
-    "```",
-    "",
-    "```{r}",
-    "#| echo: false",
-    "#| results: asis",
-    "if (is.null(qp_data)) {",
-    "  cat('::: {.callout-warning}\\n')",
-    "  cat(qp_data_error, '\\n\\n')",
-    "  cat('Update the configured CSV path in the `dnamReport()` call or place the file at the expected location before rendering.\\n')",
-    "  cat(':::\\n')",
-    "}",
-    "```",
-    "",
-    "```{r}",
-    "#| echo: false",
-    "if (!is.null(qp_data)) {",
-    "  if (requireNamespace('DT', quietly = TRUE)) {",
-    "    DT::datatable(",
-    "      qp_data,",
-    "      filter = 'top',",
-    "      options = list(pageLength = 10, scrollX = TRUE, autoWidth = TRUE),",
-    "      rownames = FALSE",
-    "    )",
-    "  } else {",
-    "    knitr::kable(",
-    "      utils::head(qp_data, 25),",
-    "      format = 'html',",
-    "      table.attr = \"class='table table-striped table-sm'\"",
-    "    )",
-    "  }",
-    "}",
-    "```"
+    build_result_table_section(
+      title = "Data Preview",
+      table_assets = data_table_assets
+    )
   )
 )
 
@@ -2619,30 +3356,20 @@ glm_page <- compose_page(
   title = "GLM Analysis",
   notes = glm_notes,
   body_lines = c(
-    build_xlsx_table_section(
+    build_result_table_section(
       title = glm_table_title,
-      data_path = glm_table_path,
-      sheet = "annotatedGLM",
-      page_length = 10L,
-      preview_rows = 25L,
-      var_prefix = "glm_results",
-      interactive = TRUE
+      table_assets = glm_table_assets
     )
   )
 )
 
 lme_page <- compose_page(
-  title = "LME Analysis",
+  title = lme_analysis_label,
   notes = lme_notes,
   body_lines = c(
-    build_xlsx_table_section(
+    build_result_table_section(
       title = lme_table_title,
-      data_path = lme_table_path,
-      sheet = "annotatedLME",
-      page_length = 10L,
-      preview_rows = 25L,
-      var_prefix = "lme_results",
-      interactive = TRUE
+      table_assets = lme_table_assets
     )
   )
 )
@@ -2715,14 +3442,18 @@ logs_page <- compose_page(
     sprintf("render_log_block(%s, 'GLM Analysis')", r_string(log_assets$glm$asset_path)),
     "```",
     "",
-    "### LME Analysis",
+    sprintf("### %s", lme_analysis_label),
     "",
-    "Displays the linear mixed-effects model log, including timepoint interaction testing and CpG annotation steps.",
+    if (has_lme_interaction) {
+      sprintf("Displays the linear mixed-effects model log, including the phenotype interaction with %s and CpG annotation steps.", lme_interaction_term)
+    } else {
+      "Displays the linear mixed-effects model log, including phenotype coefficient testing and CpG annotation steps."
+    },
     "",
     "```{r}",
     "#| echo: false",
     "#| results: asis",
-    sprintf("render_log_block(%s, 'LME Analysis')", r_string(log_assets$lme$asset_path)),
+    sprintf("render_log_block(%s, %s)", r_string(log_assets$lme$asset_path), r_string(lme_analysis_label)),
     "```"
   )
 )
@@ -2737,7 +3468,8 @@ report_page <- build_report_page(
   metrics_notes = metrics_notes,
   glm_notes = glm_notes,
   lme_notes = lme_notes,
-  logs_notes = logs_notes
+  logs_notes = logs_notes,
+  lme_label = lme_analysis_label
 )
 
 unlink(
@@ -2821,8 +3553,10 @@ if (nzchar(quarto_bin)) {
       metrics_titles = metrics_figure_titles,
       quality_control_titles = quality_control_figure_titles,
       batch_effect_titles = batch_effect_figure_titles,
+      data_table_title = "Data Preview",
       glm_table_title = glm_table_title,
-      lme_table_title = lme_table_title
+      lme_table_title = lme_table_title,
+      lme_label = lme_analysis_label
     )
     emitLogMinfiEwasWater(
       c(

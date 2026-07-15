@@ -189,7 +189,7 @@ test_that("methylationLME can write outputs and derive person IDs on request", {
     expect_match(result$savedFiles$annotatedLME, "annotatedLME\\.xlsx$")
     expect_equal(
         openxlsx::getSheetNames(result$savedFiles$annotatedLME),
-        c("annotatedLME", "dictionary")
+        c("annotatedLME", "dictionary", "metadata")
     )
     dictionary <- openxlsx::read.xlsx(
         result$savedFiles$annotatedLME,
@@ -199,6 +199,14 @@ test_that("methylationLME can write outputs and derive person IDs on request", {
     expect_equal(colnames(dictionary), c("Column", "Description", "Formula"))
     expect_true(any(dictionary$Description == "Pvalue from LME model"))
     expect_true(any(dictionary$Formula == "LME: Beta values ~ `score` + `sex` + (1 | `person` )"))
+    metadata <- openxlsx::read.xlsx(
+        result$savedFiles$annotatedLME,
+        sheet = "metadata",
+        check.names = FALSE
+    )
+    expect_true(all(c("Key", "Value") %in% colnames(metadata)))
+    expect_equal(metadata$Value[metadata$Key == "backend"], "lme4")
+    expect_equal(metadata$Value[metadata$Key == "fitting_function"], "lmerTest::lmer")
     expect_true(file.exists(file.path(tmp, "figures", "methylationLME", "qqplot_score.tiff")))
     expect_true(isTRUE(result$preparedData$personCreated))
     expect_true(length(result$savedFiles$significantInteractionFiles$score) >= 1)

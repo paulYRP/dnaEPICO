@@ -68,12 +68,13 @@
 # ensuring transparency and methodological reproducibility.
 
 # -----------------------------------------------------------
-# dnaEPICO logo
+# dnaEPICO logo/report graphics
 # -----------------------------------------------------------
 
-# `dnaEPICO.svg` is the packaged logo used by `dnamReport()`.
-# `dnaEPICORM.svg` is the logo used in Readme and vignette files.
-# `dnaEPICO.gif` is a rasterized version of the logo used in the package manual.
+# dnaEPICO.svg is the packaged logo used by `dnamReport()`.
+# dnaEPICORM.svg is the logo used in Readme and vignette files.
+# dnaEPICO.gif is a rasterized version of the logo used in the package manual.
+# cpg-viewer.js renders paged CpG result tables in the report.
 
 # -----------------------------------------------------------
 # Final location in the package
@@ -87,7 +88,10 @@
 #   - saliva.txt
 #   - salivaEPIC.txt
 #   - dnaEPICO.svg
-#
+#   - dnaEPICORM.svg
+#   - dnaEPICO.gif
+#   - cpg-viewer.js
+
 # inst/extdata/make/
 #
 #   - Workflow reproducible pipeline execution files

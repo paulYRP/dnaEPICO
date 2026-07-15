@@ -118,6 +118,91 @@ create_dnam_report_example <- function(path) {
     dirs
 }
 
+write_multiple_formula_workbooks <- function(example_dirs, backend = "lme4") {
+    phenotypes <- c("T1D", "HbA1c", "C-peptide")
+    glm_formulas <- c(
+        "GLM: M-values ~ `T1D` + `Age` + `Sex` + `PC1` + `PC2` + `PC3`",
+        "GLM: M-values ~ `HbA1c` + `Age` + `Sex` + `PC1` + `PC2` + `PC3`",
+        "GLM: M-values ~ `C-peptide` + `Age` + `Sex` + `PC1` + `PC2` + `PC3`"
+    )
+    lme_formulas <- c(
+        "LME: M-values ~ `T1D` + `Age` + `Sex` + `PC1` + `PC2` + `PC3` + (1 | `SID` )",
+        "LME: M-values ~ `HbA1c` + `Age` + `Sex` + `PC1` + `PC2` + `PC3` + (1 | `SID` )",
+        "LME: M-values ~ `C-peptide` + `Age` + `Sex` + `PC1` + `PC2` + `PC3` + (1 | `SID` )"
+    )
+    pvalue_columns <- paste0(phenotypes, "_P.Value")
+    annotation_columns <- c("IlmnID", "Name", "chr", "pos")
+
+    glm_data <- data.frame(IlmnID = "cg00000029", check.names = FALSE)
+    glm_data[pvalue_columns] <- list(0.001, 0.02, 0.03)
+    glm_data$Name <- "cg00000029"
+    glm_data$chr <- "chr16"
+    glm_data$pos <- 53434200
+    glm_dictionary <- data.frame(
+        Column = c(pvalue_columns, annotation_columns),
+        Description = c(
+            rep("Pvalue from GLM model", length(pvalue_columns)),
+            "CpG probe identifier",
+            "CpG probe identifier",
+            "Genomic annotation or supporting result column",
+            "Genomic annotation or supporting result column"
+        ),
+        Formula = c(glm_formulas, rep("", length(annotation_columns))),
+        check.names = FALSE
+    )
+    openxlsx::write.xlsx(
+        list(annotatedGLM = glm_data, dictionary = glm_dictionary),
+        example_dirs$glmTablePath,
+        overwrite = TRUE
+    )
+
+    lme_data <- data.frame(IlmnID = "cg00000108", check.names = FALSE)
+    lme_data[pvalue_columns] <- list(0.002, 0.01, 0.04)
+    lme_data$Name <- "cg00000108"
+    lme_data$chr <- "chr3"
+    lme_data$pos <- 37417715
+    lme_dictionary <- data.frame(
+        Column = c(pvalue_columns, annotation_columns),
+        Description = c(
+            rep("Pvalue from LME model", length(pvalue_columns)),
+            "CpG probe identifier",
+            "CpG probe identifier",
+            "Genomic annotation or supporting result column",
+            "Genomic annotation or supporting result column"
+        ),
+        Formula = c(lme_formulas, rep("", length(annotation_columns))),
+        check.names = FALSE
+    )
+    lme_metadata <- data.frame(
+        Key = c(
+            "backend",
+            "fitting_function",
+            "libraries",
+            "correlation_structure",
+            "correlation_variable",
+            "interaction_term",
+            "phenotypes"
+        ),
+        Value = c(
+            backend,
+            if (identical(backend, "nlme")) "nlme::lme" else "lmerTest::lmer",
+            if (identical(backend, "nlme")) "nlme" else "lme4,lmerTest",
+            if (identical(backend, "nlme")) "AR1" else "none",
+            if (identical(backend, "nlme")) "Timepoint" else "None",
+            "None",
+            paste(phenotypes, collapse = ",")
+        ),
+        stringsAsFactors = FALSE
+    )
+    openxlsx::write.xlsx(
+        list(annotatedLME = lme_data, dictionary = lme_dictionary, metadata = lme_metadata),
+        example_dirs$lmeTablePath,
+        overwrite = TRUE
+    )
+
+    invisible(example_dirs)
+}
+
 test_that("prepareDnamReportInputs returns a structured inventory quietly", {
     tmp <- withr::local_tempdir()
     example_dirs <- create_dnam_report_example(tmp)
@@ -180,24 +265,50 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
 
     glm_qmd <- readLines(file.path(result$projectDir, "glm.qmd"), warn = FALSE)
     lme_qmd <- readLines(file.path(result$projectDir, "lme.qmd"), warn = FALSE)
+    data_qmd <- readLines(file.path(result$projectDir, "index.qmd"), warn = FALSE)
+    expect_true(any(grepl('data-result-key="phenotype_data"', data_qmd, fixed = TRUE)))
+    expect_true(any(grepl('data-role="filter-column"', data_qmd, fixed = TRUE)))
+    expect_equal(sum(grepl("dnaepico-viewer-pagination", data_qmd, fixed = TRUE)), 2)
+    expect_false(any(grepl("DT::datatable", data_qmd, fixed = TRUE)))
+    expect_false(any(grepl("htmlwidget", data_qmd, fixed = TRUE)))
     expect_true(any(grepl(
         "Table 1. Generalised Linear Model Results and Genomic Annotation of CpG Sites by Phenotype(s)",
         glm_qmd,
         fixed = TRUE
     )))
-    expect_true(any(grepl("`Table 1` presents", glm_qmd, fixed = TRUE)))
-    expect_true(any(grepl("`glm2` package", glm_qmd, fixed = TRUE)))
-    expect_true(any(grepl("annotatedGLM.xlsx", glm_qmd, fixed = TRUE)))
-    expect_true(any(grepl("annotatedGLM", glm_qmd, fixed = TRUE)))
+    expect_false(any(grepl("paged viewer", glm_qmd, fixed = TRUE)))
+    expect_true(any(grepl("fitted with `glm2`", glm_qmd, fixed = TRUE)))
+    expect_true(any(grepl("The recorded model formula is", glm_qmd, fixed = TRUE)))
+    expect_true(any(grepl("GLM: Beta values ~ status + sex", glm_qmd, fixed = TRUE)))
+    expect_true(any(grepl("data-result-key=\"glm_results\"", glm_qmd, fixed = TRUE)))
+    expect_false(any(grepl("DT::datatable", glm_qmd, fixed = TRUE)))
+    expect_false(any(grepl("openxlsx::read.xlsx", glm_qmd, fixed = TRUE)))
     expect_true(any(grepl(
-        "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s) and Timepoint",
+        "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s)",
         lme_qmd,
         fixed = TRUE
     )))
-    expect_true(any(grepl("`Table 1` presents", lme_qmd, fixed = TRUE)))
-    expect_true(any(grepl("`lmer` package", lme_qmd, fixed = TRUE)))
-    expect_true(any(grepl("annotatedLME", lme_qmd, fixed = TRUE)))
-    expect_true(any(grepl("annotatedLME.xlsx", lme_qmd, fixed = TRUE)))
+    expect_false(any(grepl("paged viewer", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("`lmerTest::lmer()`", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("No phenotype-by-time interaction was fitted", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("The recorded model formula is", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("data-result-key=\"lme_results\"", lme_qmd, fixed = TRUE)))
+    expect_false(any(grepl("DT::datatable", lme_qmd, fixed = TRUE)))
+    expect_false(any(grepl("openxlsx::read.xlsx", lme_qmd, fixed = TRUE)))
+
+    result_assets <- file.path(result$projectDir, "assets", "results")
+    expect_true(file.exists(file.path(result_assets, "phenotype_data", "manifest.js")))
+    expect_true(file.exists(file.path(result_assets, "phenotype_data", "chunk-0001.js")))
+    expect_true(file.exists(file.path(result_assets, "phenotype_data", basename(example_dirs$phenoTab))))
+    expect_true(file.exists(file.path(result_assets, "glm_results", "manifest.js")))
+    expect_true(file.exists(file.path(result_assets, "glm_results", "chunk-0001.js")))
+    expect_true(file.exists(file.path(result_assets, "glm_results", "annotatedGLM.xlsx")))
+    expect_true(file.exists(file.path(result_assets, "glm_results", "annotatedGLM.tsv.gz")))
+    expect_true(file.exists(file.path(result_assets, "lme_results", "manifest.js")))
+    expect_true(file.exists(file.path(result_assets, "lme_results", "chunk-0001.js")))
+    expect_true(file.exists(file.path(result_assets, "lme_results", "annotatedLME.xlsx")))
+    expect_true(file.exists(file.path(result_assets, "lme_results", "annotatedLME.tsv.gz")))
+    expect_true(file.exists(file.path(result$projectDir, "assets", "cpg-viewer.js")))
 
     enmix_qmd <- readLines(file.path(result$projectDir, "enmix-qc.qmd"), warn = FALSE)
     metrics_qmd <- readLines(file.path(result$projectDir, "metrics.qmd"), warn = FALSE)
@@ -221,6 +332,39 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     expect_false(any(grepl("The Logs tab summarises", report_qmd, fixed = TRUE)))
     expect_false(any(grepl("Generated Outputs", report_qmd, fixed = TRUE)))
 
+    if (identical(result$status, "rendered")) {
+        expect_lt(file.info(file.path(result$projectDir, "docs", "index.html"))$size, 100000)
+        expect_lt(file.info(file.path(result$projectDir, "docs", "lme.html"))$size, 500000)
+        expect_lt(file.info(file.path(result$projectDir, "docs", "glm.html"))$size, 500000)
+        data_html <- readLines(file.path(result$projectDir, "docs", "index.html"), warn = FALSE)
+        glm_html <- readLines(file.path(result$projectDir, "docs", "glm.html"), warn = FALSE)
+        lme_html <- readLines(file.path(result$projectDir, "docs", "lme.html"), warn = FALSE)
+        expect_true(any(grepl('data-role="body"', data_html, fixed = TRUE)))
+        expect_false(any(grepl("html-widget", data_html, fixed = TRUE)))
+        expect_false(any(grepl("jquery.dataTables", data_html, fixed = TRUE)))
+        expect_true(any(grepl('data-role="body"', glm_html, fixed = TRUE)))
+        expect_true(any(grepl('data-role="body"', lme_html, fixed = TRUE)))
+        expect_false(any(grepl("&lt;table class=", glm_html, fixed = TRUE)))
+        expect_false(any(grepl("&lt;table class=", lme_html, fixed = TRUE)))
+        expect_false(any(grepl("&lt;label&gt;Rows per page", glm_html, fixed = TRUE)))
+        expect_false(any(grepl("&lt;label&gt;Rows per page", lme_html, fixed = TRUE)))
+        expect_true(any(grepl(
+            '<div class="card-header">Table 1. Generalised Linear Model Results',
+            glm_html,
+            fixed = TRUE
+        )))
+        expect_true(any(grepl(
+            '<div class="card-header">Table 1. Linear Mixed-Effects Model Results',
+            lme_html,
+            fixed = TRUE
+        )))
+        expect_true(any(grepl(
+            '<div class="card-header">Data Preview',
+            data_html,
+            fixed = TRUE
+        )))
+    }
+
     printed <- utils::capture.output(print(result))
     expect_equal(
         printed,
@@ -231,4 +375,108 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
         )
     )
     expect_false(any(grepl("\\$preparedReport|\\$figureInventory|\\$renderResult", printed)))
+})
+
+test_that("dnamReport labels and describes nlme reports from workbook metadata", {
+    tmp <- withr::local_tempdir()
+    example_dirs <- create_dnam_report_example(tmp)
+    workbook <- openxlsx::loadWorkbook(example_dirs$lmeTablePath)
+    openxlsx::addWorksheet(workbook, "metadata")
+    openxlsx::writeData(
+        workbook,
+        "metadata",
+        data.frame(
+            Key = c(
+                "backend",
+                "fitting_function",
+                "libraries",
+                "correlation_structure",
+                "correlation_variable",
+                "interaction_term"
+            ),
+            Value = c("nlme", "nlme::lme", "nlme", "AR1", "Timepoint", "None"),
+            stringsAsFactors = FALSE
+        )
+    )
+    openxlsx::saveWorkbook(workbook, example_dirs$lmeTablePath, overwrite = TRUE)
+
+    result <- dnamReport(
+        outputDir = file.path(tmp, "quarto"),
+        phenoTab = example_dirs$phenoTab,
+        enmixTab = example_dirs$qcDir,
+        qcTab = example_dirs$preprocessingDir,
+        svaTab = example_dirs$svaDir,
+        metricTab = example_dirs$postprocessingDir,
+        glmTab = example_dirs$glmTablePath,
+        lmeTab = example_dirs$lmeTablePath,
+        verbose = FALSE,
+        logs = FALSE,
+        logTab = example_dirs$logDir
+    )
+
+    quarto_yml <- readLines(file.path(result$projectDir, "_quarto.yml"), warn = FALSE)
+    lme_qmd <- readLines(file.path(result$projectDir, "lme.qmd"), warn = FALSE)
+    logs_qmd <- readLines(file.path(result$projectDir, "logs.qmd"), warn = FALSE)
+    expect_true(any(grepl('text: "nlme Analysis"', quarto_yml, fixed = TRUE)))
+    expect_true(any(grepl('title: "nlme Analysis"', lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("analysed using `nlme::lme()`", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("`AR1` residual correlation structure", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl('class="dnaepico-model-formula"', lme_qmd, fixed = TRUE)))
+    expect_false(any(grepl("~ `", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("### nlme Analysis", logs_qmd, fixed = TRUE)))
+})
+
+test_that("dnamReport presents multiple GLM, LME, and nlme formulas by phenotype", {
+    tmp <- withr::local_tempdir()
+    example_dirs <- create_dnam_report_example(tmp)
+    write_multiple_formula_workbooks(example_dirs, backend = "lme4")
+
+    lme_result <- dnamReport(
+        outputDir = file.path(tmp, "quarto-lme"),
+        phenoTab = example_dirs$phenoTab,
+        enmixTab = example_dirs$qcDir,
+        qcTab = example_dirs$preprocessingDir,
+        svaTab = example_dirs$svaDir,
+        metricTab = example_dirs$postprocessingDir,
+        glmTab = example_dirs$glmTablePath,
+        lmeTab = example_dirs$lmeTablePath,
+        verbose = FALSE,
+        logs = FALSE,
+        logTab = example_dirs$logDir
+    )
+    glm_qmd <- paste(readLines(file.path(lme_result$projectDir, "glm.qmd"), warn = FALSE), collapse = "\n")
+    lme_qmd <- paste(readLines(file.path(lme_result$projectDir, "lme.qmd"), warn = FALSE), collapse = "\n")
+    report_qmd <- paste(readLines(file.path(lme_result$projectDir, "report.qmd"), warn = FALSE), collapse = "\n")
+
+    for (page in list(glm_qmd, lme_qmd)) {
+        expect_match(page, "3 phenotype-specific models were fitted\\.")
+        expect_match(page, "View recorded model formulas \\(3\\)")
+        expect_match(page, "<strong>T1D</strong>", fixed = TRUE)
+        expect_match(page, "<strong>HbA1c</strong>", fixed = TRUE)
+        expect_match(page, "<strong>C-peptide</strong>", fixed = TRUE)
+        expect_false(grepl("The recorded model formula is", page, fixed = TRUE))
+    }
+    expect_match(glm_qmd, "GLM: M-values ~ T1D + Age + Sex + PC1 + PC2 + PC3", fixed = TRUE)
+    expect_match(lme_qmd, "LME: M-values ~ T1D + Age + Sex + PC1 + PC2 + PC3 + (1 | SID)", fixed = TRUE)
+    expect_false(grepl("View recorded model formulas", report_qmd, fixed = TRUE))
+    expect_false(grepl("dnaepico-model-formula-item", report_qmd, fixed = TRUE))
+
+    write_multiple_formula_workbooks(example_dirs, backend = "nlme")
+    nlme_result <- dnamReport(
+        outputDir = file.path(tmp, "quarto-nlme"),
+        phenoTab = example_dirs$phenoTab,
+        enmixTab = example_dirs$qcDir,
+        qcTab = example_dirs$preprocessingDir,
+        svaTab = example_dirs$svaDir,
+        metricTab = example_dirs$postprocessingDir,
+        glmTab = example_dirs$glmTablePath,
+        lmeTab = example_dirs$lmeTablePath,
+        verbose = FALSE,
+        logs = FALSE,
+        logTab = example_dirs$logDir
+    )
+    nlme_qmd <- paste(readLines(file.path(nlme_result$projectDir, "lme.qmd"), warn = FALSE), collapse = "\n")
+    expect_match(nlme_qmd, 'title: "nlme Analysis"', fixed = TRUE)
+    expect_match(nlme_qmd, "3 phenotype-specific models were fitted.", fixed = TRUE)
+    expect_match(nlme_qmd, "nlme: M-values ~ T1D + Age + Sex + PC1 + PC2 + PC3 + (1 | SID)", fixed = TRUE)
 })

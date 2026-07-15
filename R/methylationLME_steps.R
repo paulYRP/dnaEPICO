@@ -1277,6 +1277,7 @@ fitMethylationLMEModels <- function(
         fitBatchCount = length(chunkCpGColumnsMethylationModels(cpg_columns, n_cores, 8L)),
         libPath = libPath,
         lmeLibs = lme_lib_list,
+        lmeEngine = lme_engine,
         correlationStructure = correlation_structure,
         correlationVar = if (identical(correlation_structure, "none")) {
           NULL
@@ -2125,11 +2126,69 @@ writeMethylationLMEOutputs <- function(
     modelLabel = "LME",
     responseLabel = inferMethylationValueLabelMethylationGLM(modelResults)
   )
+  lme_engine <- modelResults$settings$lmeEngine
+  if (is.null(lme_engine) || !nzchar(lme_engine)) {
+    requested_libraries <- tolower(as.character(modelResults$settings$lmeLibs))
+    lme_engine <- if ("nlme" %in% requested_libraries) "nlme" else "lme4"
+  }
+  correlation_structure <- modelResults$settings$correlationStructure
+  if (is.null(correlation_structure) || !nzchar(correlation_structure)) {
+    correlation_structure <- "none"
+  }
+  correlation_var <- modelResults$settings$correlationVar
+  if (is.null(correlation_var) || !nzchar(correlation_var)) {
+    correlation_var <- "None"
+  }
+  interaction_term <- modelResults$settings$interactionTerm
+  if (is.null(interaction_term) || !nzchar(interaction_term)) {
+    interaction_term <- "None"
+  }
+  metadata <- data.frame(
+    Key = c(
+      "analysis",
+      "backend",
+      "fitting_function",
+      "libraries",
+      "correlation_structure",
+      "correlation_variable",
+      "interaction_term",
+      "response_label",
+      "phenotypes",
+      "cpg_count",
+      "annotation_columns",
+      "missing_annotation_columns"
+    ),
+    Value = c(
+      "methylationLME",
+      lme_engine,
+      if (identical(lme_engine, "nlme")) "nlme::lme" else "lmerTest::lmer",
+      paste(modelResults$settings$lmeLibs, collapse = ","),
+      correlation_structure,
+      correlation_var,
+      interaction_term,
+      inferMethylationValueLabelMethylationGLM(modelResults),
+      paste(modelResults$phenotypes, collapse = ","),
+      as.character(nrow(annotated_df)),
+      if (!is.null(annotatedResults$annotationColumnsUsed)) {
+        paste(annotatedResults$annotationColumnsUsed, collapse = ",")
+      } else {
+        ""
+      },
+      if (!is.null(annotatedResults$missingAnnotationCols)) {
+        paste(annotatedResults$missingAnnotationCols, collapse = ",")
+      } else {
+        ""
+      }
+    ),
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
   writeAnnotatedWorkbookMethylationGLM(
     annotated_df = annotated_df,
     file = annotated_file,
     resultSheet = "annotatedLME",
-    dictionary = dictionary
+    dictionary = dictionary,
+    metadata = metadata
   )
 
   emitLogMinfiEwasWater(

@@ -742,13 +742,18 @@ writeAnnotatedWorkbookMethylationGLM <- function(
     annotated_df,
     file,
     resultSheet,
-    dictionary
+    dictionary,
+    metadata = NULL
 ) {
   workbook <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(workbook, resultSheet)
   openxlsx::writeData(workbook, sheet = resultSheet, x = annotated_df)
   openxlsx::addWorksheet(workbook, "dictionary")
   openxlsx::writeData(workbook, sheet = "dictionary", x = dictionary)
+  if (is.data.frame(metadata) && nrow(metadata) > 0L) {
+    openxlsx::addWorksheet(workbook, "metadata")
+    openxlsx::writeData(workbook, sheet = "metadata", x = metadata)
+  }
   openxlsx::saveWorkbook(workbook, file = file, overwrite = TRUE)
 
   invisible(file)
