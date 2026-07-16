@@ -1457,7 +1457,7 @@ build_result_table_section <- function(title, table_assets) {
     '    <span data-role="filter-summary" aria-live="polite"></span>',
     '  </div>',
     '  <div class="dnaepico-viewer-downloads" data-role="downloads"></div>',
-    '  <div class="dnaepico-viewer-status" data-role="status" aria-live="polite">Loading results…</div>',
+    '  <div class="dnaepico-viewer-status" data-role="status" aria-live="polite">Loading results&hellip;</div>',
     pagination_lines("top"),
     '  <div class="dnaepico-viewer-table-wrap">',
     '    <table class="table table-striped table-sm dnaepico-viewer-table">',
