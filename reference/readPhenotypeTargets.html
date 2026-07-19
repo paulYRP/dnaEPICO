@@ -19,7 +19,7 @@ the targets as a base data.frame."><!-- mathjax --><script src="https://cdnjs.cl
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.33</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.34</span>
       </span>
     </div>
 
@@ -95,7 +95,7 @@ the targets as a base <code>data.frame</code>.</p>
 
 <dt id="arg-septype">sepType<a class="anchor" aria-label="anchor" href="#arg-septype"></a></dt>
 <dd><p>Character or <code>NULL</code>. Field separator used in <code>phenoFile</code>. Use
-<code>NULL</code> for a standard comma-separated file, <code>"\\t"</code> for a tab-delimited
+<code>NULL</code> for a standard comma-separated file, <code>'\\t'</code> for a tab-delimited
 file, or another single-character separator accepted by <code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">utils::read.csv()</a></code>.</p></dd>
 
 
@@ -128,7 +128,7 @@ used.</p></dd>
 
 <dt id="arg-log-file">log_file<a class="anchor" aria-label="anchor" href="#arg-log-file"></a></dt>
 <dd><p>Character. File name used when <code>logs = TRUE</code>. The default is
-<code>"log_readPhenotypeTargets.txt"</code>.</p></dd>
+<code>'log_readPhenotypeTargets.txt'</code>.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -140,15 +140,15 @@ used.</p></dd>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  Sample_Name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"S1"</span>, <span class="st">"S2"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"M"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span>    Sample_Name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"S1"</span>, <span class="st">"S2"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"M"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pheno_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tmp</span>, <span class="st">"pheno.csv"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">pheno</span>, <span class="va">pheno_file</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu">readPhenotypeTargets</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  phenoFile <span class="op">=</span> <span class="va">pheno_file</span>,</span></span>
-<span class="r-in"><span>  SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span></span></span>
+<span class="r-in"><span>    phenoFile <span class="op">=</span> <span class="va">pheno_file</span>,</span></span>
+<span class="r-in"><span>    SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">is.data.frame</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2L</span><span class="op">)</span></span></span>
@@ -163,7 +163,7 @@ used.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Paul Ruiz, Divya Mehta.</p>
+  <p></p><p>Developed by Paul Ruiz.</p>
 </div>
 
 <div class="pkgdown">

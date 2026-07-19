@@ -20,7 +20,7 @@ inst/extdata."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/li
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.33</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.34</span>
       </span>
     </div>
 
@@ -89,8 +89,8 @@ selected reference.</p></dd>
 
 
 <dt id="arg-ref">ref<a class="anchor" aria-label="anchor" href="#arg-ref"></a></dt>
-<dd><p>Character. Reference panel name. Supported values are <code>"saliva"</code>
-and <code>"salivaEPIC"</code>.</p></dd>
+<dd><p>Character. Reference panel name. Supported values are <code>'saliva'</code>
+and <code>'salivaEPIC'</code>.</p></dd>
 
 
 <dt id="arg-constrained">constrained<a class="anchor" aria-label="anchor" href="#arg-constrained"></a></dt>
@@ -105,16 +105,35 @@ cell type.</p>
     </div>
     <div id="references">
     <h2>References</h2>
-    <p>Murat K, et al. Ewastools: Infinium Human Methylation BeadChip pipeline for population epigenetics integrated into Galaxy. <em>GigaScience</em>. 2020;9(5):giaa049.
-Houseman EA, Accomando WP, Koestler DC, et al. DNA methylation arrays as surrogate measures of cell mixture distribution. <em>BMC Bioinformatics</em>. 2012;13:86.
-Reinius LE, Acevedo N, Joerink M, et al. Differential DNA methylation in purified human blood cells: implications for cell lineage and studies on disease susceptibility. <em>PLoS One</em>. 2012;7(7):e41361.
-Bakulski KM, Feinberg JI, Andrews SV, et al. DNA methylation of cord blood cell types: applications for mixed cell birth studies. <em>Epigenetics</em>. 2016;11(5):354-362.
-de Goede OM, Razzaghian HR, Price EM, et al. Nucleated red blood cells impact DNA methylation and expression analyses of cord blood hematopoietic cells. <em>Clinical Epigenetics</em>. 2015;7:95.
-Gervin K, Salas LA, Bakulski KM, et al. Cell type specific DNA methylation in cord blood: a 450K reference data set and cell count-based validation of estimated cell type composition. <em>Epigenetics</em>. 2016;11(9):690-698.
-Gervin K, Salas LA, Bakulski KM, et al. Systematic evaluation and validation of reference and library selection methods for deconvolution of cord blood DNA methylation data. <em>bioRxiv</em>. 2019. doi:10.1101/570457.
-Salas LA, Koestler DC, Butler RA, et al. An optimized library for reference-based deconvolution of whole-blood biospecimens assayed using the Illumina HumanMethylationEPIC BeadArray. <em>Genome Biology</em>. 2018;19:64.
-Heiss JA, Just AC, Brenner H. Training a model for estimating leukocyte composition using whole-blood DNA methylation and cell counts as reference. <em>Epigenomics</em>. 2017;9(1):13-20.
-Middleton LYM, Dou J, Mill J, et al. Saliva cell type DNA methylation reference panel for epidemiology studies in children. 2020.</p>
+    <p>Murat K, et al. Ewastools: Infinium Human Methylation BeadChip pipeline for
+population epigenetics integrated into Galaxy. <em>GigaScience</em>.
+2020;9(5):giaa049.
+Houseman EA, Accomando WP, Koestler DC, et al. DNA methylation arrays as
+surrogate measures of cell mixture distribution. <em>BMC Bioinformatics</em>.
+2012;13:86.
+Reinius LE, Acevedo N, Joerink M, et al. Differential DNA methylation in
+purified human blood cells: implications for cell lineage and studies on
+disease susceptibility. <em>PLoS One</em>. 2012;7(7):e41361.
+Bakulski KM, Feinberg JI, Andrews SV, et al. DNA methylation of cord blood
+cell types: applications for mixed cell birth studies. <em>Epigenetics</em>.
+2016;11(5):354-362.
+de Goede OM, Razzaghian HR, Price EM, et al. Nucleated red blood cells
+impact DNA methylation and expression analyses of cord blood hematopoietic
+cells. <em>Clinical Epigenetics</em>. 2015;7:95.
+Gervin K, Salas LA, Bakulski KM, et al. Cell type specific DNA methylation
+in cord blood: a 450K reference data set and cell count-based validation of
+estimated cell type composition. <em>Epigenetics</em>. 2016;11(9):690-698.
+Gervin K, Salas LA, Bakulski KM, et al. Systematic evaluation and validation
+of reference and library selection methods for deconvolution of cord blood
+DNA methylation data. <em>bioRxiv</em>. 2019. doi:10.1101/570457.
+Salas LA, Koestler DC, Butler RA, et al. An optimized library for
+reference-based deconvolution of whole-blood biospecimens assayed using the
+Illumina HumanMethylationEPIC BeadArray. <em>Genome Biology</em>. 2018;19:64.
+Heiss JA, Just AC, Brenner H. Training a model for estimating leukocyte
+composition using whole-blood DNA methylation and cell counts as reference.
+<em>Epigenomics</em>. 2017;9(1):13-20.
+Middleton LYM, Dou J, Mill J, et al. Saliva cell type DNA methylation
+reference panel for epidemiology studies in children. 2020.</p>
     </div>
 
     <div id="ref-examples">
@@ -124,9 +143,9 @@ Middleton LYM, Dou J, Mill J, et al. Saliva cell type DNA methylation reference 
 <span class="r-in"><span><span class="va">meth</span> <span class="op">&lt;-</span> <span class="va">ref_panel</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">meth</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample1"</span>, <span class="st">"sample2"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">estimateLC</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  meth <span class="op">=</span> <span class="va">meth</span>,</span></span>
-<span class="r-in"><span>  ref <span class="op">=</span> <span class="st">"saliva"</span>,</span></span>
-<span class="r-in"><span>  constrained <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span>    meth <span class="op">=</span> <span class="va">meth</span>,</span></span>
+<span class="r-in"><span>    ref <span class="op">=</span> <span class="st">"saliva"</span>,</span></span>
+<span class="r-in"><span>    constrained <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Leukocytes Epithelial.cells</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;num&gt;            &lt;num&gt;</span>
@@ -143,7 +162,7 @@ Middleton LYM, Dou J, Mill J, et al. Saliva cell type DNA methylation reference 
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Paul Ruiz, Divya Mehta.</p>
+  <p></p><p>Developed by Paul Ruiz.</p>
 </div>
 
 <div class="pkgdown">

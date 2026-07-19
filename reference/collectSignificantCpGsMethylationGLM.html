@@ -18,7 +18,7 @@ interaction p-value passes the requested threshold."><!-- mathjax --><script src
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.33</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.34</span>
       </span>
     </div>
 
@@ -75,6 +75,7 @@ interaction p-value passes the requested threshold.</p>
 <span>  <span class="va">modelResults</span>,</span>
 <span>  pvalThreshold <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  interactionTerm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  excludeNonConverged <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  log_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -99,6 +100,12 @@ interaction p-values.</p></dd>
 <dd><p>Character or <code>NULL</code>. Optional interaction term.</p></dd>
 
 
+<dt id="arg-excludenonconverged">excludeNonConverged<a class="anchor" aria-label="anchor" href="#arg-excludenonconverged"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, do not collect CpGs whose GLM
+did not converge; their rows and reasons remain in diagnostic and annotated
+output.</p></dd>
+
+
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, emit progress messages with <code><a href="https://rdrr.io/r/base/message.html" class="external-link">message()</a></code>.</p></dd>
 
@@ -118,17 +125,17 @@ interaction p-values.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list with class <code>"dnaEPICO_methylationGLM_significant_cpgs"</code>.</p>
+    <p>A list with class <code>'dnaEPICO_methylationGLM_significant_cpgs'</code>.</p>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">dnaEPICO</span><span class="fu">:::</span><span class="fu">exampleMethylationGLMStateDnaEpico</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">significant_cpgs</span> <span class="op">&lt;-</span> <span class="fu">collectSignificantCpGsMethylationGLM</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  modelResults <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">modelResults</span>,</span></span>
-<span class="r-in"><span>  pvalThreshold <span class="op">=</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
-<span class="r-in"><span>  logs <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span>    modelResults <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">modelResults</span>,</span></span>
+<span class="r-in"><span>    pvalThreshold <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>    verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>    logs <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">significant_cpgs</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "status"</span>
@@ -143,7 +150,7 @@ interaction p-values.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Paul Ruiz, Divya Mehta.</p>
+  <p></p><p>Developed by Paul Ruiz.</p>
 </div>
 
 <div class="pkgdown">

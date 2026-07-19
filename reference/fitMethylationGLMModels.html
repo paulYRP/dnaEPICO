@@ -18,7 +18,7 @@ returned by prepareMethylationGLMData()."><!-- mathjax --><script src="https://c
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.33</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.34</span>
       </span>
     </div>
 
@@ -92,7 +92,9 @@ returned by <code><a href="prepareMethylationGLMData.html">prepareMethylationGLM
 
 
 <dt id="arg-ncores">nCores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
-<dd><p>Integer. Number of worker processes to use.</p></dd>
+<dd><p>Integer. Maximum number of worker processes to use. Automatic
+fitting remains serial below the empirical glm2 crossover and caps workers
+by available CpGs and detected physical cores.</p></dd>
 
 
 <dt id="arg-libpath">libPath<a class="anchor" aria-label="anchor" href="#arg-libpath"></a></dt>
@@ -102,7 +104,7 @@ to worker processes.</p></dd>
 
 <dt id="arg-glmlibs">glmLibs<a class="anchor" aria-label="anchor" href="#arg-glmlibs"></a></dt>
 <dd><p>Character vector or comma-separated string of package names to
-check on worker processes. The default is <code>"glm2"</code>.</p></dd>
+check on worker processes. The default is <code>'glm2'</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -124,7 +126,7 @@ check on worker processes. The default is <code>"glm2"</code>.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list with class <code>"dnaEPICO_methylationGLM_models"</code> containing
+    <p>A list with class <code>'dnaEPICO_methylationGLM_models'</code> containing
 fitted model lists, model formulas, and counts of failed CpG fits.</p>
     </div>
 
@@ -132,10 +134,10 @@ fitted model lists, model formulas, and counts of failed CpG fits.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">dnaEPICO</span><span class="fu">:::</span><span class="fu">exampleMethylationGLMStateDnaEpico</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">model_results</span> <span class="op">&lt;-</span> <span class="fu">fitMethylationGLMModels</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  preparedData <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">preparedData</span>,</span></span>
-<span class="r-in"><span>  nCores <span class="op">=</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
-<span class="r-in"><span>  logs <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span>    preparedData <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">preparedData</span>,</span></span>
+<span class="r-in"><span>    nCores <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>    verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>    logs <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">model_results</span><span class="op">$</span><span class="va">fits</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "status"</span>
@@ -150,7 +152,7 @@ fitted model lists, model formulas, and counts of failed CpG fits.</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Paul Ruiz, Divya Mehta.</p>
+  <p></p><p>Developed by Paul Ruiz.</p>
 </div>
 
 <div class="pkgdown">

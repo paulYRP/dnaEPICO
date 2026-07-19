@@ -18,7 +18,7 @@ tables returned by summarizeMethylationLMEModels()."><!-- mathjax --><script src
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.33</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.34</span>
       </span>
     </div>
 
@@ -116,7 +116,8 @@ CpGs in the diagnostic plots.</p></dd>
 
 
 <dt id="arg-plotwidth">plotWidth<a class="anchor" aria-label="anchor" href="#arg-plotwidth"></a></dt>
-<dd><p>Integer. TIFF width in pixels when plots are written to disk.</p></dd>
+<dd><p>Integer. TIFF width in pixels when plots are written to
+disk.</p></dd>
 
 
 <dt id="arg-plotheight">plotHeight<a class="anchor" aria-label="anchor" href="#arg-plotheight"></a></dt>
@@ -152,7 +153,7 @@ disk.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list with class <code>"dnaEPICO_methylationLME_diagnostic_plots"</code>
+    <p>A list with class <code>'dnaEPICO_methylationLME_diagnostic_plots'</code>
 containing the generated <code>ggplot2</code> objects, genomic inflation factors, and
 any saved TIFF file paths.</p>
     </div>
@@ -161,11 +162,11 @@ any saved TIFF file paths.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">dnaEPICO</span><span class="fu">:::</span><span class="fu">exampleMethylationLMEStateDnaEpico</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">diagnostic_plots</span> <span class="op">&lt;-</span> <span class="fu">plotMethylationLMEDiagnostics</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  modelSummaries <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">modelSummaries</span>,</span></span>
-<span class="r-in"><span>  preparedData <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">preparedData</span>,</span></span>
-<span class="r-in"><span>  display <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
-<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
-<span class="r-in"><span>  logs <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span>    modelSummaries <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">modelSummaries</span>,</span></span>
+<span class="r-in"><span>    preparedData <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">preparedData</span>,</span></span>
+<span class="r-in"><span>    display <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>    verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>    logs <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">diagnostic_plots</span><span class="op">$</span><span class="va">plots</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "score"</span>
@@ -180,7 +181,7 @@ any saved TIFF file paths.</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Paul Ruiz, Divya Mehta.</p>
+  <p></p><p>Developed by Paul Ruiz.</p>
 </div>
 
 <div class="pkgdown">

@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.33</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.34</span>
       </span>
     </div>
 
@@ -89,16 +89,13 @@
       Queensland University of
 Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpint@qut.edu.au" class="email">ruizpint@qut.edu.au</a>
       </address>
-                              <h4 data-toc-skip class="author">Divya
-Mehta</h4>
-            <address class="author_afil">
-      Queensland University of Technology<br><h4 data-toc-skip class="date">2026-07-16</h4>
+                  
+            <h4 data-toc-skip class="date">2026-07-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-local.Rmd" class="external-link"><code>vignettes/dnaEPICO-local.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-local.Rmd</code></div>
 
-    </address>
-</div>
+    </div>
 
     
     
@@ -118,7 +115,7 @@ the package results before moving to larger analyses.</p>
 <li><code><a href="../reference/preprocessingPheno.html">preprocessingPheno()</a></code></li>
 </ol>
 <p>All examples use <code>saveOutputs = FALSE</code>, which keeps the
-workflow in memory and avoids writing the legacy file outputs.</p>
+workflow in memory and avoids writing file outputs.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
@@ -203,7 +200,7 @@ package depends on <em><a href="https://bioconductor.org/packages/3.20/minfi" cl
 among others. Install dependencies with BiocManager:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"dnaEPICO"</span><span class="op">)</span></span>
@@ -235,7 +232,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpPzYidO/dnaEPICO-idat-example-229832b515f0"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpI7XMc4/dnaEPICO-idat-example-24485be9864c"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -255,32 +252,33 @@ loaded into memory, <code>arrayType</code> and
 used later during filtering.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">preprocessResult</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater</a></span><span class="op">(</span></span>
-<span>  phenoFile <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span>,</span>
-<span>  idatFolder <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>,</span>
-<span>  outputLogs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span><span class="op">)</span>,</span>
-<span>  nSamples <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>  SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span>,</span>
-<span>  arrayType <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">arrayType</span>,</span>
-<span>  annotationVersion <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">annotationVersion</span>,</span>
-<span>  scriptLabel <span class="op">=</span> <span class="st">"preprocessingMinfiEwasWater"</span>,</span>
-<span>  baseDataFolder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"rData"</span><span class="op">)</span>,</span>
-<span>  figureBaseDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"figures"</span><span class="op">)</span>,</span>
-<span>  detPThreshold <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  normMethods <span class="op">=</span> <span class="st">"quantile"</span>,</span>
-<span>  sexColumn <span class="op">=</span> <span class="st">"Sex"</span>,</span>
-<span>  pvalThreshold <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  chrToRemove <span class="op">=</span> <span class="st">""</span>,</span>
-<span>  snpsToRemove <span class="op">=</span> <span class="st">"SBE"</span>,</span>
-<span>  mafThreshold <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  probeExclusionPath <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">probeExclusionPath</span>,</span>
-<span>  plotGroupVar <span class="op">=</span> <span class="st">"Sex"</span>,</span>
-<span>  lcRef <span class="op">=</span> <span class="st">"saliva"</span>,</span>
-<span>  phenoOrder <span class="op">=</span> <span class="st">"Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position"</span>,</span>
-<span>  lcPhenoDir <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
-<span>  display <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  saveOutputs <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>    phenoFile <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span>,</span>
+<span>    idatFolder <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>,</span>
+<span>    outputLogs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span><span class="op">)</span>,</span>
+<span>    nSamples <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>    SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span>,</span>
+<span>    arrayType <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">arrayType</span>,</span>
+<span>    annotationVersion <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">annotationVersion</span>,</span>
+<span>    scriptLabel <span class="op">=</span> <span class="st">"preprocessingMinfiEwasWater"</span>,</span>
+<span>    baseDataFolder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"rData"</span><span class="op">)</span>,</span>
+<span>    figureBaseDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"figures"</span><span class="op">)</span>,</span>
+<span>    detPThreshold <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    normMethods <span class="op">=</span> <span class="st">"quantile"</span>,</span>
+<span>    sexColumn <span class="op">=</span> <span class="st">"Sex"</span>,</span>
+<span>    removeSexMismatch <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    pvalThreshold <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    chrToRemove <span class="op">=</span> <span class="st">""</span>,</span>
+<span>    snpsToRemove <span class="op">=</span> <span class="st">"SBE"</span>,</span>
+<span>    mafThreshold <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    probeExclusionPath <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">probeExclusionPath</span>,</span>
+<span>    plotGroupVar <span class="op">=</span> <span class="st">"Sex"</span>,</span>
+<span>    lcRef <span class="op">=</span> <span class="st">"saliva"</span>,</span>
+<span>    phenoOrder <span class="op">=</span> <span class="st">"Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position"</span>,</span>
+<span>    lcPhenoDir <span class="op">=</span> <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
+<span>    display <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    saveOutputs <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">preprocessResult</span><span class="op">)</span></span>
@@ -289,18 +287,18 @@ used later during filtering.</p>
 <span><span class="co">#&gt;  [1] "targets"     "RGSet"       "rawData"     "assessment"  "sexData"    </span></span>
 <span><span class="co">#&gt;  [6] "normData"    "filterData"  "metricsData" "lcData"      "logFile"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">preprocessResult</span><span class="op">$</span><span class="va">targets</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">"Sample_Name"</span>,</span>
-<span>  <span class="st">"Sex"</span>,</span>
-<span>  <span class="st">"Sentrix_ID"</span>,</span>
-<span>  <span class="st">"Sentrix_Position"</span></span>
+<span>    <span class="st">"Sample_Name"</span>,</span>
+<span>    <span class="st">"Sex"</span>,</span>
+<span>    <span class="st">"Sentrix_ID"</span>,</span>
+<span>    <span class="st">"Sentrix_Position"</span></span>
 <span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Sample_Name Sex Sentrix_ID Sentrix_Position</span></span>
-<span><span class="co">#&gt; 1    GroupA_3   1 5723646052           R02C02</span></span>
-<span><span class="co">#&gt; 2    GroupA_2   0 5723646052           R04C01</span></span>
-<span><span class="co">#&gt; 3    GroupB_3   1 5723646052           R05C02</span></span>
-<span><span class="co">#&gt; 4    GroupB_1   0 5723646053           R04C02</span></span>
-<span><span class="co">#&gt; 5    GroupA_1   0 5723646053           R05C02</span></span>
-<span><span class="co">#&gt; 6    GroupB_2   0 5723646053           R06C02</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    GroupA_3   M 5723646052           R02C02</span></span>
+<span><span class="co">#&gt; 2    GroupA_2   F 5723646052           R04C01</span></span>
+<span><span class="co">#&gt; 3    GroupB_3   M 5723646052           R05C02</span></span>
+<span><span class="co">#&gt; 4    GroupB_1   F 5723646053           R04C02</span></span>
+<span><span class="co">#&gt; 5    GroupA_1   F 5723646053           R05C02</span></span>
+<span><span class="co">#&gt; 6    GroupB_2   F 5723646053           R06C02</span></span></code></pre></div>
 <p>The returned object has class
 <code>dnaEPICO_preprocessingMinfiEwasWater</code>.
 <code>names(preprocessResult)</code> lists the main elements returned by
@@ -332,10 +330,15 @@ filtering and probe filtering.</li>
 <code>probeExclusionPath</code> supplies the probe-exclusion
 reference used during filtering.</li>
 <li>
-<code>sexColumn</code>, <code>plotGroupVar</code>,
-<code>lcRef</code>, and <code>phenoOrder</code> control sex prediction,
-quality-control grouping, cell-type estimation, and the structure of the
-returned phenotype table.</li>
+<code>sexColumn</code> identifies reported sex for comparison with
+methylation-predicted sex. <code>removeSexMismatch = FALSE</code>
+retains and reports confirmed mismatches; <code>TRUE</code> removes
+samples only when both values are known and disagree. Missing or unknown
+sex values are retained.</li>
+<li>
+<code>plotGroupVar</code>, <code>lcRef</code>, and
+<code>phenoOrder</code> control quality-control grouping, cell-type
+estimation, and the structure of the returned phenotype table.</li>
 <li>
 <code>display = FALSE</code>, <code>verbose = FALSE</code>,
 <code>logs = FALSE</code>, and <code>saveOutputs = FALSE</code> keep the
@@ -350,15 +353,15 @@ augmented with cell-composition estimates.</p>
 <span><span class="co">#&gt; attr(,"package")</span></span>
 <span><span class="co">#&gt; [1] "minfi"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">preprocessResult</span><span class="op">$</span><span class="va">metricsData</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "beta" "m"    "cn"</span></span>
+<span><span class="co">#&gt; [1] "beta"       "m"          "cn"         "validation"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">preprocessResult</span><span class="op">$</span><span class="va">lcData</span><span class="op">$</span><span class="va">phenoLC</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Sample_Name Sex          Basename Sentrix_ID Sentrix_Position Sample_Well</span></span>
-<span><span class="co">#&gt; 1    GroupA_3   1 5723646052_R02C02 5723646052           R02C02          H5</span></span>
-<span><span class="co">#&gt; 2    GroupA_2   0 5723646052_R04C01 5723646052           R04C01          D5</span></span>
-<span><span class="co">#&gt; 3    GroupB_3   1 5723646052_R05C02 5723646052           R05C02          C6</span></span>
-<span><span class="co">#&gt; 4    GroupB_1   0 5723646053_R04C02 5723646053           R04C02          F7</span></span>
-<span><span class="co">#&gt; 5    GroupA_1   0 5723646053_R05C02 5723646053           R05C02          G7</span></span>
-<span><span class="co">#&gt; 6    GroupB_2   0 5723646053_R06C02 5723646053           R06C02          H7</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    GroupA_3   M 5723646052_R02C02 5723646052           R02C02          H5</span></span>
+<span><span class="co">#&gt; 2    GroupA_2   F 5723646052_R04C01 5723646052           R04C01          D5</span></span>
+<span><span class="co">#&gt; 3    GroupB_3   M 5723646052_R05C02 5723646052           R05C02          C6</span></span>
+<span><span class="co">#&gt; 4    GroupB_1   F 5723646053_R04C02 5723646053           R04C02          F7</span></span>
+<span><span class="co">#&gt; 5    GroupA_1   F 5723646053_R05C02 5723646053           R05C02          G7</span></span>
+<span><span class="co">#&gt; 6    GroupB_2   F 5723646053_R06C02 5723646053           R06C02          H7</span></span></code></pre></div>
 <p>In local use, these are the most useful objects to inspect first.
 <code>preprocessResult$RGSet</code> is the core methylation object.
 <code>metricsData</code> contains the beta-value, M-value, and
@@ -411,21 +414,21 @@ in-memory objects, so the chunk writes <code>targets</code> to
 <code>sva_RGSet.RData</code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">svaResult</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svaEnmix.html">svaEnmix</a></span><span class="op">(</span></span>
-<span>  phenoFile <span class="op">=</span> <span class="va">sva_targets_file</span>,</span>
-<span>  rgsetData <span class="op">=</span> <span class="va">sva_rgset_file</span>,</span>
-<span>  outputLogs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"logs"</span><span class="op">)</span>,</span>
-<span>  SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span>,</span>
-<span>  arrayType <span class="op">=</span> <span class="st">"IlluminaHumanMethylation450k"</span>,</span>
-<span>  annotationVersion <span class="op">=</span> <span class="st">"ilmn12.hg19"</span>,</span>
-<span>  SentrixIDColumn <span class="op">=</span> <span class="st">"Sentrix_ID"</span>,</span>
-<span>  SentrixPositionColumn <span class="op">=</span> <span class="st">"Sentrix_Position"</span>,</span>
-<span>  ctrlSvaPercVar <span class="op">=</span> <span class="fl">0.90</span>,</span>
-<span>  ctrlSvaFlag <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  scriptLabel <span class="op">=</span> <span class="st">"svaEnmix"</span>,</span>
-<span>  display <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  saveOutputs <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>    phenoFile <span class="op">=</span> <span class="va">sva_targets_file</span>,</span>
+<span>    rgsetData <span class="op">=</span> <span class="va">sva_rgset_file</span>,</span>
+<span>    outputLogs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"logs"</span><span class="op">)</span>,</span>
+<span>    SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span>,</span>
+<span>    arrayType <span class="op">=</span> <span class="st">"IlluminaHumanMethylation450k"</span>,</span>
+<span>    annotationVersion <span class="op">=</span> <span class="st">"ilmn12.hg19"</span>,</span>
+<span>    SentrixIDColumn <span class="op">=</span> <span class="st">"Sentrix_ID"</span>,</span>
+<span>    SentrixPositionColumn <span class="op">=</span> <span class="st">"Sentrix_Position"</span>,</span>
+<span>    ctrlSvaPercVar <span class="op">=</span> <span class="fl">0.90</span>,</span>
+<span>    ctrlSvaFlag <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    scriptLabel <span class="op">=</span> <span class="st">"svaEnmix"</span>,</span>
+<span>    display <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    saveOutputs <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; 3  surrogate variables explain  100 % of </span></span>
 <span><span class="co">#&gt;     data variation</span></span>
@@ -438,11 +441,11 @@ in-memory objects, so the chunk writes <code>targets</code> to
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">svaResult</span><span class="op">$</span><span class="va">svaData</span><span class="op">$</span><span class="va">sva</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 4 3</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">svaResult</span><span class="op">$</span><span class="va">mergedPheno</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">svaResult</span><span class="op">$</span><span class="va">mergedPheno</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Sample_Name Sample_Well Sample_Plate Sample_Group Pool_ID person</span></span>
-<span><span class="co">#&gt; 1    GroupA_3          H5           NA       GroupA      NA    id3</span></span>
-<span><span class="co">#&gt; 2    GroupA_2          D5           NA       GroupA      NA    id2</span></span>
-<span><span class="co">#&gt; 3    GroupB_3          C6           NA       GroupB      NA    id3</span></span>
-<span><span class="co">#&gt; 4    GroupB_1          F7           NA       GroupB      NA    id1</span></span></code></pre></div>
+<span><span class="co">#&gt;         Sample_Name Sample_Well Sample_Plate Sample_Group Pool_ID person</span></span>
+<span><span class="co">#&gt; 1 5723646052_R02C02          H5           NA       GroupA      NA    id3</span></span>
+<span><span class="co">#&gt; 2 5723646052_R04C01          D5           NA       GroupA      NA    id2</span></span>
+<span><span class="co">#&gt; 3 5723646052_R05C02          C6           NA       GroupB      NA    id3</span></span>
+<span><span class="co">#&gt; 4 5723646053_R04C02          F7           NA       GroupB      NA    id1</span></span></code></pre></div>
 <p>The returned object has class <code>dnaEPICO_svaEnmix</code>, and
 <code>names(svaResult)</code> shows the main SVA components returned by
 the function. The <code>svaData$sva</code> matrix contains one row per
@@ -481,9 +484,9 @@ array-position metadata is stored separately in
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">svaResult</span><span class="op">$</span><span class="va">analysisData</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "dnaEPICO_svaEnmix_analysis"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">svaResult</span><span class="op">$</span><span class="va">analysisData</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "sva"             "K"               "sentrixID"       "sentrixPosition"</span></span>
-<span><span class="co">#&gt; [5] "fullModels"      "reducedModels"   "droptermSteps"   "anovaFull"      </span></span>
-<span><span class="co">#&gt; [9] "anovaReduced"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "sva"             "K"               "sentrixID"       "sentrixPosition"</span></span>
+<span><span class="co">#&gt;  [5] "technicalTerms"  "fullModels"      "reducedModels"   "droptermSteps"  </span></span>
+<span><span class="co">#&gt;  [9] "anovaFull"       "anovaReduced"    "warnings"</span></span></code></pre></div>
 <p>This object contains the fitted models and ANOVA summaries used to
 assess how the surrogate variables relate to Sentrix chip and position
 effects.</p>
@@ -512,12 +515,12 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpPzYidO/dnaEPICO-preprocessingPheno-example-2298563048e0"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpI7XMc4/dnaEPICO-preprocessingPheno-example-244857f3b998"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
-<span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
-<span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">mPath</span>,</span>
-<span>  <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">cnPath</span></span>
+<span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
+<span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
+<span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">mPath</span>,</span>
+<span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">cnPath</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoLC.csv" "beta.RData"  "m.RData"     "cn.RData"</span></span></code></pre></div>
 <p><code>pheno_inputs</code> is a list that bundles both the temporary
@@ -530,33 +533,33 @@ directory, the phenotype table, the three saved matrix files
 <code>combinedData</code>, and <code>clockFoundation</code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">phenoResult</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/preprocessingPheno.html">preprocessingPheno</a></span><span class="op">(</span></span>
-<span>  phenoFile <span class="op">=</span> <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
-<span>  betaPath <span class="op">=</span> <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
-<span>  mPath <span class="op">=</span> <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">mPath</span>,</span>
-<span>  cnPath <span class="op">=</span> <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">cnPath</span>,</span>
-<span>  SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span>,</span>
-<span>  timeVar <span class="op">=</span> <span class="st">"Timepoint"</span>,</span>
-<span>  timepoints <span class="op">=</span> <span class="st">"1,2"</span>,</span>
-<span>  combineTimepoints <span class="op">=</span> <span class="st">"1,2"</span>,</span>
-<span>  outputPheno <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"data"</span>, <span class="st">"preprocessingPheno"</span><span class="op">)</span>,</span>
-<span>  outputRData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
-<span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
-<span>    <span class="st">"rData"</span>,</span>
-<span>    <span class="st">"preprocessingPheno"</span>,</span>
-<span>    <span class="st">"metrics"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  outputRDataMerge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
-<span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
-<span>    <span class="st">"rData"</span>,</span>
-<span>    <span class="st">"preprocessingPheno"</span>,</span>
-<span>    <span class="st">"mergeData"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  sexColumn <span class="op">=</span> <span class="st">"Sex"</span>,</span>
-<span>  outputLogs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span><span class="op">)</span>,</span>
-<span>  outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"clockFoundation"</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  saveOutputs <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>    phenoFile <span class="op">=</span> <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
+<span>    betaPath <span class="op">=</span> <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
+<span>    mPath <span class="op">=</span> <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">mPath</span>,</span>
+<span>    cnPath <span class="op">=</span> <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">cnPath</span>,</span>
+<span>    SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span>,</span>
+<span>    timeVar <span class="op">=</span> <span class="st">"Timepoint"</span>,</span>
+<span>    timepoints <span class="op">=</span> <span class="st">"1,2"</span>,</span>
+<span>    combineTimepoints <span class="op">=</span> <span class="st">"1,2"</span>,</span>
+<span>    outputPheno <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"data"</span>, <span class="st">"preprocessingPheno"</span><span class="op">)</span>,</span>
+<span>    outputRData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
+<span>        <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
+<span>        <span class="st">"rData"</span>,</span>
+<span>        <span class="st">"preprocessingPheno"</span>,</span>
+<span>        <span class="st">"metrics"</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    outputRDataMerge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
+<span>        <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>,</span>
+<span>        <span class="st">"rData"</span>,</span>
+<span>        <span class="st">"preprocessingPheno"</span>,</span>
+<span>        <span class="st">"mergeData"</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    sexColumn <span class="op">=</span> <span class="st">"Sex"</span>,</span>
+<span>    outputLogs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"logs"</span><span class="op">)</span>,</span>
+<span>    outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"clockFoundation"</span><span class="op">)</span>,</span>
+<span>    verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    saveOutputs <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">)</span></span>
@@ -571,7 +574,7 @@ directory, the phenotype table, the three saved matrix files
 <span><span class="co">#&gt; [1] "timepoints"              "suffix"                 </span></span>
 <span><span class="co">#&gt; [3] "pheno"                   "phenoMethylation"       </span></span>
 <span><span class="co">#&gt; [5] "methylationScale"        "methylationObjectPrefix"</span></span>
-<span><span class="co">#&gt; [7] "phenoBeta"</span></span>
+<span><span class="co">#&gt; [7] "phenoB"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">$</span><span class="va">combinedData</span><span class="op">$</span><span class="va">phenoMethylation</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Sample_Name Timepoint    Sex Age cg00000029 cg00000108</span></span>
 <span><span class="co">#&gt; 1          S1         1 Female  20       0.20       0.60</span></span>
@@ -619,7 +622,8 @@ deciding whether they should be used in a reporting or export
 workflow.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">$</span><span class="va">clockFoundation</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "betaCSV" "phenoCF"</span></span>
+<span><span class="co">#&gt; [1] "betaCSV"               "phenoCF"               "methylationBoundaries"</span></span>
+<span><span class="co">#&gt; [4] "methylationIssues"     "invalidCpGs"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">$</span><span class="va">clockFoundation</span><span class="op">$</span><span class="va">phenoCF</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   id Timepoint    Sex Age</span></span>
 <span><span class="co">#&gt; 1 S1         1 Female  20</span></span>
@@ -630,6 +634,25 @@ workflow.</p>
 objects, and <code>phenoResult$clockFoundation$phenoCF</code> is the
 phenotype table prepared for <a href="https://dnamage.clockfoundation.org/user" class="external-link">Clock Foundation</a>
 use.</p>
+</div>
+<div class="section level3">
+<h3 id="variables-used-in-glm-and-lme-models">Variables used in GLM and LME models<a class="anchor" aria-label="anchor" href="#variables-used-in-glm-and-lme-models"></a>
+</h3>
+<p>The phenotype-methylation tables returned by
+<code><a href="../reference/preprocessingPheno.html">preprocessingPheno()</a></code> can be used by
+<code><a href="../reference/methylationGLM.html">methylationGLM()</a></code> or <code><a href="../reference/methylationLME.html">methylationLME()</a></code>.
+<code>factorVars</code> identifies categorical fixed-effect variables,
+while <code>scaleVars</code> identifies numeric fixed-effect variables
+to centre and divide by their sample standard deviations before model
+fitting. For example, <code>factorVars = "Sex,TreatmentGroup"</code>
+treats those variables as categorical and
+<code>scaleVars = "Age,PC1"</code> standardises <code>Age</code> and
+<code>PC1</code>.</p>
+<p>For GLM and LME analyses, the selected variables must be numeric,
+have at least two finite observations, and have non-zero sample
+variance. A variable cannot be listed in both <code>factorVars</code>
+and <code>scaleVars</code>. The applied centres and sample standard
+deviations are stored in the annotated workbook metadata.</p>
 </div>
 </div>
 <div class="section level2">
@@ -660,9 +683,9 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-07-16 02:06:05 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-07-19 08:48:56 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 54.523 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 50.129 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -706,7 +729,7 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.33                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.34                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
@@ -742,14 +765,14 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt;  [59] rngtools_1.5.2            doParallel_1.0.17        </span></span>
 <span><span class="co">#&gt;  [61] bit64_4.8.2               BiocParallel_1.40.2      </span></span>
 <span><span class="co">#&gt;  [63] DBI_1.3.0                 gplots_3.3.0             </span></span>
-<span><span class="co">#&gt;  [65] HDF5Array_1.34.0          MASS_7.3-65              </span></span>
+<span><span class="co">#&gt;  [65] HDF5Array_1.34.0          MASS_7.3-66              </span></span>
 <span><span class="co">#&gt;  [67] openssl_2.4.2             rappdirs_0.3.4           </span></span>
 <span><span class="co">#&gt;  [69] DelayedArray_0.32.0       rjson_0.2.23             </span></span>
 <span><span class="co">#&gt;  [71] caTools_1.18.3            gtools_3.9.5             </span></span>
 <span><span class="co">#&gt;  [73] tools_4.4.2               otel_0.2.0               </span></span>
 <span><span class="co">#&gt;  [75] rentrez_1.2.4             glue_1.8.1               </span></span>
 <span><span class="co">#&gt;  [77] quadprog_1.5-8            restfulr_0.0.17          </span></span>
-<span><span class="co">#&gt;  [79] nlme_3.1-169              rhdf5filters_1.18.1      </span></span>
+<span><span class="co">#&gt;  [79] nlme_3.1-170              rhdf5filters_1.18.1      </span></span>
 <span><span class="co">#&gt;  [81] grid_4.4.2                cluster_2.1.8.2          </span></span>
 <span><span class="co">#&gt;  [83] generics_0.1.4            tzdb_0.5.0               </span></span>
 <span><span class="co">#&gt;  [85] preprocessCore_1.68.0     tidyr_1.3.2              </span></span>
@@ -865,7 +888,7 @@ pipelines</span>.”</span> <em>Clinical Epigenetics</em> 13 (1): 216. <a href="
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Paul Ruiz, Divya Mehta.</p>
+<p>Developed by Paul Ruiz.</p>
 </div>
 
 <div class="pkgdown">
