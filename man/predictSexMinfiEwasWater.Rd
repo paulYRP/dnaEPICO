@@ -35,7 +35,7 @@ sex.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_minfiEwasWater_sex"} containing the sex
+A list with class \code{'dnaEPICO_minfiEwasWater_sex'} containing the sex
 prediction result, aligned phenotype data, plotting data, and mismatch
 table.
 }
@@ -48,12 +48,12 @@ plotted or merged into downstream phenotype tables.
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
 sex_data <- predictSexMinfiEwasWater(
-  rawData = ex$rawFiltered,
-  targets = ex$sampleData$targets,
-  SampleID = "Sample_Name",
-  sexColumn = "Sex",
-  verbose = FALSE,
-  logs = FALSE
+    rawData = ex$rawFiltered,
+    targets = ex$sampleData$targets,
+    SampleID = "Sample_Name",
+    sexColumn = "Sex",
+    verbose = FALSE,
+    logs = FALSE
 )
 names(sex_data)
 \dontshow{\}) # examplesIf}

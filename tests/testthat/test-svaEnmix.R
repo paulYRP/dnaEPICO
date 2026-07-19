@@ -29,8 +29,8 @@ create_toy_sva_analysis <- function() {
             fullModels = full_models,
             reducedModels = full_models,
             droptermSteps = list(list(), list()),
-            anovaFull = lapply(full_models, stats::anova),
-            anovaReduced = lapply(full_models, stats::anova)
+            anovaFull = suppressWarnings(lapply(full_models, stats::anova)),
+            anovaReduced = suppressWarnings(lapply(full_models, stats::anova))
         ),
         class = "dnaEPICO_svaEnmix_analysis"
     )
@@ -88,6 +88,68 @@ test_that("mergeSvaTargetsEnmix preserves target order", {
 
     expect_identical(merged$Sample_Name, targets$Sample_Name)
     expect_true(all(c("PC1", "PC2") %in% colnames(merged)))
+})
+
+test_that("mergeSvaTargetsEnmix prevents repeated surrogate-variable columns", {
+    targets <- data.frame(
+        Sample_Name = c("S1", "S2", "S3"),
+        PC1 = c(0, 0, 0),
+        stringsAsFactors = FALSE
+    )
+    expect_error(
+        mergeSvaTargetsEnmix(
+            targets = targets,
+            sva = create_toy_sva_analysis()$sva,
+            SampleID = "Sample_Name"
+        ),
+        "would be duplicated"
+    )
+})
+
+test_that("ENmix control-SVA options follow the documented flag contract", {
+    expect_error(
+        estimateSvaEnmixControls(NULL, ctrlSvaPercVar = -0.01),
+        "between 0 and 1"
+    )
+    expect_error(
+        estimateSvaEnmixControls(NULL, ctrlSvaFlag = 0),
+        "must be 1"
+    )
+    expect_error(
+        estimateSvaEnmixControls(NULL, ctrlSvaFlag = 3),
+        "must be 1"
+    )
+})
+
+test_that("Sentrix analysis omits technical factors without variation", {
+    testthat::skip_if_not_installed("SummarizedExperiment")
+    testthat::skip_if_not_installed("S4Vectors")
+
+    sample_ids <- paste0("S", seq_len(6))
+    sva <- matrix(
+        seq_len(12) / 10,
+        nrow = 6,
+        dimnames = list(sample_ids, c("PC1", "PC2"))
+    )
+    rgset <- SummarizedExperiment::SummarizedExperiment(
+        assays = list(signal = matrix(1, nrow = 2, ncol = 6)),
+        colData = S4Vectors::DataFrame(
+            Sentrix_ID = rep("Chip1", 6),
+            Sentrix_Position = rep("R01C01", 6),
+            row.names = sample_ids
+        )
+    )
+
+    result <- analyzeSvaEnmix(
+        sva = sva,
+        RGSet = rgset,
+        logs = FALSE
+    )
+
+    expect_length(result$technicalTerms, 0L)
+    expect_true(all(vapply(result$fullModels, function(model) {
+        identical(attr(stats::terms(model), "term.labels"), character(0))
+    }, logical(1))))
 })
 
 test_that("plotSvaEnmix saves a sentrix-id plot", {
@@ -183,11 +245,17 @@ test_that("writeSvaEnmixOutputs writes matrix and summary files", {
     )
     merged_pheno <- data.frame(
         Sample_Name = c("S1", "S2", "S3"),
+        CD8T = c(0.20, 0.25, 0.30),
         PC1 = analysis_data$sva[, 1],
         PC2 = analysis_data$sva[, 2],
         stringsAsFactors = FALSE
     )
     pheno_file <- file.path(tmp, "pheno.csv")
+    utils::write.csv(
+        merged_pheno[c("Sample_Name", "CD8T")],
+        pheno_file,
+        row.names = FALSE
+    )
 
     paths <- writeSvaEnmixOutputs(
         svaData = sva_data,
@@ -205,6 +273,85 @@ test_that("writeSvaEnmixOutputs writes matrix and summary files", {
     expect_true(file.exists(paths$phenoWithSva))
     expect_true(file.exists(file.path(paths$dataDir, "summary_full_sva1.txt")))
     expect_true(file.exists(file.path(paths$dataDir, "anova_full_sva1.txt")))
+    expect_identical(
+        names(utils::read.csv(pheno_file, check.names = FALSE)),
+        c("Sample_Name", "CD8T", "PC1", "PC2")
+    )
+})
+
+test_that("writeSvaEnmixOutputs transactionally updates one phenotype file", {
+    tmp <- withr::local_tempdir()
+    analysis_data <- create_toy_sva_analysis()
+    pheno_file <- file.path(tmp, "phenoLC.csv")
+    input_data <- data.frame(
+        Sample_Name = rownames(analysis_data$sva),
+        CD8T = c(0.20, 0.25, 0.30),
+        status = c("case", "control", "case"),
+        stringsAsFactors = FALSE
+    )
+    utils::write.csv(input_data, pheno_file, row.names = FALSE)
+    merged <- cbind(input_data, as.data.frame(analysis_data$sva))
+
+    paths <- writeSvaEnmixOutputs(
+        svaData = list(sva = analysis_data$sva),
+        mergedPheno = merged,
+        phenoFile = pheno_file,
+        SampleID = "Sample_Name",
+        dataBaseDir = file.path(tmp, "data"),
+        rBaseDir = file.path(tmp, "rData"),
+        scriptLabel = "svaEnmix"
+    )
+
+    updated <- utils::read.csv(pheno_file, check.names = FALSE)
+    expect_identical(paths$phenoWithSva, pheno_file)
+    expect_identical(updated$Sample_Name, input_data$Sample_Name)
+    expect_equal(updated[c("CD8T", "status")], input_data[c("CD8T", "status")])
+    expect_equal(
+        unname(as.matrix(updated[c("PC1", "PC2")])),
+        unname(as.matrix(merged[c("PC1", "PC2")]))
+    )
+    expect_identical(
+        list.files(tmp, pattern = "^\\.phenoLC\\.csv\\.(sva|backup)-", all.files = TRUE),
+        character(0)
+    )
+    expect_identical(
+        list.files(tmp, pattern = "^phenoLC", all.files = TRUE),
+        "phenoLC.csv"
+    )
+})
+
+test_that("failed phenotype validation leaves the original file unchanged", {
+    tmp <- withr::local_tempdir()
+    pheno_file <- file.path(tmp, "phenoLC.csv")
+    original <- data.frame(
+        Sample_Name = c("S1", "S2", "S3"),
+        CD8T = c(0.20, 0.25, 0.30),
+        stringsAsFactors = FALSE
+    )
+    utils::write.csv(original, pheno_file, row.names = FALSE)
+    checksum <- tools::md5sum(pheno_file)
+    invalid <- cbind(original, PC1 = c(0.1, Inf, 0.3))
+
+    expect_error(
+        replacePhenotypeFileSvaEnmix(
+            mergedPheno = invalid,
+            phenoFile = pheno_file,
+            SampleID = "Sample_Name",
+            pcColumns = "PC1"
+        ),
+        "only finite values"
+    )
+
+    expect_identical(unname(tools::md5sum(pheno_file)), unname(checksum))
+    expect_equal(utils::read.csv(pheno_file), original)
+    expect_identical(
+        list.files(tmp, pattern = "^\\.phenoLC\\.csv\\.(sva|backup)-", all.files = TRUE),
+        character(0)
+    )
+})
+
+test_that("svaEnmix exposes one phenotype-file interface", {
+    expect_false("outputPhenoFile" %in% names(formals(svaEnmix)))
 })
 
 test_that("svaEnmix logs fatal errors before stopping", {
@@ -274,6 +421,8 @@ test_that("svaEnmix accepts saved RGSet inputs", {
 
     expect_s3_class(result, "dnaEPICO_svaEnmix")
     expect_equal(nrow(result$targets), ncol(result$RGSet))
+    expect_equal(colnames(result$svaData$sva), paste0("PC", seq_len(result$svaData$K)))
+    expect_false(anyDuplicated(colnames(result$mergedPheno)) > 0L)
 })
 
 test_that("svaEnmix accepts wrapper files that contain an RGSet element", {

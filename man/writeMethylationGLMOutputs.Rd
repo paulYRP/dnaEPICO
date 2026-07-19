@@ -13,6 +13,7 @@ writeMethylationGLMOutputs(
   summaryTxtDir,
   significantCpGDir,
   annotatedGLMOut,
+  reportAssetsDir = NULL,
   saveTxtSummaries = TRUE,
   saveSignificantCpGs = FALSE,
   verbose = FALSE,
@@ -44,6 +45,9 @@ coefficient tables.}
 \item{annotatedGLMOut}{Character. Directory used for the annotated summary
 XLSX workbook.}
 
+\item{reportAssetsDir}{Character or \code{NULL}. Report results directory used for
+the compressed TSV table and compact metadata sidecars.}
+
 \item{saveTxtSummaries}{Logical. If \code{TRUE}, write tab-delimited summary
 tables.}
 
@@ -60,8 +64,9 @@ coefficient tables.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM_paths"} containing
-the paths of the files written to disk.
+A list with class \code{'dnaEPICO_methylationGLM_paths'} containing
+the paths of the files written to disk, including the annotated workbook
+and any requested report-table sidecars.
 }
 \description{
 Write optional serialized outputs, summary tables, significant-CpG tables,
@@ -70,31 +75,31 @@ and annotated results from the one-timepoint GLM workflow.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 annotation_data <- annotateMethylationGLMSummaries(
-  modelSummaries = ex$modelSummaries,
-  annotationObject = ex$annotationData,
-  annotationCols = "Name,chr,pos",
-  verbose = FALSE,
-  logs = FALSE
+    modelSummaries = ex$modelSummaries,
+    annotationObject = ex$annotationData,
+    annotationCols = "Name,chr,pos",
+    verbose = FALSE,
+    logs = FALSE
 )
 significant_cpgs <- collectSignificantCpGsMethylationGLM(
-  modelResults = ex$modelResults,
-  pvalThreshold = 1,
-  verbose = FALSE,
-  logs = FALSE
+    modelResults = ex$modelResults,
+    pvalThreshold = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 output_paths <- writeMethylationGLMOutputs(
-  modelResults = ex$modelResults,
-  modelSummaries = ex$modelSummaries,
-  annotatedResults = annotation_data,
-  significantCpGs = significant_cpgs,
-  outputRData = file.path(ex$tempDir, "models"),
-  summaryTxtDir = file.path(ex$tempDir, "summary"),
-  significantCpGDir = file.path(ex$tempDir, "significant"),
-  annotatedGLMOut = file.path(ex$tempDir, "annotated"),
-  saveTxtSummaries = TRUE,
-  saveSignificantCpGs = TRUE,
-  verbose = FALSE,
-  logs = FALSE
+    modelResults = ex$modelResults,
+    modelSummaries = ex$modelSummaries,
+    annotatedResults = annotation_data,
+    significantCpGs = significant_cpgs,
+    outputRData = file.path(ex$tempDir, "models"),
+    summaryTxtDir = file.path(ex$tempDir, "summary"),
+    significantCpGDir = file.path(ex$tempDir, "significant"),
+    annotatedGLMOut = file.path(ex$tempDir, "annotated"),
+    saveTxtSummaries = TRUE,
+    saveSignificantCpGs = TRUE,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(output_paths)
 

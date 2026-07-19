@@ -20,7 +20,8 @@ plotMethylationGLMDistributions(
 \arguments{
 \item{preparedData}{Object returned by \code{prepareMethylationGLMData()}.}
 
-\item{plotWidth}{Integer. TIFF width in pixels when plots are written to disk.}
+\item{plotWidth}{Integer. TIFF width in pixels when plots are written to
+disk.}
 
 \item{plotHeight}{Integer. TIFF height in pixels when plots are written to
 disk.}
@@ -43,7 +44,7 @@ disk.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM_distribution_plots"}
+A list with class \code{'dnaEPICO_methylationGLM_distribution_plots'}
 containing the generated \code{ggplot2} objects and any saved TIFF file paths.
 }
 \description{
@@ -53,10 +54,10 @@ from the object returned by \code{prepareMethylationGLMData()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 distribution_plots <- plotMethylationGLMDistributions(
-  preparedData = ex$preparedData,
-  display = FALSE,
-  verbose = FALSE,
-  logs = FALSE
+    preparedData = ex$preparedData,
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(distribution_plots)
 

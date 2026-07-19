@@ -344,7 +344,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
         dnaEPICO::methylationGLM(
             inputPheno = file.path(
                 tmpDir, "rData", "preprocessingPheno", "mergeData",
-                "phenoBetaT1.RData"
+                "phenoBT1.RData"
             ),
             outputLogs = file.path(tmpDir, "logs"),
             outputRData = file.path(tmpDir, "rData", "methylationGLM", "models"),
@@ -377,7 +377,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
 
     expect_error(
         dnaEPICO::methylationLME(
-            inputPheno = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData", "phenoBetaT1.RData"),
+            inputPheno = file.path(tmpDir, "rData", "preprocessingPheno", "mergeData", "phenoBT1.RData"),
             outputLogs = file.path(tmpDir, "logs"),
             outputRData = file.path(tmpDir, "rData", "methylationLME", "models"),
             outputPlots = file.path(tmpDir, "figures", "methylationLME"),
@@ -401,4 +401,10 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Git
         ),
         NA
     )
+    expect_false(dir.exists(file.path(
+        tmpDir, "data", "methylationGLM", "report-assets"
+    )))
+    expect_false(dir.exists(file.path(
+        tmpDir, "data", "methylationLME", "report-assets"
+    )))
 })

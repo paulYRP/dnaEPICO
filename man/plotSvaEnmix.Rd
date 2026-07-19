@@ -21,8 +21,8 @@ plotSvaEnmix(
 \arguments{
 \item{analysisData}{Object returned by \code{analyzeSvaEnmix()}.}
 
-\item{plot}{Character. Plot type: \code{"sentrix_id"}, \code{"sentrix_position"}, or
-\code{"matrix"}.}
+\item{plot}{Character. Plot type: \code{'sentrix_id'}, \code{'sentrix_position'}, or
+\code{'matrix'}.}
 
 \item{display}{Logical. If \code{TRUE}, draw the plot on the active graphics
 device.}
@@ -53,11 +53,11 @@ Draw one of the standard surrogate-variable plots used by \code{svaEnmix()}.
 \examples{
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 plotSvaEnmix(
-  analysisData = ex$analysisData,
-  plot = "sentrix_id",
-  display = FALSE,
-  verbose = FALSE,
-  logs = FALSE
+    analysisData = ex$analysisData,
+    plot = "sentrix_id",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE
 )
 
 }

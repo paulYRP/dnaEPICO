@@ -31,7 +31,7 @@ loadMetricsPreprocessingPheno(
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_preprocessingPheno_metrics"}
+A list with class \code{'dnaEPICO_preprocessingPheno_metrics'}
 containing \code{beta}, \code{m}, and \code{cn}.
 }
 \description{
@@ -41,11 +41,11 @@ return them as a single in-memory object for downstream phenotype alignment.
 \examples{
 ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 metrics_data <- loadMetricsPreprocessingPheno(
-  betaPath = ex$betaPath,
-  mPath = ex$mPath,
-  cnPath = ex$cnPath,
-  verbose = FALSE,
-  logs = FALSE
+    betaPath = ex$betaPath,
+    mPath = ex$mPath,
+    cnPath = ex$cnPath,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(metrics_data)
 

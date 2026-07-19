@@ -109,25 +109,6 @@ test_that("probe-exclusion ID column errors are clear", {
     )
 })
 
-test_that("legacy cross-reactive reader delegates to probe-exclusion reader", {
-    path <- tempfile(fileext = ".csv")
-    writeLines(
-        c(
-            "TargetID,score",
-            "cg00001510,1"
-        ),
-        con = path
-    )
-
-    result <- dnaEPICO:::readCrossReactiveIdsMinfiEwasWater(
-        crossReactivePath = path,
-        crossReactiveIdColumn = "TargetID"
-    )
-
-    expect_identical(result$ids, "cg00001510")
-    expect_s3_class(result, "dnaEPICO_probeExclusion_ids")
-})
-
 test_that("EPICv2 manifest flags select expected exclusion IDs", {
     manifest <- data.frame(
         CH_WGBS_evidence = c("Y", "N", "N", "N"),

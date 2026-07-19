@@ -30,6 +30,35 @@ test_that("estimateLC returns the expected cell-type columns", {
     expect_equal(as.numeric(result[2, ]), c(0, 1), tolerance = 1e-8)
 })
 
+test_that("estimateLC averages duplicate EPICv2 loci instead of choosing one", {
+    example_data <- build_estimate_lc_example_data()
+    epic <- example_data$beta
+    rownames(epic) <- paste0(rownames(epic), "_TC11")
+    duplicate <- epic[1, , drop = FALSE]
+    rownames(duplicate) <- sub("_TC11$", "_BC11", rownames(duplicate))
+    duplicate[,] <- c(0.2, 0.8)
+    epic_with_duplicate <- rbind(epic, duplicate)
+
+    collapsed <- epic
+    collapsed[1, ] <- colMeans(epic_with_duplicate[c(1, nrow(epic_with_duplicate)), , drop = FALSE])
+
+    expect_equal(
+        as.matrix(estimateLC(epic_with_duplicate, ref = "saliva", constrained = FALSE)),
+        as.matrix(estimateLC(collapsed, ref = "saliva", constrained = FALSE)),
+        tolerance = 1e-10
+    )
+})
+
+test_that("estimateLC rejects duplicate exact probe identifiers", {
+    example_data <- build_estimate_lc_example_data()
+    duplicated_beta <- rbind(example_data$beta, example_data$beta[1, , drop = FALSE])
+
+    expect_error(
+        estimateLC(duplicated_beta, ref = "saliva", constrained = FALSE),
+        "duplicate CpG identifiers"
+    )
+})
+
 test_that("estimateLCMinfiEwasWater merges and orders phenoLC columns", {
     example_data <- build_estimate_lc_example_data()
 
@@ -47,4 +76,68 @@ test_that("estimateLCMinfiEwasWater merges and orders phenoLC columns", {
     )
     expect_equal(result$phenoLC$Leukocytes, c(1, 0), tolerance = 1e-8)
     expect_equal(result$phenoLC$Epithelial.cells, c(0, 1), tolerance = 1e-8)
+})
+
+test_that("estimateLCMinfiEwasWater validates reference and beta inputs", {
+    example_data <- build_estimate_lc_example_data()
+    targets <- data.frame(
+        Sample_Name = colnames(example_data$beta),
+        stringsAsFactors = FALSE
+    )
+
+    expect_error(
+        estimateLCMinfiEwasWater(
+            beta = example_data$beta,
+            targets = targets,
+            lcRef = c("saliva", "salivaEPIC")
+        ),
+        "one non-empty"
+    )
+    expect_error(
+        estimateLCMinfiEwasWater(
+            beta = example_data$beta,
+            targets = targets,
+            lcRef = "saliva",
+            constrained = "FALSE"
+        ),
+        "TRUE or FALSE"
+    )
+
+    invalid_beta <- example_data$beta
+    invalid_beta[1, 1] <- Inf
+    expect_warning(
+        result <- estimateLCMinfiEwasWater(
+            beta = invalid_beta,
+            targets = targets,
+            lcRef = "saliva"
+        ),
+        "invalid CpG"
+    )
+    expect_equal(nrow(result$invalidCpGs), 1L)
+    expect_identical(result$invalidCpGs$CpG, rownames(invalid_beta)[1L])
+    expect_equal(result$methylationBoundaries$Positive.Inf, 1L)
+    expect_equal(nrow(result$lc), ncol(invalid_beta))
+})
+
+test_that("estimateLCMinfiEwasWater converts NaN to NA and reports it", {
+    example_data <- build_estimate_lc_example_data()
+    nan_beta <- example_data$beta
+    nan_beta[1, 1] <- NaN
+
+    expect_warning(
+        result <- estimateLCMinfiEwasWater(
+            beta = nan_beta,
+            targets = example_data$targets,
+            lcRef = "saliva"
+        ),
+        "converted to NA"
+    )
+
+    expect_equal(result$methylationBoundaries$NaN.Converted, 1L)
+    expect_equal(nrow(result$methylationIssues), 1L)
+    expect_identical(
+        result$methylationIssues$Status,
+        "NaN converted to NA"
+    )
+    expect_equal(nrow(result$invalidCpGs), 0L)
 })

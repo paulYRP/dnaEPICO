@@ -25,8 +25,8 @@ assessSamplesMinfiEwasWater(
 is drawn.}
 
 \item{detPtype}{Character. Detection P-value mode passed to
-\code{minfi::detectionP()}. Common values in minfi workflows are \code{"m+u"} and
-\code{"negative"}. The default used here is \code{"m+u"}.}
+\code{minfi::detectionP()}. Common values in minfi workflows are \code{'m+u'} and
+\code{'negative'}. The default used here is \code{'m+u'}.}
 
 \item{detPThreshold}{Numeric. Samples with mean detection P value above this
 threshold are marked as failed.}
@@ -41,7 +41,7 @@ threshold are marked as failed.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_minfiEwasWater_assessment"} containing
+A list with class \code{'dnaEPICO_minfiEwasWater_assessment'} containing
 the QC object, detection P matrix, mean detection P values, and failed
 sample identifiers.
 }
@@ -54,11 +54,11 @@ using the requested threshold, and return the assessment as a single object.
 ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 raw_data <- buildRawMinfiEwasWater(ex$RGSet, verbose = FALSE, logs = FALSE)
 assessment <- assessSamplesMinfiEwasWater(
-  rawData = raw_data,
-  RGSet = ex$RGSet,
-  detPThreshold = 1,
-  verbose = FALSE,
-  logs = FALSE
+    rawData = raw_data,
+    RGSet = ex$RGSet,
+    detPThreshold = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(assessment)
 \dontshow{\}) # examplesIf}

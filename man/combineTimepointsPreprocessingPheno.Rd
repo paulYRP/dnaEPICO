@@ -15,13 +15,14 @@ combineTimepointsPreprocessingPheno(
 )
 }
 \arguments{
-\item{timepointData}{Object returned by \code{splitTimepointsPreprocessingPheno()}.}
+\item{timepointData}{Object returned by
+\code{splitTimepointsPreprocessingPheno()}.}
 
 \item{combineTimepoints}{Character vector or comma-separated string of
 timepoints to combine.}
 
 \item{methylationScale}{Character. Methylation metric used in the merged
-modeling table. One of \code{"beta"}, \code{"m"}, or \code{"cn"}.}
+modeling table. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, case-insensitively.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -33,7 +34,7 @@ modeling table. One of \code{"beta"}, \code{"m"}, or \code{"cn"}.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_preprocessingPheno_combined"}
+A list with class \code{'dnaEPICO_preprocessingPheno_combined'}
 containing the combined phenotype table, merged phenotype-plus-beta table,
 selected timepoints, and output suffix.
 }
@@ -45,10 +46,10 @@ objects used by downstream longitudinal models.
 \examples{
 ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 combined_data <- combineTimepointsPreprocessingPheno(
-  timepointData = ex$timepointData,
-  combineTimepoints = "1,2",
-  verbose = FALSE,
-  logs = FALSE
+    timepointData = ex$timepointData,
+    combineTimepoints = "1,2",
+    verbose = FALSE,
+    logs = FALSE
 )
 combined_data$suffix
 

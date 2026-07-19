@@ -20,9 +20,9 @@ output: github_document
 
 <p align="center"><img src="https://raw.githubusercontent.com/paulYRP/dnaEPICO/devel/inst/extdata/dnaEPICO.gif" alt="dnaEPICO workflow preview" width="650" /></p>
 
-dnaEPICO aims to provide a **modular and reproducible pipeline** for preprocessing and statistically analysing Illumina DNA methylation array data from the EPICv2, EPIC, and 450K platforms.
+dnaEPICO provides a **modular and reproducible pipeline** for preprocessing and statistically analysing Illumina DNA methylation array data from the EPICv2, EPIC, and 450K platforms.
 
-The package integrates preprocessing, quality control, phenotype merging, generalised linear models (GLM), linear mixed-effects models (LME), and automated report generation. It is designed to operate on both local machines and High-Performance Computing (HPC) environments through a **GNU Make–based workflow**.
+The package supports CpG-wise generalised linear models and longitudinal mixed-effects models using lmerTest/lme4 or nlme. It also integrates preprocessing, quality control, phenotype preparation, and automated report generation for local and High-Performance Computing (HPC) environments through a **GNU Make-based workflow**.
 
 ## Installation instructions
 

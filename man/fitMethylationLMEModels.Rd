@@ -20,16 +20,18 @@ fitMethylationLMEModels(
 \arguments{
 \item{preparedData}{Object returned by \code{prepareMethylationLMEData()}.}
 
-\item{nCores}{Integer. Number of worker processes to use.}
+\item{nCores}{Integer. Maximum number of worker processes to use. Automatic
+fitting uses the empirical lme4 or nlme crossover and caps workers by
+available CpGs and detected physical cores.}
 
 \item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
 to worker processes.}
 
 \item{lmeLibs}{Character vector or comma-separated string of package names to
-check on worker processes. The default is \code{"lme4,lmerTest"}.}
+check on worker processes. The default is \code{'lme4,lmerTest'}.}
 
 \item{correlationStructure}{Character. Residual correlation structure used
-when \code{lmeLibs} selects \code{"nlme"}. One of \code{"none"}, \code{"AR1"}, or \code{"CAR1"}.}
+when \code{lmeLibs} selects \code{'nlme'}. One of \code{'none'}, \code{'AR1'}, or \code{'CAR1'}.}
 
 \item{correlationVar}{Character or \code{NULL}. Variable used to order repeated
 observations within \code{personVar} for \code{AR1} or \code{CAR1} residual correlation
@@ -45,21 +47,22 @@ structures. Must be supplied explicitly for \code{AR1} or \code{CAR1}.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationLME_models"}
+A list with class \code{'dnaEPICO_methylationLME_models'}
 containing fitted model lists, model formulas, and counts of failed CpG
 fits.
 }
 \description{
-Fit one linear mixed-effects model per CpG for each phenotype requested in the
+Fit one linear mixed-effects model per CpG for each phenotype requested in
+the
 object returned by \code{prepareMethylationLMEData()}.
 }
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 model_results <- fitMethylationLMEModels(
-  preparedData = ex$preparedData,
-  nCores = 1,
-  verbose = FALSE,
-  logs = FALSE
+    preparedData = ex$preparedData,
+    nCores = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(model_results$fits)
 

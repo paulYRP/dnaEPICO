@@ -34,7 +34,8 @@ utils::globalVariables(c(
 
     # ---------- GLM / LME outputs ----------
     "Pr(>|t|)", "ResidualSD",
-    "value", "expected", "observed", "log2meanBeta",
+    "value", "expected", "observed", "meanMethylation", "diagnosticP",
+        "diagnosticY",
 
     # ---------- Pipeline variables ----------
     "idatFolder", "rBaseDir"

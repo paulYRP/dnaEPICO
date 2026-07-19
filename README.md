@@ -22,15 +22,15 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 <img src="https://raw.githubusercontent.com/paulYRP/dnaEPICO/devel/inst/extdata/dnaEPICO.gif" alt="dnaEPICO workflow preview" width="650" />
 </p>
 
-dnaEPICO aims to provide a **modular and reproducible pipeline** for
+dnaEPICO provides a **modular and reproducible pipeline** for
 preprocessing and statistically analysing Illumina DNA methylation array
 data from the EPICv2, EPIC, and 450K platforms.
 
-The package integrates preprocessing, quality control, phenotype
-merging, generalised linear models (GLM), linear mixed-effects models
-(LME), and automated report generation. It is designed to operate on
-both local machines and High-Performance Computing (HPC) environments
-through a **GNU Make–based workflow**.
+The package supports CpG-wise generalised linear models and longitudinal
+mixed-effects models using lmerTest/lme4 or nlme. It also integrates
+preprocessing, quality control, phenotype preparation, and automated
+report generation for local and High-Performance Computing (HPC)
+environments through a **GNU Make-based workflow**.
 
 ## Installation instructions
 
@@ -87,9 +87,9 @@ print(citation("dnaEPICO"), bibtex = TRUE)
     ## dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data,
     ## generated as part of 10.3390/epigenomes9040039
     ## 
-    ##   Ruiz P, Mehta D (2025). "dnaEPICO: Analysis Pipeline for Illumina DNA
+    ##   Ruiz P (2026). "dnaEPICO: Analysis Pipeline for Illumina DNA
     ##   Methylation Array Data." _Epigenomes_. doi:10.3390/epigenomes9040039
-    ##   <https://doi.org/10.3390/epigenomes9040039>,
+    ##   <https://doi.org/10.3390/epigenomes9040039>.
     ##   <https://bioconductor.org/packages/dnaEPICO>.
     ## 
     ## A BibTeX entry for LaTeX users is
@@ -98,8 +98,8 @@ print(citation("dnaEPICO"), bibtex = TRUE)
     ##     title = {dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data},
     ##     doi = {10.3390/epigenomes9040039},
     ##     journal = {Epigenomes},
-    ##     author = {Paul Ruiz and Divya Mehta},
-    ##     year = {2025},
+    ##     author = {Paul Ruiz},
+    ##     year = {2026},
     ##     url = {https://bioconductor.org/packages/dnaEPICO},
     ##   }
 
@@ -122,7 +122,7 @@ contributing to this project, you agree to abide by its terms.
   *[rcmdcheck](https://CRAN.R-project.org/package=rcmdcheck)* customized
   to use [Bioconductor’s docker
   containers](https://www.bioconductor.org/help/docker/) and
-  *[BiocCheck](https://bioconductor.org/packages/3.20/BiocCheck)*.
+  *[BiocCheck](https://bioconductor.org/packages/3.24/BiocCheck)*.
 - Code coverage assessment is possible thanks to
   [codecov](https://codecov.io/gh) and
   *[covr](https://CRAN.R-project.org/package=covr)*.
@@ -138,4 +138,4 @@ contributing to this project, you agree to abide by its terms.
 For more details, check the `dev` directory.
 
 This package was developed using
-*[biocthis](https://bioconductor.org/packages/3.20/biocthis)*.
+*[biocthis](https://bioconductor.org/packages/3.24/biocthis)*.

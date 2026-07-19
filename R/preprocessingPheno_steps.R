@@ -13,65 +13,27 @@
 #' @keywords internal
 #' @noRd
 parseTimepointsPreprocessingPheno <- function(values, label = "timepoints") {
-  parsed <- splitOptionMinfiEwasWater(values, sep = ",")
+    parsed <- splitOptionMinfiEwasWater(values, sep = ",")
 
-  if (length(parsed) == 0L) {
-    stop(label, " must contain at least one timepoint.", call. = FALSE)
-  }
+    if (length(parsed) == 0L) {
+        stop(label, " must contain at least one timepoint.",
+            call. = FALSE
+        )
+    }
 
-  parsed
-}
-
-normalizeMethylationScaleDnaEpico <- function(methylationScale = "beta") {
-  if (length(methylationScale) != 1L || is.na(methylationScale)) {
-    stop("methylationScale must be one of: beta, m, cn.", call. = FALSE)
-  }
-
-  methylation_scale <- tolower(trimws(as.character(methylationScale)))
-  if (!(methylation_scale %in% c("beta", "m", "cn"))) {
-    stop("methylationScale must be one of: beta, m, cn.", call. = FALSE)
-  }
-
-  methylation_scale
-}
-
-methylationScaleObjectPrefixDnaEpico <- function(methylationScale = "beta") {
-  switch(
-    normalizeMethylationScaleDnaEpico(methylationScale),
-    beta = "phenoBeta",
-    m = "phenoM",
-    cn = "phenoCN"
-  )
-}
-
-methylationScaleResponseLabelDnaEpico <- function(methylationScale = "beta") {
-  switch(
-    normalizeMethylationScaleDnaEpico(methylationScale),
-    beta = "Beta values",
-    m = "M-values",
-    cn = "Copy number values"
-  )
-}
-
-methylationScaleResponseColumnDnaEpico <- function(methylationScale = "beta") {
-  switch(
-    normalizeMethylationScaleDnaEpico(methylationScale),
-    beta = "beta",
-    m = "m",
-    cn = "cn"
-  )
+    unique(parsed)
 }
 
 #' Extract a preferred named element from a loaded object
 #'
 #' @param object Loaded object.
-#' @param preferred_name Character or `NULL`. Name of the preferred element to
-#'   extract when `object` is a named list.
+#' @param preferred_name Character vector or `NULL`. Preferred element names,
+#'   in selection order, when `object` is a named list.
 #'
 #' @return The original object or its preferred named element.
 #'
 #' @description
-#' Internal helper that unwraps legacy list-style saved objects used by
+#' Internal helper that unwraps list-style saved objects used by
 #' `preprocessingPheno()` and downstream wrappers.
 #'
 #' @keywords internal
@@ -80,22 +42,28 @@ extractPreferredObjectPreprocessingPheno <- function(
     object,
     preferred_name = NULL
 ) {
-  if (is.null(preferred_name)) {
-    return(object)
-  }
+    if (is.null(preferred_name)) {
+        return(object)
+    }
 
-  if (is.list(object) && preferred_name %in% names(object)) {
-    return(object[[preferred_name]])
-  }
+    preferred_names <- unique(as.character(preferred_name))
+    preferred_names <- preferred_names[!is.na(preferred_names) &
+        nzchar(preferred_names)]
+    matching_names <- preferred_names[preferred_names %in% names(object)]
+    if (is.list(object) && !is.data.frame(object) && length(matching_names) >
+        0L) {
+        return(object[[matching_names[[1L]]]])
+    }
 
-  object
+    object
 }
 
 #' Load a saved object used by preprocessingPheno helpers
 #'
 #' @param path Character. Path to an `.RData` or `.rds` file.
-#' @param preferred_name Character or `NULL`. Preferred object name when `path`
-#'   points to an `.RData` file containing multiple objects.
+#' @param preferred_name Character vector or `NULL`. Preferred object names,
+#'   in selection order, when `path` points to an `.RData` file containing
+#'   multiple objects.
 #'
 #' @return The loaded object.
 #'
@@ -107,47 +75,43 @@ extractPreferredObjectPreprocessingPheno <- function(
 #' @keywords internal
 #' @noRd
 loadSavedObjectPreprocessingPheno <- function(path, preferred_name = NULL) {
-  if (!file.exists(path)) {
-    stop("Input file does not exist: ", path, call. = FALSE)
-  }
+    if (!file.exists(path)) {
+        stop("Input file does not exist: ", path, call. = FALSE)
+    }
 
-  if (grepl("\\.rds$", path, ignore.case = TRUE)) {
-    return(
-      extractPreferredObjectPreprocessingPheno(
-        object = readRDS(path),
-        preferred_name = preferred_name
-      )
+    if (grepl("\\.rds$", path, ignore.case = TRUE)) {
+        return(extractPreferredObjectPreprocessingPheno(
+            object = readRDS(path),
+            preferred_name = preferred_name
+        ))
+    }
+
+    load_env <- new.env(parent = emptyenv())
+    loaded_names <- load(path, envir = load_env)
+
+    preferred_names <- unique(as.character(preferred_name))
+    preferred_names <- preferred_names[!is.na(preferred_names) &
+        nzchar(preferred_names)]
+    matching_names <- preferred_names[preferred_names %in% loaded_names]
+    if (length(matching_names) > 0L) {
+        selected_name <- matching_names[[1L]]
+        return(extractPreferredObjectPreprocessingPheno(
+            object = load_env[[selected_name]],
+            preferred_name = preferred_names
+        ))
+    }
+
+    if (length(loaded_names) == 1L) {
+        return(extractPreferredObjectPreprocessingPheno(
+            object = load_env[[loaded_names[[1L]]]],
+            preferred_name = preferred_name
+        ))
+    }
+
+    stop("Could not determine which object to load from ", path,
+        ". Available objects: ", paste(loaded_names, collapse = ", "),
+        call. = FALSE
     )
-  }
-
-  load_env <- new.env(parent = emptyenv())
-  loaded_names <- load(path, envir = load_env)
-
-  if (!is.null(preferred_name) && preferred_name %in% loaded_names) {
-    return(
-      extractPreferredObjectPreprocessingPheno(
-        object = load_env[[preferred_name]],
-        preferred_name = preferred_name
-      )
-    )
-  }
-
-  if (length(loaded_names) == 1L) {
-    return(
-      extractPreferredObjectPreprocessingPheno(
-        object = load_env[[loaded_names[[1L]]]],
-        preferred_name = preferred_name
-      )
-    )
-  }
-
-  stop(
-    "Could not determine which object to load from ",
-    path,
-    ". Available objects: ",
-    paste(loaded_names, collapse = ", "),
-    call. = FALSE
-  )
 }
 
 #' Merge phenotype rows with methylation values for preprocessingPheno helpers
@@ -156,70 +120,88 @@ loadSavedObjectPreprocessingPheno <- function(path, preferred_name = NULL) {
 #' @param methylationMatrix Numeric matrix with probes in rows and samples in
 #'   columns.
 #' @param id Character. Name of the sample identifier column in `phenoFrame`.
-#' @param methylationScale Character. Selected methylation scale.
+#' @param methylationScale Character. Selected methylation scale: `'Beta'`,
+#'   `'M'`, or `'CN'`, case-insensitively.
 #'
-#' @return A data frame with phenotype columns followed by transposed methylation
+#' @return A data frame with phenotype columns followed by transposed
+#' methylation
 #'   values.
 #'
 #' @description
-#' Internal helper that aligns phenotype rows with methylation-matrix columns before
+#' Internal helper that aligns phenotype rows with methylation-matrix columns
+#' before
 #' building merged objects used by downstream modeling functions.
 #'
 #' @keywords internal
 #' @noRd
 mergePhenoMethylationPreprocessingPheno <- function(
     phenoFrame,
-    methylationMatrix,
-    id = "Sample_Name",
-    methylationScale = "beta"
+    methylationMatrix, id = "Sample_Name", methylationScale = "beta"
 ) {
-  methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
-  methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
+    methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
+    methylation_label <-
+        methylationScaleResponseLabelDnaEpico(methylation_scale)
 
-  if (!(id %in% colnames(phenoFrame))) {
-    stop("Sample identifier column not found in phenotype data: ", id, call. = FALSE)
-  }
+    if (!(id %in% colnames(phenoFrame))) {
+        stop("Sample identifier column not found in phenotype data: ",
+            id,
+            call. = FALSE
+        )
+    }
 
-  sample_ids <- as.character(phenoFrame[[id]])
-  matched_ids <- sample_ids[sample_ids %in% colnames(methylationMatrix)]
-
-  if (length(matched_ids) == 0L) {
-    stop(
-      "No matching sample identifiers were found between phenotype data and ",
-      methylation_label,
-      ".",
-      call. = FALSE
+    if (!is.matrix(methylationMatrix) || !is.numeric(methylationMatrix) ||
+        is.null(rownames(methylationMatrix)) ||
+            is.null(colnames(methylationMatrix))) {
+        stop(methylation_label,
+            " must be a numeric matrix with sample identifiers in column names.",
+            call. = FALSE
+        )
+    }
+    validateMethylationProbeIdentifiersDnaEpico(
+        rownames(methylationMatrix),
+        paste0(methylation_label, " row names")
     )
-  }
 
-  if (anyDuplicated(matched_ids) > 0L) {
-    stop(
-      "Duplicate sample identifiers were found while merging phenotype and methylation data: ",
-      paste(unique(matched_ids[duplicated(matched_ids)]), collapse = ", "),
-      call. = FALSE
+    sample_ids <- validateSampleIdentifiersDnaEpico(
+        phenoFrame[[id]],
+        paste0("phenotype column '", id, "'")
     )
-  }
+    matrix_ids <- validateSampleIdentifiersDnaEpico(
+        colnames(methylationMatrix),
+        paste0(methylation_label, " column names")
+    )
+    missing_samples <- setdiff(sample_ids, matrix_ids)
+    if (length(missing_samples) > 0L) {
+        stop("Phenotype samples are missing from ", methylation_label,
+            ": ", paste(utils::head(missing_samples, 10L), collapse = ", "),
+            call. = FALSE
+        )
+    }
+    matched_ids <- sample_ids
 
-  phenoFrame <- phenoFrame[match(matched_ids, sample_ids), , drop = FALSE]
-  methylationMatrix <- methylationMatrix[, matched_ids, drop = FALSE]
+    if (length(matched_ids) == 0L) {
+        stop("No matching sample identifiers were found between phenotype data and ",
+            methylation_label, ".",
+            call. = FALSE
+        )
+    }
 
-  cbind(
-    phenoFrame,
-    as.data.frame(t(methylationMatrix), stringsAsFactors = FALSE)
-  )
-}
+    if (anyDuplicated(matched_ids) > 0L) {
+        stop("Duplicate sample identifiers were found while merging phenotype and methylation data: ",
+            paste(unique(matched_ids[duplicated(matched_ids)]),
+                collapse = ", "
+            ),
+            call. = FALSE
+        )
+    }
 
-mergePhenoBetaPreprocessingPheno <- function(
-    phenoFrame,
-    betaMatrix,
-    id = "Sample_Name"
-) {
-  mergePhenoMethylationPreprocessingPheno(
-    phenoFrame = phenoFrame,
-    methylationMatrix = betaMatrix,
-    id = id,
-    methylationScale = "beta"
-  )
+    phenoFrame <- phenoFrame[match(matched_ids, sample_ids), ,
+        drop = FALSE
+    ]
+    methylationMatrix <- methylationMatrix[, matched_ids, drop = FALSE]
+
+    cbind(phenoFrame, as.data.frame(t(methylationMatrix),
+        stringsAsFactors = FALSE))
 }
 
 #' Load methylation metric matrices for preprocessingPheno
@@ -233,17 +215,17 @@ mergePhenoBetaPreprocessingPheno <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_preprocessingPheno_metrics"`
+#' @return A list with class `'dnaEPICO_preprocessingPheno_metrics'`
 #'   containing `beta`, `m`, and `cn`.
 #'
 #' @examples
 #' ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 #' metrics_data <- loadMetricsPreprocessingPheno(
-#'   betaPath = ex$betaPath,
-#'   mPath = ex$mPath,
-#'   cnPath = ex$cnPath,
-#'   verbose = FALSE,
-#'   logs = FALSE
+#'     betaPath = ex$betaPath,
+#'     mPath = ex$mPath,
+#'     cnPath = ex$cnPath,
+#'     verbose = FALSE,
+#'     logs = FALSE
 #' )
 #' names(metrics_data)
 #'
@@ -253,52 +235,121 @@ mergePhenoBetaPreprocessingPheno <- function(
 #'
 #' @export
 loadMetricsPreprocessingPheno <- function(
-    betaPath,
-    mPath,
-    cnPath,
-    verbose = FALSE,
-    logs = FALSE,
-    log_dir = NULL,
-    log_file = "log_loadMetricsPreprocessingPheno.txt"
+    betaPath, mPath, cnPath,
+    verbose = FALSE, logs = FALSE, log_dir = NULL,
+        log_file = "log_loadMetricsPreprocessingPheno.txt"
 ) {
-  log_path <- resolveLogPathMinfiEwasWater(
-    logs = logs,
-    log_dir = log_dir,
-    log_file = log_file
-  )
+    log_path <- resolveLogPathMinfiEwasWater(
+        logs = logs, log_dir = log_dir,
+        log_file = log_file
+    )
 
-  beta <- loadSavedObjectPreprocessingPheno(betaPath, preferred_name = "beta")
-  m <- loadSavedObjectPreprocessingPheno(mPath, preferred_name = "m")
-  cn <- loadSavedObjectPreprocessingPheno(cnPath, preferred_name = "cn")
+    beta <- loadSavedObjectPreprocessingPheno(betaPath, preferred_name = "beta")
+    m <- loadSavedObjectPreprocessingPheno(mPath, preferred_name = "m")
+    cn <- loadSavedObjectPreprocessingPheno(cnPath, preferred_name = "cn")
 
-  preview_rows <- seq_len(min(nrow(beta), 5L))
-  preview_cols <- seq_len(min(ncol(beta), 5L))
+    metric_objects <- list(beta = beta, m = m, cn = cn)
+    invalid_metrics <- names(metric_objects)[!vapply(
+        metric_objects,
+        function(x) is.matrix(x) && is.numeric(x), logical(1)
+    )]
+    if (length(invalid_metrics) > 0L) {
+        stop("Metric objects must be numeric matrices: ", paste(invalid_metrics,
+            collapse = ", "
+        ), call. = FALSE)
+    }
 
-  emitLogMinfiEwasWater(
-    c(
-      "=======================================================================",
-      paste("Beta path:                ", betaPath),
-      paste("M-values path:            ", mPath),
-      paste("CN path:                  ", cnPath),
-      paste("Beta dimensions:          ", paste(dim(beta), collapse = " x ")),
-      paste("M dimensions:             ", paste(dim(m), collapse = " x ")),
-      paste("CN dimensions:            ", paste(dim(cn), collapse = " x ")),
-      "Preview of beta values:",
-      previewLinesMinfiEwasWater(beta[preview_rows, preview_cols, drop = FALSE]),
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
+    if (is.null(rownames(beta)) || is.null(colnames(beta))) {
+        stop("The beta matrix must have probe and sample names.",
+            call. = FALSE
+        )
+    }
+    validateMethylationProbeIdentifiersDnaEpico(
+        rownames(beta),
+        "Beta-matrix row names"
+    )
+    validateSampleIdentifiersDnaEpico(colnames(beta),
+        "Beta-matrix sample identifiers")
+    for (metric_name in c("m", "cn")) {
+        metric <- metric_objects[[metric_name]]
+        if (!identical(dim(metric), dim(beta)) || !identical(
+            rownames(metric),
+            rownames(beta)
+        ) || !identical(colnames(metric), colnames(beta))) {
+            stop(metric_name,
+                " must have the same dimensions, probe order, and sample order as beta.",
+                call. = FALSE
+            )
+        }
+    }
 
-  structure(
-    list(
-      beta = beta,
-      m = m,
-      cn = cn
-    ),
-    class = "dnaEPICO_preprocessingPheno_metrics"
-  )
+    validations <- lapply(names(metric_objects), function(metric_name) {
+        inspectMethylationMatrixDnaEpico(
+            values = metric_objects[[metric_name]],
+            methylationScale = metric_name
+        )
+    })
+    names(validations) <- names(metric_objects)
+    metric_objects <- lapply(validations, `[[`, "values")
+    beta <- metric_objects$beta
+    m <- metric_objects$m
+    cn <- metric_objects$cn
+
+    converted_nan <- sum(vapply(
+        validations, function(validation) validation$boundaries$NaN.Converted,
+        numeric(1)
+    ))
+    invalid_cpgs <- sum(vapply(
+        validations, function(validation) validation$boundaries$Invalid.CpGs,
+        numeric(1)
+    ))
+    if (converted_nan > 0L) {
+        warning(converted_nan,
+            " NaN methylation values were converted to NA while loading metrics.",
+            call. = FALSE
+        )
+    }
+    if (invalid_cpgs > 0L) {
+        warning(invalid_cpgs,
+            " invalid scale-specific CpG records were retained for downstream reporting.",
+            call. = FALSE
+        )
+    }
+
+    preview_rows <- seq_len(min(nrow(beta), 5L))
+    preview_cols <- seq_len(min(ncol(beta), 5L))
+
+    emitLogMinfiEwasWater(
+        c(
+            "============================================================",
+            paste("Beta path:                ", betaPath), paste(
+                "M-values path:            ",
+                mPath
+            ), paste("CN path:                  ", cnPath),
+            paste("Beta dimensions:          ", paste(dim(beta),
+                collapse = " x "
+            )), paste(
+                "M dimensions:             ",
+                paste(dim(m), collapse = " x ")
+            ), paste(
+                "CN dimensions:            ",
+                paste(dim(cn), collapse = " x ")
+            ), unlist(lapply(
+                validations,
+                function(validation) {
+                    formatMethylationBoundariesLogDnaEpico(validation$boundaries)
+                }
+            ), use.names = FALSE), "Preview of beta values:",
+            previewLinesMinfiEwasWater(beta[preview_rows, preview_cols,
+                drop = FALSE
+            ]), "============================================================"
+        ),
+        verbose = verbose, log_path = log_path
+    )
+
+    structure(list(beta = beta, m = m, cn = cn, validation = validations),
+        class = "dnaEPICO_preprocessingPheno_metrics"
+    )
 }
 
 #' Split phenotype and methylation data by timepoint
@@ -310,26 +361,26 @@ loadMetricsPreprocessingPheno <- function(
 #' @param timepoints Character vector or comma-separated string of timepoints to
 #'   retain.
 #' @param methylationScale Character. Methylation metric to use for the merged
-#'   modeling table. One of `"beta"`, `"m"`, or `"cn"`.
+#'   modeling table. One of `'Beta'`, `'M'`, or `'CN'`, case-insensitively.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_preprocessingPheno_timepoints"`
+#' @return A list with class `'dnaEPICO_preprocessingPheno_timepoints'`
 #'   containing the parsed timepoints and aligned per-timepoint subsets.
 #'
 #' @examples
 #' ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 #' timepoint_data <- splitTimepointsPreprocessingPheno(
-#'   pheno = ex$pheno,
-#'   metricsData = ex$metricsData,
-#'   SampleID = "Sample_Name",
-#'   timeVar = "Timepoint",
-#'   timepoints = "1,2",
-#'   verbose = FALSE,
-#'   logs = FALSE
+#'     pheno = ex$pheno,
+#'     metricsData = ex$metricsData,
+#'     SampleID = "Sample_Name",
+#'     timeVar = "Timepoint",
+#'     timepoints = "1,2",
+#'     verbose = FALSE,
+#'     logs = FALSE
 #' )
 #' timepoint_data$timepoints
 #'
@@ -340,171 +391,170 @@ loadMetricsPreprocessingPheno <- function(
 #'
 #' @export
 splitTimepointsPreprocessingPheno <- function(
-    pheno,
-    metricsData,
-    SampleID = "Sample_Name",
-    timeVar = "Timepoint",
-    timepoints = "1,2",
-    methylationScale = "beta",
-    verbose = FALSE,
-    logs = FALSE,
-    log_dir = NULL,
-    log_file = "log_splitTimepointsPreprocessingPheno.txt"
+    pheno, metricsData,
+    SampleID = "Sample_Name", timeVar = "Timepoint", timepoints = "1,2",
+    methylationScale = "beta", verbose = FALSE, logs = FALSE,
+    log_dir = NULL, log_file = "log_splitTimepointsPreprocessingPheno.txt"
 ) {
-  log_path <- resolveLogPathMinfiEwasWater(
-    logs = logs,
-    log_dir = log_dir,
-    log_file = log_file
-  )
-  methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
-  methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
-  methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
-
-  if (!(SampleID %in% colnames(pheno))) {
-    stop("SampleID column not found in phenotype data: ", SampleID, call. = FALSE)
-  }
-
-  if (!(timeVar %in% colnames(pheno))) {
-    stop("timeVar column not found in phenotype data: ", timeVar, call. = FALSE)
-  }
-
-  required_metrics <- c("beta", "m", "cn")
-  if (!all(required_metrics %in% names(metricsData))) {
-    stop(
-      "metricsData must contain beta, m, and cn matrices.",
-      call. = FALSE
+    log_path <- resolveLogPathMinfiEwasWater(
+        logs = logs, log_dir = log_dir,
+        log_file = log_file
     )
-  }
+    methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
+    methylation_prefix <-
+        methylationScaleObjectPrefixDnaEpico(methylation_scale)
 
-  requested_timepoints <- parseTimepointsPreprocessingPheno(
-    values = timepoints,
-    label = "timepoints"
-  )
-  available_timepoints <- table(pheno[[timeVar]], useNA = "ifany")
-  subsets <- list()
-  summary_lines <- c(
-    paste(
-      "Requested timepoints:      ",
-      paste(requested_timepoints, collapse = ", ")
-    ),
-    paste("Available values in", timeVar, "column:")
-  )
-  summary_lines <- c(
-    summary_lines,
-    previewLinesMinfiEwasWater(available_timepoints)
-  )
-
-  for (tp in requested_timepoints) {
-    pheno_subset <- pheno[as.character(pheno[[timeVar]]) == tp, , drop = FALSE]
-
-    if (nrow(pheno_subset) == 0L) {
-      stop("No phenotype rows were found for timepoint: ", tp, call. = FALSE)
+    if (!(SampleID %in% colnames(pheno))) {
+        stop("SampleID column not found in phenotype data: ",
+            SampleID,
+            call. = FALSE
+        )
     }
 
-    sample_ids <- as.character(pheno_subset[[SampleID]])
-    common_ids <- sample_ids[
-      sample_ids %in% colnames(metricsData$beta) &
-      sample_ids %in% colnames(metricsData$m) &
-      sample_ids %in% colnames(metricsData$cn)
-    ]
-
-    if (length(common_ids) == 0L) {
-      stop(
-        "No samples from timepoint ",
-        tp,
-        " were found across beta, m, and cn matrices.",
-        call. = FALSE
-      )
+    if (!(timeVar %in% colnames(pheno))) {
+        stop("timeVar column not found in phenotype data: ",
+            timeVar,
+            call. = FALSE
+        )
     }
 
-    if (anyDuplicated(common_ids) > 0L) {
-      stop(
-        "Duplicate sample identifiers detected for timepoint ",
-        tp,
-        ": ",
-        paste(unique(common_ids[duplicated(common_ids)]), collapse = ", "),
-        call. = FALSE
-      )
+    required_metrics <- c("beta", "m", "cn")
+    if (!all(required_metrics %in% names(metricsData))) {
+        stop("metricsData must contain beta, m, and cn matrices.",
+            call. = FALSE
+        )
     }
 
-    pheno_subset <- pheno_subset[
-      match(common_ids, as.character(pheno_subset[[SampleID]])),
-      ,
-      drop = FALSE
-    ]
+    requested_timepoints <- parseTimepointsPreprocessingPheno(
+        values = timepoints,
+        label = "timepoints"
+    )
+    available_timepoints <- table(pheno[[timeVar]], useNA = "ifany")
+    subsets <- list()
+    summary_lines <- c(paste("Requested timepoints:      ",
+        paste(requested_timepoints,
+        collapse = ", "
+    )), paste(
+        "Available values in", timeVar,
+        "column:"
+    ))
+    summary_lines <- c(summary_lines,
+        previewLinesMinfiEwasWater(available_timepoints))
 
-    beta_subset <- metricsData$beta[, common_ids, drop = FALSE]
-    m_subset <- metricsData$m[, common_ids, drop = FALSE]
-    cn_subset <- metricsData$cn[, common_ids, drop = FALSE]
-    selected_subset <- metricsData[[methylation_scale]][, common_ids, drop = FALSE]
-    pheno_methylation <- mergePhenoMethylationPreprocessingPheno(
-      phenoFrame = pheno_subset,
-      methylationMatrix = selected_subset,
-      id = SampleID,
-      methylationScale = methylation_scale
+    time_values <- as.character(pheno[[timeVar]])
+    for (tp in requested_timepoints) {
+        selected_timepoint <- !is.na(time_values) & time_values ==
+            tp
+        pheno_subset <- pheno[selected_timepoint, , drop = FALSE]
+
+        if (nrow(pheno_subset) == 0L) {
+            stop("No phenotype rows were found for timepoint: ",
+                tp,
+                call. = FALSE
+            )
+        }
+
+        sample_ids <- validateSampleIdentifiersDnaEpico(
+            pheno_subset[[SampleID]],
+            paste0(
+                "Phenotype sample identifiers at timepoint ",
+                tp
+            )
+        )
+        missing_metric_samples <- setdiff(sample_ids,
+            colnames(metricsData$beta))
+        if (length(missing_metric_samples) > 0L) {
+            stop("Samples from timepoint ", tp,
+                " are missing from the metric matrices: ",
+                paste(utils::head(missing_metric_samples, 10L),
+                    collapse = ", "
+                ),
+                call. = FALSE
+            )
+        }
+        common_ids <- sample_ids
+
+        pheno_subset <- pheno_subset[match(common_ids,
+            as.character(pheno_subset[[SampleID]])), ,
+            drop = FALSE
+        ]
+
+        beta_subset <- metricsData$beta[, common_ids, drop = FALSE]
+        m_subset <- metricsData$m[, common_ids, drop = FALSE]
+        cn_subset <- metricsData$cn[, common_ids, drop = FALSE]
+        selected_subset <- metricsData[[methylation_scale]][,
+            common_ids,
+            drop = FALSE
+        ]
+        pheno_methylation <- mergePhenoMethylationPreprocessingPheno(
+            phenoFrame = pheno_subset,
+            methylationMatrix = selected_subset, id = SampleID,
+            methylationScale = methylation_scale
+        )
+
+        subset_data <- list(
+            pheno = pheno_subset, beta = beta_subset,
+            m = m_subset, cn = cn_subset, phenoMethylation = pheno_methylation,
+            methylationScale = methylation_scale,
+                methylationObjectPrefix = methylation_prefix
+        )
+        subset_data[[methylation_prefix]] <- pheno_methylation
+        subsets[[tp]] <- subset_data
+
+        summary_lines <- c(
+            summary_lines, paste("Timepoint ",
+                tp, " rows:          ", nrow(pheno_subset),
+                sep = ""
+            ),
+            paste("Timepoint ", tp, " matched samples:", length(common_ids),
+                sep = " "
+            ), paste("Timepoint ", tp, " merged object:  ",
+                methylation_prefix, "T", tp,
+                sep = ""
+            )
+        )
+    }
+
+    emitLogMinfiEwasWater(c(summary_lines,
+        "============================================================"),
+        verbose = verbose, log_path = log_path
     )
 
-    subset_data <- list(
-      pheno = pheno_subset,
-      beta = beta_subset,
-      m = m_subset,
-      cn = cn_subset,
-      phenoMethylation = pheno_methylation,
-      methylationScale = methylation_scale,
-      methylationObjectPrefix = methylation_prefix
+    structure(
+        list(
+            timepoints = requested_timepoints, data = subsets,
+            methylationScale = methylation_scale,
+                methylationObjectPrefix = methylation_prefix
+        ),
+        class = "dnaEPICO_preprocessingPheno_timepoints"
     )
-    subset_data[[methylation_prefix]] <- pheno_methylation
-    subsets[[tp]] <- subset_data
-
-    summary_lines <- c(
-      summary_lines,
-      paste("Timepoint ", tp, " rows:          ", nrow(pheno_subset), sep = ""),
-      paste("Timepoint ", tp, " matched samples:", length(common_ids), sep = " "),
-      paste("Timepoint ", tp, " merged object:  ", methylation_prefix, "T", tp, sep = "")
-    )
-  }
-
-  emitLogMinfiEwasWater(
-    c(summary_lines, "======================================================================="),
-    verbose = verbose,
-    log_path = log_path
-  )
-
-  structure(
-    list(
-      timepoints = requested_timepoints,
-      data = subsets,
-      methylationScale = methylation_scale,
-      methylationObjectPrefix = methylation_prefix
-    ),
-    class = "dnaEPICO_preprocessingPheno_timepoints"
-  )
 }
 
 #' Combine selected timepoints for downstream longitudinal modeling
 #'
-#' @param timepointData Object returned by `splitTimepointsPreprocessingPheno()`.
+#' @param timepointData Object returned by
+#' `splitTimepointsPreprocessingPheno()`.
 #' @param combineTimepoints Character vector or comma-separated string of
 #'   timepoints to combine.
 #' @param methylationScale Character. Methylation metric used in the merged
-#'   modeling table. One of `"beta"`, `"m"`, or `"cn"`.
+#'   modeling table. One of `'Beta'`, `'M'`, or `'CN'`, case-insensitively.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_preprocessingPheno_combined"`
+#' @return A list with class `'dnaEPICO_preprocessingPheno_combined'`
 #'   containing the combined phenotype table, merged phenotype-plus-beta table,
 #'   selected timepoints, and output suffix.
 #'
 #' @examples
 #' ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 #' combined_data <- combineTimepointsPreprocessingPheno(
-#'   timepointData = ex$timepointData,
-#'   combineTimepoints = "1,2",
-#'   verbose = FALSE,
-#'   logs = FALSE
+#'     timepointData = ex$timepointData,
+#'     combineTimepoints = "1,2",
+#'     verbose = FALSE,
+#'     logs = FALSE
 #' )
 #' combined_data$suffix
 #'
@@ -516,90 +566,82 @@ splitTimepointsPreprocessingPheno <- function(
 #' @export
 combineTimepointsPreprocessingPheno <- function(
     timepointData,
-    combineTimepoints = "1,2",
-    methylationScale = "beta",
-    verbose = FALSE,
-    logs = FALSE,
-    log_dir = NULL,
-    log_file = "log_combineTimepointsPreprocessingPheno.txt"
+    combineTimepoints = "1,2", methylationScale = "beta", verbose = FALSE,
+    logs = FALSE, log_dir = NULL,
+        log_file = "log_combineTimepointsPreprocessingPheno.txt"
 ) {
-  log_path <- resolveLogPathMinfiEwasWater(
-    logs = logs,
-    log_dir = log_dir,
-    log_file = log_file
-  )
-  methylation_scale <- if (!is.null(timepointData$methylationScale)) {
-    normalizeMethylationScaleDnaEpico(timepointData$methylationScale)
-  } else {
-    normalizeMethylationScaleDnaEpico(methylationScale)
-  }
-  methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
-  methylation_label <- methylationScaleResponseLabelDnaEpico(methylation_scale)
-
-  requested_timepoints <- parseTimepointsPreprocessingPheno(
-    values = combineTimepoints,
-    label = "combineTimepoints"
-  )
-
-  available_timepoints <- names(timepointData$data)
-  missing_timepoints <- setdiff(requested_timepoints, available_timepoints)
-
-  if (length(missing_timepoints) > 0L) {
-    stop(
-      "Requested combined timepoints are missing from timepointData: ",
-      paste(missing_timepoints, collapse = ", "),
-      call. = FALSE
+    log_path <- resolveLogPathMinfiEwasWater(
+        logs = logs, log_dir = log_dir,
+        log_file = log_file
     )
-  }
+    methylation_scale <- if (!is.null(timepointData$methylationScale)) {
+        normalizeMethylationScaleDnaEpico(timepointData$methylationScale)
+    } else {
+        normalizeMethylationScaleDnaEpico(methylationScale)
+    }
+    methylation_prefix <-
+        methylationScaleObjectPrefixDnaEpico(methylation_scale)
 
-  combined_pheno <- do.call(
-    rbind,
-    lapply(requested_timepoints, function(tp) timepointData$data[[tp]]$pheno)
-  )
-  combined_pheno_beta <- do.call(
-    rbind,
-    lapply(
-      requested_timepoints,
-      function(tp) {
-        tp_data <- timepointData$data[[tp]]
-        if (!is.null(tp_data$phenoMethylation)) {
-          return(tp_data$phenoMethylation)
+    requested_timepoints <- parseTimepointsPreprocessingPheno(
+        values = combineTimepoints,
+        label = "combineTimepoints"
+    )
+
+    available_timepoints <- names(timepointData$data)
+    missing_timepoints <- setdiff(requested_timepoints, available_timepoints)
+
+    if (length(missing_timepoints) > 0L) {
+        stop("Requested combined timepoints are missing from timepointData: ",
+            paste(missing_timepoints, collapse = ", "),
+            call. = FALSE
+        )
+    }
+
+    combined_pheno <- do.call(rbind, lapply(
+        requested_timepoints,
+        function(tp) timepointData$data[[tp]]$pheno
+    ))
+    combined_pheno_beta <- do.call(rbind, lapply(
+        requested_timepoints,
+        function(tp) {
+            tp_data <- timepointData$data[[tp]]
+            if (!is.null(tp_data$phenoMethylation)) {
+                return(tp_data$phenoMethylation)
+            }
+            tp_data[[methylation_prefix]]
         }
-        tp_data[[methylation_prefix]]
-      }
+    ))
+    combine_suffix <- paste0("T", paste(requested_timepoints,
+        collapse = "T"
+    ))
+
+    emitLogMinfiEwasWater(
+        c(paste(
+            "Combining timepoints:      ",
+            paste(requested_timepoints, collapse = ", ")
+        ), paste(
+            "Combined phenotype rows:   ",
+            nrow(combined_pheno)
+        ), paste("Combined ", methylation_prefix,
+            " rows:   ", nrow(combined_pheno_beta),
+            sep = ""
+        ), paste(
+            "Combined suffix:           ",
+            combine_suffix
+        ), "============================================================"),
+        verbose = verbose, log_path = log_path
     )
-  )
-  combine_suffix <- paste0("T", paste(requested_timepoints, collapse = "T"))
 
-  emitLogMinfiEwasWater(
-    c(
-      paste(
-        "Combining timepoints:      ",
-        paste(requested_timepoints, collapse = ", ")
-      ),
-      paste("Combined phenotype rows:   ", nrow(combined_pheno)),
-      paste("Combined ", methylation_prefix, " rows:   ", nrow(combined_pheno_beta), sep = ""),
-      paste("Combined suffix:           ", combine_suffix),
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
+    combined_data <- list(
+        timepoints = requested_timepoints,
+        suffix = combine_suffix, pheno = combined_pheno,
+            phenoMethylation = combined_pheno_beta,
+        methylationScale = methylation_scale,
+            methylationObjectPrefix = methylation_prefix
+    )
+    combined_data[[methylation_prefix]] <- combined_pheno_beta
 
-  combined_data <- list(
-    timepoints = requested_timepoints,
-    suffix = combine_suffix,
-    pheno = combined_pheno,
-    phenoMethylation = combined_pheno_beta,
-    methylationScale = methylation_scale,
-    methylationObjectPrefix = methylation_prefix
-  )
-  combined_data[[methylation_prefix]] <- combined_pheno_beta
-
-  structure(
-    combined_data,
-    class = "dnaEPICO_preprocessingPheno_combined"
-  )
+    structure(combined_data, class = "dnaEPICO_preprocessingPheno_combined")
 }
 
 #' Build Clock Foundation input tables from preprocessingPheno data
@@ -615,18 +657,18 @@ combineTimepointsPreprocessingPheno <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_preprocessingPheno_clock"`
+#' @return A list with class `'dnaEPICO_preprocessingPheno_clock'`
 #'   containing `betaCSV` and `phenoCF`.
 #'
 #' @examples
 #' ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 #' clock_inputs <- buildClockFoundationInputsPreprocessingPheno(
-#'   beta = ex$timepointData$data[["1"]]$beta,
-#'   pheno = ex$timepointData$data[["1"]]$pheno,
-#'   SampleID = "Sample_Name",
-#'   sexColumn = "Sex",
-#'   verbose = FALSE,
-#'   logs = FALSE
+#'     beta = ex$timepointData$data[["1"]]$beta,
+#'     pheno = ex$timepointData$data[["1"]]$pheno,
+#'     SampleID = "Sample_Name",
+#'     sexColumn = "Sex",
+#'     verbose = FALSE,
+#'     logs = FALSE
 #' )
 #' names(clock_inputs)
 #'
@@ -637,94 +679,150 @@ combineTimepointsPreprocessingPheno <- function(
 #' @export
 buildClockFoundationInputsPreprocessingPheno <- function(
     beta,
-    pheno,
-    SampleID = "Sample_Name",
-    sexColumn = "Sex",
-    verbose = FALSE,
-    logs = FALSE,
-    log_dir = NULL,
-    log_file = "log_buildClockFoundationInputsPreprocessingPheno.txt"
+    pheno, SampleID = "Sample_Name", sexColumn = "Sex", verbose = FALSE,
+    logs = FALSE, log_dir = NULL,
+        log_file = "log_buildClockFoundationInputsPreprocessingPheno.txt"
 ) {
-  log_path <- resolveLogPathMinfiEwasWater(
-    logs = logs,
-    log_dir = log_dir,
-    log_file = log_file
-  )
-
-  if (!(SampleID %in% colnames(pheno))) {
-    stop("SampleID column not found in phenotype data: ", SampleID, call. = FALSE)
-  }
-
-  if (!(sexColumn %in% colnames(pheno))) {
-    stop("sexColumn not found in phenotype data: ", sexColumn, call. = FALSE)
-  }
-
-  if ("id" %in% colnames(pheno) && !identical(SampleID, "id")) {
-    stop(
-      "The phenotype data already contains a column named 'id'. ",
-      "Please rename either that column or SampleID before building Clock Foundation inputs.",
-      call. = FALSE
+    log_path <- resolveLogPathMinfiEwasWater(
+        logs = logs, log_dir = log_dir,
+        log_file = log_file
     )
-  }
 
-  beta_csv <- as.data.frame(beta, stringsAsFactors = FALSE)
-  beta_csv <- cbind(
-    ProbeID = rownames(beta_csv),
-    beta_csv,
-    row.names = NULL,
-    stringsAsFactors = FALSE
-  )
+    if (!(SampleID %in% colnames(pheno))) {
+        stop("SampleID column not found in phenotype data: ",
+            SampleID,
+            call. = FALSE
+        )
+    }
 
-  pheno_cf <- pheno
-  colnames(pheno_cf)[colnames(pheno_cf) == SampleID] <- "id"
+    if (!(sexColumn %in% colnames(pheno))) {
+        stop("sexColumn not found in phenotype data: ", sexColumn,
+            call. = FALSE
+        )
+    }
 
-  unique_sex <- unique(stats::na.omit(as.character(pheno_cf[[sexColumn]])))
-  sex_line <- "Sex column values were left unchanged."
+    if ("id" %in% colnames(pheno) && !identical(SampleID, "id")) {
+        stop("The phenotype data already contains a column named 'id'. ",
+            "Please rename either that column or SampleID before building Clock Foundation inputs.",
+            call. = FALSE
+        )
+    }
 
-  if (all(unique_sex %in% c("Male", "Female"))) {
-    sex_line <- "Sex column already contains 'Male' and 'Female'. Skipping recoding."
-  } else if (all(unique_sex %in% c("0", "1"))) {
-    pheno_cf[[sexColumn]] <- ifelse(
-      as.character(pheno_cf[[sexColumn]]) == "0",
-      "Female",
-      "Male"
+    if (!is.matrix(beta) || !is.numeric(beta) || is.null(rownames(beta)) ||
+        is.null(colnames(beta))) {
+        stop("beta must be a numeric matrix with probe and sample names.",
+            call. = FALSE
+        )
+    }
+    validateMethylationProbeIdentifiersDnaEpico(
+        rownames(beta),
+        "Clock Foundation beta row names"
     )
-    sex_line <- "Re-encoding Sex: 0 = Female, 1 = Male"
-  } else {
-    pheno_cf[[sexColumn]] <- as.character(pheno_cf[[sexColumn]])
-    sex_line <- paste(
-      "Sex column values are not limited to 0/1 or Male/Female; keeping original values in",
-      sexColumn
+    beta_validation <- inspectMethylationMatrixDnaEpico(
+        beta,
+        "beta"
     )
-  }
+    beta <- beta_validation$values
+    if (beta_validation$boundaries$NaN.Converted > 0L) {
+        warning(beta_validation$boundaries$NaN.Converted,
+            " NaN beta value(s) were converted to NA for Clock Foundation input.",
+            call. = FALSE
+        )
+    }
+    if (nrow(beta_validation$invalidCpGs) > 0L) {
+        warning(nrow(beta_validation$invalidCpGs),
+            " invalid CpG(s) were excluded from Clock Foundation input.",
+            call. = FALSE
+        )
+        beta <- beta[!(rownames(beta) %in% beta_validation$invalidCpGs$CpG), ,
+            drop = FALSE
+        ]
+    }
+    if (nrow(beta) == 0L) {
+        stop("No valid beta CpGs remain for Clock Foundation input.",
+            call. = FALSE
+        )
+    }
+    beta_sample_ids <- validateSampleIdentifiersDnaEpico(
+        colnames(beta),
+        "Beta-matrix sample identifiers"
+    )
+    pheno_sample_ids <- validateSampleIdentifiersDnaEpico(
+        pheno[[SampleID]],
+        paste0("Phenotype column '", SampleID, "'")
+    )
+    pheno_match <- matchSampleIdentifiersDnaEpico(
+        query = beta_sample_ids,
+        reference = pheno_sample_ids,
+            queryLabel = "Beta-matrix sample identifiers",
+        referenceLabel = paste0(
+            "phenotype column '", SampleID,
+            "'"
+        ), requireSameSet = TRUE
+    )
+    pheno <- pheno[pheno_match, , drop = FALSE]
+    rownames(pheno) <- NULL
 
-  preview_rows <- seq_len(min(nrow(beta_csv), 5L))
-  preview_cols <- seq_len(min(ncol(beta_csv), 5L))
+    beta_csv <- as.data.frame(beta, stringsAsFactors = FALSE)
+    beta_csv <- cbind(
+        ProbeID = rownames(beta_csv), beta_csv,
+        row.names = NULL, stringsAsFactors = FALSE
+    )
 
-  emitLogMinfiEwasWater(
-    c(
-      paste("Clock Foundation beta rows:", nrow(beta_csv)),
-      paste("Clock Foundation beta cols:", ncol(beta_csv)),
-      paste("Clock Foundation pheno rows:", nrow(pheno_cf)),
-      sex_line,
-      "Preview of Clock Foundation beta table:",
-      previewLinesMinfiEwasWater(beta_csv[preview_rows, preview_cols, drop = FALSE]),
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
+    pheno_cf <- pheno
+    colnames(pheno_cf)[colnames(pheno_cf) == SampleID] <- "id"
 
-  structure(
-    list(
-      betaCSV = beta_csv,
-      phenoCF = pheno_cf
-    ),
-    class = "dnaEPICO_preprocessingPheno_clock"
-  )
+    sex_info <- canonicalizeSexDnaEpico(pheno_cf[[sexColumn]])
+    if (anyNA(sex_info$code)) {
+        stop("The Clock Foundation sex column contains missing or unsupported values",
+            if (length(sex_info$unknown) > 0L) {
+                paste0(": ", paste(sex_info$unknown, collapse = ", "))
+            } else {
+                "."
+            },
+            call. = FALSE
+        )
+    }
+    pheno_cf[[sexColumn]] <- ifelse(sex_info$code == 0L, "Female",
+        "Male"
+    )
+    sex_line <- "Sex values were standardized to Female and Male."
+
+    preview_rows <- seq_len(min(nrow(beta_csv), 5L))
+    preview_cols <- seq_len(min(ncol(beta_csv), 5L))
+
+    emitLogMinfiEwasWater(
+        c(
+            paste(
+                "Clock Foundation beta rows:",
+                nrow(beta_csv)
+            ), paste(
+                "Clock Foundation beta cols:",
+                ncol(beta_csv)
+            ), paste(
+                "Clock Foundation pheno rows:",
+                nrow(pheno_cf)
+            ), formatMethylationBoundariesLogDnaEpico(beta_validation$boundaries),
+            sex_line, "Preview of Clock Foundation beta table:",
+            previewLinesMinfiEwasWater(beta_csv[preview_rows, preview_cols,
+                drop = FALSE
+            ]), "============================================================"
+        ),
+        verbose = verbose, log_path = log_path
+    )
+
+    structure(
+        list(
+            betaCSV = beta_csv, phenoCF = pheno_cf,
+                methylationBoundaries = beta_validation$boundaries,
+            methylationIssues = beta_validation$issues,
+                invalidCpGs = beta_validation$invalidCpGs
+        ),
+        class = "dnaEPICO_preprocessingPheno_clock"
+    )
 }
 
-#' Write legacy preprocessingPheno outputs to disk
+#' Write preprocessingPheno outputs to disk
 #'
 #' @param preprocessingData Object returned by `preprocessingPheno()` or a list
 #'   with the same components.
@@ -740,24 +838,24 @@ buildClockFoundationInputsPreprocessingPheno <- function(
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_preprocessingPheno_paths"`
+#' @return A list with class `'dnaEPICO_preprocessingPheno_paths'`
 #'   containing the paths written to disk.
 #'
 #' @examples
 #' ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 #' output_paths <- writePreprocessingPhenoOutputs(
-#'   preprocessingData = ex$preprocessingData,
-#'   outputPheno = file.path(ex$tempDir, "pheno"),
-#'   outputRData = file.path(ex$tempDir, "metrics"),
-#'   outputRDataMerge = file.path(ex$tempDir, "merge"),
-#'   outputDir = file.path(ex$tempDir, "clock"),
-#'   verbose = FALSE,
-#'   logs = FALSE
+#'     preprocessingData = ex$preprocessingData,
+#'     outputPheno = file.path(ex$tempDir, "pheno"),
+#'     outputRData = file.path(ex$tempDir, "metrics"),
+#'     outputRDataMerge = file.path(ex$tempDir, "merge"),
+#'     outputDir = file.path(ex$tempDir, "clock"),
+#'     verbose = FALSE,
+#'     logs = FALSE
 #' )
 #' names(output_paths)
 #'
 #' @description
-#' Write the legacy CSV, ZIP, and `.RData` outputs produced by
+#' Write the CSV, ZIP, and `.RData` outputs produced by
 #' `preprocessingPheno()`. This helper keeps file writing separate from the
 #' in-memory preprocessing steps.
 #'
@@ -765,159 +863,172 @@ buildClockFoundationInputsPreprocessingPheno <- function(
 writePreprocessingPhenoOutputs <- function(
     preprocessingData,
     outputPheno = "data/preprocessingPheno",
-    outputRData = "rData/preprocessingPheno/metrics",
+        outputRData = "rData/preprocessingPheno/metrics",
     outputRDataMerge = "rData/preprocessingPheno/mergeData",
-    outputDir = "data/preprocessingPheno",
-    verbose = FALSE,
-    logs = FALSE,
-    log_dir = NULL,
-    log_file = "log_writePreprocessingPhenoOutputs.txt"
+    outputDir = "data/preprocessingPheno", verbose = FALSE, logs = FALSE,
+    log_dir = NULL, log_file = "log_writePreprocessingPhenoOutputs.txt"
 ) {
-  log_path <- resolveLogPathMinfiEwasWater(
-    logs = logs,
-    log_dir = log_dir,
-    log_file = log_file
-  )
+    log_path <- resolveLogPathMinfiEwasWater(
+        logs = logs, log_dir = log_dir,
+        log_file = log_file
+    )
 
-  dir.create(outputPheno, recursive = TRUE, showWarnings = FALSE)
-  dir.create(outputRData, recursive = TRUE, showWarnings = FALSE)
-  dir.create(outputRDataMerge, recursive = TRUE, showWarnings = FALSE)
-  dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
+    dir.create(outputPheno, recursive = TRUE, showWarnings = FALSE)
+    dir.create(outputRData, recursive = TRUE, showWarnings = FALSE)
+    dir.create(outputRDataMerge, recursive = TRUE, showWarnings = FALSE)
+    dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
 
-  methylation_scale <- if (!is.null(preprocessingData$methylationScale)) {
-    normalizeMethylationScaleDnaEpico(preprocessingData$methylationScale)
-  } else if (!is.null(preprocessingData$combinedData$methylationScale)) {
-    normalizeMethylationScaleDnaEpico(preprocessingData$combinedData$methylationScale)
-  } else {
-    normalizeMethylationScaleDnaEpico("beta")
-  }
-  methylation_prefix <- methylationScaleObjectPrefixDnaEpico(methylation_scale)
-
-  timepoint_paths <- list()
-
-  for (tp in preprocessingData$timepointData$timepoints) {
-    tp_data <- preprocessingData$timepointData$data[[tp]]
-
-    pheno_path <- file.path(outputPheno, paste0("phenoT", tp, ".csv"))
-    beta_path <- file.path(outputRData, paste0("betaT", tp, ".RData"))
-    m_path <- file.path(outputRData, paste0("mT", tp, ".RData"))
-    cn_path <- file.path(outputRData, paste0("cnT", tp, ".RData"))
-    merged_path <- file.path(outputRDataMerge, paste0(methylation_prefix, "T", tp, ".RData"))
-    merged_object_name <- paste0(methylation_prefix, "T", tp)
-    merged_data <- if (!is.null(tp_data$phenoMethylation)) {
-      tp_data$phenoMethylation
+    methylation_scale <- if (!is.null(preprocessingData$methylationScale)) {
+        normalizeMethylationScaleDnaEpico(preprocessingData$methylationScale)
+    } else if (!is.null(preprocessingData$combinedData$methylationScale)) {
+        normalizeMethylationScaleDnaEpico(preprocessingData$combinedData$methylationScale)
     } else {
-      tp_data[[methylation_prefix]]
+        normalizeMethylationScaleDnaEpico("beta")
+    }
+    methylation_prefix <-
+        methylationScaleObjectPrefixDnaEpico(methylation_scale)
+
+    timepoint_paths <- list()
+
+    for (tp in preprocessingData$timepointData$timepoints) {
+        tp_data <- preprocessingData$timepointData$data[[tp]]
+
+        pheno_path <- file.path(outputPheno, paste0(
+            "phenoT",
+            tp, ".csv"
+        ))
+        beta_path <- file.path(outputRData, paste0(
+            "betaT", tp,
+            ".RData"
+        ))
+        m_path <- file.path(outputRData, paste0("mT", tp, ".RData"))
+        cn_path <- file.path(outputRData, paste0("cnT", tp, ".RData"))
+        merged_path <- file.path(outputRDataMerge, paste0(
+            methylation_prefix,
+            "T", tp, ".RData"
+        ))
+        merged_object_name <- paste0(
+            methylation_prefix, "T",
+            tp
+        )
+        merged_data <- if (!is.null(tp_data$phenoMethylation)) {
+            tp_data$phenoMethylation
+        } else {
+            tp_data[[methylation_prefix]]
+        }
+
+        utils::write.csv(tp_data$pheno, file = pheno_path, row.names = FALSE)
+        saveNamedObjectMinfiEwasWater(tp_data$beta, paste0(
+            "betaT",
+            tp
+        ), beta_path)
+        saveNamedObjectMinfiEwasWater(tp_data$m, paste0(
+            "mT",
+            tp
+        ), m_path)
+        saveNamedObjectMinfiEwasWater(tp_data$cn, paste0(
+            "cnT",
+            tp
+        ), cn_path)
+        saveNamedObjectMinfiEwasWater(
+            merged_data, merged_object_name,
+            merged_path
+        )
+
+        tp_paths <- list(
+            pheno = pheno_path, beta = beta_path,
+            m = m_path, cn = cn_path, phenoMethylation = merged_path
+        )
+        tp_paths[[methylation_prefix]] <- merged_path
+        timepoint_paths[[tp]] <- tp_paths
     }
 
-    utils::write.csv(tp_data$pheno, file = pheno_path, row.names = FALSE)
-    saveNamedObjectMinfiEwasWater(tp_data$beta, paste0("betaT", tp), beta_path)
-    saveNamedObjectMinfiEwasWater(tp_data$m, paste0("mT", tp), m_path)
-    saveNamedObjectMinfiEwasWater(tp_data$cn, paste0("cnT", tp), cn_path)
+    combined_pheno_path <- file.path(outputPheno, paste0(
+        "pheno",
+        preprocessingData$combinedData$suffix, ".csv"
+    ))
+    combined_merge_path <- file.path(outputRDataMerge, paste0(
+        methylation_prefix,
+        preprocessingData$combinedData$suffix, ".RData"
+    ))
+    combined_merge_object_name <- paste0(
+        methylation_prefix,
+        preprocessingData$combinedData$suffix
+    )
+    combined_merge_data <-
+        if (!is.null(preprocessingData$combinedData$phenoMethylation)) {
+        preprocessingData$combinedData$phenoMethylation
+    } else {
+        preprocessingData$combinedData[[methylation_prefix]]
+    }
+    beta_csv_path <- file.path(outputDir, "beta.csv")
+    zip_path <- file.path(outputDir, "beta.zip")
+    pheno_cf_path <- file.path(outputDir, "phenoCF.csv")
+
+    utils::write.csv(preprocessingData$combinedData$pheno,
+        file = combined_pheno_path,
+        row.names = FALSE
+    )
     saveNamedObjectMinfiEwasWater(
-      merged_data,
-      merged_object_name,
-      merged_path
+        combined_merge_data, combined_merge_object_name,
+        combined_merge_path
+    )
+    utils::write.csv(preprocessingData$clockFoundation$betaCSV,
+        file = beta_csv_path, row.names = FALSE
+    )
+    utils::write.csv(preprocessingData$clockFoundation$phenoCF,
+        file = pheno_cf_path, row.names = FALSE
+    )
+    zip_status <- utils::zip(
+        zipfile = zip_path, files = beta_csv_path,
+        flags = "-j"
+    )
+    beta_zip_path <- if (identical(zip_status, 0L) && file.exists(zip_path)) {
+        zip_path
+    } else {
+        NULL
+    }
+
+    emitLogMinfiEwasWater(
+        c(
+            paste(
+                "Output phenotype dir:     ",
+                outputPheno
+            ), paste("RData metrics dir:        ", outputRData),
+            paste("RData merge dir:          ", outputRDataMerge),
+            paste("Clock Foundation dir:     ", outputDir), paste(
+                "Saved combined phenotype: ",
+                combined_pheno_path
+            ), paste("Saved combined ", methylation_prefix,
+                ": ", combined_merge_path,
+                sep = ""
+            ), paste(
+                "Saved beta CSV:           ",
+                beta_csv_path
+            ), if (is.null(beta_zip_path)) {
+                "Beta ZIP file was not created."
+            } else {
+                paste("Saved beta ZIP:           ", beta_zip_path)
+            }, paste("Saved phenoCF:            ", pheno_cf_path),
+            paste("ZIP status code:          ", zip_status),
+                "============================================================"
+        ),
+        verbose = verbose, log_path = log_path
     )
 
-    tp_paths <- list(
-      pheno = pheno_path,
-      beta = beta_path,
-      m = m_path,
-      cn = cn_path,
-      phenoMethylation = merged_path
+    output_paths <- list(
+        timepoints = timepoint_paths, combinedPheno = combined_pheno_path,
+        combinedPhenoMethylation = combined_merge_path,
+            methylationScale = methylation_scale,
+        methylationObjectPrefix = methylation_prefix, betaCSV = beta_csv_path,
+        betaZIP = beta_zip_path, phenoCF = pheno_cf_path
     )
-    tp_paths[[methylation_prefix]] <- merged_path
-    timepoint_paths[[tp]] <- tp_paths
-  }
+    combined_key <- switch(methylation_scale,
+        beta = "combinedPhenoB",
+        m = "combinedPhenoM",
+        cn = "combinedPhenoCN"
+    )
+    output_paths[[combined_key]] <- combined_merge_path
 
-  combined_pheno_path <- file.path(
-    outputPheno,
-    paste0("pheno", preprocessingData$combinedData$suffix, ".csv")
-  )
-  combined_merge_path <- file.path(
-    outputRDataMerge,
-    paste0(methylation_prefix, preprocessingData$combinedData$suffix, ".RData")
-  )
-  combined_merge_object_name <- paste0(methylation_prefix, preprocessingData$combinedData$suffix)
-  combined_merge_data <- if (!is.null(preprocessingData$combinedData$phenoMethylation)) {
-    preprocessingData$combinedData$phenoMethylation
-  } else {
-    preprocessingData$combinedData[[methylation_prefix]]
-  }
-  beta_csv_path <- file.path(outputDir, "beta.csv")
-  zip_path <- file.path(outputDir, "beta.zip")
-  pheno_cf_path <- file.path(outputDir, "phenoCF.csv")
-
-  utils::write.csv(
-    preprocessingData$combinedData$pheno,
-    file = combined_pheno_path,
-    row.names = FALSE
-  )
-  saveNamedObjectMinfiEwasWater(
-    combined_merge_data,
-    combined_merge_object_name,
-    combined_merge_path
-  )
-  utils::write.csv(
-    preprocessingData$clockFoundation$betaCSV,
-    file = beta_csv_path,
-    row.names = FALSE
-  )
-  utils::write.csv(
-    preprocessingData$clockFoundation$phenoCF,
-    file = pheno_cf_path,
-    row.names = FALSE
-  )
-  zip_status <- utils::zip(zipfile = zip_path, files = beta_csv_path, flags = "-j")
-  beta_zip_path <- if (identical(zip_status, 0L) && file.exists(zip_path)) {
-    zip_path
-  } else {
-    NULL
-  }
-
-  emitLogMinfiEwasWater(
-    c(
-      paste("Output phenotype dir:     ", outputPheno),
-      paste("RData metrics dir:        ", outputRData),
-      paste("RData merge dir:          ", outputRDataMerge),
-      paste("Clock Foundation dir:     ", outputDir),
-      paste("Saved combined phenotype: ", combined_pheno_path),
-      paste("Saved combined ", methylation_prefix, ": ", combined_merge_path, sep = ""),
-      paste("Saved beta CSV:           ", beta_csv_path),
-      if (is.null(beta_zip_path)) {
-        "Beta ZIP file was not created."
-      } else {
-        paste("Saved beta ZIP:           ", beta_zip_path)
-      },
-      paste("Saved phenoCF:            ", pheno_cf_path),
-      paste("ZIP status code:          ", zip_status),
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
-
-  output_paths <- list(
-    timepoints = timepoint_paths,
-    combinedPheno = combined_pheno_path,
-    combinedPhenoMethylation = combined_merge_path,
-    methylationScale = methylation_scale,
-    methylationObjectPrefix = methylation_prefix,
-    betaCSV = beta_csv_path,
-    betaZIP = beta_zip_path,
-    phenoCF = pheno_cf_path
-  )
-  combined_key <- switch(
-    methylation_scale,
-    beta = "combinedPhenoBeta",
-    m = "combinedPhenoM",
-    cn = "combinedPhenoCN"
-  )
-  output_paths[[combined_key]] <- combined_merge_path
-
-  structure(
-    output_paths,
-    class = "dnaEPICO_preprocessingPheno_paths"
-  )
+    structure(output_paths, class = "dnaEPICO_preprocessingPheno_paths")
 }

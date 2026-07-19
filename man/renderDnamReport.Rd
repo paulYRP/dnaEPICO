@@ -24,7 +24,7 @@ renderDnamReport(
 \item{clean}{Logical. Retained for backwards compatibility.}
 }
 \value{
-A list with class \code{"dnaEPICO_dnamReport_render"}.
+A list with class \code{'dnaEPICO_dnamReport_render'}.
 }
 \description{
 Render a prepared DNA methylation report
@@ -32,7 +32,7 @@ Render a prepared DNA methylation report
 \examples{
 report_root <- file.path(tempdir(), "dnaepico-render-example")
 prepared <- prepareDnamReportInputs(
-  outputDir = file.path(report_root, "reports")
+    outputDir = file.path(report_root, "reports")
 )
 rendered <- renderDnamReport(prepared)
 rendered$status

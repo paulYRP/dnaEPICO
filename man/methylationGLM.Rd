@@ -5,7 +5,7 @@
 \title{Fit CpG-wise GLMs for one-timepoint methylation analyses}
 \usage{
 methylationGLM(
-  inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1.RData",
+  inputPheno = "rData/preprocessingPheno/mergeData/phenoBT1.RData",
   outputLogs = "logs",
   outputRData = "rData/methylationGLM/models",
   outputPlots = "figures/methylationGLM",
@@ -13,6 +13,7 @@ methylationGLM(
     "MHCSF_TotalScore", "BRS_TotalScore"),
   covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
   factorVars = "Sex,Ethnicity,TraumaDefinition",
+  scaleVars = NULL,
   cpgPrefix = "cg",
   cpgLimit = NA,
   methylationScale = "beta",
@@ -26,6 +27,7 @@ methylationGLM(
   prsMap = NULL,
   summaryPval = NA,
   summaryResidualSD = TRUE,
+  excludeNonConverged = FALSE,
   saveSignificantCpGs = FALSE,
   significantCpGDir = "preliminaryResults/cpgs/methylationGLM",
   significantCpGPval = 0.05,
@@ -38,6 +40,7 @@ methylationGLM(
   annotationCols = c("Name", "chr", "pos", "UCSC_RefGene_Group", "UCSC_RefGene_Name",
     "Relation_to_Island", "GencodeV41_Group"),
   annotatedGLMOut = "data/methylationGLM",
+  reportAssetsDir = NULL,
   display = FALSE,
   verbose = FALSE,
   logs = FALSE,
@@ -45,13 +48,15 @@ methylationGLM(
 )
 }
 \arguments{
-\item{inputPheno}{Character. Path to the merged phenotype-plus-methylation \code{.RData}
+\item{inputPheno}{Character. Path to the merged phenotype-plus-methylation
+\code{.RData}
 or \code{.rds} object created by \code{preprocessingPheno()}. The default points to
 the timepoint-1 object produced by the package workflow.}
 
 \item{outputLogs}{Character. Directory used for optional log files.}
 
-\item{outputRData}{Character. Directory used for optional serialized model and
+\item{outputRData}{Character. Directory used for optional serialized model
+and
 summary outputs.}
 
 \item{outputPlots}{Character. Directory used for optional TIFF plots.}
@@ -65,19 +70,28 @@ each GLM.}
 \item{factorVars}{Character. Comma-separated variables that should be treated
 as factors before modeling.}
 
-\item{cpgPrefix}{Character. Prefix used to identify methylation columns in the
-merged phenotype-plus-methylation input object. The default is \code{"cg"}.}
+\item{scaleVars}{Character vector, comma-separated variable names, or \code{NULL}.
+Numeric fixed-effect variables to centre and divide by their sample standard
+deviations before model fitting.}
+
+\item{cpgPrefix}{Character. Prefix used to identify methylation columns in
+the
+merged phenotype-plus-methylation input object. The default is \code{'cg'}.}
 
 \item{cpgLimit}{Integer or \code{NA}. Maximum number of CpGs to analyse. Use \code{NA}
 to keep all CpGs matching \code{cpgPrefix}.}
 
 \item{methylationScale}{Character. Methylation metric represented by the CpG
-columns. One of \code{"beta"}, \code{"m"}, or \code{"cn"}. The default is \code{"beta"}.}
+columns. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, in any combination of
+upper- and lower-case letters. The default is \code{'beta'}.}
 
 \item{nCores}{Integer. Number of worker processes to use while fitting models
-and extracting summaries.}
+and extracting summaries. Automatic fitting remains serial below the
+empirical glm2 crossover and caps workers by the CpG workload and detected
+physical cores.}
 
-\item{plotWidth}{Integer. TIFF width in pixels when plots are written to disk.}
+\item{plotWidth}{Integer. TIFF width in pixels when plots are written to
+disk.}
 
 \item{plotHeight}{Integer. TIFF height in pixels when plots are written to
 disk.}
@@ -89,20 +103,24 @@ disk.}
 supplied and present in the input data, the phenotype is modeled together
 with its interaction against this variable.}
 
-\item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded to
+\item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
+to
 worker processes. By default, the current \code{.libPaths()} are used.}
 
 \item{glmLibs}{Character. Comma-separated package names to validate on worker
-processes. The default is \code{"glm2"}.}
+processes. The default is \code{'glm2'}.}
 
 \item{prsMap}{Character or \code{NULL}. Optional phenotype-to-PRS mapping in the
-form \code{"Phenotype1:PRS_1,Phenotype2:PRS_2"}.}
+form \code{'Phenotype1:PRS_1,Phenotype2:PRS_2'}.}
 
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value threshold applied to the
 returned CpG summary tables. Use \code{NA} to keep all summary rows.}
 
 \item{summaryResidualSD}{Logical. If \code{TRUE}, append residual standard
 deviations to the CpG summary tables and residual diagnostic plots.}
+
+\item{excludeNonConverged}{Logical. If \code{TRUE}, retain non-converged CpG rows
+and reasons but exclude their p-values from inference.}
 
 \item{saveSignificantCpGs}{Logical. If \code{TRUE}, collect significant CpG
 coefficient tables in the returned object and optionally write them to disk
@@ -127,11 +145,11 @@ summary tables.}
 CpGs in the residual-significance diagnostic plots.}
 
 \item{padjmethod}{Character. P-value adjustment method passed to
-\code{stats::p.adjust()}. The default is \code{"fdr"}.}
+\code{stats::p.adjust()}. The default is \code{'fdr'}.}
 
 \item{annotationPackage}{Character. Annotation package or object name passed
 to \code{minfi::getAnnotation()}, for example
-\code{"IlluminaHumanMethylationEPICv2anno.20a1.hg38"}.}
+\code{'IlluminaHumanMethylationEPICv2anno.20a1.hg38'}.}
 
 \item{annotationCols}{Character vector or comma-separated annotation columns
 to append to the combined GLM summary table. Available columns depend on
@@ -140,6 +158,10 @@ the selected annotation package.}
 \item{annotatedGLMOut}{Character. Directory used for the optional annotated
 GLM summary XLSX workbook.}
 
+\item{reportAssetsDir}{Character or \code{NULL}. Report results directory used for
+the compressed TSV table and its compact metadata sidecars. \code{NULL} writes
+only the model outputs and annotated workbook.}
+
 \item{display}{Logical. If \code{TRUE}, draw exploratory and diagnostic plots on
 the active graphics device.}
 
@@ -147,7 +169,7 @@ the active graphics device.}
 The default is \code{FALSE}, so the function is quiet unless requested.}
 
 \item{logs}{Logical. If \code{TRUE}, write the same progress messages to
-\code{file.path(outputLogs, "log_methylationGLM.txt")}.}
+\code{file.path(outputLogs, 'log_methylationGLM.txt')}.}
 
 \item{saveOutputs}{Logical. If \code{TRUE}, write optional serialized model files,
 summary tables, significant-CpG tables, annotated results, and TIFF plots to
@@ -155,7 +177,7 @@ the requested output directories. The default is \code{FALSE}, so the function
 returns in-memory results without writing files.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM"}.
+A list with class \code{'dnaEPICO_methylationGLM'}.
 \describe{
 \item{preparedData}{Object returned by \code{\link[=prepareMethylationGLMData]{prepareMethylationGLMData()}}
 containing the merged phenotype-plus-methylation analysis table and modeling
@@ -187,46 +209,46 @@ See \linkS4class{dnaEPICO_methylationGLM} for a class-level overview.
 }
 \description{
 \code{methylationGLM()} is the high-level coordinator for the methylation GLM
-stage of the \code{dnaEPICO} workflow. It prepares the merged phenotype-plus-methylation
-input, optionally creates exploratory plots, fits one Gaussian GLM per CpG for
+stage of the \code{dnaEPICO} workflow. It prepares the merged
+phenotype-plus-methylation
+input, optionally creates exploratory plots, fits one Gaussian GLM per CpG
+for
 each requested phenotype, extracts CpG-level summaries, optionally collects
 significant CpG coefficient tables, generates diagnostic plots, annotates the
-combined summary table, and optionally writes legacy-style outputs to disk.
-The default behavior is now in-memory and quiet, which makes the function
-easier to compose with other package functions and more aligned with typical
-Bioconductor usage.
+combined summary table, and optionally writes model outputs to disk. By
+default, the function runs quietly and returns its results in memory.
 }
 \examples{
 if (requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
-  tmp <- tempdir()
-  toy_path <- file.path(tmp, "phenoBetaT1.RData")
-  phenoBT1 <- data.frame(
-    Sample_Name = c("S1", "S2", "S3", "S4"),
-    status = factor(c("Case", "Case", "Control", "Control")),
-    sex = factor(c("F", "M", "F", "M")),
-    cg00000029 = c(0.20, 0.25, 0.22, 0.27),
-    cg00000108 = c(0.60, 0.55, 0.52, 0.58),
-    check.names = FALSE
-  )
-  save(phenoBT1, file = toy_path)
+    tmp <- tempdir()
+    toy_path <- file.path(tmp, "phenoBT1.RData")
+    phenoBT1 <- data.frame(
+        Sample_Name = c("S1", "S2", "S3", "S4"),
+        status = factor(c("Case", "Case", "Control", "Control")),
+        sex = factor(c("F", "M", "F", "M")),
+        cg00000029 = c(0.20, 0.25, 0.22, 0.27),
+        cg00000108 = c(0.60, 0.55, 0.52, 0.58),
+        check.names = FALSE
+    )
+    save(phenoBT1, file = toy_path)
 
-  result <- methylationGLM(
-    inputPheno = toy_path,
-    phenotypes = "status",
-    covariates = "sex",
-    factorVars = "status,sex",
-    cpgLimit = 2,
-    nCores = 1,
-    summaryPval = 1,
-    annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-    annotationCols = "Name,chr,pos",
-    display = FALSE,
-    verbose = FALSE,
-    logs = FALSE,
-    saveOutputs = FALSE
-  )
+    result <- methylationGLM(
+        inputPheno = toy_path,
+        phenotypes = "status",
+        covariates = "sex",
+        factorVars = "status,sex",
+        cpgLimit = 2,
+        nCores = 1,
+        summaryPval = 1,
+        annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+        annotationCols = "Name,chr,pos",
+        display = FALSE,
+        verbose = FALSE,
+        logs = FALSE,
+        saveOutputs = FALSE
+    )
 
-  class(result)
+    class(result)
 }
 
 }

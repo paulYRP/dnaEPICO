@@ -25,6 +25,7 @@ preprocessingMinfiEwasWater(
   detPThreshold = 0.05,
   normMethods = "adjustedfunnorm",
   sexColumn = "Sex",
+  removeSexMismatch = FALSE,
   pvalThreshold = 0.01,
   chrToRemove = "chrX,chrY",
   snpsToRemove = "SBE,CpG",
@@ -60,10 +61,10 @@ table. Use \code{NA} to keep all samples.}
 identifiers.}
 
 \item{arrayType}{Character. Illumina array identifier passed to
-\code{Biobase::annotation()}, for example \code{"IlluminaHumanMethylationEPICv2"}.}
+\code{Biobase::annotation()}, for example \code{'IlluminaHumanMethylationEPICv2'}.}
 
 \item{annotationVersion}{Character. Annotation build passed to
-\code{Biobase::annotation()}, for example \code{"20a1.hg38"} or \code{"ilmn12.hg19"}.}
+\code{Biobase::annotation()}, for example \code{'20a1.hg38'} or \code{'ilmn12.hg19'}.}
 
 \item{idatForce}{Logical. Passed to \code{minfi::read.metharray.exp()} when
 reading IDAT files. Use \code{TRUE} only after confirming that the selected IDAT
@@ -79,7 +80,7 @@ outputs when \code{saveOutputs = TRUE}.}
 when \code{saveOutputs = TRUE}.}
 
 \item{sepType}{Character or \code{NULL}. Field separator used in \code{phenoFile}. Use
-\code{NULL} for a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or
+\code{NULL} for a comma-separated file, \code{'\\\\t'} for a tab-delimited file, or
 another separator accepted by \code{utils::read.csv()}.}
 
 \item{tiffWidth}{Integer. Width of saved TIFF plots in pixels.}
@@ -91,27 +92,31 @@ another separator accepted by \code{utils::read.csv()}.}
 \item{qcCutoff}{Numeric. QC cutoff passed to \code{minfi::plotQC()}.}
 
 \item{detPtype}{Character. Detection P-value mode passed to
-\code{minfi::detectionP()}. Common values in minfi workflows are \code{"m+u"} and
-\code{"negative"}. The default here is \code{"m+u"}.}
+\code{minfi::detectionP()}. Common values in minfi workflows are \code{'m+u'} and
+\code{'negative'}. The default here is \code{'m+u'}.}
 
 \item{detPThreshold}{Numeric. Samples with mean detection P value above this
 threshold are removed.}
 
 \item{normMethods}{Character vector or semicolon-separated string of
-normalization methods. Supported values are \code{"adjustedfunnorm"},
-\code{"funnorm"}, \code{"illumina"}, \code{"quantile"}, and \code{"swan"}.}
+normalization methods. Supported values are \code{'adjustedfunnorm'},
+\code{'funnorm'}, \code{'illumina'}, \code{'quantile'}, and \code{'swan'}.}
 
 \item{sexColumn}{Character. Name of the phenotype column containing reported
 sex.}
+
+\item{removeSexMismatch}{Logical. If \code{TRUE}, remove samples whose reported
+sex and methylation-predicted sex are both known and disagree. Missing or
+unknown sex values are retained. The default is \code{FALSE}.}
 
 \item{pvalThreshold}{Numeric. Probe-level detection P-value threshold used in
 the probe filter.}
 
 \item{chrToRemove}{Character vector or comma-separated string of chromosome
-names to remove, for example \code{"chrX,chrY"}.}
+names to remove, for example \code{'chrX,chrY'}.}
 
 \item{snpsToRemove}{Character vector or comma-separated string of SNP probe
-types to remove, for example \code{"SBE,CpG"}.}
+types to remove, for example \code{'SBE,CpG'}.}
 
 \item{mafThreshold}{Numeric. Minor allele frequency threshold passed to
 \code{minfi::dropLociWithSnps()}.}
@@ -120,7 +125,7 @@ types to remove, for example \code{"SBE,CpG"}.}
 CSV files containing probe IDs to remove.}
 
 \item{probeExclusionIdColumn}{Character or \code{NULL}. Column containing probe
-IDs. When \code{NULL} or \code{""}, each file is auto-detected using \code{ProbeID},
+IDs. When \code{NULL} or \code{''}, each file is auto-detected using \code{ProbeID},
 \code{TargetID}, \code{IlmnID}, or \code{Name}, then falling back to an unlabeled or
 probe-like first column.}
 
@@ -136,7 +141,7 @@ and \code{MissingPos}, but not \code{MismatchPos}.}
 grouping plots.}
 
 \item{lcRef}{Character. Reference panel used for cell composition estimation.
-\code{"saliva"} and \code{"salivaEPIC"} use \code{estimateLC()}. Other values are passed
+\code{'saliva'} and \code{'salivaEPIC'} use \code{estimateLC()}. Other values are passed
 to \code{ENmix::estimateCellProp()}.}
 
 \item{phenoOrder}{Character vector or semicolon-separated string describing
@@ -153,16 +158,15 @@ The default is \code{FALSE}.}
 \item{logs}{Logical. If \code{TRUE}, write log messages to \code{outputLogs}. The
 default is \code{FALSE}.}
 
-\item{saveOutputs}{Logical. If \code{TRUE}, write the legacy \code{.RData}, figure, and
-\code{phenoLC.csv} outputs to disk. The default is \code{FALSE}, so the function can
-be used in the more traditional in-memory Bioconductor style.}
+\item{saveOutputs}{Logical. If \code{TRUE}, write the \code{.RData}, figure, and
+\code{phenoLC.csv} outputs to disk. The default is \code{FALSE}.}
 
 \item{crossReactivePath}{Deprecated alias for \code{probeExclusionPath}.}
 
 \item{crossReactiveIdColumn}{Deprecated alias for \code{probeExclusionIdColumn}.}
 }
 \value{
-A list with class \code{"dnaEPICO_preprocessingMinfiEwasWater"}.
+A list with class \code{'dnaEPICO_preprocessingMinfiEwasWater'}.
 \describe{
 \item{targets}{Filtered phenotype table aligned to the retained samples.}
 \item{RGSet}{Filtered \code{RGChannelSet} used in downstream preprocessing and
@@ -172,7 +176,8 @@ raw \code{MSet}, \code{RatioSet}, and genome-mapped object derived from \code{RG
 \item{assessment}{Object returned by \code{\link[=assessSamplesMinfiEwasWater]{assessSamplesMinfiEwasWater()}}
 containing detection P values, QC summaries, and failed-sample tracking.}
 \item{sexData}{Object returned by \code{\link[=predictSexMinfiEwasWater]{predictSexMinfiEwasWater()}} containing
-predicted sex labels, mismatch summaries, and plotting data.}
+predicted sex labels, mismatch summaries, plotting data, and the sample IDs
+removed when \code{removeSexMismatch = TRUE}.}
 \item{normData}{Object returned by \code{\link[=normalizeMinfiEwasWater]{normalizeMinfiEwasWater()}} containing
 the requested normalized objects and metadata on the methods that were run.}
 \item{filterData}{Object returned by \code{\link[=filterProbesMinfiEwasWater]{filterProbesMinfiEwasWater()}}
@@ -191,42 +196,42 @@ See \linkS4class{dnaEPICO_preprocessingMinfiEwasWater} for a class-level overvie
 \description{
 Run the \code{dnaEPICO} preprocessing workflow as a convenience wrapper around the
 smaller minfi/ENmix/wateRmelon helper functions in this package. The wrapper
-now returns a structured result object containing the in-memory outputs from
-each stage. Legacy files are written only when \code{saveOutputs = TRUE}.
+returns a structured result object containing the in-memory outputs from each
+stage. Files are written only when \code{saveOutputs = TRUE}.
 }
 \examples{
 if (requireNamespace("minfiData", quietly = TRUE) &&
     requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
     requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
-  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
-  result <- preprocessingMinfiEwasWater(
-    phenoFile = ex$phenoFile,
-    idatFolder = ex$idatFolder,
-    outputLogs = file.path(ex$tempDir, "logs"),
-    nSamples = 4,
-    SampleID = "Sample_Name",
-    arrayType = ex$arrayType,
-    annotationVersion = ex$annotationVersion,
-    scriptLabel = "preprocessingMinfiEwasWater",
-    baseDataFolder = file.path(ex$tempDir, "rData"),
-    figureBaseDir = file.path(ex$tempDir, "figures"),
-    detPThreshold = 1,
-    normMethods = "quantile",
-    sexColumn = "Sex",
-    pvalThreshold = 1,
-    chrToRemove = "",
-    snpsToRemove = "SBE",
-    mafThreshold = 1,
-    probeExclusionPath = ex$probeExclusionPath,
-    plotGroupVar = "Sex",
-    lcRef = "saliva",
-    phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
-    lcPhenoDir = ex$tempDir,
-    saveOutputs = FALSE,
-    verbose = FALSE,
-    logs = FALSE
-  )
-  inherits(result, "dnaEPICO_preprocessingMinfiEwasWater")
+    ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
+    result <- preprocessingMinfiEwasWater(
+        phenoFile = ex$phenoFile,
+        idatFolder = ex$idatFolder,
+        outputLogs = file.path(ex$tempDir, "logs"),
+        nSamples = 4,
+        SampleID = "Sample_Name",
+        arrayType = ex$arrayType,
+        annotationVersion = ex$annotationVersion,
+        scriptLabel = "preprocessingMinfiEwasWater",
+        baseDataFolder = file.path(ex$tempDir, "rData"),
+        figureBaseDir = file.path(ex$tempDir, "figures"),
+        detPThreshold = 1,
+        normMethods = "quantile",
+        sexColumn = "Sex",
+        pvalThreshold = 1,
+        chrToRemove = "",
+        snpsToRemove = "SBE",
+        mafThreshold = 1,
+        probeExclusionPath = ex$probeExclusionPath,
+        plotGroupVar = "Sex",
+        lcRef = "saliva",
+        phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
+        lcPhenoDir = ex$tempDir,
+        saveOutputs = FALSE,
+        verbose = FALSE,
+        logs = FALSE
+    )
+    inherits(result, "dnaEPICO_preprocessingMinfiEwasWater")
 }
 
 }

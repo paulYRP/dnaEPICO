@@ -42,10 +42,10 @@ files on disk rather than returning a plot object.
 ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 output_dir <- file.path(tempdir(), "enmix-control-plots")
 plotCtrlMinfiEwasWater(
-  RGSet = ex$RGSet,
-  output_dir = output_dir,
-  verbose = FALSE,
-  logs = FALSE
+    RGSet = ex$RGSet,
+    output_dir = output_dir,
+    verbose = FALSE,
+    logs = FALSE
 )
 dir.exists(output_dir)
 \dontshow{\}) # examplesIf}

@@ -13,14 +13,8 @@ bibentry(
       role = c("aut", "cre"),
       email = "ruizpint@qut.edu.au",
       comment = c(ORCID = "0009-0007-6714-3566")
-    ),
-    person(
-      given = "Divya",
-      family = "Mehta",
-      role = "aut",
-      comment = c(ORCID = "0000-0001-7971-7255")
     )
   ),
-  year = "2025",
+  year = "2026",
   url = "https://bioconductor.org/packages/dnaEPICO"
 )

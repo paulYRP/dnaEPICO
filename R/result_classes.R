@@ -1,6 +1,6 @@
 #' Result class returned by preprocessingMinfiEwasWater
 #'
-#' Objects of class `"dnaEPICO_preprocessingMinfiEwasWater"` are list-based
+#' Objects of class `'dnaEPICO_preprocessingMinfiEwasWater'` are list-based
 #' results returned by [preprocessingMinfiEwasWater()]. They are lightweight
 #' S3-style containers rather than formal S4 classes.
 #'
@@ -27,7 +27,7 @@ NULL
 
 #' Result class returned by svaEnmix
 #'
-#' Objects of class `"dnaEPICO_svaEnmix"` are list-based results returned by
+#' Objects of class `'dnaEPICO_svaEnmix'` are list-based results returned by
 #' [svaEnmix()]. They collect the loaded inputs, surrogate-variable results,
 #' association-analysis summaries, and optional file outputs.
 #'
@@ -57,7 +57,7 @@ NULL
 
 #' Result class returned by preprocessingPheno
 #'
-#' Objects of class `"dnaEPICO_preprocessingPheno"` are list-based results
+#' Objects of class `'dnaEPICO_preprocessingPheno'` are list-based results
 #' returned by [preprocessingPheno()]. They describe the phenotype data,
 #' methylation matrices, timepoint splits, longitudinal merges, and optional
 #' exported files.
@@ -66,8 +66,10 @@ NULL
 #' \describe{
 #'   \item{pheno}{Phenotype table read from `phenoFile`.}
 #'   \item{metricsData}{Object returned by [loadMetricsPreprocessingPheno()].}
-#'   \item{timepointData}{Object returned by [splitTimepointsPreprocessingPheno()].}
-#'   \item{combinedData}{Object returned by [combineTimepointsPreprocessingPheno()].}
+#' \item{timepointData}{Object returned by
+#' [splitTimepointsPreprocessingPheno()].}
+#' \item{combinedData}{Object returned by
+#' [combineTimepointsPreprocessingPheno()].}
 #'   \item{clockFoundation}{Object returned by
 #'   [buildClockFoundationInputsPreprocessingPheno()].}
 #'   \item{savedFiles}{Object returned by [writePreprocessingPhenoOutputs()]
@@ -84,7 +86,7 @@ NULL
 
 #' Result class returned by methylationGLM
 #'
-#' Objects of class `"dnaEPICO_methylationGLM"` are list-based results
+#' Objects of class `'dnaEPICO_methylationGLM'` are list-based results
 #' returned by [methylationGLM()]. They collect the prepared analysis table,
 #' fitted models, summaries, diagnostics, annotations, and optional saved files.
 #'
@@ -114,7 +116,7 @@ NULL
 
 #' Result class returned by methylationLME
 #'
-#' Objects of class `"dnaEPICO_methylationLME"` are list-based results
+#' Objects of class `'dnaEPICO_methylationLME'` are list-based results
 #' returned by [methylationLME()]. They collect the prepared longitudinal
 #' analysis table, fitted mixed models, summaries, diagnostics, annotations, and
 #' optional saved files.
@@ -144,8 +146,9 @@ NULL
 
 #' Result class returned by prepareDnamReportInputs
 #'
-#' Objects of class `"dnaEPICO_dnamReport_prepared"` are list-based results
-#' returned by [prepareDnamReportInputs()]. They capture normalized report paths,
+#' Objects of class `'dnaEPICO_dnamReport_prepared'` are list-based results
+#' returned by [prepareDnamReportInputs()]. They capture normalized report
+#' paths,
 #' available figures, and logging metadata before rendering.
 #'
 #' @section Structure:
@@ -171,16 +174,16 @@ NULL
 
 #' Result class returned by renderDnamReport
 #'
-#' Objects of class `"dnaEPICO_dnamReport_render"` are list-based results
+#' Objects of class `'dnaEPICO_dnamReport_render'` are list-based results
 #' returned by [renderDnamReport()]. They describe whether a prepared report was
 #' rendered, skipped, or failed.
 #'
 #' @section Structure:
 #' \describe{
 #'   \item{preparedReport}{The input object supplied to [renderDnamReport()].}
-#'   \item{status}{Render status string such as `"rendered"`, `"skipped"`, or
-#'   `"failed"`.}
-#'   \item{renderedFile}{Normalized path to the rendered PDF file when rendering
+#'   \item{status}{Render status string such as `'rendered'`, `'skipped'`, or
+#'   `'failed'`.}
+#' \item{renderedFile}{Normalized path to the rendered HTML file when rendering
 #'   succeeded, otherwise `NULL`.}
 #'   \item{errorMessage}{Render error or skip message when available, otherwise
 #'   `NULL`.}
@@ -196,7 +199,7 @@ NULL
 
 #' Result class returned by dnamReport
 #'
-#' Objects of class `"dnaEPICO_dnamReport"` are list-based results returned by
+#' Objects of class `'dnaEPICO_dnamReport'` are list-based results returned by
 #' [dnamReport()]. They combine the prepared report inputs, render result, and
 #' final status metadata into one convenience object.
 #'
@@ -204,9 +207,11 @@ NULL
 #' \describe{
 #'   \item{preparedReport}{Object returned by [prepareDnamReportInputs()].}
 #'   \item{renderResult}{Structured render metadata created by [dnamReport()].}
-#'   \item{status}{Final status string such as `"rendered"`, `"skipped"`, or
-#'   `"failed"`.}
+#'   \item{status}{Final status string such as `'rendered'`, `'skipped'`, or
+#'   `'failed'`.}
 #'   \item{outputFile}{Path to `docs/index.html`.}
+#'   \item{resultTableSources}{Named character vector identifying whether each
+#'   model table used a streamed sidecar or the compatible XLSX fallback.}
 #'   \item{errorMessage}{Final render error or skip message when available,
 #'   otherwise `NULL`.}
 #'   \item{logFile}{Resolved path to the optional log file, or `NULL` when

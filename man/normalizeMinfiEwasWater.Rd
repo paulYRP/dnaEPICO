@@ -21,8 +21,8 @@ normalizeMinfiEwasWater(
 sex covariate for normalization methods that support it.}
 
 \item{normMethods}{Character vector or semicolon-separated string of
-normalization methods. Supported values are \code{"adjustedfunnorm"},
-\code{"funnorm"}, \code{"illumina"}, \code{"quantile"}, and \code{"swan"}.}
+normalization methods. Supported values are \code{'adjustedfunnorm'},
+\code{'funnorm'}, \code{'illumina'}, \code{'quantile'}, and \code{'swan'}.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -34,7 +34,7 @@ normalization methods. Supported values are \code{"adjustedfunnorm"},
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_minfiEwasWater_norm"} containing the
+A list with class \code{'dnaEPICO_minfiEwasWater_norm'} containing the
 requested normalized objects and the first method as \code{primary}.
 }
 \description{
@@ -45,19 +45,19 @@ return all normalized objects together in a single result object.
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 sample_data <- filterSamplesMinfiEwasWater(
-  RGSet = ex$RGSet,
-  targets = ex$targets,
-  failedSamples = character(0),
-  SampleID = "Sample_Name",
-  verbose = FALSE,
-  logs = FALSE
+    RGSet = ex$RGSet,
+    targets = ex$targets,
+    failedSamples = character(0),
+    SampleID = "Sample_Name",
+    verbose = FALSE,
+    logs = FALSE
 )
 norm_data <- normalizeMinfiEwasWater(
-  sampleData = sample_data,
-  sexColumn = "Sex",
-  normMethods = "quantile",
-  verbose = FALSE,
-  logs = FALSE
+    sampleData = sample_data,
+    sexColumn = "Sex",
+    normMethods = "quantile",
+    verbose = FALSE,
+    logs = FALSE
 )
 names(norm_data$normalized)
 \dontshow{\}) # examplesIf}

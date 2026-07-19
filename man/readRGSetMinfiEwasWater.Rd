@@ -28,11 +28,11 @@ identifiers used to label the \code{RGChannelSet}.}
 
 \item{arrayType}{Character. Array name passed to
 \code{Biobase::annotation(RGSet)}, for example
-\code{"IlluminaHumanMethylationEPICv2"}.}
+\code{'IlluminaHumanMethylationEPICv2'}.}
 
 \item{annotationVersion}{Character. Annotation build passed to
-\code{Biobase::annotation(RGSet)}, for example \code{"20a1.hg38"} for EPIC v2 hg38
-annotations or \code{"ilmn12.hg19"} for 450K hg19 annotations.}
+\code{Biobase::annotation(RGSet)}, for example \code{'20a1.hg38'} for EPIC v2 hg38
+annotations or \code{'ilmn12.hg19'} for 450K hg19 annotations.}
 
 \item{force}{Logical. Passed to \code{minfi::read.metharray.exp()}. Use \code{TRUE}
 only after confirming that the selected IDAT files should be read together.}
@@ -58,15 +58,15 @@ return the resulting \code{RGChannelSet}.
 if (requireNamespace("minfiData", quietly = TRUE) &&
     requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
     requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
-  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
-  rgset <- readRGSetMinfiEwasWater(
-    idatFolder = ex$idatFolder,
-    targets = ex$targets,
-    SampleID = "Sample_Name",
-    arrayType = ex$arrayType,
-    annotationVersion = ex$annotationVersion
-  )
-  class(rgset)
+    ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
+    rgset <- readRGSetMinfiEwasWater(
+        idatFolder = ex$idatFolder,
+        targets = ex$targets,
+        SampleID = "Sample_Name",
+        arrayType = ex$arrayType,
+        annotationVersion = ex$annotationVersion
+    )
+    class(rgset)
 }
 
 }

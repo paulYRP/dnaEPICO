@@ -58,12 +58,12 @@ grouping variable in the phenotype table.
 \examples{
 ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 plotRawDensityMinfiEwasWater(
-  rawData = ex$rawData,
-  targets = ex$targets,
-  plotGroupVar = "Sex",
-  display = FALSE,
-  verbose = FALSE,
-  logs = FALSE
+    rawData = ex$rawData,
+    targets = ex$targets,
+    plotGroupVar = "Sex",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE
 )
 
 }

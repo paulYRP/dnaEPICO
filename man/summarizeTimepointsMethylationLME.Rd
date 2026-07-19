@@ -37,17 +37,18 @@ requested phenotype.
 }
 \description{
 Summarize the requested phenotype variables by timepoint. Numeric phenotypes
-are reported with mean, standard deviation, and non-missing counts; non-numeric
+are reported with mean, standard deviation, and non-missing counts;
+non-numeric
 phenotypes are reported with non-missing counts and the observed levels.
 }
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 timepoint_summary <- summarizeTimepointsMethylationLME(
-  data = ex$preparedData$data,
-  timeVar = "Timepoint",
-  phenotypes = "score",
-  verbose = FALSE,
-  logs = FALSE
+    data = ex$preparedData$data,
+    timeVar = "Timepoint",
+    phenotypes = "score",
+    verbose = FALSE,
+    logs = FALSE
 )
 nrow(timepoint_summary)
 

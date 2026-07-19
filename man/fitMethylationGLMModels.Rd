@@ -18,13 +18,15 @@ fitMethylationGLMModels(
 \arguments{
 \item{preparedData}{Object returned by \code{prepareMethylationGLMData()}.}
 
-\item{nCores}{Integer. Number of worker processes to use.}
+\item{nCores}{Integer. Maximum number of worker processes to use. Automatic
+fitting remains serial below the empirical glm2 crossover and caps workers
+by available CpGs and detected physical cores.}
 
 \item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
 to worker processes.}
 
 \item{glmLibs}{Character vector or comma-separated string of package names to
-check on worker processes. The default is \code{"glm2"}.}
+check on worker processes. The default is \code{'glm2'}.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -36,7 +38,7 @@ check on worker processes. The default is \code{"glm2"}.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM_models"} containing
+A list with class \code{'dnaEPICO_methylationGLM_models'} containing
 fitted model lists, model formulas, and counts of failed CpG fits.
 }
 \description{
@@ -46,10 +48,10 @@ returned by \code{prepareMethylationGLMData()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 model_results <- fitMethylationGLMModels(
-  preparedData = ex$preparedData,
-  nCores = 1,
-  verbose = FALSE,
-  logs = FALSE
+    preparedData = ex$preparedData,
+    nCores = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(model_results$fits)
 

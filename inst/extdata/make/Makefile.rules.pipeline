@@ -4,8 +4,17 @@
 MAKEFLAGS += --output-sync
 
 METHYLATION_SCALE ?= beta
+SCALE_VARS ?= NULL
+SCALE_VARS_GLM ?= $(SCALE_VARS)
+SCALE_VARS_LME ?= $(SCALE_VARS)
+optional_text_arg = $(if $(filter NULL null,$(strip $(1))),NULL,$(if $(strip $(1)),'$(strip $(1))',NULL))
+COVARIATES_ARG = $(call optional_text_arg,$(COVARIATES))
+FACTOR_VARS_ARG = $(call optional_text_arg,$(FACTOR_VARS))
+SCALE_VARS_GLM_ARG = $(call optional_text_arg,$(SCALE_VARS_GLM))
+SCALE_VARS_LME_ARG = $(call optional_text_arg,$(SCALE_VARS_LME))
 LME_CORRELATION_VAR ?= NULL
 PROBE_EXCLUSION_FILE ?= $(CROSS_REACTIVE_FILE)
+REMOVE_SEX_MISMATCH ?= FALSE
 PROBE_EXCLUSION_ID_COLUMN ?= $(CROSS_REACTIVE_ID_COLUMN)
 USE_EPICV2_MANIFEST ?= FALSE
 EPICV2_MANIFEST_CH_WGBS_EVIDENCE ?= TRUE
@@ -24,7 +33,7 @@ COMBINED_TIMEPOINT_SUFFIX = T$(subst $(space),T,$(COMBINE_TIMEPOINT_LIST))
 GLM_TIMEPOINT ?= $(firstword $(TIMEPOINT_LIST))
 GLM_TIMEPOINT_SUFFIX = T$(GLM_TIMEPOINT)
 ifeq ($(METHYLATION_SCALE),beta)
-PHENO_METHYLATION_PREFIX = phenoBeta
+PHENO_METHYLATION_PREFIX = phenoB
 else ifeq ($(METHYLATION_SCALE),m)
 PHENO_METHYLATION_PREFIX = phenoM
 else ifeq ($(METHYLATION_SCALE),cn)
@@ -51,6 +60,24 @@ else
 LME_CORRELATION_VAR_ARG = '$(LME_CORRELATION_VAR)'
 endif
 endif
+PHENO_LC = $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv
+SVA_MARKER = $(DATA_DIR)/$(MODEL)/$(STEP2)/.sva_complete
+GLM_REPORT_ASSET_DIR = $(STEP6)/$(MODEL)/assets/results/glm_results
+LME_REPORT_ASSET_DIR = $(STEP6)/$(MODEL)/assets/results/lme_results
+GLM_WORKBOOK = $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx
+LME_WORKBOOK = $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx
+GLM_REPORT_SIDECARS = \
+	$(GLM_REPORT_ASSET_DIR)/annotatedGLM.tsv.gz \
+	$(GLM_REPORT_ASSET_DIR)/annotatedGLM.report.tsv \
+	$(GLM_REPORT_ASSET_DIR)/annotatedGLM.dictionary.tsv \
+	$(GLM_REPORT_ASSET_DIR)/annotatedGLM.metadata.tsv
+LME_REPORT_SIDECARS = \
+	$(LME_REPORT_ASSET_DIR)/annotatedLME.tsv.gz \
+	$(LME_REPORT_ASSET_DIR)/annotatedLME.report.tsv \
+	$(LME_REPORT_ASSET_DIR)/annotatedLME.dictionary.tsv \
+	$(LME_REPORT_ASSET_DIR)/annotatedLME.metadata.tsv
+GLM_OUTPUTS = $(GLM_WORKBOOK) $(GLM_REPORT_SIDECARS)
+LME_OUTPUTS = $(LME_WORKBOOK) $(LME_REPORT_SIDECARS)
 
 # ===============================================
 # Run all models 
@@ -71,14 +98,14 @@ all: \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-	$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
-	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	$(SVA_MARKER) \
+	$(PHENO_LC) \
 	$(TIMEPOINT_PHENO_TARGETS) \
 	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
 	$(COMBINED_PHENO_TARGET) \
 	$(COMBINED_PHENO_METHYLATION) \
-	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx \
-	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx \
+	$(GLM_OUTPUTS) \
+	$(LME_OUTPUTS) \
 	$(STEP6)/$(MODEL)/docs/index.html
 	
 # ===============================================
@@ -89,8 +116,8 @@ FIRST3 = \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-	$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
-	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	$(SVA_MARKER) \
+	$(PHENO_LC) \
 	$(TIMEPOINT_PHENO_TARGETS) \
 	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
 	$(COMBINED_PHENO_TARGET) \
@@ -119,13 +146,13 @@ FIRST4 = \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-	$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
-	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	$(SVA_MARKER) \
+	$(PHENO_LC) \
 	$(TIMEPOINT_PHENO_TARGETS) \
 	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
 	$(COMBINED_PHENO_TARGET) \
 	$(COMBINED_PHENO_METHYLATION) \
-	$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx
+	$(GLM_OUTPUTS)
 
 f4: $(FIRST4) $(STEP6)/$(MODEL)/docs/index.html
 
@@ -150,13 +177,13 @@ F3LME = \
   $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-	$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt \
-	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	$(SVA_MARKER) \
+	$(PHENO_LC) \
 	$(TIMEPOINT_PHENO_TARGETS) \
 	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
 	$(COMBINED_PHENO_TARGET) \
 	$(COMBINED_PHENO_METHYLATION) \
-	$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx
+	$(LME_OUTPUTS)
 
 f3lme: $(F3LME) $(STEP6)/$(MODEL)/docs/index.html
 
@@ -178,6 +205,13 @@ $(foreach m,$(MODELS),$(eval runf3lme-$(m):; \
 # Step 1: Minfi Preprocessing
 # =================================================================================================================================
 MODEL_LOG_DIR = $(abspath $(LOGS_DIR)/$(MODEL))
+STEP1_PRIMARY = $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData
+STEP1_DERIVED = \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData \
+	$(PHENO_LC)
 
 step1:
 	@echo "Running Step 1 for $(MODEL)"
@@ -186,14 +220,10 @@ step1:
 	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	  $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData \
-	  $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv \
+	  $(PHENO_LC) \
 	  MODEL=$(MODEL)
 
-$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData \
-$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
+$(STEP1_PRIMARY): $(PHENO_FILE)
 	@Rscript -e "$(SET_SEED_EXPR) suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingMinfiEwasWater( \
 	  phenoFile = '$(PHENO_FILE)', \
 	  sepType = $(SEP_TYPE_ARG), \
@@ -214,6 +244,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  detPtype = '$(DET_PTYPE)', \
 	  detPThreshold = $(DET_PTHRESHOLD), \
 	  sexColumn = '$(SEX_COLUMN)', \
+	  removeSexMismatch = $(REMOVE_SEX_MISMATCH), \
 	  pvalThreshold = $(PVAL_THRESHOLD), \
 	  chrToRemove = '$(CHR_TO_REMOVE)', \
 	  snpsToRemove = '$(SNPS_TO_REMOVE)', \
@@ -233,16 +264,20 @@ $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv:
 	  logs = TRUE, \
 	  saveOutputs = TRUE ))"
 
+$(STEP1_DERIVED): $(STEP1_PRIMARY)
+	@test -e "$@" || { echo "Step 1 did not create expected output: $@"; exit 1; }
+
 # =================================================================================================================================
 # Step 2: Surrogate Variable Analysis
 # =================================================================================================================================
 step2:
 	@echo "Running Step 2 for $(MODEL)"
-	@$(MAKE) -j1 $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt MODEL=$(MODEL)
+	@$(MAKE) -j1 $(SVA_MARKER) MODEL=$(MODEL)
 
-$(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
+$(SVA_MARKER): $(PHENO_LC) $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData
+	@Rscript -e "if (file.exists('$(SVA_MARKER)')) unlink('$(SVA_MARKER)')"
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(svaEnmix( \
-	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
+	  phenoFile = '$(PHENO_LC)', \
 	  rgsetData = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData', \
 	  sepType = $(SEP_TYPE_ARG), \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
@@ -263,10 +298,17 @@ $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt:
 	  tiffRes = $(TIFF_RES), \
 	  logs = TRUE, \
 	  saveOutputs = TRUE ))"
+	@Rscript -e "if (!file.exists('$(PHENO_LC)')) stop('SVA phenotype file is missing.', call. = FALSE); dir.create(dirname('$(SVA_MARKER)'), recursive = TRUE, showWarnings = FALSE); if (!file.create('$(SVA_MARKER)')) stop('Could not create the SVA completion marker.', call. = FALSE)"
 
 # =================================================================================================================================
 # Step 3: Merge Phenotype
 # =================================================================================================================================
+STEP3_PRIMARY = $(COMBINED_PHENO_METHYLATION)
+STEP3_DERIVED = \
+	$(TIMEPOINT_PHENO_TARGETS) \
+	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
+	$(COMBINED_PHENO_TARGET)
+
 step3:
 	@echo "Running Step 3 for $(MODEL)"
 	@$(MAKE) -j1 \
@@ -276,12 +318,12 @@ step3:
 	  $(COMBINED_PHENO_METHYLATION) \
 	  MODEL=$(MODEL)
 
-$(TIMEPOINT_PHENO_TARGETS) \
-$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
-$(COMBINED_PHENO_TARGET) \
-$(COMBINED_PHENO_METHYLATION): 
+$(STEP3_PRIMARY): $(SVA_MARKER) $(PHENO_LC) \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
+	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingPheno( \
-	  phenoFile = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
+	  phenoFile = '$(PHENO_LC)', \
 	  sepType = $(SEP_TYPE_ARG), \
 	  betaPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
 	  mPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
@@ -299,19 +341,23 @@ $(COMBINED_PHENO_METHYLATION):
 	  outputDir = '$(DATA_DIR)/$(MODEL)/$(STEP3)', \
 	  logs = TRUE, \
 	  saveOutputs = TRUE ))"  
+
+$(STEP3_DERIVED): $(STEP3_PRIMARY)
+	@test -e "$@" || { echo "Step 3 did not create expected output: $@"; exit 1; }
 	  
 # =================================================================================================================================
 # Step 4: methylationGLM
 # =================================================================================================================================
-$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx: $(GLM_PHENO_METHYLATION)
+$(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION)
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationGLM( \
 	  inputPheno = '$(GLM_PHENO_METHYLATION)', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
 	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)/', \
 	  phenotypes = '$(PHENOTYPES_GLM)', \
-	  covariates = '$(COVARIATES)', \
-	  factorVars = '$(FACTOR_VARS)', \
+	  covariates = $(COVARIATES_ARG), \
+	  factorVars = $(FACTOR_VARS_ARG), \
+	  scaleVars = $(SCALE_VARS_GLM_ARG), \
 	  cpgPrefix = '$(CPG_PREFIX)', \
 	  cpgLimit = $(CPG_LIMIT), \
 	  methylationScale = '$(METHYLATION_SCALE)', \
@@ -336,13 +382,14 @@ $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx: $(GLM_PHENO_METHYLATION)
 	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
 	  annotationCols = '$(ANNOTATION_COLS)', \
 	  annotatedGLMOut = '$(DATA_DIR)/$(MODEL)/$(STEP4)', \
+	  reportAssetsDir = '$(GLM_REPORT_ASSET_DIR)', \
 	  logs = TRUE, \
 	  saveOutputs = TRUE )) "
 
 # =================================================================================================================================
 # Step 5: methylationLME
 # =================================================================================================================================
-$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx: $(COMBINED_PHENO_METHYLATION)
+$(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION)
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationLME( \
 	  inputPheno = '$(COMBINED_PHENO_METHYLATION)', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
@@ -351,8 +398,9 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx: $(COMBINED_PHENO_METHYLATION)
 	  personVar = '$(PERSON_VAR)', \
 	  timeVar = '$(TIME_VAR)', \
 	  phenotypes = '$(PHENOTYPES_LME)', \
-	  covariates = '$(COVARIATES)', \
-	  factorVars = '$(FACTOR_VARS)', \
+	  covariates = $(COVARIATES_ARG), \
+	  factorVars = $(FACTOR_VARS_ARG), \
+	  scaleVars = $(SCALE_VARS_LME_ARG), \
 	  lmeLibs = '$(LME_LIBS)', \
 	  correlationStructure = '$(LME_CORRELATION_STRUCTURE)', \
 	  correlationVar = $(LME_CORRELATION_VAR_ARG), \
@@ -378,6 +426,7 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx: $(COMBINED_PHENO_METHYLATION)
 	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
 	  annotationCols = '$(ANNOTATION_COLS)', \
 	  annotatedLMEOut = '$(DATA_DIR)/$(MODEL)/$(STEP5)', \
+	  reportAssetsDir = '$(LME_REPORT_ASSET_DIR)', \
 	  logs = TRUE, \
 	  saveOutputs = TRUE ))"
 
@@ -387,13 +436,16 @@ $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx: $(COMBINED_PHENO_METHYLATION)
 REPORT_INPUTS = \
 	$(GLM_PHENO_METHYLATION) \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData \
-	$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv
+	$(SVA_MARKER) \
+	$(PHENO_LC) \
+	$(GLM_OUTPUTS) \
+	$(LME_OUTPUTS)
 
 $(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
-	mkdir -p $(STEP6)/$(MODEL) $(MODEL_LOG_DIR)
+	mkdir -p "$(STEP6)/$(MODEL)" "$(MODEL_LOG_DIR)"
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); result <- dnamReport( \
 	  outputDir = '$(STEP6)/$(MODEL)', \
-	  phenoTab = '$(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv', \
+	  phenoTab = '$(PHENO_LC)', \
 	  enmixTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
 	  qcTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)', \
 	  svaTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP2)', \
@@ -405,7 +457,7 @@ $(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
 	  verbose = FALSE, \
 	  logs = TRUE, \
 	  logTab = '$(MODEL_LOG_DIR)' ); \
-	  if (!identical(result$$status, 'rendered') || !file.exists(result$$outputFile)) { \
+	  if (!identical(result[['status']], 'rendered') || !file.exists(result[['outputFile']])) { \
 	    stop('Report rendering failed. See $(MODEL_LOG_DIR)/log_dnamReport.txt for details.', call. = FALSE); \
 	  }"
 	@echo "Report built: $(STEP6)/$(MODEL)/docs/index.html"
@@ -461,12 +513,12 @@ endif
 # =================================================================================================================================
 status:
 	@echo "===== Pipeline Status ====="
-	@test -e $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData && echo "? Step 1: preprocessingMinfiEwasWater done" || echo "? Step 1: preprocessingMinfiEwasWater outcome file missing"
-	@test -e $(DATA_DIR)/$(MODEL)/$(STEP2)/summary_full_sva2.txt && echo "? Step 2: SVA done" || echo "? Step 2: SVA outcome file missing"
-	@test -e $(COMBINED_PHENO_TARGET) && echo "? Step 3: preprocessingPheno done" || echo "? Step 3: preprocessingPheno outcome file missing"
-	@test -e $(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx && echo "? Step 4: methylationGLM done" || echo "? Step 4: methylationGLM outcome file missing"
-	@test -e $(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx && echo "? Step 5: methylationLME done" || echo "? Step 5: methylationLME outcome file missing"
-	@test -e $(STEP6)/$(MODEL)/docs/index.html && echo "? Step 6: Report generated" || echo "? Step 6: Report missing"
+	@test -e "$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData" && echo "[OK] Step 1: preprocessingMinfiEwasWater done" || echo "[MISSING] Step 1: preprocessingMinfiEwasWater output"
+	@test -e "$(SVA_MARKER)" && test -e "$(PHENO_LC)" && echo "[OK] Step 2: SVA done" || echo "[MISSING] Step 2: SVA output"
+	@test -e "$(COMBINED_PHENO_TARGET)" && echo "[OK] Step 3: preprocessingPheno done" || echo "[MISSING] Step 3: preprocessingPheno output"
+	@test -e "$(GLM_WORKBOOK)" && test -e "$(GLM_REPORT_ASSET_DIR)/annotatedGLM.tsv.gz" && echo "[OK] Step 4: methylationGLM done" || echo "[MISSING] Step 4: methylationGLM output"
+	@test -e "$(LME_WORKBOOK)" && test -e "$(LME_REPORT_ASSET_DIR)/annotatedLME.tsv.gz" && echo "[OK] Step 5: methylationLME done" || echo "[MISSING] Step 5: methylationLME output"
+	@test -e "$(STEP6)/$(MODEL)/docs/index.html" && echo "[OK] Step 6: Report generated" || echo "[MISSING] Step 6: Report output"
 	@echo "============================"
 
 .PHONY: all clean clean_models status models step1 step2 step3 f3 f4 f3lme f3_models f4_models f3lme_models

@@ -32,7 +32,8 @@ dnamReport(
 \item{phenoTab}{Character or \code{NULL}. CSV file shown in the Data tab.
 When \code{NULL}, the path is inferred from the Makefile output layout.}
 
-\item{enmixTab}{Character. Directory containing ENmix quality-control figures.}
+\item{enmixTab}{Character. Directory containing ENmix quality-control
+figures.}
 
 \item{qcTab}{Character. Directory containing Quality Control figures.}
 
@@ -40,11 +41,17 @@ When \code{NULL}, the path is inferred from the Makefile output layout.}
 
 \item{metricTab}{Character. Directory containing Metrics figures.}
 
-\item{glmTab}{Character or \code{NULL}. XLSX workbook shown in the GLM Analysis tab.
-When \code{NULL}, the path is inferred from the Makefile output layout.}
+\item{glmTab}{Character or \code{NULL}. XLSX workbook shown in the GLM Analysis
+tab.
+When \code{NULL}, the path is inferred from the Makefile output layout. Report
+sidecars produced by \code{methylationGLM()} are read from this report project's
+\code{assets/results/glm_results} directory when available.}
 
-\item{lmeTab}{Character or \code{NULL}. XLSX workbook shown in the LME Analysis tab.
-When \code{NULL}, the path is inferred from the Makefile output layout.}
+\item{lmeTab}{Character or \code{NULL}. XLSX workbook shown in the LME Analysis
+tab.
+When \code{NULL}, the path is inferred from the Makefile output layout. Report
+sidecars produced by \code{methylationLME()} are read from this report project's
+\code{assets/results/lme_results} directory when available.}
 
 \item{logTab}{Character. Directory containing workflow logs shown in the Logs
 tab.}
@@ -77,7 +84,7 @@ files inside the section directories.}
 \item{recursive}{Logical. If \code{TRUE}, search section directories recursively.}
 }
 \value{
-A list with class \code{"dnaEPICO_dnamReport"}.
+A list with class \code{'dnaEPICO_dnamReport'}.
 }
 \description{
 Generate a DNA methylation dashboard report
@@ -85,49 +92,49 @@ Generate a DNA methylation dashboard report
 \examples{
 report_root <- file.path(tempdir(), "dnaepico-dnam-report")
 pheno_file <- file.path(
-  report_root,
-  "data",
-  "model1",
-  "preprocessingMinfiEwasWater",
-  "phenoLC.csv"
+    report_root,
+    "data",
+    "model1",
+    "preprocessingMinfiEwasWater",
+    "phenoLC.csv"
 )
 dir.create(dirname(pheno_file), recursive = TRUE, showWarnings = FALSE)
 utils::write.csv(
-  data.frame(
-    UID = c("sample1", "sample2"),
-    Timepoint = c(1, 2),
-    Sex = c("F", "M")
-  ),
-  pheno_file,
-  row.names = FALSE
+    data.frame(
+        UID = c("sample1", "sample2"),
+        Timepoint = c(1, 2),
+        Sex = c("F", "M")
+    ),
+    pheno_file,
+    row.names = FALSE
 )
 
 result <- dnamReport(
-  outputDir = file.path(report_root, "reports", "model1"),
-  phenoTab = pheno_file,
-  enmixTab = file.path(
-    report_root,
-    "figures",
-    "model1",
-    "preprocessingMinfiEwasWater",
-    "enmix"
-  ),
-  qcTab = file.path(
-    report_root,
-    "figures",
-    "model1",
-    "preprocessingMinfiEwasWater",
-    "qc"
-  ),
-  svaTab = file.path(report_root, "figures", "model1", "svaEnmix"),
-  metricTab = file.path(
-    report_root,
-    "figures",
-    "model1",
-    "preprocessingMinfiEwasWater",
-    "metrics"
-  ),
-  logTab = file.path(report_root, "logs", "model1")
+    outputDir = file.path(report_root, "reports", "model1"),
+    phenoTab = pheno_file,
+    enmixTab = file.path(
+        report_root,
+        "figures",
+        "model1",
+        "preprocessingMinfiEwasWater",
+        "enmix"
+    ),
+    qcTab = file.path(
+        report_root,
+        "figures",
+        "model1",
+        "preprocessingMinfiEwasWater",
+        "qc"
+    ),
+    svaTab = file.path(report_root, "figures", "model1", "svaEnmix"),
+    metricTab = file.path(
+        report_root,
+        "figures",
+        "model1",
+        "preprocessingMinfiEwasWater",
+        "metrics"
+    ),
+    logTab = file.path(report_root, "logs", "model1")
 )
 result$status
 

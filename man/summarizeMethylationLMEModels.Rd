@@ -8,6 +8,8 @@ summarizeMethylationLMEModels(
   modelResults,
   preparedData,
   summaryPval = NA,
+  excludeSingular = FALSE,
+  excludeNonConverged = FALSE,
   nCores = 1L,
   chunkSize = NULL,
   verbose = FALSE,
@@ -23,6 +25,12 @@ summarizeMethylationLMEModels(
 
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value filter applied to the
 returned summary tables. \code{NA} keeps all rows.}
+
+\item{excludeSingular}{Logical. If \code{TRUE}, retain singular CpG rows and
+reasons but set their inferential p-values to \code{NA}.}
+
+\item{excludeNonConverged}{Logical. If \code{TRUE}, retain non-converged CpG rows
+and reasons but set their inferential p-values to \code{NA}.}
 
 \item{nCores}{Integer. Number of worker processes to use while extracting
 summary rows.}
@@ -40,8 +48,13 @@ chunk. \code{NULL} chooses a value automatically.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationLME_summaries"}
-containing one CpG-level summary data frame per phenotype.
+A list with class \code{'dnaEPICO_methylationLME_summaries'}
+containing the optionally filtered summary tables in \code{summaries} and the
+complete CpG-level tables in \code{diagnosticSummaries}. Diagnostics,
+annotation, and report output use the complete tables so \code{summaryPval}
+does not remove CpGs from those outputs. \code{fitDiagnostics} retains the
+phenotype-specific fit status, lme4 singular-fit flag, and warning text for
+every attempted CpG.
 }
 \description{
 Extract phenotype-specific fixed-effect tables from the fitted mixed-effects
@@ -50,12 +63,12 @@ model object returned by \code{fitMethylationLMEModels()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 summary_results <- summarizeMethylationLMEModels(
-  modelResults = ex$modelResults,
-  preparedData = ex$preparedData,
-  summaryPval = NA,
-  nCores = 1,
-  verbose = FALSE,
-  logs = FALSE
+    modelResults = ex$modelResults,
+    preparedData = ex$preparedData,
+    summaryPval = NA,
+    nCores = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(summary_results$summaries)
 

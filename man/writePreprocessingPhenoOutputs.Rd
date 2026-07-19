@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocessingPheno_steps.R
 \name{writePreprocessingPhenoOutputs}
 \alias{writePreprocessingPhenoOutputs}
-\title{Write legacy preprocessingPheno outputs to disk}
+\title{Write preprocessingPheno outputs to disk}
 \usage{
 writePreprocessingPhenoOutputs(
   preprocessingData,
@@ -40,24 +40,24 @@ files.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_preprocessingPheno_paths"}
+A list with class \code{'dnaEPICO_preprocessingPheno_paths'}
 containing the paths written to disk.
 }
 \description{
-Write the legacy CSV, ZIP, and \code{.RData} outputs produced by
+Write the CSV, ZIP, and \code{.RData} outputs produced by
 \code{preprocessingPheno()}. This helper keeps file writing separate from the
 in-memory preprocessing steps.
 }
 \examples{
 ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 output_paths <- writePreprocessingPhenoOutputs(
-  preprocessingData = ex$preprocessingData,
-  outputPheno = file.path(ex$tempDir, "pheno"),
-  outputRData = file.path(ex$tempDir, "metrics"),
-  outputRDataMerge = file.path(ex$tempDir, "merge"),
-  outputDir = file.path(ex$tempDir, "clock"),
-  verbose = FALSE,
-  logs = FALSE
+    preprocessingData = ex$preprocessingData,
+    outputPheno = file.path(ex$tempDir, "pheno"),
+    outputRData = file.path(ex$tempDir, "metrics"),
+    outputRDataMerge = file.path(ex$tempDir, "merge"),
+    outputDir = file.path(ex$tempDir, "clock"),
+    verbose = FALSE,
+    logs = FALSE
 )
 names(output_paths)
 

@@ -9,6 +9,7 @@ prepareMethylationGLMData(
   phenotypes,
   covariates,
   factorVars,
+  scaleVars = NULL,
   cpgPrefix = "cg",
   cpgLimit = NA,
   methylationScale = "beta",
@@ -21,7 +22,8 @@ prepareMethylationGLMData(
 )
 }
 \arguments{
-\item{inputPheno}{Character. Path to the merged phenotype-plus-methylation object
+\item{inputPheno}{Character. Path to the merged phenotype-plus-methylation
+object
 created by \code{preprocessingPheno()}.}
 
 \item{phenotypes}{Character vector or comma-separated string of phenotype
@@ -30,8 +32,12 @@ variables to model.}
 \item{covariates}{Character vector or comma-separated string of covariate
 variables to adjust for.}
 
-\item{factorVars}{Character vector or comma-separated string of variables that
+\item{factorVars}{Character vector or comma-separated string of variables
+that
 should be converted to factors before modeling.}
+
+\item{scaleVars}{Character vector, comma-separated variable names, or \code{NULL}.
+Numeric fixed-effect variables to standardize before model fitting.}
 
 \item{cpgPrefix}{Character. Prefix used to identify methylation columns.}
 
@@ -39,12 +45,12 @@ should be converted to factors before modeling.}
 keeps all matching CpGs.}
 
 \item{methylationScale}{Character. Methylation metric represented by the CpG
-columns. One of \code{"beta"}, \code{"m"}, or \code{"cn"}.}
+columns. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, case-insensitively.}
 
 \item{interactionTerm}{Character or \code{NULL}. Optional interaction term.}
 
 \item{prsMap}{Character vector or comma-separated string of phenotype-to-PRS
-mappings in the form \code{"Phenotype:PRS"}.}
+mappings in the form \code{'Phenotype:PRS'}.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -56,25 +62,26 @@ mappings in the form \code{"Phenotype:PRS"}.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM_data"} containing the
+A list with class \code{'dnaEPICO_methylationGLM_data'} containing the
 prepared analysis data, parsed variable selections, CpG columns, and
 exploratory summaries.
 }
 \description{
-Load the merged phenotype-plus-methylation input object, validate the requested
+Load the merged phenotype-plus-methylation input object, validate the
+requested
 modeling variables, convert selected variables to factors, and return a
 single in-memory object for downstream helpers.
 }
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 prepared_data <- prepareMethylationGLMData(
-  inputPheno = ex$inputPath,
-  phenotypes = "status",
-  covariates = "sex,age",
-  factorVars = "status,sex",
-  cpgLimit = 2,
-  verbose = FALSE,
-  logs = FALSE
+    inputPheno = ex$inputPath,
+    phenotypes = "status",
+    covariates = "sex,age",
+    factorVars = "status,sex",
+    cpgLimit = 2,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(prepared_data)
 

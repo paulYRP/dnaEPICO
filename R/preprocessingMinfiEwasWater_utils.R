@@ -49,27 +49,30 @@ formatCallStackMinfiEwasWater <- function(calls) {
         return("Call stack: unavailable")
     }
 
-    call_text <- vapply(
-        calls,
-        function(call) paste(deparse(call, width.cutoff = 500L), collapse = " "),
-        character(1)
-    )
+    call_text <- vapply(calls, function(call) {
+        paste(deparse(call,
+            width.cutoff = 500L
+        ), collapse = " ")
+    }, character(1))
 
     keep <- !grepl(
         "^(tryCatch|tryCatchList|tryCatchOne|doTryCatch|withCallingHandlers)\\b",
         call_text
     )
-    keep <- keep & !grepl("^withLoggedErrorsMinfiEwasWater\\b", call_text)
+    keep <- keep & !grepl(
+        "^withLoggedErrorsMinfiEwasWater\\b",
+        call_text
+    )
 
     filtered_calls <- call_text[keep]
     if (length(filtered_calls) == 0L) {
         filtered_calls <- call_text
     }
 
-    c(
-        "Call stack:",
-        paste0("  ", seq_along(filtered_calls), ": ", filtered_calls)
-    )
+    c("Call stack:", paste0(
+        "  ", seq_along(filtered_calls),
+        ": ", filtered_calls
+    ))
 }
 
 #' Wrap a workflow block and log any error before rethrowing
@@ -81,43 +84,35 @@ formatCallStackMinfiEwasWater <- function(calls) {
 #'
 #' @return Returns the value of `expr` when successful.
 #' @description
-#' Internal helper that ensures top-level workflow wrappers record fatal errors in
+#' Internal helper that ensures top-level workflow wrappers record fatal errors
+#' in
 #' their log files before the error is rethrown to the caller.
 #' @keywords internal
 #' @noRd
 withLoggedErrorsMinfiEwasWater <- function(
-  expr,
-  log_path = NULL,
-  verbose = FALSE,
-  context = "dnaEPICO workflow"
+    expr, log_path = NULL,
+    verbose = FALSE, context = "dnaEPICO workflow"
 ) {
-    tryCatch(
-        expr,
-        error = function(e) {
-            failing_call <- conditionCall(e)
-            call_lines <- formatCallStackMinfiEwasWater(sys.calls())
-            emitLogMinfiEwasWater(
-                c(
-                    "=======================================================================",
-                    paste("ERROR in", context, ":"),
-                    conditionMessage(e),
-                    if (is.null(failing_call)) {
-                        "Failing call: unavailable"
-                    } else {
-                        paste(
-                            "Failing call:",
-                            paste(deparse(failing_call, width.cutoff = 500L), collapse = " ")
-                        )
-                    },
-                    call_lines,
-                    "======================================================================="
-                ),
-                verbose = verbose,
-                log_path = log_path
-            )
-            stop(e)
-        }
-    )
+    tryCatch(expr, error = function(e) {
+        failing_call <- conditionCall(e)
+        call_lines <- formatCallStackMinfiEwasWater(sys.calls())
+        emitLogMinfiEwasWater(
+            c(
+                "============================================================",
+                paste("ERROR in", context, ":"), conditionMessage(e),
+                if (is.null(failing_call)) {
+                    "Failing call: unavailable"
+                } else {
+                    paste("Failing call:", paste(deparse(failing_call,
+                        width.cutoff = 500L
+                    ), collapse = " "))
+                }, call_lines,
+                    "============================================================"
+            ),
+            verbose = verbose, log_path = log_path
+        )
+        stop(e)
+    })
 }
 
 #' Resolve the log file path for preprocessingMinfiEwasWater helpers
@@ -134,9 +129,8 @@ withLoggedErrorsMinfiEwasWater <- function(
 #' @keywords internal
 #' @noRd
 resolveLogPathMinfiEwasWater <- function(
-  logs = FALSE,
-  log_dir = NULL,
-  log_file = "log_preprocessingMinfiEwasWater.txt"
+    logs = FALSE, log_dir = NULL,
+    log_file = "log_preprocessingMinfiEwasWater.txt"
 ) {
     if (!isTRUE(logs)) {
         return(NULL)
@@ -172,7 +166,10 @@ resolveSeparatorMinfiEwasWater <- function(sepType = NULL) {
     sepType <- as.character(sepType[[1L]])
     sepTypeLabel <- trimws(sepType)
 
-    if (!nzchar(sepType) || identical(toupper(sepTypeLabel), "NULL")) {
+    if (!nzchar(sepType) || identical(
+        toupper(sepTypeLabel),
+        "NULL"
+    )) {
         return(NULL)
     }
 
@@ -206,7 +203,160 @@ splitOptionMinfiEwasWater <- function(x, sep = ",") {
     }
 
     pieces <- trimws(pieces)
-    pieces[nzchar(pieces)]
+    pieces[!is.na(pieces) & nzchar(pieces)]
+}
+
+#' Validate a scalar logical option
+#'
+#' @keywords internal
+#' @noRd
+validateLogicalScalarDnaEpico <- function(value, name) {
+    if (!is.logical(value) || length(value) != 1L || is.na(value)) {
+        stop(name, " must be either TRUE or FALSE.", call. = FALSE)
+    }
+
+    value
+}
+
+#' Calculate a finite mean without creating NaN
+#'
+#' @keywords internal
+#' @noRd
+meanFiniteOrNADnaEpico <- function(values) {
+    finite_values <- values[is.finite(values)]
+    if (length(finite_values) == 0L) {
+        return(NA_real_)
+    }
+
+    mean(finite_values)
+}
+
+#' Validate sample identifiers used to align package objects
+#'
+#' @keywords internal
+#' @noRd
+validateSampleIdentifiersDnaEpico <- function(ids, label) {
+    ids <- as.character(ids)
+
+    if (length(ids) == 0L) {
+        stop(label, " must contain at least one sample identifier.",
+            call. = FALSE
+        )
+    }
+
+    missing_ids <- is.na(ids) | !nzchar(trimws(ids))
+    if (any(missing_ids)) {
+        stop(label, " contains missing or blank sample identifiers.",
+            call. = FALSE
+        )
+    }
+
+    duplicated_ids <- unique(ids[duplicated(ids)])
+    if (length(duplicated_ids) > 0L) {
+        stop(label, " contains duplicate sample identifiers: ",
+            paste(duplicated_ids, collapse = ", "),
+            call. = FALSE
+        )
+    }
+
+    ids
+}
+
+#' Match sample identifiers without allowing silent missing rows
+#'
+#' @keywords internal
+#' @noRd
+matchSampleIdentifiersDnaEpico <- function(
+    query, reference,
+    queryLabel = "query sample identifiers",
+        referenceLabel = "reference sample identifiers",
+    requireSameSet = FALSE
+) {
+    query <- validateSampleIdentifiersDnaEpico(query, queryLabel)
+    reference <- validateSampleIdentifiersDnaEpico(
+        reference,
+        referenceLabel
+    )
+
+    matched <- match(query, reference)
+    if (anyNA(matched)) {
+        stop(queryLabel, " not found in ", referenceLabel, ": ",
+            paste(query[is.na(matched)], collapse = ", "),
+            call. = FALSE
+        )
+    }
+
+    if (isTRUE(requireSameSet) && length(query) != length(reference)) {
+        extra_reference <- setdiff(reference, query)
+        stop(queryLabel, " and ", referenceLabel,
+            " do not contain the same samples",
+            if (length(extra_reference) > 0L) {
+                paste0(": extra reference samples are ", paste(extra_reference,
+                    collapse = ", "
+                ))
+            } else {
+                "."
+            },
+            call. = FALSE
+        )
+    }
+
+    matched
+}
+
+#' Convert reported or predicted sex values to a common representation
+#'
+#' @keywords internal
+#' @noRd
+canonicalizeSexDnaEpico <- function(values) {
+    original <- values
+    text <- trimws(as.character(values))
+    lower <- tolower(text)
+    missing <- is.na(values) | !nzchar(text)
+
+    code <- rep(NA_integer_, length(values))
+    code[!missing & lower %in% c("f", "female", "0")] <- 0L
+    code[!missing & lower %in% c("m", "male", "1")] <- 1L
+
+    label <- rep(NA_character_, length(values))
+    label[code == 0L & !is.na(code)] <- "F"
+    label[code == 1L & !is.na(code)] <- "M"
+
+    unknown <- unique(text[!missing & is.na(code)])
+
+    list(original = original, code = code, label = label, unknown = unknown)
+}
+
+#' Resolve sex labels supplied to methylation normalization
+#'
+#' @keywords internal
+#' @noRd
+resolveNormalizationSexDnaEpico <- function(colData, sexColumn) {
+    if (is.null(sexColumn) || !(sexColumn %in% colnames(colData))) {
+        return(NULL)
+    }
+
+    reported_sex <- canonicalizeSexDnaEpico(colData[[sexColumn]])
+    sex_labels <- reported_sex$label
+    if (anyNA(sex_labels) && "PredSex" %in% colnames(colData)) {
+        predicted_sex <- canonicalizeSexDnaEpico(colData$PredSex)$label
+        replace_with_predicted <- is.na(sex_labels) & !is.na(predicted_sex)
+        sex_labels[replace_with_predicted] <-
+            predicted_sex[replace_with_predicted]
+    }
+
+    if (anyNA(sex_labels)) {
+        stop("The normalization sex information contains missing or unsupported values",
+            if (length(reported_sex$unknown) > 0L) {
+                paste0(": ", paste(reported_sex$unknown, collapse = ", "))
+            } else {
+                "."
+            },
+            call. = FALSE
+        )
+    }
+
+    sex_labels
 }
 
 #' Capture preview lines for logging
@@ -250,8 +400,7 @@ drawPlotObjectMinfiEwasWater <- function(plot_object) {
         return(invisible(NULL))
     }
 
-    stop(
-        "plot_object must inherit from 'ggplot' or be a grid grob.",
+    stop("plot_object must inherit from 'ggplot' or be a grid grob.",
         call. = FALSE
     )
 }
@@ -271,12 +420,8 @@ drawPlotObjectMinfiEwasWater <- function(plot_object) {
 #' @keywords internal
 #' @noRd
 runPlotMinfiEwasWater <- function(
-  draw_fun,
-  display = FALSE,
-  file = NULL,
-  width = 2000L,
-  height = 1000L,
-  res = 150L
+    draw_fun, display = FALSE,
+    file = NULL, width = 2000L, height = 1000L, res = 150L
 ) {
     if (is.null(file) && !isTRUE(display)) {
         return(invisible(NULL))
@@ -284,15 +429,15 @@ runPlotMinfiEwasWater <- function(
 
     if (!is.null(file)) {
         dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
-        grDevices::tiff(
-            filename = file,
-            width = width,
-            height = height,
-            res = res,
-            type = "cairo"
-        )
-        on.exit(grDevices::dev.off(), add = TRUE)
-        draw_fun()
+        save_plot <- function() {
+            grDevices::tiff(
+                filename = file, width = width, height = height,
+                res = res, type = "cairo"
+            )
+            on.exit(grDevices::dev.off(), add = TRUE)
+            draw_fun()
+        }
+        save_plot()
     }
 
     if (isTRUE(display)) {
@@ -302,7 +447,7 @@ runPlotMinfiEwasWater <- function(
     invisible(file)
 }
 
-#' Save a named object for legacy preprocessingMinfiEwasWater outputs
+#' Save a named preprocessingMinfiEwasWater object
 #'
 #' @param object Object to save.
 #' @param object_name Character. Object name to preserve in the `.RData` file.
@@ -310,15 +455,17 @@ runPlotMinfiEwasWater <- function(
 #'
 #' @return Invisibly returns `file`.
 #' @description
-#' Internal helper used by the convenience wrapper to preserve legacy `.RData`
-#' outputs consumed by other package functions.
+#' Internal helper used by the convenience wrapper to preserve the documented
+#' `.RData` object names consumed by other package functions.
 #' @keywords internal
 #' @noRd
-saveNamedObjectMinfiEwasWater <- function(object, object_name, file) {
+saveNamedObjectMinfiEwasWater <- function(
+    object, object_name,
+    file
+) {
     dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
 
-    save_env <- list2env(
-        stats::setNames(list(object), object_name),
+    save_env <- list2env(stats::setNames(list(object), object_name),
         parent = emptyenv()
     )
     save(list = object_name, file = file, envir = save_env)

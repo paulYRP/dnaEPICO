@@ -1,11 +1,20 @@
-CHANGES IN VERSION 0.99.33
+CHANGES IN VERSION 0.99.34
 ------------------------
 
 NEW FEATURES
 
+    o [19-07-2026] Added scaleVars predictor standardisation, consistent
+      GLM/lme4/nlme metadata, single-file SVA phenotype updates,
+      ordered annotated workbooks, source-defined report card titles, and
+      space-safe exported Makefiles with normalized optional model variables
+      and reliable report-completion checks, with report TSV sidecars written
+      directly into report projects.
+
+    o [18-07-2026] Added optional sex-mismatch removal.
+
     o [14-07-2026] Improved dnamReport() with lightweight paged and filterable
       tables, faster tab loading, and phenotype-labelled GLM, LME, and nlme
-      formula notes.
+      formula notes, with biological participant detection in the Data summary.
 
     o [09-06-2026] Added methylation-scale support for beta, M-value, and copy
       number phenotype inputs while retaining beta values for cell-composition

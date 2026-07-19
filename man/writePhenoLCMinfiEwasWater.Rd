@@ -38,15 +38,15 @@ ref_file <- system.file("extdata", "saliva.txt", package = "dnaEPICO")
 beta <- as.matrix(utils::read.table(ref_file))[1:20, , drop = FALSE]
 colnames(beta) <- c("sample1", "sample2")
 targets <- data.frame(
-  Sample_Name = colnames(beta),
-  Timepoint = c("T1", "T2"),
-  stringsAsFactors = FALSE
+    Sample_Name = colnames(beta),
+    Timepoint = c("T1", "T2"),
+    stringsAsFactors = FALSE
 )
 lc_data <- estimateLCMinfiEwasWater(
-  beta = beta,
-  targets = targets,
-  lcRef = "saliva",
-  phenoOrder = "Sample_Name;Timepoint"
+    beta = beta,
+    targets = targets,
+    lcRef = "saliva",
+    phenoOrder = "Sample_Name;Timepoint"
 )
 output_file <- file.path(tempdir(), "phenoLC.csv")
 writePhenoLCMinfiEwasWater(lcData = lc_data, file = output_file)

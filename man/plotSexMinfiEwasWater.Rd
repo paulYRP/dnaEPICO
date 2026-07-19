@@ -21,8 +21,8 @@ plotSexMinfiEwasWater(
 \arguments{
 \item{sexData}{Object returned by \code{predictSexMinfiEwasWater()}.}
 
-\item{type}{Character. Plot type: \code{"predicted"} for methylation-predicted
-sex or \code{"clinical"} for reported sex.}
+\item{type}{Character. Plot type: \code{'predicted'} for methylation-predicted
+sex or \code{'clinical'} for reported sex.}
 
 \item{display}{Logical. If \code{TRUE}, draw the plot on the active graphics
 device.}
@@ -54,11 +54,11 @@ Plot predicted or clinical sex from \code{predictSexMinfiEwasWater()}
 \examples{
 ex <- dnaEPICO:::exampleSexPlotStateDnaEpico()
 plotSexMinfiEwasWater(
-  sexData = ex,
-  type = "predicted",
-  display = FALSE,
-  verbose = FALSE,
-  logs = FALSE
+    sexData = ex,
+    type = "predicted",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE
 )
 
 }

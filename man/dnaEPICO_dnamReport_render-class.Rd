@@ -6,7 +6,7 @@
 \alias{dnaEPICO_dnamReport_render}
 \title{Result class returned by renderDnamReport}
 \description{
-Objects of class \code{"dnaEPICO_dnamReport_render"} are list-based results
+Objects of class \code{'dnaEPICO_dnamReport_render'} are list-based results
 returned by \code{\link[=renderDnamReport]{renderDnamReport()}}. They describe whether a prepared report was
 rendered, skipped, or failed.
 }
@@ -14,9 +14,9 @@ rendered, skipped, or failed.
 
 \describe{
 \item{preparedReport}{The input object supplied to \code{\link[=renderDnamReport]{renderDnamReport()}}.}
-\item{status}{Render status string such as \code{"rendered"}, \code{"skipped"}, or
-\code{"failed"}.}
-\item{renderedFile}{Normalized path to the rendered PDF file when rendering
+\item{status}{Render status string such as \code{'rendered'}, \code{'skipped'}, or
+\code{'failed'}.}
+\item{renderedFile}{Normalized path to the rendered HTML file when rendering
 succeeded, otherwise \code{NULL}.}
 \item{errorMessage}{Render error or skip message when available, otherwise
 \code{NULL}.}

@@ -6,6 +6,7 @@ dev/
 check/
 pkgdown/
 docs/
+packageTEST/
 
 # ---- R / IDE files ----
 .Rhistory

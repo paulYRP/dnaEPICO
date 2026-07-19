@@ -13,6 +13,7 @@ writeMethylationLMEOutputs(
   summaryTxtDir,
   significantInteractionDir,
   annotatedLMEOut,
+  reportAssetsDir = NULL,
   saveTxtSummaries = TRUE,
   saveSignificantInteractions = FALSE,
   verbose = FALSE,
@@ -44,7 +45,11 @@ interaction coefficient tables.}
 \item{annotatedLMEOut}{Character. Directory used for the annotated summary
 XLSX workbook.}
 
-\item{saveTxtSummaries}{Logical. If \code{TRUE}, write tab-delimited summary tables.}
+\item{reportAssetsDir}{Character or \code{NULL}. Report results directory used for
+the compressed TSV table and compact metadata sidecars.}
+
+\item{saveTxtSummaries}{Logical. If \code{TRUE}, write tab-delimited summary
+tables.}
 
 \item{saveSignificantInteractions}{Logical. If \code{TRUE}, write significant
 interaction coefficient tables.}
@@ -59,8 +64,9 @@ interaction coefficient tables.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationLME_paths"}
-containing the paths of the files written to disk.
+A list with class \code{'dnaEPICO_methylationLME_paths'}
+containing the paths of the files written to disk, including the annotated
+workbook and any requested report-table sidecars.
 }
 \description{
 Write optional serialized outputs, summary tables, significant interaction
@@ -69,31 +75,31 @@ tables, and annotated results from the longitudinal mixed-effects workflow.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 annotation_data <- annotateMethylationLMESummaries(
-  modelSummaries = ex$modelSummaries,
-  annotationObject = ex$annotationData,
-  annotationCols = "Name,chr,pos",
-  verbose = FALSE,
-  logs = FALSE
+    modelSummaries = ex$modelSummaries,
+    annotationObject = ex$annotationData,
+    annotationCols = "Name,chr,pos",
+    verbose = FALSE,
+    logs = FALSE
 )
 significant_hits <- collectSignificantInteractionsMethylationLME(
-  modelResults = ex$modelResults,
-  pvalThreshold = 1,
-  verbose = FALSE,
-  logs = FALSE
+    modelResults = ex$modelResults,
+    pvalThreshold = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 output_paths <- writeMethylationLMEOutputs(
-  modelResults = ex$modelResults,
-  modelSummaries = ex$modelSummaries,
-  annotatedResults = annotation_data,
-  significantInteractions = significant_hits,
-  outputRData = file.path(ex$tempDir, "models"),
-  summaryTxtDir = file.path(ex$tempDir, "summary"),
-  significantInteractionDir = file.path(ex$tempDir, "significant"),
-  annotatedLMEOut = file.path(ex$tempDir, "annotated"),
-  saveTxtSummaries = TRUE,
-  saveSignificantInteractions = TRUE,
-  verbose = FALSE,
-  logs = FALSE
+    modelResults = ex$modelResults,
+    modelSummaries = ex$modelSummaries,
+    annotatedResults = annotation_data,
+    significantInteractions = significant_hits,
+    outputRData = file.path(ex$tempDir, "models"),
+    summaryTxtDir = file.path(ex$tempDir, "summary"),
+    significantInteractionDir = file.path(ex$tempDir, "significant"),
+    annotatedLMEOut = file.path(ex$tempDir, "annotated"),
+    saveTxtSummaries = TRUE,
+    saveSignificantInteractions = TRUE,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(output_paths)
 

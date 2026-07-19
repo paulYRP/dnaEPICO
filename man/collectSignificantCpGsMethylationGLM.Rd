@@ -8,6 +8,7 @@ collectSignificantCpGsMethylationGLM(
   modelResults,
   pvalThreshold = 0.05,
   interactionTerm = NULL,
+  excludeNonConverged = FALSE,
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
@@ -22,6 +23,10 @@ interaction p-values.}
 
 \item{interactionTerm}{Character or \code{NULL}. Optional interaction term.}
 
+\item{excludeNonConverged}{Logical. If \code{TRUE}, do not collect CpGs whose GLM
+did not converge; their rows and reasons remain in diagnostic and annotated
+output.}
+
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
 \item{logs}{Logical. If \code{TRUE}, write the same messages to a log file.}
@@ -32,7 +37,7 @@ interaction p-values.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM_significant_cpgs"}.
+A list with class \code{'dnaEPICO_methylationGLM_significant_cpgs'}.
 }
 \description{
 Collect the raw coefficient tables for CpGs whose phenotype main effect or
@@ -41,10 +46,10 @@ interaction p-value passes the requested threshold.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 significant_cpgs <- collectSignificantCpGsMethylationGLM(
-  modelResults = ex$modelResults,
-  pvalThreshold = 1,
-  verbose = FALSE,
-  logs = FALSE
+    modelResults = ex$modelResults,
+    pvalThreshold = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(significant_cpgs)
 

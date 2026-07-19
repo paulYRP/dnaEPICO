@@ -56,7 +56,6 @@ R_DIR = ~/R/x86_64-pc-linux-gnu-library/4.4
 # GLOBAL PARAMETERS
 # ===============================================
 # STEP 1-5 PARAMETERS
-PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoEMD.csv
 SEED = 123
 SEP_TYPE = NULL
 SAMPLE_ID = Sample_Name
@@ -68,6 +67,7 @@ TIFF_WIDTH = 2000
 TIFF_HEIGHT = 1000
 TIFF_RES = 150
 SEX_COLUMN = Sex
+REMOVE_SEX_MISMATCH = FALSE
 SENTRIX_ID_COLUMN = Sentrix_ID
 SENTRIX_POSITION_COLUMN = Sentrix_Position
 BASENAME_COLUMN = Basename
@@ -78,6 +78,9 @@ PHENO_ORDER = $(SAMPLE_ID);$(TIME_VAR);$(SEX_COLUMN);PredSex;$(BASENAME_COLUMN);
 # STEP 4-5 PARAMETERS
 COVARIATES = Sex
 FACTOR_VARS = Sex,TreatmentGroup
+SCALE_VARS = NULL
+SCALE_VARS_GLM = $(SCALE_VARS)
+SCALE_VARS_LME = $(SCALE_VARS)
 CPG_PREFIX = cg
 CPG_LIMIT = NA
 PRS_MAP = NULL
@@ -205,6 +208,9 @@ endif
 # ===============================================
 # INCLUDE PIPELINE FROM dnaEPICO
 # ===============================================
-DNAPIPE_MK := $(shell Rscript -e "cat(system.file('extdata','make','Makefile.rules.pipeline',package='dnaEPICO'))")
+DNAPIPE_EMPTY :=
+DNAPIPE_SPACE := $(DNAPIPE_EMPTY) $(DNAPIPE_EMPTY)
+DNAPIPE_MK_RAW := $(shell Rscript -e "cat(system.file('extdata','make','Makefile.rules.pipeline',package='dnaEPICO'))")
+DNAPIPE_MK := $(subst $(DNAPIPE_SPACE),\ ,$(DNAPIPE_MK_RAW))
 include $(DNAPIPE_MK)
 

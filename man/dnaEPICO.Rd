@@ -9,8 +9,9 @@
 The \code{dnaEPICO} package provides a structured workflow for preprocessing and
 analyzing Illumina DNA methylation array data, including quality control,
 normalization, cell-type estimation, surrogate-variable analysis, phenotype
-preparation, cross-sectional modeling, longitudinal mixed-effects modeling,
-and PDF reporting.
+preparation, CpG-wise generalised linear models, longitudinal mixed-effects
+models using \code{lmerTest}/\code{lme4} or \code{nlme} with optional residual correlation
+structures, and interactive web reporting.
 }
 \details{
 The package supports two complementary usage styles:
@@ -41,11 +42,6 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Paul Ruiz \email{ruizpint@qut.edu.au} (\href{https://orcid.org/0009-0007-6714-3566}{ORCID})
-
-Authors:
-\itemize{
-  \item Divya Mehta (\href{https://orcid.org/0000-0001-7971-7255}{ORCID})
-}
 
 }
 \keyword{package}

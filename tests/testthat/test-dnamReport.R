@@ -11,6 +11,8 @@ create_dnam_report_example <- function(path) {
         phenoTabDir = file.path(path, "data", "qpasst1", "preprocessingMinfiEwasWater"),
         figDir = file.path(path, "reports", "figures"),
         outputDir = file.path(path, "reports"),
+        glmReportDir = file.path(path, "reports", "assets", "results", "glm_results"),
+        lmeReportDir = file.path(path, "reports", "assets", "results", "lme_results"),
         logDir = file.path(path, "logs")
     )
 
@@ -33,7 +35,8 @@ create_dnam_report_example <- function(path) {
     dirs$phenoTab <- file.path(dirs$phenoTabDir, "phenoLC.csv")
     utils::write.csv(
         data.frame(
-            UID = c("S1", "S2"),
+            person = c("P1", "P2"),
+            Sentrix_ID = c("Chip1", "Chip1"),
             Timepoint = c(1, 2),
             check.names = FALSE
         ),
@@ -58,9 +61,7 @@ create_dnam_report_example <- function(path) {
         ),
         check.names = FALSE
     )
-    openxlsx::write.xlsx(
-        list(
-            annotatedGLM = data.frame(
+    glm_data <- data.frame(
             IlmnID = "cg00000029",
             Name = "cg00000029",
             P.Value = 0.001,
@@ -71,11 +72,19 @@ create_dnam_report_example <- function(path) {
             Relation_to_Island = "OpenSea",
             GencodeV41_Group = "TSS",
             check.names = FALSE
-            ),
-            dictionary = glm_dictionary
-        ),
+    )
+    openxlsx::write.xlsx(
+        list(annotatedGLM = glm_data, dictionary = glm_dictionary),
         dirs$glmTablePath,
         overwrite = TRUE
+    )
+    dnaEPICO:::writeReportTableSidecarDnaEpico(
+        tableData = glm_data,
+        workbookFile = dirs$glmTablePath,
+        sidecarDir = dirs$glmReportDir,
+        sheet = "annotatedGLM",
+        idColumn = "IlmnID",
+        dictionary = glm_dictionary
     )
     lme_dictionary <- data.frame(
         Column = c("phenotype:Timepoint P.Value", "IlmnID", "Name", "chr", "pos"),
@@ -95,9 +104,7 @@ create_dnam_report_example <- function(path) {
         ),
         check.names = FALSE
     )
-    openxlsx::write.xlsx(
-        list(
-            annotatedLME = data.frame(
+    lme_data <- data.frame(
             IlmnID = "cg00000108",
             Name = "cg00000108",
             "phenotype:Timepoint P.Value" = 0.002,
@@ -108,11 +115,19 @@ create_dnam_report_example <- function(path) {
             Relation_to_Island = "Island",
             GencodeV41_Group = "gene body",
             check.names = FALSE
-            ),
-            dictionary = lme_dictionary
-        ),
+    )
+    openxlsx::write.xlsx(
+        list(annotatedLME = lme_data, dictionary = lme_dictionary),
         dirs$lmeTablePath,
         overwrite = TRUE
+    )
+    dnaEPICO:::writeReportTableSidecarDnaEpico(
+        tableData = lme_data,
+        workbookFile = dirs$lmeTablePath,
+        sidecarDir = dirs$lmeReportDir,
+        sheet = "annotatedLME",
+        idColumn = "IlmnID",
+        dictionary = lme_dictionary
     )
 
     dirs
@@ -199,9 +214,60 @@ write_multiple_formula_workbooks <- function(example_dirs, backend = "lme4") {
         example_dirs$lmeTablePath,
         overwrite = TRUE
     )
+    dnaEPICO:::writeReportTableSidecarDnaEpico(
+        tableData = glm_data,
+        workbookFile = example_dirs$glmTablePath,
+        sidecarDir = example_dirs$glmReportDir,
+        sheet = "annotatedGLM",
+        idColumn = "IlmnID",
+        dictionary = glm_dictionary
+    )
+    dnaEPICO:::writeReportTableSidecarDnaEpico(
+        tableData = lme_data,
+        workbookFile = example_dirs$lmeTablePath,
+        sidecarDir = example_dirs$lmeReportDir,
+        sheet = "annotatedLME",
+        idColumn = "IlmnID",
+        dictionary = lme_dictionary,
+        workbookMetadata = lme_metadata
+    )
 
     invisible(example_dirs)
 }
+
+test_that("report table sidecars are read in bounded chunks without losing rows", {
+    tmp <- withr::local_tempdir()
+    table_path <- file.path(tmp, "annotatedLME.tsv.gz")
+    table_data <- data.frame(
+        IlmnID = sprintf("cg%08d", seq_len(10025)),
+        P.Value = seq_len(10025) / 10026,
+        Fit.Status = "fitted",
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+    )
+    data.table::fwrite(
+        table_data,
+        file = table_path,
+        sep = "\t",
+        quote = TRUE,
+        compress = "gzip"
+    )
+    identifiers <- character(0)
+    stream_result <- dnaEPICO:::streamReportTableDnaEpico(
+        tableFile = table_path,
+        chunkSize = 5000,
+        expectedRows = nrow(table_data),
+        expectedColumns = ncol(table_data),
+        chunkHandler = function(chunk, chunk_number) {
+            identifiers <<- c(identifiers, chunk$IlmnID)
+        }
+    )
+
+    expect_equal(stream_result$nRows, 10025)
+    expect_equal(stream_result$nChunks, 3)
+    expect_equal(stream_result$maximumChunkRows, 5000)
+    expect_identical(identifiers, table_data$IlmnID)
+})
 
 test_that("prepareDnamReportInputs returns a structured inventory quietly", {
     tmp <- withr::local_tempdir()
@@ -257,11 +323,18 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     expect_s3_class(result$preparedReport, "dnaEPICO_dnamReport_prepared")
     expect_s3_class(result$renderResult, "dnaEPICO_dnamReport_render")
     expect_true(file.exists(result$logFile))
+    report_log <- paste(readLines(result$logFile, warn = FALSE), collapse = "\n")
+    expect_match(report_log, "GLM report table source: streamed_sidecar", fixed = TRUE)
+    expect_match(report_log, "LME report table source: streamed_sidecar", fixed = TRUE)
     if (identical(result$status, "rendered")) {
         expect_true(file.exists(result$outputFile))
     }
     expect_true(any(grepl("glm\\.qmd$", result$sourceFiles)))
     expect_true(any(grepl("lme\\.qmd$", result$sourceFiles)))
+    expect_equal(
+        unname(result$resultTableSources[c("GLM", "LME")]),
+        c("streamed_sidecar", "streamed_sidecar")
+    )
 
     glm_qmd <- readLines(file.path(result$projectDir, "glm.qmd"), warn = FALSE)
     lme_qmd <- readLines(file.path(result$projectDir, "lme.qmd"), warn = FALSE)
@@ -302,13 +375,20 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     expect_true(file.exists(file.path(result_assets, "phenotype_data", basename(example_dirs$phenoTab))))
     expect_true(file.exists(file.path(result_assets, "glm_results", "manifest.js")))
     expect_true(file.exists(file.path(result_assets, "glm_results", "chunk-0001.js")))
-    expect_true(file.exists(file.path(result_assets, "glm_results", "annotatedGLM.xlsx")))
+    expect_false(file.exists(file.path(result_assets, "glm_results", "annotatedGLM.xlsx")))
     expect_true(file.exists(file.path(result_assets, "glm_results", "annotatedGLM.tsv.gz")))
     expect_true(file.exists(file.path(result_assets, "lme_results", "manifest.js")))
     expect_true(file.exists(file.path(result_assets, "lme_results", "chunk-0001.js")))
-    expect_true(file.exists(file.path(result_assets, "lme_results", "annotatedLME.xlsx")))
+    expect_false(file.exists(file.path(result_assets, "lme_results", "annotatedLME.xlsx")))
     expect_true(file.exists(file.path(result_assets, "lme_results", "annotatedLME.tsv.gz")))
     expect_true(file.exists(file.path(result$projectDir, "assets", "cpg-viewer.js")))
+    viewer_script <- readLines(
+        file.path(result$projectDir, "assets", "cpg-viewer.js"),
+        warn = FALSE
+    )
+    expect_true(any(grepl("maxCachedChunks", viewer_script, fixed = TRUE)))
+    expect_false(any(grepl("Download all results (XLSX)", glm_qmd, fixed = TRUE)))
+    expect_false(any(grepl("Download all results (XLSX)", lme_qmd, fixed = TRUE)))
 
     enmix_qmd <- readLines(file.path(result$projectDir, "enmix-qc.qmd"), warn = FALSE)
     metrics_qmd <- readLines(file.path(result$projectDir, "metrics.qmd"), warn = FALSE)
@@ -318,13 +398,23 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     expect_true(any(grepl("Displays the methylation preprocessing log", logs_qmd, fixed = TRUE)))
     expect_true(any(grepl("Displays the phenotype preparation log", logs_qmd, fixed = TRUE)))
     expect_true(any(grepl("Displays the hidden-effect and surrogate-variable analysis log", logs_qmd, fixed = TRUE)))
-    expect_true(any(grepl("### GLM Analysis", logs_qmd, fixed = TRUE)))
+    expect_true(any(grepl('::: {.card title="GLM Analysis"}', logs_qmd, fixed = TRUE)))
     expect_true(any(grepl("methylationGLM.txt", logs_qmd, fixed = TRUE)))
-    expect_true(any(grepl("### LME Analysis", logs_qmd, fixed = TRUE)))
+    expect_true(any(grepl('::: {.card title="LME Analysis"}', logs_qmd, fixed = TRUE)))
     expect_true(any(grepl("methylationLME.txt", logs_qmd, fixed = TRUE)))
 
     report_qmd <- readLines(file.path(result$projectDir, "report.qmd"), warn = FALSE)
-    expect_true(any(grepl("The table has 2 rows and 2 columns.", report_qmd, fixed = TRUE)))
+    expect_true(any(grepl("The table has 2 rows and 3 columns.", report_qmd, fixed = TRUE)))
+    expect_true(any(grepl(
+        "Using person as the participant identifier",
+        report_qmd,
+        fixed = TRUE
+    )))
+    expect_false(any(grepl(
+        "Using Sentrix_ID as the participant identifier",
+        report_qmd,
+        fixed = TRUE
+    )))
     expect_false(any(grepl("The Data tab summarises", report_qmd, fixed = TRUE)))
     expect_false(any(grepl("The ENmix QC tab summarises", report_qmd, fixed = TRUE)))
     expect_false(any(grepl("The GLM Analysis tab summarises", report_qmd, fixed = TRUE)))
@@ -349,20 +439,23 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
         expect_false(any(grepl("&lt;label&gt;Rows per page", glm_html, fixed = TRUE)))
         expect_false(any(grepl("&lt;label&gt;Rows per page", lme_html, fixed = TRUE)))
         expect_true(any(grepl(
-            '<div class="card-header">Table 1. Generalised Linear Model Results',
+            'Table 1. Generalised Linear Model Results',
             glm_html,
             fixed = TRUE
         )))
         expect_true(any(grepl(
-            '<div class="card-header">Table 1. Linear Mixed-Effects Model Results',
+            'Table 1. Linear Mixed-Effects Model Results',
             lme_html,
             fixed = TRUE
         )))
         expect_true(any(grepl(
-            '<div class="card-header">Data Preview',
+            'Data Preview',
             data_html,
             fixed = TRUE
         )))
+        expect_true(any(grepl("card-header", glm_html, fixed = TRUE)))
+        expect_true(any(grepl("card-header", lme_html, fixed = TRUE)))
+        expect_true(any(grepl("card-header", data_html, fixed = TRUE)))
     }
 
     printed <- utils::capture.output(print(result))
@@ -399,6 +492,27 @@ test_that("dnamReport labels and describes nlme reports from workbook metadata",
         )
     )
     openxlsx::saveWorkbook(workbook, example_dirs$lmeTablePath, overwrite = TRUE)
+    dnaEPICO:::writeReportTableSidecarDnaEpico(
+        tableData = openxlsx::read.xlsx(
+            example_dirs$lmeTablePath,
+            sheet = "annotatedLME",
+            check.names = FALSE
+        ),
+        workbookFile = example_dirs$lmeTablePath,
+        sidecarDir = file.path(tmp, "quarto", "assets", "results", "lme_results"),
+        sheet = "annotatedLME",
+        idColumn = "IlmnID",
+        dictionary = openxlsx::read.xlsx(
+            example_dirs$lmeTablePath,
+            sheet = "dictionary",
+            check.names = FALSE
+        ),
+        workbookMetadata = openxlsx::read.xlsx(
+            example_dirs$lmeTablePath,
+            sheet = "metadata",
+            check.names = FALSE
+        )
+    )
 
     result <- dnamReport(
         outputDir = file.path(tmp, "quarto"),
@@ -423,7 +537,7 @@ test_that("dnamReport labels and describes nlme reports from workbook metadata",
     expect_true(any(grepl("`AR1` residual correlation structure", lme_qmd, fixed = TRUE)))
     expect_true(any(grepl('class="dnaepico-model-formula"', lme_qmd, fixed = TRUE)))
     expect_false(any(grepl("~ `", lme_qmd, fixed = TRUE)))
-    expect_true(any(grepl("### nlme Analysis", logs_qmd, fixed = TRUE)))
+    expect_true(any(grepl('::: {.card title="nlme Analysis"}', logs_qmd, fixed = TRUE)))
 })
 
 test_that("dnamReport presents multiple GLM, LME, and nlme formulas by phenotype", {
@@ -479,4 +593,20 @@ test_that("dnamReport presents multiple GLM, LME, and nlme formulas by phenotype
     expect_match(nlme_qmd, 'title: "nlme Analysis"', fixed = TRUE)
     expect_match(nlme_qmd, "3 phenotype-specific models were fitted.", fixed = TRUE)
     expect_match(nlme_qmd, "nlme: M-values ~ T1D + Age + Sex + PC1 + PC2 + PC3 + (1 | SID)", fixed = TRUE)
+})
+
+test_that("dnamReport validates the detection P-value threshold before writing", {
+    output_dir <- file.path(withr::local_tempdir(), "quarto")
+
+    expect_error(
+        dnamReport(
+            outputDir = output_dir,
+            detPThreshold = 2,
+            verbose = FALSE,
+            logs = FALSE
+        ),
+        "detPThreshold must be a single number between 0 and 1",
+        fixed = TRUE
+    )
+    expect_false(dir.exists(output_dir))
 })

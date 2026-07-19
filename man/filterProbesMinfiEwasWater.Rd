@@ -34,10 +34,10 @@ filterProbesMinfiEwasWater(
 threshold in all samples to be retained.}
 
 \item{chrToRemove}{Character vector or comma-separated string of chromosome
-names to remove, for example \code{"chrX,chrY"}.}
+names to remove, for example \code{'chrX,chrY'}.}
 
 \item{snpsToRemove}{Character vector or comma-separated string of SNP probe
-types to remove, for example \code{"SBE,CpG"}.}
+types to remove, for example \code{'SBE,CpG'}.}
 
 \item{mafThreshold}{Numeric. Minor allele frequency threshold passed to
 \code{minfi::dropLociWithSnps()}.}
@@ -46,7 +46,7 @@ types to remove, for example \code{"SBE,CpG"}.}
 CSV files containing probe IDs to remove.}
 
 \item{probeExclusionIdColumn}{Character or \code{NULL}. Column containing probe
-IDs. When \code{NULL} or \code{""}, each file is auto-detected using \code{ProbeID},
+IDs. When \code{NULL} or \code{''}, each file is auto-detected using \code{ProbeID},
 \code{TargetID}, \code{IlmnID}, or \code{Name}, then falling back to an unlabeled or
 probe-like first column.}
 
@@ -60,7 +60,7 @@ and \code{MissingPos}, but not \code{MismatchPos}.}
 
 \item{detPtype}{Character. Detection P-value mode passed to
 \code{minfi::detectionP()} for the probe filter. Common values in minfi
-workflows are \code{"m+u"} and \code{"negative"}.}
+workflows are \code{'m+u'} and \code{'negative'}.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -76,7 +76,7 @@ workflows are \code{"m+u"} and \code{"negative"}.}
 \item{crossReactiveIdColumn}{Deprecated alias for \code{probeExclusionIdColumn}.}
 }
 \value{
-A list with class \code{"dnaEPICO_minfiEwasWater_filter"} containing the
+A list with class \code{'dnaEPICO_minfiEwasWater_filter'} containing the
 filtered object and counts for each filtering stage.
 }
 \description{
@@ -87,16 +87,16 @@ primary normalized object and return the filtered result.
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
 filtered_data <- filterProbesMinfiEwasWater(
-  normData = ex$normData,
-  RGSet = ex$sampleData$RGSet,
-  pvalThreshold = 1,
-  chrToRemove = "chrY",
-  snpsToRemove = "SBE",
-  mafThreshold = 1,
-  probeExclusionPath = ex$probeExclusionPath,
-  detPtype = "m+u",
-  verbose = FALSE,
-  logs = FALSE
+    normData = ex$normData,
+    RGSet = ex$sampleData$RGSet,
+    pvalThreshold = 1,
+    chrToRemove = "chrY",
+    snpsToRemove = "SBE",
+    mafThreshold = 1,
+    probeExclusionPath = ex$probeExclusionPath,
+    detPtype = "m+u",
+    verbose = FALSE,
+    logs = FALSE
 )
 filtered_data$counts[["probeExclusion"]]
 \dontshow{\}) # examplesIf}

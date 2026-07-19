@@ -2,7 +2,8 @@
 % Please edit documentation in R/methylationLME_steps.R
 \name{prepareMethylationLMEData}
 \alias{prepareMethylationLMEData}
-\title{Prepare longitudinal phenotype-plus-methylation data for mixed-effects analyses}
+\title{Prepare longitudinal phenotype-plus-methylation data for mixed-effects
+analyses}
 \usage{
 prepareMethylationLMEData(
   inputPheno,
@@ -11,6 +12,7 @@ prepareMethylationLMEData(
   phenotypes,
   covariates,
   factorVars,
+  scaleVars = NULL,
   prsMap = NULL,
   cpgPrefix = "cg",
   cpgLimit = NA,
@@ -36,11 +38,15 @@ variables to model.}
 \item{covariates}{Character vector or comma-separated string of covariate
 variables to adjust for.}
 
-\item{factorVars}{Character vector or comma-separated string of variables that
+\item{factorVars}{Character vector or comma-separated string of variables
+that
 should be converted to factors before modeling.}
 
+\item{scaleVars}{Character vector, comma-separated variable names, or \code{NULL}.
+Numeric fixed-effect variables to standardize before model fitting.}
+
 \item{prsMap}{Character vector or comma-separated string of phenotype-to-PRS
-mappings in the form \code{"Phenotype:PRS"}.}
+mappings in the form \code{'Phenotype:PRS'}.}
 
 \item{cpgPrefix}{Character. Prefix used to identify methylation columns.}
 
@@ -48,7 +54,7 @@ mappings in the form \code{"Phenotype:PRS"}.}
 keeps all matching CpGs.}
 
 \item{methylationScale}{Character. Methylation metric represented by the CpG
-columns. One of \code{"beta"}, \code{"m"}, or \code{"cn"}.}
+columns. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, case-insensitively.}
 
 \item{interactionTerm}{Character or \code{NULL}. Optional interaction term.}
 
@@ -62,12 +68,13 @@ columns. One of \code{"beta"}, \code{"m"}, or \code{"cn"}.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationLME_data"} containing
+A list with class \code{'dnaEPICO_methylationLME_data'} containing
 the prepared analysis data, parsed variable selections, CpG columns,
 timepoint summaries, and subject-ID diagnostics.
 }
 \description{
-Load the merged longitudinal phenotype-plus-methylation object, ensure that a subject
+Load the merged longitudinal phenotype-plus-methylation object, ensure that
+a subject
 identifier column is available, validate the requested modeling variables,
 convert selected variables to factors, and return a single in-memory object
 for downstream mixed-effects modeling helpers.
@@ -75,15 +82,15 @@ for downstream mixed-effects modeling helpers.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 prepared_data <- prepareMethylationLMEData(
-  inputPheno = ex$inputPath,
-  personVar = "person",
-  timeVar = "Timepoint",
-  phenotypes = "score",
-  covariates = "sex",
-  factorVars = "sex",
-  cpgLimit = 2,
-  verbose = FALSE,
-  logs = FALSE
+    inputPheno = ex$inputPath,
+    personVar = "person",
+    timeVar = "Timepoint",
+    phenotypes = "score",
+    covariates = "sex",
+    factorVars = "sex",
+    cpgLimit = 2,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(prepared_data)
 

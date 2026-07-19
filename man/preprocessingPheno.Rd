@@ -32,7 +32,7 @@ preprocessingPheno(
 \item{phenoFile}{Character. Path to the phenotype CSV file.}
 
 \item{sepType}{Character or \code{NULL}. Field separator used in \code{phenoFile}. Use
-\code{NULL} for a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or
+\code{NULL} for a comma-separated file, \code{'\\\\t'} for a tab-delimited file, or
 another separator accepted by \code{utils::read.csv()}.}
 
 \item{betaPath}{Character. Path to the saved beta-value object. Both \code{.RData}
@@ -58,8 +58,9 @@ timepoints to combine into the longitudinal phenotype-plus-methylation
 object.}
 
 \item{methylationScale}{Character. Methylation metric to use in merged
-modeling tables. One of \code{"beta"}, \code{"m"}, or \code{"cn"}. The default is
-\code{"beta"}. Beta values are always used for Clock Foundation exports.}
+modeling tables. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, in any combination
+of upper- and lower-case letters. The default is \code{'beta'}. Beta values
+are always used for Clock Foundation exports.}
 
 \item{outputPheno}{Character. Directory used for saved phenotype CSV files
 when \code{saveOutputs = TRUE}.}
@@ -84,18 +85,18 @@ The default is \code{FALSE}.}
 \item{logs}{Logical. If \code{TRUE}, write the same progress messages to
 \code{outputLogs}. The default is \code{FALSE}.}
 
-\item{saveOutputs}{Logical. If \code{TRUE}, write the legacy CSV, ZIP, and \code{.RData}
-outputs to disk. The default is \code{FALSE}, so the function can be used in the
-more traditional in-memory Bioconductor style.}
+\item{saveOutputs}{Logical. If \code{TRUE}, write the CSV, ZIP, and \code{.RData}
+outputs to disk. The default is \code{FALSE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_preprocessingPheno"}.
+A list with class \code{'dnaEPICO_preprocessingPheno'}.
 \describe{
 \item{pheno}{Phenotype table read from \code{phenoFile}.}
 \item{metricsData}{Object returned by \code{\link[=loadMetricsPreprocessingPheno]{loadMetricsPreprocessingPheno()}}
 containing the beta-value, M-value, and copy-number matrices loaded from
 \code{betaPath}, \code{mPath}, and \code{cnPath}.}
-\item{timepointData}{Object returned by \code{\link[=splitTimepointsPreprocessingPheno]{splitTimepointsPreprocessingPheno()}}
+\item{timepointData}{Object returned by
+\code{\link[=splitTimepointsPreprocessingPheno]{splitTimepointsPreprocessingPheno()}}
 containing per-timepoint phenotype tables and methylation matrices.}
 \item{combinedData}{Object returned by
 \code{\link[=combineTimepointsPreprocessingPheno]{combineTimepointsPreprocessingPheno()}} containing the merged longitudinal
@@ -115,21 +116,21 @@ Read the phenotype table and the preprocessed beta, M-value, and copy-number
 matrices; align them by sample identifier; split them by timepoint; prepare
 combined longitudinal objects for a selected modeling scale; and build Clock
 Foundation export tables. The
-function returns a structured in-memory result, while legacy files are
+function returns a structured in-memory result, while files are
 written only when \code{saveOutputs = TRUE}.
 }
 \examples{
 tmp <- tempdir()
 pheno <- data.frame(
-  Sample_Name = c("S1", "S2", "S3"),
-  Timepoint = c("1", "1", "2"),
-  Sex = c(0, 1, 0),
-  stringsAsFactors = FALSE
+    Sample_Name = c("S1", "S2", "S3"),
+    Timepoint = c("1", "1", "2"),
+    Sex = c(0, 1, 0),
+    stringsAsFactors = FALSE
 )
 beta <- matrix(
-  c(0.10, 0.20, 0.30, 0.40, 0.50, 0.60),
-  nrow = 2,
-  dimnames = list(c("cg1", "cg2"), pheno$Sample_Name)
+    c(0.10, 0.20, 0.30, 0.40, 0.50, 0.60),
+    nrow = 2,
+    dimnames = list(c("cg1", "cg2"), pheno$Sample_Name)
 )
 m <- beta * 10
 cn <- beta * 100
@@ -142,21 +143,21 @@ save(beta, file = beta_path)
 save(m, file = m_path)
 save(cn, file = cn_path)
 result <- preprocessingPheno(
-  phenoFile = pheno_file,
-  betaPath = beta_path,
-  mPath = m_path,
-  cnPath = cn_path,
-  SampleID = "Sample_Name",
-  timeVar = "Timepoint",
-  timepoints = "1,2",
-  combineTimepoints = "1,2",
-  outputPheno = file.path(tmp, "data", "preprocessingPheno"),
-  outputRData = file.path(tmp, "rData", "preprocessingPheno", "metrics"),
-  outputRDataMerge = file.path(tmp, "rData", "preprocessingPheno", "mergeData"),
-  sexColumn = "Sex",
-  outputLogs = file.path(tmp, "logs"),
-  outputDir = file.path(tmp, "clockFoundation"),
-  saveOutputs = FALSE
+    phenoFile = pheno_file,
+    betaPath = beta_path,
+    mPath = m_path,
+    cnPath = cn_path,
+    SampleID = "Sample_Name",
+    timeVar = "Timepoint",
+    timepoints = "1,2",
+    combineTimepoints = "1,2",
+    outputPheno = file.path(tmp, "data", "preprocessingPheno"),
+    outputRData = file.path(tmp, "rData", "preprocessingPheno", "metrics"),
+    outputRDataMerge = file.path(tmp, "rData", "preprocessingPheno", "mergeData"),
+    sexColumn = "Sex",
+    outputLogs = file.path(tmp, "logs"),
+    outputDir = file.path(tmp, "clockFoundation"),
+    saveOutputs = FALSE
 )
 stopifnot(inherits(result, "dnaEPICO_preprocessingPheno"))
 

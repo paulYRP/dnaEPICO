@@ -24,8 +24,8 @@ user-specified directory for local execution or modification.
 tmp <- file.path(tempdir(), "dnaEPICO-make-example")
 dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
 makefile_path <- extractMake(
-  destDir = tmp,
-  overwrite = TRUE
+    destDir = tmp,
+    overwrite = TRUE
 )
 stopifnot(file.exists(makefile_path))
 

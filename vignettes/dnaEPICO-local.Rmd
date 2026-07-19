@@ -5,9 +5,6 @@ author:
     affiliation:
       - Queensland University of Technology
     email: ruizpint@qut.edu.au
-  - name: Divya Mehta
-    affiliation:
-      - Queensland University of Technology
 output:
   BiocStyle::html_document:
     self_contained: yes
@@ -26,16 +23,16 @@ vignette: >
 ```{r, include = FALSE}
 startTime <- Sys.time()
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  crop = NULL
+    collapse = TRUE,
+    comment = "#>",
+    crop = NULL
 )
 
 library(dnaEPICO)
 
 can_run_preprocessing <- requireNamespace("minfiData", quietly = TRUE) &&
-  requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
-  requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)
+    requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
+    requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)
 
 can_run_sva <- requireNamespace("minfiData", quietly = TRUE)
 ```
@@ -55,7 +52,7 @@ The examples below focus on the first three workflow stages:
 3. `preprocessingPheno()`
 
 All examples use `saveOutputs = FALSE`, which keeps the workflow in memory and
-avoids writing the legacy file outputs.
+avoids writing file outputs.
 
 # Citation
 
@@ -69,7 +66,7 @@ This citation guidance is adapted from the vignettes and user guides of
 [wateRmelon](https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/references.bib).
 
 - If you use `preprocessingMinfiEwasWater()`, please cite @minfi; @minfiEPIC;
-  @ENmix; @wateRmelon; @ewastools; @SWAN; @funnorm; @noob; @quantile.
+    @ENmix; @wateRmelon; @ewastools; @SWAN; @funnorm; @noob; @quantile.
 - If you use `svaEnmix()`, please cite @minfi; @ENmix.
 
 
@@ -113,7 +110,7 @@ dependencies with BiocManager:
 
 ```{r, eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
-  install.packages("BiocManager")
+    install.packages("BiocManager")
 }
 
 BiocManager::install("dnaEPICO")
@@ -160,41 +157,42 @@ points to the probe-exclusion reference used later during filtering.
 
 ```{r preprocessing-local, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
 preprocessResult <- preprocessingMinfiEwasWater(
-  phenoFile = preprocessing_inputs$phenoFile,
-  idatFolder = preprocessing_inputs$idatFolder,
-  outputLogs = file.path(preprocessing_inputs$tempDir, "logs"),
-  nSamples = 6,
-  SampleID = "Sample_Name",
-  arrayType = preprocessing_inputs$arrayType,
-  annotationVersion = preprocessing_inputs$annotationVersion,
-  scriptLabel = "preprocessingMinfiEwasWater",
-  baseDataFolder = file.path(preprocessing_inputs$tempDir, "rData"),
-  figureBaseDir = file.path(preprocessing_inputs$tempDir, "figures"),
-  detPThreshold = 1,
-  normMethods = "quantile",
-  sexColumn = "Sex",
-  pvalThreshold = 1,
-  chrToRemove = "",
-  snpsToRemove = "SBE",
-  mafThreshold = 1,
-  probeExclusionPath = preprocessing_inputs$probeExclusionPath,
-  plotGroupVar = "Sex",
-  lcRef = "saliva",
-  phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
-  lcPhenoDir = preprocessing_inputs$tempDir,
-  display = FALSE,
-  verbose = FALSE,
-  logs = FALSE,
-  saveOutputs = FALSE
+    phenoFile = preprocessing_inputs$phenoFile,
+    idatFolder = preprocessing_inputs$idatFolder,
+    outputLogs = file.path(preprocessing_inputs$tempDir, "logs"),
+    nSamples = 6,
+    SampleID = "Sample_Name",
+    arrayType = preprocessing_inputs$arrayType,
+    annotationVersion = preprocessing_inputs$annotationVersion,
+    scriptLabel = "preprocessingMinfiEwasWater",
+    baseDataFolder = file.path(preprocessing_inputs$tempDir, "rData"),
+    figureBaseDir = file.path(preprocessing_inputs$tempDir, "figures"),
+    detPThreshold = 1,
+    normMethods = "quantile",
+    sexColumn = "Sex",
+    removeSexMismatch = FALSE,
+    pvalThreshold = 1,
+    chrToRemove = "",
+    snpsToRemove = "SBE",
+    mafThreshold = 1,
+    probeExclusionPath = preprocessing_inputs$probeExclusionPath,
+    plotGroupVar = "Sex",
+    lcRef = "saliva",
+    phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
+    lcPhenoDir = preprocessing_inputs$tempDir,
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE,
+    saveOutputs = FALSE
 )
 
 class(preprocessResult)
 names(preprocessResult)
 head(preprocessResult$targets[, c(
-  "Sample_Name",
-  "Sex",
-  "Sentrix_ID",
-  "Sentrix_Position"
+    "Sample_Name",
+    "Sex",
+    "Sentrix_ID",
+    "Sentrix_Position"
 )])
 ```
 
@@ -208,23 +206,26 @@ cell-composition results.
 Arguments:
 
 - `phenoFile` and `idatFolder` define the phenotype table and the directory of
-  raw IDAT pairs.
+    raw IDAT pairs.
 - `nSamples = 6` keeps the example small enough for interactive use.
 - `SampleID = "Sample_Name"` identifies the column used to align phenotype data
-  and methylation objects.
+    and methylation objects.
 - `arrayType` and `annotationVersion` must match the array platform being
-  processed.
+    processed.
 - `detPThreshold`, `normMethods`, `pvalThreshold`, `chrToRemove`,
-  `snpsToRemove`, and `mafThreshold` control quality filtering and probe
-  filtering.
+    `snpsToRemove`, and `mafThreshold` control quality filtering and probe
+    filtering.
 - `probeExclusionPath` supplies the probe-exclusion reference used during
-  filtering.
-- `sexColumn`, `plotGroupVar`, `lcRef`, and `phenoOrder` control sex
-  prediction, quality-control grouping, cell-type estimation, and the structure
-  of the returned phenotype table.
+    filtering.
+- `sexColumn` identifies reported sex for comparison with methylation-predicted
+    sex. `removeSexMismatch = FALSE` retains and reports confirmed mismatches;
+    `TRUE` removes samples only when both values are known and disagree. Missing
+    or unknown sex values are retained.
+- `plotGroupVar`, `lcRef`, and `phenoOrder` control quality-control grouping,
+    cell-type estimation, and the structure of the returned phenotype table.
 - `display = FALSE`, `verbose = FALSE`, `logs = FALSE`, and
-  `saveOutputs = FALSE` keep the example quiet, in memory, and free of file
-  outputs.
+    `saveOutputs = FALSE` keep the example quiet, in memory, and free of file
+    outputs.
 
 The next chunk inspects three important elements: the filtered `RGSet`, the
 metric matrices, and the phenotype table augmented with cell-composition
@@ -279,21 +280,21 @@ needs file inputs rather than the in-memory objects, so the chunk writes
 
 ```{r sva-local, eval = can_run_sva, message = FALSE, warning = FALSE}
 svaResult <- svaEnmix(
-  phenoFile = sva_targets_file,
-  rgsetData = sva_rgset_file,
-  outputLogs = file.path(tempdir(), "logs"),
-  SampleID = "Sample_Name",
-  arrayType = "IlluminaHumanMethylation450k",
-  annotationVersion = "ilmn12.hg19",
-  SentrixIDColumn = "Sentrix_ID",
-  SentrixPositionColumn = "Sentrix_Position",
-  ctrlSvaPercVar = 0.90,
-  ctrlSvaFlag = 1,
-  scriptLabel = "svaEnmix",
-  display = FALSE,
-  verbose = FALSE,
-  logs = FALSE,
-  saveOutputs = FALSE
+    phenoFile = sva_targets_file,
+    rgsetData = sva_rgset_file,
+    outputLogs = file.path(tempdir(), "logs"),
+    SampleID = "Sample_Name",
+    arrayType = "IlluminaHumanMethylation450k",
+    annotationVersion = "ilmn12.hg19",
+    SentrixIDColumn = "Sentrix_ID",
+    SentrixPositionColumn = "Sentrix_Position",
+    ctrlSvaPercVar = 0.90,
+    ctrlSvaFlag = 1,
+    scriptLabel = "svaEnmix",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE,
+    saveOutputs = FALSE
 )
 
 class(svaResult)
@@ -311,16 +312,16 @@ combines the original phenotype data and the new SVA columns in one place.
 Arguments:
 
 - `phenoFile` points to the phenotype table that already includes the cell
-  composition estimates from preprocessing.
+    composition estimates from preprocessing.
 - `rgsetData` points to the saved `RGSet` used to derive ENmix control-probe
-  surrogate variables.
+    surrogate variables.
 - `SampleID`, `SentrixIDColumn`, and `SentrixPositionColumn` identify the
-  sample and array-position columns used in the SVA analysis.
+    sample and array-position columns used in the SVA analysis.
 - `ctrlSvaPercVar = 0.90` asks the procedure to keep enough control-derived
-  surrogate variables to explain 90% of the control-probe variance.
+    surrogate variables to explain 90% of the control-probe variance.
 - `ctrlSvaFlag = 1` enables the control-based SVA workflow.
 - `display = FALSE`, `verbose = FALSE`, `logs = FALSE`, and
-  `saveOutputs = FALSE` keep the example interactive and in-memory.
+    `saveOutputs = FALSE` keep the example interactive and in-memory.
 
 The association analysis between the surrogate variables and array-position
 metadata is stored separately in `analysisData`.
@@ -351,10 +352,10 @@ pheno_inputs <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 names(pheno_inputs)
 pheno_inputs$tempDir
 basename(c(
-  pheno_inputs$phenoPath,
-  pheno_inputs$betaPath,
-  pheno_inputs$mPath,
-  pheno_inputs$cnPath
+    pheno_inputs$phenoPath,
+    pheno_inputs$betaPath,
+    pheno_inputs$mPath,
+    pheno_inputs$cnPath
 ))
 ```
 
@@ -367,33 +368,33 @@ helper objects such as `metricsData`, `timepointData`, `combinedData`, and
 
 ```{r preprocessingPheno-local, message = FALSE, warning = FALSE}
 phenoResult <- preprocessingPheno(
-  phenoFile = pheno_inputs$phenoPath,
-  betaPath = pheno_inputs$betaPath,
-  mPath = pheno_inputs$mPath,
-  cnPath = pheno_inputs$cnPath,
-  SampleID = "Sample_Name",
-  timeVar = "Timepoint",
-  timepoints = "1,2",
-  combineTimepoints = "1,2",
-  outputPheno = file.path(pheno_inputs$tempDir, "data", "preprocessingPheno"),
-  outputRData = file.path(
-    pheno_inputs$tempDir,
-    "rData",
-    "preprocessingPheno",
-    "metrics"
-  ),
-  outputRDataMerge = file.path(
-    pheno_inputs$tempDir,
-    "rData",
-    "preprocessingPheno",
-    "mergeData"
-  ),
-  sexColumn = "Sex",
-  outputLogs = file.path(pheno_inputs$tempDir, "logs"),
-  outputDir = file.path(pheno_inputs$tempDir, "clockFoundation"),
-  verbose = FALSE,
-  logs = FALSE,
-  saveOutputs = FALSE
+    phenoFile = pheno_inputs$phenoPath,
+    betaPath = pheno_inputs$betaPath,
+    mPath = pheno_inputs$mPath,
+    cnPath = pheno_inputs$cnPath,
+    SampleID = "Sample_Name",
+    timeVar = "Timepoint",
+    timepoints = "1,2",
+    combineTimepoints = "1,2",
+    outputPheno = file.path(pheno_inputs$tempDir, "data", "preprocessingPheno"),
+    outputRData = file.path(
+        pheno_inputs$tempDir,
+        "rData",
+        "preprocessingPheno",
+        "metrics"
+    ),
+    outputRDataMerge = file.path(
+        pheno_inputs$tempDir,
+        "rData",
+        "preprocessingPheno",
+        "mergeData"
+    ),
+    sexColumn = "Sex",
+    outputLogs = file.path(pheno_inputs$tempDir, "logs"),
+    outputDir = file.path(pheno_inputs$tempDir, "clockFoundation"),
+    verbose = FALSE,
+    logs = FALSE,
+    saveOutputs = FALSE
 )
 
 class(phenoResult)
@@ -413,18 +414,18 @@ single data frame that can be passed to the GLM or LME functions. Set
 Arguments:
 
 - `phenoFile`, `betaPath`, `mPath`, and `cnPath` define the phenotype table and
-  the three methylation matrices that are aligned in this step.
+    the three methylation matrices that are aligned in this step.
 - `SampleID = "Sample_Name"` is the key used to match samples across the loaded
-  objects.
+    objects.
 - `timeVar = "Timepoint"`, `timepoints = "1,2"`, and
-  `combineTimepoints = "1,2"` define the separate exports and the combined
-  longitudinal object.
+    `combineTimepoints = "1,2"` define the separate exports and the combined
+    longitudinal object.
 - `outputPheno`, `outputRData`, `outputRDataMerge`, and `outputDir` still need
-  to be specified even when `saveOutputs = FALSE`, because they define the
-  canonical output structure for the function.
+    to be specified even when `saveOutputs = FALSE`, because they define the
+    canonical output structure for the function.
 - `sexColumn = "Sex"` identifies the sex variable used by the helper functions.
 - `verbose = FALSE`, `logs = FALSE`, and `saveOutputs = FALSE` keep the example
-  focused on the returned object rather than file writing.
+    focused on the returned object rather than file writing.
 
 The Clock Foundation export objects are returned in the same result, which
 makes it possible to inspect the export-ready tables before deciding whether
@@ -438,6 +439,20 @@ head(phenoResult$clockFoundation$phenoCF)
 The `clockFoundation` element contains the export-ready objects, and
 `phenoResult$clockFoundation$phenoCF` is the phenotype table prepared for
 [Clock Foundation](https://dnamage.clockfoundation.org/user) use.
+
+## Variables used in GLM and LME models
+
+The phenotype-methylation tables returned by `preprocessingPheno()` can be used
+by `methylationGLM()` or `methylationLME()`. `factorVars` identifies categorical
+fixed-effect variables, while `scaleVars` identifies numeric fixed-effect
+variables to centre and divide by their sample standard deviations before model
+fitting. For example, `factorVars = "Sex,TreatmentGroup"` treats those variables
+as categorical and `scaleVars = "Age,PC1"` standardises `Age` and `PC1`.
+
+For GLM and LME analyses, the selected variables must be numeric, have at least
+two finite observations, and have non-zero sample variance. A variable cannot be
+listed in both `factorVars` and `scaleVars`. The applied centres and sample
+standard deviations are stored in the annotated workbook metadata.
 
 # Summary
 

@@ -33,7 +33,7 @@ probes, passed to \code{ENmix::ctrlsva()}.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_svaEnmix_sva"} containing the surrogate
+A list with class \code{'dnaEPICO_svaEnmix_sva'} containing the surrogate
 variable matrix and the parameters used to estimate it.
 }
 \description{
@@ -44,11 +44,11 @@ matrix as an in-memory object.
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 sva_data <- estimateSvaEnmixControls(
-  RGSet = ex$RGSet,
-  ctrlSvaPercVar = 0.5,
-  ctrlSvaFlag = 1,
-  verbose = FALSE,
-  logs = FALSE
+    RGSet = ex$RGSet,
+    ctrlSvaPercVar = 0.5,
+    ctrlSvaFlag = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 sva_data$K
 \dontshow{\}) # examplesIf}

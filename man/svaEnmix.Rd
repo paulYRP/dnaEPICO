@@ -32,13 +32,14 @@ svaEnmix(
 }
 \arguments{
 \item{phenoFile}{Character. Path to the phenotype file with cell-composition
-data.}
+data. When \code{saveOutputs = TRUE}, the validated PC columns are appended to
+this file using a rollback-safe replacement.}
 
 \item{rgsetData}{Character. Path to a saved \code{RGChannelSet} object. Both
 \code{.RData} and \code{.rds} files are supported.}
 
 \item{sepType}{Character or \code{NULL}. Field separator used in \code{phenoFile}. Use
-\code{NULL} for a comma-separated file, \code{"\\\\t"} for a tab-delimited file, or
+\code{NULL} for a comma-separated file, \code{'\\\\t'} for a tab-delimited file, or
 another separator accepted by \code{utils::read.csv()}.}
 
 \item{outputLogs}{Character. Directory used for log files when \code{logs = TRUE}.}
@@ -92,11 +93,11 @@ The default is \code{FALSE}.}
 \item{logs}{Logical. If \code{TRUE}, write the same progress messages to
 \code{outputLogs}. The default is \code{FALSE}.}
 
-\item{saveOutputs}{Logical. If \code{TRUE}, write the legacy CSV, \code{.RData}, text,
+\item{saveOutputs}{Logical. If \code{TRUE}, write the CSV, \code{.RData}, text,
 and TIFF outputs to disk. The default is \code{FALSE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_svaEnmix"}.
+A list with class \code{'dnaEPICO_svaEnmix'}.
 \describe{
 \item{targets}{Phenotype table read from \code{phenoFile} after any optional row
 subsetting.}
@@ -121,8 +122,8 @@ See \linkS4class{dnaEPICO_svaEnmix} for a class-level overview.
 \description{
 Read the phenotype table and a saved \code{RGChannelSet}, estimate surrogate
 variables from ENmix control probes, analyze their association with Sentrix
-chip and position factors, and return a structured in-memory result. Legacy
-CSV, \code{.RData}, text-summary, and figure outputs are written only when
+chip and position factors, and return a structured in-memory result. CSV,
+\code{.RData}, text-summary, and figure outputs are written only when
 \code{saveOutputs = TRUE}.
 }
 \examples{
@@ -130,27 +131,27 @@ tmp <- tempdir()
 stopifnot(dir.exists(tmp))
 
 if (requireNamespace("minfiData", quietly = TRUE)) {
-  ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
-  pheno_file <- file.path(tmp, "pheno.csv")
-  rgset_path <- file.path(tmp, "RGSet.RData")
-  RGSet <- ex$RGSet
-  utils::write.csv(ex$targets, pheno_file, row.names = FALSE)
-  save(RGSet, file = rgset_path)
-  sva_result <- svaEnmix(
-    phenoFile = pheno_file,
-    rgsetData = rgset_path,
-    SampleID = "Sample_Name",
-    arrayType = "IlluminaHumanMethylation450k",
-    annotationVersion = "ilmn12.hg19",
-    SentrixIDColumn = "Sentrix_ID",
-    SentrixPositionColumn = "Sentrix_Position",
-    outputLogs = file.path(tmp, "logs"),
-    figureBaseDir = file.path(tmp, "figures"),
-    dataBaseDir = file.path(tmp, "data"),
-    rBaseDir = file.path(tmp, "rData"),
-    saveOutputs = FALSE
-  )
-  stopifnot(inherits(sva_result, "dnaEPICO_svaEnmix"))
+    ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
+    pheno_file <- file.path(tmp, "pheno.csv")
+    rgset_path <- file.path(tmp, "RGSet.RData")
+    RGSet <- ex$RGSet
+    utils::write.csv(ex$targets, pheno_file, row.names = FALSE)
+    save(RGSet, file = rgset_path)
+    sva_result <- svaEnmix(
+        phenoFile = pheno_file,
+        rgsetData = rgset_path,
+        SampleID = "Sample_Name",
+        arrayType = "IlluminaHumanMethylation450k",
+        annotationVersion = "ilmn12.hg19",
+        SentrixIDColumn = "Sentrix_ID",
+        SentrixPositionColumn = "Sentrix_Position",
+        outputLogs = file.path(tmp, "logs"),
+        figureBaseDir = file.path(tmp, "figures"),
+        dataBaseDir = file.path(tmp, "data"),
+        rBaseDir = file.path(tmp, "rData"),
+        saveOutputs = FALSE
+    )
+    stopifnot(inherits(sva_result, "dnaEPICO_svaEnmix"))
 }
 
 }

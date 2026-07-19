@@ -22,7 +22,8 @@ or a named list of CpG summary data frames.}
 \item{annotationObject}{Character package/object name, annotation data frame,
 or annotation object understood by \code{minfi::getAnnotation()}.}
 
-\item{annotationCols}{Character vector or comma-separated string of annotation
+\item{annotationCols}{Character vector or comma-separated string of
+annotation
 columns to append.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
@@ -35,22 +36,23 @@ columns to append.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM_annotation"}
+A list with class \code{'dnaEPICO_methylationGLM_annotation'}
 containing the annotated summary table and any requested annotation columns
 that were unavailable in the chosen annotation object.
 }
 \description{
-Merge phenotype-specific CpG summary tables with probe annotation metadata and
+Merge phenotype-specific CpG summary tables with probe annotation metadata
+and
 return a single annotated result table.
 }
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 annotation_data <- annotateMethylationGLMSummaries(
-  modelSummaries = ex$modelSummaries,
-  annotationObject = ex$annotationData,
-  annotationCols = "Name,chr,pos",
-  verbose = FALSE,
-  logs = FALSE
+    modelSummaries = ex$modelSummaries,
+    annotationObject = ex$annotationData,
+    annotationCols = "Name,chr,pos",
+    verbose = FALSE,
+    logs = FALSE
 )
 names(annotation_data)
 

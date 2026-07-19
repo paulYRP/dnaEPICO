@@ -9,6 +9,8 @@ writeSvaEnmixOutputs(
   mergedPheno,
   analysisData = NULL,
   phenoFile = NULL,
+  SampleID = "Sample_Name",
+  sepType = NULL,
   dataBaseDir = "data",
   rBaseDir = "rData",
   scriptLabel = "svaEnmix",
@@ -25,8 +27,12 @@ writeSvaEnmixOutputs(
 
 \item{analysisData}{Optional object returned by \code{analyzeSvaEnmix()}.}
 
-\item{phenoFile}{Character or \code{NULL}. When supplied, \code{mergedPheno} is written
-back to this path for legacy compatibility.}
+\item{phenoFile}{Character or \code{NULL}. Existing phenotype file replaced with
+\code{mergedPheno} after validation.}
+
+\item{SampleID}{Character. Phenotype column containing sample identifiers.}
+
+\item{sepType}{Character or \code{NULL}. Field separator used by \code{phenoFile}.}
 
 \item{dataBaseDir}{Character. Base directory used for saved data outputs.}
 
@@ -44,26 +50,28 @@ back to this path for legacy compatibility.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_svaEnmix_paths"} containing the paths
+A list with class \code{'dnaEPICO_svaEnmix_paths'} containing the paths
 written to disk.
 }
 \description{
-Write the legacy CSV, \code{.RData}, and text-summary outputs used by the original
-\code{svaEnmix()} workflow.
+Write the SVA matrix, phenotype, and model-summary outputs.
 }
 \examples{
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 temp_dir <- tempdir()
+pheno_file <- file.path(temp_dir, "phenoLC.csv")
+utils::write.csv(ex$targets, pheno_file, row.names = FALSE)
 output_paths <- writeSvaEnmixOutputs(
-  svaData = list(sva = ex$sva),
-  mergedPheno = ex$mergedPheno,
-  analysisData = ex$analysisData,
-  phenoFile = file.path(temp_dir, "phenoLC.csv"),
-  dataBaseDir = file.path(temp_dir, "data"),
-  rBaseDir = file.path(temp_dir, "rData"),
-  scriptLabel = "svaEnmixExample",
-  verbose = FALSE,
-  logs = FALSE
+    svaData = list(sva = ex$sva),
+    mergedPheno = ex$mergedPheno,
+    analysisData = ex$analysisData,
+    phenoFile = pheno_file,
+    SampleID = "Sample_Name",
+    dataBaseDir = file.path(temp_dir, "data"),
+    rBaseDir = file.path(temp_dir, "rData"),
+    scriptLabel = "svaEnmixExample",
+    verbose = FALSE,
+    logs = FALSE
 )
 names(output_paths)
 

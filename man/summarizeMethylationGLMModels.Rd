@@ -9,6 +9,7 @@ summarizeMethylationGLMModels(
   preparedData,
   summaryResidualSD = TRUE,
   summaryPval = NA,
+  excludeNonConverged = FALSE,
   nCores = 1L,
   libPath = NULL,
   glmLibs = "glm2",
@@ -30,6 +31,9 @@ to each CpG summary row.}
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value filter applied to the
 returned summary tables. \code{NA} keeps all rows.}
 
+\item{excludeNonConverged}{Logical. If \code{TRUE}, retain non-converged CpG rows
+and their reasons but set their inferential p-values to \code{NA}.}
+
 \item{nCores}{Integer. Number of worker processes to use while extracting
 summary rows.}
 
@@ -37,7 +41,7 @@ summary rows.}
 to worker processes.}
 
 \item{glmLibs}{Character vector or comma-separated string of package names to
-check on worker processes. The default is \code{"glm2"}.}
+check on worker processes. The default is \code{'glm2'}.}
 
 \item{chunkSize}{Integer or \code{NULL}. Number of CpGs to process per parallel
 chunk. \code{NULL} chooses a value automatically.}
@@ -52,8 +56,11 @@ chunk. \code{NULL} chooses a value automatically.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM_summaries"}
-containing one CpG-level summary data frame per phenotype.
+A list with class \code{'dnaEPICO_methylationGLM_summaries'}
+containing the optionally filtered summary tables in \code{summaries} and the
+complete CpG-level tables in \code{diagnosticSummaries}. Diagnostics,
+annotation, and report output use the complete tables so \code{summaryPval}
+does not remove CpGs from those outputs.
 }
 \description{
 Extract phenotype-specific CpG coefficient tables from the fitted model
@@ -62,13 +69,13 @@ object returned by \code{fitMethylationGLMModels()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 summary_results <- summarizeMethylationGLMModels(
-  modelResults = ex$modelResults,
-  preparedData = ex$preparedData,
-  summaryResidualSD = TRUE,
-  summaryPval = NA,
-  nCores = 1,
-  verbose = FALSE,
-  logs = FALSE
+    modelResults = ex$modelResults,
+    preparedData = ex$preparedData,
+    summaryResidualSD = TRUE,
+    summaryPval = NA,
+    nCores = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(summary_results$summaries)
 

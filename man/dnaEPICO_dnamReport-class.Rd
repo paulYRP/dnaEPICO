@@ -6,7 +6,7 @@
 \alias{dnaEPICO_dnamReport}
 \title{Result class returned by dnamReport}
 \description{
-Objects of class \code{"dnaEPICO_dnamReport"} are list-based results returned by
+Objects of class \code{'dnaEPICO_dnamReport'} are list-based results returned by
 \code{\link[=dnamReport]{dnamReport()}}. They combine the prepared report inputs, render result, and
 final status metadata into one convenience object.
 }
@@ -15,9 +15,11 @@ final status metadata into one convenience object.
 \describe{
 \item{preparedReport}{Object returned by \code{\link[=prepareDnamReportInputs]{prepareDnamReportInputs()}}.}
 \item{renderResult}{Structured render metadata created by \code{\link[=dnamReport]{dnamReport()}}.}
-\item{status}{Final status string such as \code{"rendered"}, \code{"skipped"}, or
-\code{"failed"}.}
+\item{status}{Final status string such as \code{'rendered'}, \code{'skipped'}, or
+\code{'failed'}.}
 \item{outputFile}{Path to \code{docs/index.html}.}
+\item{resultTableSources}{Named character vector identifying whether each
+model table used a streamed sidecar or the compatible XLSX fallback.}
 \item{errorMessage}{Final render error or skip message when available,
 otherwise \code{NULL}.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when

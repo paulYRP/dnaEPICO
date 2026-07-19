@@ -11,8 +11,8 @@ estimateLC(meth, ref, constrained = FALSE)
 columns. Row names must contain probe identifiers compatible with the
 selected reference.}
 
-\item{ref}{Character. Reference panel name. Supported values are \code{"saliva"}
-and \code{"salivaEPIC"}.}
+\item{ref}{Character. Reference panel name. Supported values are \code{'saliva'}
+and \code{'salivaEPIC'}.}
 
 \item{constrained}{Logical. If \code{TRUE}, estimated cell proportions are
 constrained to sum to one.}
@@ -33,21 +33,40 @@ ref_panel <- as.matrix(utils::read.table(ref_file))
 meth <- ref_panel[1:20, , drop = FALSE]
 colnames(meth) <- c("sample1", "sample2")
 estimateLC(
-  meth = meth,
-  ref = "saliva",
-  constrained = FALSE
+    meth = meth,
+    ref = "saliva",
+    constrained = FALSE
 )
 
 }
 \references{
-Murat K, et al. Ewastools: Infinium Human Methylation BeadChip pipeline for population epigenetics integrated into Galaxy. \emph{GigaScience}. 2020;9(5):giaa049.
-Houseman EA, Accomando WP, Koestler DC, et al. DNA methylation arrays as surrogate measures of cell mixture distribution. \emph{BMC Bioinformatics}. 2012;13:86.
-Reinius LE, Acevedo N, Joerink M, et al. Differential DNA methylation in purified human blood cells: implications for cell lineage and studies on disease susceptibility. \emph{PLoS One}. 2012;7(7):e41361.
-Bakulski KM, Feinberg JI, Andrews SV, et al. DNA methylation of cord blood cell types: applications for mixed cell birth studies. \emph{Epigenetics}. 2016;11(5):354-362.
-de Goede OM, Razzaghian HR, Price EM, et al. Nucleated red blood cells impact DNA methylation and expression analyses of cord blood hematopoietic cells. \emph{Clinical Epigenetics}. 2015;7:95.
-Gervin K, Salas LA, Bakulski KM, et al. Cell type specific DNA methylation in cord blood: a 450K reference data set and cell count-based validation of estimated cell type composition. \emph{Epigenetics}. 2016;11(9):690-698.
-Gervin K, Salas LA, Bakulski KM, et al. Systematic evaluation and validation of reference and library selection methods for deconvolution of cord blood DNA methylation data. \emph{bioRxiv}. 2019. doi:10.1101/570457.
-Salas LA, Koestler DC, Butler RA, et al. An optimized library for reference-based deconvolution of whole-blood biospecimens assayed using the Illumina HumanMethylationEPIC BeadArray. \emph{Genome Biology}. 2018;19:64.
-Heiss JA, Just AC, Brenner H. Training a model for estimating leukocyte composition using whole-blood DNA methylation and cell counts as reference. \emph{Epigenomics}. 2017;9(1):13-20.
-Middleton LYM, Dou J, Mill J, et al. Saliva cell type DNA methylation reference panel for epidemiology studies in children. 2020.
+Murat K, et al. Ewastools: Infinium Human Methylation BeadChip pipeline for
+population epigenetics integrated into Galaxy. \emph{GigaScience}.
+2020;9(5):giaa049.
+Houseman EA, Accomando WP, Koestler DC, et al. DNA methylation arrays as
+surrogate measures of cell mixture distribution. \emph{BMC Bioinformatics}.
+2012;13:86.
+Reinius LE, Acevedo N, Joerink M, et al. Differential DNA methylation in
+purified human blood cells: implications for cell lineage and studies on
+disease susceptibility. \emph{PLoS One}. 2012;7(7):e41361.
+Bakulski KM, Feinberg JI, Andrews SV, et al. DNA methylation of cord blood
+cell types: applications for mixed cell birth studies. \emph{Epigenetics}.
+2016;11(5):354-362.
+de Goede OM, Razzaghian HR, Price EM, et al. Nucleated red blood cells
+impact DNA methylation and expression analyses of cord blood hematopoietic
+cells. \emph{Clinical Epigenetics}. 2015;7:95.
+Gervin K, Salas LA, Bakulski KM, et al. Cell type specific DNA methylation
+in cord blood: a 450K reference data set and cell count-based validation of
+estimated cell type composition. \emph{Epigenetics}. 2016;11(9):690-698.
+Gervin K, Salas LA, Bakulski KM, et al. Systematic evaluation and validation
+of reference and library selection methods for deconvolution of cord blood
+DNA methylation data. \emph{bioRxiv}. 2019. doi:10.1101/570457.
+Salas LA, Koestler DC, Butler RA, et al. An optimized library for
+reference-based deconvolution of whole-blood biospecimens assayed using the
+Illumina HumanMethylationEPIC BeadArray. \emph{Genome Biology}. 2018;19:64.
+Heiss JA, Just AC, Brenner H. Training a model for estimating leukocyte
+composition using whole-blood DNA methylation and cell counts as reference.
+\emph{Epigenomics}. 2017;9(1):13-20.
+Middleton LYM, Dou J, Mill J, et al. Saliva cell type DNA methylation
+reference panel for epidemiology studies in children. 2020.
 }

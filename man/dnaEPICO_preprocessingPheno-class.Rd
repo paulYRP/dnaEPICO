@@ -6,7 +6,7 @@
 \alias{dnaEPICO_preprocessingPheno}
 \title{Result class returned by preprocessingPheno}
 \description{
-Objects of class \code{"dnaEPICO_preprocessingPheno"} are list-based results
+Objects of class \code{'dnaEPICO_preprocessingPheno'} are list-based results
 returned by \code{\link[=preprocessingPheno]{preprocessingPheno()}}. They describe the phenotype data,
 methylation matrices, timepoint splits, longitudinal merges, and optional
 exported files.
@@ -16,8 +16,10 @@ exported files.
 \describe{
 \item{pheno}{Phenotype table read from \code{phenoFile}.}
 \item{metricsData}{Object returned by \code{\link[=loadMetricsPreprocessingPheno]{loadMetricsPreprocessingPheno()}}.}
-\item{timepointData}{Object returned by \code{\link[=splitTimepointsPreprocessingPheno]{splitTimepointsPreprocessingPheno()}}.}
-\item{combinedData}{Object returned by \code{\link[=combineTimepointsPreprocessingPheno]{combineTimepointsPreprocessingPheno()}}.}
+\item{timepointData}{Object returned by
+\code{\link[=splitTimepointsPreprocessingPheno]{splitTimepointsPreprocessingPheno()}}.}
+\item{combinedData}{Object returned by
+\code{\link[=combineTimepointsPreprocessingPheno]{combineTimepointsPreprocessingPheno()}}.}
 \item{clockFoundation}{Object returned by
 \code{\link[=buildClockFoundationInputsPreprocessingPheno]{buildClockFoundationInputsPreprocessingPheno()}}.}
 \item{savedFiles}{Object returned by \code{\link[=writePreprocessingPhenoOutputs]{writePreprocessingPhenoOutputs()}}

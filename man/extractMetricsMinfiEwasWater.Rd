@@ -25,7 +25,7 @@ extractMetricsMinfiEwasWater(
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_minfiEwasWater_metrics"} containing
+A list with class \code{'dnaEPICO_minfiEwasWater_metrics'} containing
 \code{beta}, \code{m}, and \code{cn}.
 }
 \description{
@@ -34,9 +34,9 @@ Extract beta, M, and copy-number matrices from a filtered object
 \examples{
 ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 metrics_data <- extractMetricsMinfiEwasWater(
-  filteredData = ex$filteredData,
-  verbose = FALSE,
-  logs = FALSE
+    filteredData = ex$filteredData,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(metrics_data)
 

@@ -25,7 +25,7 @@ buildRawMinfiEwasWater(
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_minfiEwasWater_raw"} containing \code{MSet},
+A list with class \code{'dnaEPICO_minfiEwasWater_raw'} containing \code{MSet},
 \code{RatioSet}, and \code{GSet}.
 }
 \description{
@@ -36,9 +36,9 @@ Create a raw \code{MethylSet}, \code{RatioSet}, and genome-mapped object from an
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 raw_data <- buildRawMinfiEwasWater(
-  RGSet = ex$RGSet,
-  verbose = FALSE,
-  logs = FALSE
+    RGSet = ex$RGSet,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(raw_data)
 \dontshow{\}) # examplesIf}

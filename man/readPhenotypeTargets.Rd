@@ -19,7 +19,7 @@ readPhenotypeTargets(
 \item{phenoFile}{Character. Path to the phenotype table on disk.}
 
 \item{sepType}{Character or \code{NULL}. Field separator used in \code{phenoFile}. Use
-\code{NULL} for a standard comma-separated file, \code{"\\\\t"} for a tab-delimited
+\code{NULL} for a standard comma-separated file, \code{'\\\\t'} for a tab-delimited
 file, or another single-character separator accepted by \code{utils::read.csv()}.}
 
 \item{nSamples}{Integer or \code{NA}. Number of rows to keep from the start of the
@@ -40,7 +40,7 @@ written when \code{logs = TRUE}. If \code{NULL}, the current working directory i
 used.}
 
 \item{log_file}{Character. File name used when \code{logs = TRUE}. The default is
-\code{"log_readPhenotypeTargets.txt"}.}
+\code{'log_readPhenotypeTargets.txt'}.}
 }
 \value{
 A \code{data.frame} containing the phenotype targets.
@@ -53,15 +53,15 @@ the targets as a base \code{data.frame}.
 \examples{
 tmp <- tempdir()
 pheno <- data.frame(
-  Sample_Name = c("S1", "S2"),
-  Sex = c("F", "M"),
-  stringsAsFactors = FALSE
+    Sample_Name = c("S1", "S2"),
+    Sex = c("F", "M"),
+    stringsAsFactors = FALSE
 )
 pheno_file <- file.path(tmp, "pheno.csv")
 utils::write.csv(pheno, pheno_file, row.names = FALSE)
 targets <- readPhenotypeTargets(
-  phenoFile = pheno_file,
-  SampleID = "Sample_Name"
+    phenoFile = pheno_file,
+    SampleID = "Sample_Name"
 )
 stopifnot(is.data.frame(targets))
 stopifnot(nrow(targets) == 2L)

@@ -8,6 +8,8 @@ collectSignificantInteractionsMethylationLME(
   modelResults,
   pvalThreshold = 0.05,
   interactionTerm = NULL,
+  excludeSingular = FALSE,
+  excludeNonConverged = FALSE,
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
@@ -23,6 +25,13 @@ interaction p-values.}
 \item{interactionTerm}{Character or \code{NULL}. Optional interaction term. When
 \code{NULL}, phenotype main effects are used.}
 
+\item{excludeSingular}{Logical. If \code{TRUE}, do not collect significant CpGs
+with singular lme4 fits.}
+
+\item{excludeNonConverged}{Logical. If \code{TRUE}, do not collect significant
+CpGs whose mixed model did not converge. Excluded CpG rows and reasons
+remain available in diagnostic and annotated output.}
+
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
 \item{logs}{Logical. If \code{TRUE}, write the same messages to a log file.}
@@ -33,7 +42,7 @@ interaction p-values.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationLME_significant"}
+A list with class \code{'dnaEPICO_methylationLME_significant'}
 containing the retained coefficient tables for each phenotype.
 }
 \description{
@@ -43,10 +52,10 @@ requested interaction p-value passes the chosen threshold.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 significant_hits <- collectSignificantInteractionsMethylationLME(
-  modelResults = ex$modelResults,
-  pvalThreshold = 1,
-  verbose = FALSE,
-  logs = FALSE
+    modelResults = ex$modelResults,
+    pvalThreshold = 1,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(significant_hits)
 

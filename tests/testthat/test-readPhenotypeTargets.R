@@ -119,4 +119,11 @@ test_that("readPhenotypeTargets validates the SampleID column", {
         ),
         "SampleID column not found in phenotype data"
     )
+    expect_error(
+        dnaEPICO::readPhenotypeTargets(
+            phenoFile = pheno_file,
+            SampleID = NA_character_
+        ),
+        "SampleID must be"
+    )
 })

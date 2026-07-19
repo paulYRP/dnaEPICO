@@ -3,8 +3,9 @@
 #' The `dnaEPICO` package provides a structured workflow for preprocessing and
 #' analyzing Illumina DNA methylation array data, including quality control,
 #' normalization, cell-type estimation, surrogate-variable analysis, phenotype
-#' preparation, cross-sectional modeling, longitudinal mixed-effects modeling,
-#' and PDF reporting.
+#' preparation, CpG-wise generalised linear models, longitudinal mixed-effects
+#' models using `lmerTest`/`lme4` or `nlme` with optional residual correlation
+#' structures, and interactive web reporting.
 #'
 #' The package supports two complementary usage styles:
 #' \itemize{

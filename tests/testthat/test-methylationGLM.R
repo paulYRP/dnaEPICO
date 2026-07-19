@@ -1,14 +1,14 @@
 create_methylation_glm_t1_example <- function(path) {
     phenoBT1 <- data.frame(
-        Sample_Name = c("S1", "S2", "S3", "S4"),
-        status = factor(c("Case", "Case", "Control", "Control")),
-        sex = factor(c("F", "M", "F", "M")),
-        cg00000029 = c(0.20, 0.25, 0.22, 0.27),
-        cg00000108 = c(0.60, 0.55, 0.52, 0.58),
+        Sample_Name = paste0("S", seq_len(8)),
+        status = factor(rep(c("Case", "Case", "Control", "Control"), 2)),
+        sex = factor(rep(c("F", "M", "F", "M"), 2)),
+        cg00000029 = c(0.20, 0.25, 0.22, 0.27, 0.23, 0.29, 0.26, 0.30),
+        cg00000108 = c(0.60, 0.55, 0.52, 0.58, 0.62, 0.57, 0.50, 0.56),
         check.names = FALSE
     )
 
-    input_path <- file.path(path, "phenoBetaT1.RData")
+    input_path <- file.path(path, "phenoBT1.RData")
     save(phenoBT1, file = input_path)
 
     list(
@@ -94,6 +94,9 @@ test_that("methylationGLM can write outputs and logs on request", {
 
     tmp <- withr::local_tempdir()
     example_data <- create_methylation_glm_t1_example(tmp)
+    report_assets <- file.path(
+        tmp, "reports", "model1", "assets", "results", "glm_results"
+    )
 
     expect_message(
         result <- methylationGLM(
@@ -115,6 +118,7 @@ test_that("methylationGLM can write outputs and logs on request", {
             annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
             annotationCols = "Name,chr,pos",
             annotatedGLMOut = file.path(tmp, "data", "methylationGLM"),
+            reportAssetsDir = report_assets,
             display = FALSE,
             verbose = TRUE,
             logs = TRUE,
@@ -129,16 +133,44 @@ test_that("methylationGLM can write outputs and logs on request", {
     log_text <- paste(readLines(log_file, warn = FALSE), collapse = "\n")
     expect_match(log_text, "Fit-time summary rows cached")
     expect_match(log_text, "Summary source:\\s+fit-time cache")
-    expect_equal(result$runSettings$methylationObjectPrefix, "phenoBeta")
+    expect_equal(result$runSettings$methylationObjectPrefix, "phenoB")
     expect_equal(result$modelFits$settings$internalResponseColumn, "beta")
     expect_true(file.exists(result$savedFiles$modelFiles[["status"]]))
     expect_true(file.exists(result$savedFiles$summaryFiles[["status"]]))
     expect_true(file.exists(result$savedFiles$summaryTxtFiles[["status"]]))
     expect_true(file.exists(result$savedFiles$annotatedGLM))
+    expect_true(file.exists(result$savedFiles$annotatedGLMText))
+    expect_true(file.exists(result$savedFiles$annotatedGLMReportMetadata))
+    expect_true(file.exists(result$savedFiles$annotatedGLMDictionary))
+    expect_true(file.exists(result$savedFiles$annotatedGLMMetadata))
     expect_match(result$savedFiles$annotatedGLM, "annotatedGLM\\.xlsx$")
     expect_equal(
+        normalizePath(
+            dirname(result$savedFiles$annotatedGLMText),
+            winslash = "/", mustWork = FALSE
+        ),
+        normalizePath(report_assets, winslash = "/", mustWork = FALSE)
+    )
+    expect_false(dir.exists(file.path(
+        dirname(result$savedFiles$annotatedGLM), "report-assets"
+    )))
+    expect_equal(
+        sort(basename(unlist(result$savedFiles[c(
+            "annotatedGLMText",
+            "annotatedGLMReportMetadata",
+            "annotatedGLMDictionary",
+            "annotatedGLMMetadata"
+        )]))),
+        sort(c(
+            "annotatedGLM.tsv.gz",
+            "annotatedGLM.report.tsv",
+            "annotatedGLM.dictionary.tsv",
+            "annotatedGLM.metadata.tsv"
+        ))
+    )
+    expect_equal(
         openxlsx::getSheetNames(result$savedFiles$annotatedGLM),
-        c("annotatedGLM", "dictionary")
+        c("annotatedGLM", "metadata", "dictionary")
     )
     dictionary <- openxlsx::read.xlsx(
         result$savedFiles$annotatedGLM,
@@ -148,6 +180,13 @@ test_that("methylationGLM can write outputs and logs on request", {
     expect_equal(colnames(dictionary), c("Column", "Description", "Formula"))
     expect_true(any(dictionary$Description == "Pvalue from GLM model"))
     expect_true(any(dictionary$Formula == "GLM: Beta values ~ `status` + `sex`"))
+    metadata <- openxlsx::read.xlsx(
+        result$savedFiles$annotatedGLM,
+        sheet = "metadata",
+        check.names = FALSE
+    )
+    expect_equal(metadata$Value[metadata$Key == "backend"], "glm2")
+    expect_equal(metadata$Value[metadata$Key == "fitting_function"], "glm2::glm2")
     expect_true(file.exists(file.path(tmp, "figures", "methylationGLM", "bar_status.tiff")))
     expect_true(file.exists(file.path(tmp, "figures", "methylationGLM", "qqplot_status.tiff")))
     expect_true(length(result$savedFiles$significantCpGFiles$status) >= 1)
@@ -206,6 +245,210 @@ test_that("annotated workbook dictionary reports copy number when requested", {
         dictionary$Formula[dictionary$Column == "statusCaseP.Value"],
         "GLM: Copy number values ~ `status` + `sex`"
     )
+})
+
+test_that("multiple GLM formulas use one consistent response label", {
+    dictionary <- dnaEPICO:::buildAnnotatedWorkbookDictionaryMethylationGLM(
+        columns = c("CpG", "unmappedP.Value"),
+        modelDescription = "Pvalue from GLM model",
+        formulaText = c(
+            status = "beta ~ `status`",
+            age = "beta ~ `age`"
+        ),
+        modelLabel = "GLM",
+        responseLabel = "Beta values"
+    )
+
+    expect_equal(
+        dictionary$Formula[dictionary$Column == "unmappedP.Value"],
+        "GLM: Beta values ~ `status`; Beta values ~ `age`"
+    )
+
+    mapped_dictionary <- dnaEPICO:::buildAnnotatedWorkbookDictionaryMethylationGLM(
+        columns = c("CpG", "statusCaseP.Value", "ageP.Value"),
+        modelDescription = "Pvalue from GLM model",
+        formulaText = c(
+            status = "beta ~ `status`",
+            age = "beta ~ `age`"
+        ),
+        modelLabel = "GLM",
+        responseLabel = "Beta values"
+    )
+
+    expect_equal(
+        mapped_dictionary$Formula[
+            mapped_dictionary$Column == "statusCaseP.Value"
+        ],
+        "GLM: Beta values ~ `status`"
+    )
+    expect_equal(
+        mapped_dictionary$Formula[
+            mapped_dictionary$Column == "ageP.Value"
+        ],
+        "GLM: Beta values ~ `age`"
+    )
+})
+
+test_that("GLM diagnostics retain convergence quality in summaries and annotation", {
+    tmp <- withr::local_tempdir()
+    example_data <- create_methylation_glm_t1_example(tmp)
+    prepared <- prepareMethylationGLMData(
+        inputPheno = example_data$inputPheno,
+        phenotypes = "status",
+        covariates = "sex",
+        factorVars = "status,sex",
+        cpgLimit = 1,
+        logs = FALSE
+    )
+    fits <- fitMethylationGLMModels(prepared, nCores = 1, logs = FALSE)
+    summaries <- summarizeMethylationGLMModels(
+        fits,
+        prepared,
+        excludeNonConverged = TRUE,
+        logs = FALSE
+    )
+    summary_table <- summaries$summaries$status
+    quality_columns <- c(
+        "Fit.Status", "Converged", "Convergence.Message",
+        "Fit.Warning", "Inference.Included", "Exclusion.Reason"
+    )
+    expect_true(all(quality_columns %in% names(summary_table)))
+    expect_true(summary_table$Converged)
+    expect_true(summary_table$Inference.Included)
+    expect_false("Singular.Fit" %in% names(summary_table))
+
+    annotation <- annotateMethylationGLMSummaries(
+        modelSummaries = summaries,
+        annotationObject = data.frame(
+            CpG = "cg00000029",
+            chr = "chr1",
+            stringsAsFactors = FALSE
+        ),
+        annotationCols = "chr",
+        logs = FALSE
+    )
+    expect_true(all(c(
+        "status_Converged", "status_Inference.Included",
+        "status_Convergence.Message"
+    ) %in% names(annotation$data)))
+    expect_false(any(c("Fit.Status", "Converged", "Inference.Included") %in% names(annotation$data)))
+    expect_true(annotation$data$status_Converged)
+    expect_equal(names(annotation$data)[[1L]], "IlmnID")
+    expect_lt(match("chr", names(annotation$data)), match("status_Fit.Status", names(annotation$data)))
+})
+
+test_that("non-converged GLM failures retain their CpG and convergence reason", {
+    failed_fit <- dnaEPICO:::newMethylationFitErrorDnaEpico(
+        reason = "The GLM did not converge.",
+        errorClass = "dnaEPICO_methylationGLM_fit_error",
+        status = "not_converged",
+        converged = FALSE,
+        convergenceMessage = "The GLM did not converge."
+    )
+    fits <- list(status = list(cg_failed = failed_fit))
+    diagnostics <- dnaEPICO:::collectFitDiagnosticsMethylationGLM(fits)
+    failures <- dnaEPICO:::collectFitFailuresMethylationModels(
+        fits,
+        "dnaEPICO_methylationGLM_fit_error"
+    )
+    annotation <- annotateMethylationGLMSummaries(
+        modelSummaries = list(
+            diagnosticSummaries = list(status = data.frame()),
+            summaries = list(status = data.frame()),
+            phenotypes = "status",
+            fitFailures = failures,
+            fitDiagnostics = diagnostics
+        ),
+        annotationObject = data.frame(
+            CpG = "cg_failed",
+            chr = "chr1",
+            stringsAsFactors = FALSE
+        ),
+        annotationCols = "chr",
+        logs = FALSE
+    )
+
+    expect_equal(annotation$data$IlmnID, "cg_failed")
+    expect_equal(annotation$data$status_Fit.Status, "not_converged")
+    expect_false(annotation$data$status_Converged)
+    expect_match(annotation$data$status_Convergence.Message, "did not converge")
+    expect_match(annotation$data$status_Exclusion.Reason, "did not converge")
+})
+
+test_that("scaleVars standardizes only selected GLM fixed effects", {
+    tmp <- withr::local_tempdir()
+    example_data <- create_methylation_glm_t1_example(tmp)
+    phenoBT1 <- example_data$phenoBT1
+    phenoBT1$age <- seq(20, 55, length.out = nrow(phenoBT1))
+    save(phenoBT1, file = example_data$inputPheno)
+
+    prepared <- prepareMethylationGLMData(
+        inputPheno = example_data$inputPheno,
+        phenotypes = "status",
+        covariates = "sex,age",
+        factorVars = "status,sex",
+        scaleVars = "age",
+        cpgLimit = 1,
+        logs = FALSE
+    )
+
+    expect_equal(prepared$data$age, phenoBT1$age)
+    expect_equal(mean(prepared$modelData$age), 0, tolerance = 1e-12)
+    expect_equal(stats::sd(prepared$modelData$age), 1, tolerance = 1e-12)
+    expect_equal(prepared$scaleVars, "age")
+    expect_equal(prepared$scalingMetadata$Variable, "age")
+    expect_error(
+        prepareMethylationGLMData(
+            inputPheno = example_data$inputPheno,
+            phenotypes = "status",
+            covariates = "sex,age",
+            factorVars = "status,sex",
+            scaleVars = "sex",
+            cpgLimit = 1,
+            logs = FALSE
+        ),
+        "both factorVars and scaleVars"
+    )
+    expect_error(
+        prepareMethylationGLMData(
+            inputPheno = example_data$inputPheno,
+            phenotypes = "status",
+            covariates = "sex",
+            factorVars = "status,sex",
+            scaleVars = "age",
+            cpgLimit = 1,
+            logs = FALSE
+        ),
+        "fixed-effect variables"
+    )
+})
+
+test_that("parallel plans use engine crossover and resource caps", {
+    withr::local_envvar(c(
+        DNAEPICO_PARALLEL_BACKEND = "auto",
+        DNAEPICO_MAX_WORKERS = "2"
+    ))
+    expect_equal(dnaEPICO:::parallelCrossoverMethylationModels("glm2"), 25000L)
+    expect_equal(dnaEPICO:::parallelCrossoverMethylationModels("lme4"), 1500L)
+    expect_equal(dnaEPICO:::parallelCrossoverMethylationModels("nlme"), 5000L)
+
+    small <- dnaEPICO:::resolveParallelPlanMethylationModels(
+        engine = "glm2",
+        nCores = 8,
+        nCpGs = 100
+    )
+    expect_equal(small$backend, "serial")
+    expect_equal(small$workerCount, 1L)
+    expect_match(small$reason, "below")
+
+    withr::local_envvar(DNAEPICO_PARALLEL_BACKEND = "psock")
+    forced <- dnaEPICO:::resolveParallelPlanMethylationModels(
+        engine = "glm2",
+        nCores = 8,
+        nCpGs = 3
+    )
+    expect_lte(forced$workerCount, 2L)
+    expect_lte(forced$workerCount, 3L)
 })
 
 test_that("annotateMethylationGLMSummaries accepts annotation package names", {

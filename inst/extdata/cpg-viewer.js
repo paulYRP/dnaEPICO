@@ -3,6 +3,8 @@
 
   window.dnaEPICOResultChunks = window.dnaEPICOResultChunks || {};
   window.dnaEPICOResultManifests = window.dnaEPICOResultManifests || {};
+  window.dnaEPICOResultChunkAccess = window.dnaEPICOResultChunkAccess || {};
+  var chunkAccessCounter = 0;
 
   function formatCount(value) {
     return Number(value).toLocaleString("en-AU");
@@ -16,9 +18,31 @@
     return manifest.key + ":" + number;
   }
 
+  function rememberChunk(manifest, number) {
+    var cacheKey = chunkKey(manifest, number);
+    chunkAccessCounter += 1;
+    window.dnaEPICOResultChunkAccess[cacheKey] = chunkAccessCounter;
+
+    var prefix = manifest.key + ":";
+    var cachedKeys = Object.keys(window.dnaEPICOResultChunks).filter(function (key) {
+      return key.startsWith(prefix);
+    });
+    var maximum = Number(manifest.maxCachedChunks) || 4;
+    while (cachedKeys.length > maximum) {
+      cachedKeys.sort(function (left, right) {
+        return (window.dnaEPICOResultChunkAccess[left] || 0) -
+          (window.dnaEPICOResultChunkAccess[right] || 0);
+      });
+      var oldest = cachedKeys.shift();
+      delete window.dnaEPICOResultChunks[oldest];
+      delete window.dnaEPICOResultChunkAccess[oldest];
+    }
+  }
+
   function loadChunk(manifest, number) {
     var cacheKey = chunkKey(manifest, number);
     if (window.dnaEPICOResultChunks[cacheKey]) {
+      rememberChunk(manifest, number);
       return Promise.resolve(window.dnaEPICOResultChunks[cacheKey].rows);
     }
 
@@ -29,6 +53,7 @@
       script.onload = function () {
         script.remove();
         if (window.dnaEPICOResultChunks[cacheKey]) {
+          rememberChunk(manifest, number);
           resolve(window.dnaEPICOResultChunks[cacheKey].rows);
         } else {
           reject(new Error("The requested result chunk did not register correctly."));
@@ -43,7 +68,9 @@
   }
 
   function releaseChunk(manifest, number) {
-    delete window.dnaEPICOResultChunks[chunkKey(manifest, number)];
+    var cacheKey = chunkKey(manifest, number);
+    delete window.dnaEPICOResultChunks[cacheKey];
+    delete window.dnaEPICOResultChunkAccess[cacheKey];
   }
 
   async function loadRange(manifest, start, end) {

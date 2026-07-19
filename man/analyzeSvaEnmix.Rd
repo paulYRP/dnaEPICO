@@ -36,23 +36,25 @@ analyzeSvaEnmix(
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_svaEnmix_analysis"} containing the
+A list with class \code{'dnaEPICO_svaEnmix_analysis'} containing the
 aligned Sentrix factors, full and reduced linear models, and ANOVA tables.
 }
 \description{
-Fit linear models for each surrogate variable against Sentrix chip and
-Sentrix position, perform backward elimination with \code{MASS::dropterm()}, and
-return the in-memory analysis objects.
+Fit linear models for each surrogate variable against informative Sentrix
+chip and position factors, perform backward elimination with
+\code{stats::drop1()}, and return the in-memory analysis objects. A constant
+technical factor is omitted; if both are constant, an intercept-only model
+is retained.
 }
 \examples{
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 analysis_data <- analyzeSvaEnmix(
-  sva = ex$sva,
-  RGSet = ex$RGSet,
-  SentrixIDColumn = "Sentrix_ID",
-  SentrixPositionColumn = "Sentrix_Position",
-  verbose = FALSE,
-  logs = FALSE
+    sva = ex$sva,
+    RGSet = ex$RGSet,
+    SentrixIDColumn = "Sentrix_ID",
+    SentrixPositionColumn = "Sentrix_Position",
+    verbose = FALSE,
+    logs = FALSE
 )
 analysis_data$K
 

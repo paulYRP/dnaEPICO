@@ -65,7 +65,7 @@ test_that("preprocessingPheno returns in-memory objects quietly by default", {
     expect_null(result$savedFiles)
     expect_identical(result$timepointData$timepoints, c("1", "2"))
     expect_equal(nrow(result$combinedData$pheno), 3)
-    expect_equal(nrow(result$combinedData$phenoBeta), 3)
+    expect_equal(nrow(result$combinedData$phenoB), 3)
     expect_true(all(c("ProbeID", "S1", "S2", "S3") %in% colnames(result$clockFoundation$betaCSV)))
     expect_true("id" %in% colnames(result$clockFoundation$phenoCF))
     expect_false(dir.exists(file.path(tmp, "data", "preprocessingPheno")))
@@ -102,7 +102,24 @@ test_that("preprocessingPheno can write legacy outputs and logs on request", {
     expect_true(file.exists(file.path(tmp, "logs", "log_preprocessingPheno.txt")))
     expect_true(file.exists(file.path(tmp, "data", "preprocessingPheno", "phenoT1.csv")))
     expect_true(file.exists(file.path(tmp, "rData", "preprocessingPheno", "metrics", "betaT1.RData")))
-    expect_true(file.exists(file.path(tmp, "rData", "preprocessingPheno", "mergeData", "phenoBetaT1.RData")))
+    pheno_b_t1 <- file.path(
+        tmp,
+        "rData",
+        "preprocessingPheno",
+        "mergeData",
+        "phenoBT1.RData"
+    )
+    expect_true(file.exists(pheno_b_t1))
+    expect_equal(
+        result$savedFiles$combinedPhenoB,
+        file.path(
+            tmp,
+            "rData",
+            "preprocessingPheno",
+            "mergeData",
+            "phenoBT1T2.RData"
+        )
+    )
     expect_true(file.exists(file.path(tmp, "clockFoundation", "beta.csv")))
     expect_true(file.exists(file.path(tmp, "clockFoundation", "phenoCF.csv")))
 })
@@ -169,4 +186,81 @@ test_that("preprocessingPheno selects M and CN modeling scales without changing 
     load(pheno_cn_t1, envir = loaded)
     expect_true("phenoCNT1" %in% ls(loaded))
     expect_equal(loaded$phenoCNT1$cg1, c(10, 30))
+})
+
+test_that("Clock Foundation input reports and excludes invalid beta CpGs", {
+    beta <- rbind(
+        cg_boundary = c(0, 1),
+        cg_nan = c(NaN, 0.4),
+        cg_outside = c(-0.01, 0.5),
+        cg_missing = c(NA_real_, NA_real_)
+    )
+    colnames(beta) <- c("S1", "S2")
+    pheno <- data.frame(
+        Sample_Name = c("S2", "S1"),
+        Sex = c("M", "F"),
+        stringsAsFactors = FALSE
+    )
+
+    result <- suppressWarnings(buildClockFoundationInputsPreprocessingPheno(
+        beta = beta,
+        pheno = pheno,
+        verbose = FALSE,
+        logs = FALSE
+    ))
+
+    expect_identical(result$betaCSV$ProbeID, c("cg_boundary", "cg_nan"))
+    expect_true(is.na(result$betaCSV$S1[result$betaCSV$ProbeID == "cg_nan"]))
+    expect_identical(result$phenoCF$id, c("S1", "S2"))
+    expect_identical(result$invalidCpGs$CpG, c("cg_outside", "cg_missing"))
+    expect_equal(result$methylationBoundaries$At.Lower.Boundary, 1L)
+    expect_equal(result$methylationBoundaries$At.Upper.Boundary, 1L)
+    expect_equal(result$methylationBoundaries$NaN.Converted, 1L)
+})
+
+test_that("Clock Foundation input rejects ambiguous CpG identifiers", {
+    beta <- matrix(
+        c(0.1, 0.2, 0.3, 0.4),
+        nrow = 2,
+        dimnames = list(c("cg1", "cg1"), c("S1", "S2"))
+    )
+    pheno <- data.frame(
+        Sample_Name = c("S1", "S2"),
+        Sex = c("F", "M"),
+        stringsAsFactors = FALSE
+    )
+
+    expect_error(
+        buildClockFoundationInputsPreprocessingPheno(
+            beta = beta,
+            pheno = pheno,
+            logs = FALSE
+        ),
+        "duplicate CpG identifiers"
+    )
+})
+
+test_that("timepoint parsing ignores missing rows and removes duplicate requests", {
+    beta <- matrix(
+        c(0.1, 0.2, 0.3),
+        nrow = 1,
+        dimnames = list("cg1", c("S1", "S2", "S3"))
+    )
+    metrics <- list(beta = beta, m = beta, cn = beta)
+    pheno <- data.frame(
+        Sample_Name = c("S1", "S2", "S3"),
+        Timepoint = c("1", NA_character_, "2"),
+        stringsAsFactors = FALSE
+    )
+
+    result <- splitTimepointsPreprocessingPheno(
+        pheno = pheno,
+        metricsData = metrics,
+        timepoints = "1,1,2",
+        logs = FALSE
+    )
+
+    expect_identical(result$timepoints, c("1", "2"))
+    expect_identical(result$data[["1"]]$pheno$Sample_Name, "S1")
+    expect_identical(result$data[["2"]]$pheno$Sample_Name, "S3")
 })

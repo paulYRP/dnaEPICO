@@ -26,7 +26,7 @@ plotMetricsMinfiEwasWater(
 
 \item{targets}{Filtered phenotype data aligned with \code{metricsData}.}
 
-\item{plot}{Character. Plot type: \code{"mds"} or \code{"density"}.}
+\item{plot}{Character. Plot type: \code{'mds'} or \code{'density'}.}
 
 \item{plotGroupVar}{Character. Phenotype column used for the main grouping.}
 
@@ -63,14 +63,14 @@ Plot multidimensional scaling or density summaries from final metrics
 \examples{
 ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 plotMetricsMinfiEwasWater(
-  metricsData = ex$metricsData,
-  targets = ex$targets,
-  plot = "density",
-  plotGroupVar = "Sex",
-  sexColumn = "Sex",
-  display = FALSE,
-  verbose = FALSE,
-  logs = FALSE
+    metricsData = ex$metricsData,
+    targets = ex$targets,
+    plot = "density",
+    plotGroupVar = "Sex",
+    sexColumn = "Sex",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE
 )
 
 }

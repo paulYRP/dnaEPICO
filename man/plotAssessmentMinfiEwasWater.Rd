@@ -21,7 +21,7 @@ plotAssessmentMinfiEwasWater(
 \arguments{
 \item{assessment}{Object returned by \code{assessSamplesMinfiEwasWater()}.}
 
-\item{plot}{Character. Plot type: \code{"qc"} or \code{"detection"}.}
+\item{plot}{Character. Plot type: \code{'qc'} or \code{'detection'}.}
 
 \item{display}{Logical. If \code{TRUE}, draw the plot on the active graphics
 device.}
@@ -53,15 +53,15 @@ assessment object returned by \code{assessSamplesMinfiEwasWater()}.
 }
 \examples{
 assessment <- list(
-  meanDetP = c(S1 = 0.01, S2 = 0.02, S3 = 0.04),
-  detPThreshold = 0.05
+    meanDetP = c(S1 = 0.01, S2 = 0.02, S3 = 0.04),
+    detPThreshold = 0.05
 )
 plotAssessmentMinfiEwasWater(
-  assessment = assessment,
-  plot = "detection",
-  display = FALSE,
-  verbose = FALSE,
-  logs = FALSE
+    assessment = assessment,
+    plot = "detection",
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE
 )
 
 }

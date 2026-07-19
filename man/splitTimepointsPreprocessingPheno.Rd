@@ -30,7 +30,7 @@ splitTimepointsPreprocessingPheno(
 retain.}
 
 \item{methylationScale}{Character. Methylation metric to use for the merged
-modeling table. One of \code{"beta"}, \code{"m"}, or \code{"cn"}.}
+modeling table. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, case-insensitively.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -42,7 +42,7 @@ modeling table. One of \code{"beta"}, \code{"m"}, or \code{"cn"}.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_preprocessingPheno_timepoints"}
+A list with class \code{'dnaEPICO_preprocessingPheno_timepoints'}
 containing the parsed timepoints and aligned per-timepoint subsets.
 }
 \description{
@@ -53,13 +53,13 @@ modeling functions.
 \examples{
 ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 timepoint_data <- splitTimepointsPreprocessingPheno(
-  pheno = ex$pheno,
-  metricsData = ex$metricsData,
-  SampleID = "Sample_Name",
-  timeVar = "Timepoint",
-  timepoints = "1,2",
-  verbose = FALSE,
-  logs = FALSE
+    pheno = ex$pheno,
+    metricsData = ex$metricsData,
+    SampleID = "Sample_Name",
+    timeVar = "Timepoint",
+    timepoints = "1,2",
+    verbose = FALSE,
+    logs = FALSE
 )
 timepoint_data$timepoints
 

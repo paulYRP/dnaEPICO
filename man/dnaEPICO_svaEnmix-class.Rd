@@ -6,7 +6,7 @@
 \alias{dnaEPICO_svaEnmix}
 \title{Result class returned by svaEnmix}
 \description{
-Objects of class \code{"dnaEPICO_svaEnmix"} are list-based results returned by
+Objects of class \code{'dnaEPICO_svaEnmix'} are list-based results returned by
 \code{\link[=svaEnmix]{svaEnmix()}}. They collect the loaded inputs, surrogate-variable results,
 association-analysis summaries, and optional file outputs.
 }

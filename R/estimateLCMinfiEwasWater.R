@@ -7,9 +7,10 @@
 #' @param beta Numeric matrix of beta values with probes in rows and samples in
 #'   columns.
 #' @param targets Phenotype data frame aligned with the columns of `beta`.
+#' @param SampleID Character. Phenotype column containing sample identifiers.
 #' @param lcRef Character. Cell-composition reference. Internal saliva-based
-#'   references supported through `estimateLC()` are `"saliva"` and
-#'   `"salivaEPIC"`. Other references are passed to
+#'   references supported through `estimateLC()` are `'saliva'` and
+#'   `'salivaEPIC'`. Other references are passed to
 #'   `ENmix::estimateCellProp()`.
 #' @param phenoOrder Character vector or semicolon-separated string describing
 #'   the phenotype columns that should appear first in the merged `phenoLC`
@@ -23,7 +24,7 @@
 #'   `logs = TRUE`.
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
-#' @return A list with class `"dnaEPICO_minfiEwasWater_lc"` containing the cell
+#' @return A list with class `'dnaEPICO_minfiEwasWater_lc'` containing the cell
 #'   proportion matrix, merged phenotype table, reference name, and method used.
 #'
 #' @examples
@@ -31,100 +32,151 @@
 #' beta <- as.matrix(utils::read.table(ref_file))[1:20, , drop = FALSE]
 #' colnames(beta) <- c("sample1", "sample2")
 #' targets <- data.frame(
-#'   Sample_Name = colnames(beta),
-#'   Timepoint = c("T1", "T2"),
-#'   stringsAsFactors = FALSE
+#'     Sample_Name = colnames(beta),
+#'     Timepoint = c("T1", "T2"),
+#'     stringsAsFactors = FALSE
 #' )
 #' lc_data <- estimateLCMinfiEwasWater(
-#'   beta = beta,
-#'   targets = targets,
-#'   lcRef = "saliva",
-#'   phenoOrder = "Sample_Name;Timepoint"
+#'     beta = beta,
+#'     targets = targets,
+#'     lcRef = "saliva",
+#'     phenoOrder = "Sample_Name;Timepoint"
 #' )
 #' stopifnot(is.data.frame(lc_data$phenoLC))
 #'
 #' @export
 estimateLCMinfiEwasWater <- function(
-    beta,
-    targets,
+    beta, targets, SampleID = "Sample_Name",
     lcRef = "salivaEPIC",
-    phenoOrder =
-      "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
-    constrained = FALSE,
-    verbose = FALSE,
-    logs = FALSE,
-    log_dir = NULL,
+        phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
+    constrained = FALSE, verbose = FALSE, logs = FALSE, log_dir = NULL,
     log_file = "log_estimateLCMinfiEwasWater.txt"
 ) {
-  log_path <- resolveLogPathMinfiEwasWater(
-    logs = logs,
-    log_dir = log_dir,
-    log_file = log_file
-  )
-
-  ewas_refs <- c("saliva", "salivaEPIC")
-  use_internal <- lcRef %in% ewas_refs
-
-  emitLogMinfiEwasWater(
-    c(
-      paste("Cell composition reference:", lcRef),
-      if (use_internal) {
-        "Using internal Houseman implementation (estimateLC)."
-      } else {
-        "Using ENmix Houseman-based cell composition."
-      }
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
-
-  if (use_internal) {
-    lc <- estimateLC(
-      meth = beta,
-      ref = lcRef,
-      constrained = constrained
+    log_path <- resolveLogPathMinfiEwasWater(
+        logs = logs, log_dir = log_dir,
+        log_file = log_file
     )
-    method <- "estimateLC"
-  } else {
-    lc <- ENmix::estimateCellProp(
-      userdata = beta,
-      refdata = lcRef,
-      nonnegative = TRUE,
-      normalize = FALSE,
-      nProbes = 50,
-      refplot = FALSE
+
+    constrained <- validateLogicalScalarDnaEpico(
+        constrained,
+        "constrained"
     )
-    method <- "ENmix::estimateCellProp"
-  }
+    if (!is.character(lcRef) || length(lcRef) != 1L || is.na(lcRef) ||
+        !nzchar(trimws(lcRef))) {
+        stop("lcRef must be one non-empty reference name.", call. = FALSE)
+    }
+    ewas_refs <- c("saliva", "salivaEPIC")
+    use_internal <- lcRef %in% ewas_refs
 
-  phenoLC <- cbind(targets, lc)
-  phenoLC <- phenoLC[, !duplicated(colnames(phenoLC)), drop = FALSE]
+    validateCellCompositionBetaStructureDnaEpico(
+        beta = beta,
+        requireSampleNames = TRUE, objectName = "beta"
+    )
+    beta_sample_ids <- as.character(colnames(beta))
+    beta_validation <- prepareBetaForCellCompositionDnaEpico(beta)
+    beta <- beta_validation$beta
+    if (beta_validation$boundaries$NaN.Converted > 0L) {
+        warning(beta_validation$boundaries$NaN.Converted,
+            " NaN value(s) were converted to NA before cell-composition estimation.",
+            call. = FALSE
+        )
+    }
+    if (nrow(beta_validation$invalidCpGs) > 0L) {
+        warning(nrow(beta_validation$invalidCpGs),
+            " invalid CpG(s) were excluded from cell-composition estimation.",
+            call. = FALSE
+        )
+    }
+    if (!(SampleID %in% colnames(targets))) {
+        stop("SampleID column not found in targets: ", SampleID,
+            call. = FALSE
+        )
+    }
+    target_sample_ids <- validateSampleIdentifiersDnaEpico(
+        targets[[SampleID]],
+        paste0("Phenotype column '", SampleID, "'")
+    )
+    target_match <- matchSampleIdentifiersDnaEpico(
+        query = beta_sample_ids,
+        reference = target_sample_ids,
+            queryLabel = "Beta-matrix sample identifiers",
+        referenceLabel = paste0(
+            "phenotype column '", SampleID,
+            "'"
+        ), requireSameSet = TRUE
+    )
+    targets <- targets[target_match, , drop = FALSE]
+    rownames(targets) <- NULL
 
-  lead_cols <- splitOptionMinfiEwasWater(phenoOrder, sep = ";")
-  lead_cols <- lead_cols[lead_cols %in% colnames(phenoLC)]
-  remaining_cols <- setdiff(colnames(phenoLC), lead_cols)
-  phenoLC <- phenoLC[, c(lead_cols, remaining_cols), drop = FALSE]
+    emitLogMinfiEwasWater(c(
+        paste(
+            "Cell composition reference:",
+            lcRef
+        ), if (use_internal) {
+            "Using internal Houseman implementation (estimateLC)."
+        } else {
+            "Using ENmix Houseman-based cell composition."
+        }, formatMethylationBoundariesLogDnaEpico(beta_validation$boundaries),
+        if (nrow(beta_validation$issues) > 0L) {
+            c("Methylation value issues:",
+                previewLinesMinfiEwasWater(beta_validation$issues))
+        } else {
+            "Methylation value issues:     none"
+        }
+    ), verbose = verbose, log_path = log_path)
 
-  emitLogMinfiEwasWater(
-    c(
-      paste("Cell composition method:   ", method),
-      paste("phenoLC columns:           ", ncol(phenoLC)),
-      paste("phenoLC rows:              ", nrow(phenoLC)),
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
+    if (use_internal) {
+        lc <- estimateLCFromValidatedBetaDnaEpico(
+            meth = beta,
+            ref = lcRef, constrained = constrained
+        )
+        method <- "estimateLC"
+    } else {
+        lc <- ENmix::estimateCellProp(
+            userdata = beta, refdata = lcRef,
+            nonnegative = TRUE, normalize = FALSE, nProbes = 50,
+            refplot = FALSE
+        )
+        method <- "ENmix::estimateCellProp"
+    }
 
-  structure(
-    list(
-      lc = lc,
-      phenoLC = phenoLC,
-      ref = lcRef,
-      method = method
-    ),
-    class = "dnaEPICO_minfiEwasWater_lc"
-  )
+    if (nrow(lc) != ncol(beta)) {
+        stop("Cell-composition output has ", nrow(lc), " rows for ",
+            ncol(beta), " beta-matrix samples.",
+            call. = FALSE
+        )
+    }
+
+    phenoLC <- cbind(targets, as.data.frame(lc, stringsAsFactors = FALSE))
+    phenoLC <- phenoLC[, !duplicated(colnames(phenoLC)), drop = FALSE]
+
+    lead_cols <- splitOptionMinfiEwasWater(phenoOrder, sep = ";")
+    lead_cols <- lead_cols[lead_cols %in% colnames(phenoLC)]
+    remaining_cols <- setdiff(colnames(phenoLC), lead_cols)
+    phenoLC <- phenoLC[, c(lead_cols, remaining_cols), drop = FALSE]
+
+    emitLogMinfiEwasWater(
+        c(
+            paste(
+                "Cell composition method:   ",
+                method
+            ), paste("phenoLC columns:           ", ncol(phenoLC)),
+            paste("phenoLC rows:              ", nrow(phenoLC)),
+            "============================================================"
+        ),
+        verbose = verbose, log_path = log_path
+    )
+
+    structure(
+        list(
+            lc = lc, phenoLC = phenoLC, sampleIDs = beta_sample_ids,
+            SampleID = SampleID, ref = lcRef, method = method,
+                methylationBoundaries = beta_validation$boundaries,
+            methylationIssues = beta_validation$issues,
+                invalidCpGs = beta_validation$invalidCpGs
+        ),
+        class = "dnaEPICO_minfiEwasWater_lc"
+    )
 }
 
 #' Write the merged phenotype plus cell-composition table
@@ -144,15 +196,15 @@ estimateLCMinfiEwasWater <- function(
 #' beta <- as.matrix(utils::read.table(ref_file))[1:20, , drop = FALSE]
 #' colnames(beta) <- c("sample1", "sample2")
 #' targets <- data.frame(
-#'   Sample_Name = colnames(beta),
-#'   Timepoint = c("T1", "T2"),
-#'   stringsAsFactors = FALSE
+#'     Sample_Name = colnames(beta),
+#'     Timepoint = c("T1", "T2"),
+#'     stringsAsFactors = FALSE
 #' )
 #' lc_data <- estimateLCMinfiEwasWater(
-#'   beta = beta,
-#'   targets = targets,
-#'   lcRef = "saliva",
-#'   phenoOrder = "Sample_Name;Timepoint"
+#'     beta = beta,
+#'     targets = targets,
+#'     lcRef = "saliva",
+#'     phenoOrder = "Sample_Name;Timepoint"
 #' )
 #' output_file <- file.path(tempdir(), "phenoLC.csv")
 #' writePhenoLCMinfiEwasWater(lcData = lc_data, file = output_file)
@@ -160,30 +212,25 @@ estimateLCMinfiEwasWater <- function(
 #'
 #' @export
 writePhenoLCMinfiEwasWater <- function(
-    lcData,
-    file,
-    verbose = FALSE,
-    logs = FALSE,
-    log_dir = NULL,
-    log_file = "log_writePhenoLCMinfiEwasWater.txt"
+    lcData, file, verbose = FALSE,
+    logs = FALSE, log_dir = NULL,
+        log_file = "log_writePhenoLCMinfiEwasWater.txt"
 ) {
-  log_path <- resolveLogPathMinfiEwasWater(
-    logs = logs,
-    log_dir = log_dir,
-    log_file = log_file
-  )
+    log_path <- resolveLogPathMinfiEwasWater(
+        logs = logs, log_dir = log_dir,
+        log_file = log_file
+    )
 
-  dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
-  utils::write.csv(lcData$phenoLC, file = file, row.names = FALSE)
+    dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
+    utils::write.csv(lcData$phenoLC, file = file, row.names = FALSE)
 
-  emitLogMinfiEwasWater(
-    c(
-      paste("Saved phenoLC:             ", file),
-      "======================================================================="
-    ),
-    verbose = verbose,
-    log_path = log_path
-  )
+    emitLogMinfiEwasWater(
+        c(paste(
+            "Saved phenoLC:             ",
+            file
+        ), "============================================================"),
+        verbose = verbose, log_path = log_path
+    )
 
-  invisible(file)
+    invisible(file)
 }

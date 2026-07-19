@@ -6,7 +6,7 @@
 \alias{dnaEPICO_preprocessingMinfiEwasWater}
 \title{Result class returned by preprocessingMinfiEwasWater}
 \description{
-Objects of class \code{"dnaEPICO_preprocessingMinfiEwasWater"} are list-based
+Objects of class \code{'dnaEPICO_preprocessingMinfiEwasWater'} are list-based
 results returned by \code{\link[=preprocessingMinfiEwasWater]{preprocessingMinfiEwasWater()}}. They are lightweight
 S3-style containers rather than formal S4 classes.
 }

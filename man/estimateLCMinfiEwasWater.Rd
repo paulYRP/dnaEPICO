@@ -7,6 +7,7 @@
 estimateLCMinfiEwasWater(
   beta,
   targets,
+  SampleID = "Sample_Name",
   lcRef = "salivaEPIC",
   phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
   constrained = FALSE,
@@ -22,9 +23,11 @@ columns.}
 
 \item{targets}{Phenotype data frame aligned with the columns of \code{beta}.}
 
+\item{SampleID}{Character. Phenotype column containing sample identifiers.}
+
 \item{lcRef}{Character. Cell-composition reference. Internal saliva-based
-references supported through \code{estimateLC()} are \code{"saliva"} and
-\code{"salivaEPIC"}. Other references are passed to
+references supported through \code{estimateLC()} are \code{'saliva'} and
+\code{'salivaEPIC'}. Other references are passed to
 \code{ENmix::estimateCellProp()}.}
 
 \item{phenoOrder}{Character vector or semicolon-separated string describing
@@ -45,7 +48,7 @@ to one.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_minfiEwasWater_lc"} containing the cell
+A list with class \code{'dnaEPICO_minfiEwasWater_lc'} containing the cell
 proportion matrix, merged phenotype table, reference name, and method used.
 }
 \description{
@@ -58,15 +61,15 @@ ref_file <- system.file("extdata", "saliva.txt", package = "dnaEPICO")
 beta <- as.matrix(utils::read.table(ref_file))[1:20, , drop = FALSE]
 colnames(beta) <- c("sample1", "sample2")
 targets <- data.frame(
-  Sample_Name = colnames(beta),
-  Timepoint = c("T1", "T2"),
-  stringsAsFactors = FALSE
+    Sample_Name = colnames(beta),
+    Timepoint = c("T1", "T2"),
+    stringsAsFactors = FALSE
 )
 lc_data <- estimateLCMinfiEwasWater(
-  beta = beta,
-  targets = targets,
-  lcRef = "saliva",
-  phenoOrder = "Sample_Name;Timepoint"
+    beta = beta,
+    targets = targets,
+    lcRef = "saliva",
+    phenoOrder = "Sample_Name;Timepoint"
 )
 stopifnot(is.data.frame(lc_data$phenoLC))
 

@@ -5,9 +5,6 @@ author:
     affiliation:
       - Queensland University of Technology
     email: ruizpint@qut.edu.au
-  - name: Divya Mehta
-    affiliation:
-      - Queensland University of Technology
 output:
   BiocStyle::html_document:
     self_contained: yes
@@ -24,17 +21,17 @@ resource_files:
   - methylationLME_pipeline_overview.svg
   - dnamReport_pipeline_overview.svg
 vignette: >
-  %\VignetteIndexEntry{1. dnaEPICO Overview}
-  %\VignetteEncoding{UTF-8}
-  %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{1. dnaEPICO Overview}
+    %\VignetteEncoding{UTF-8}
+    %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ```{r, include = FALSE}
 startTime <- Sys.time()
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  crop = NULL
+    collapse = TRUE,
+    comment = "#>",
+    crop = NULL
 )
 
 library(dnaEPICO)
@@ -56,7 +53,7 @@ Read each overview as follows:
 - The grouped regions show the main analysis tasks performed inside a function.
 - The final nodes show the outputs that are returned to R or written to disk.
 - The same function can be used interactively or as part of a file-based
-  pipeline, depending on the value of `saveOutputs`.
+    pipeline, depending on the value of `saveOutputs`.
 
 # Required knowledge
 
@@ -98,182 +95,182 @@ The lists of excluded probes depend on the Illumina methylation-array platform.
 cat("
 <style>
 .overview-figure {
-  margin: 1.5rem 0 2rem;
+    margin: 1.5rem 0 2rem;
 }
 
 .overview-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0 0 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 0.5rem;
 }
 
 .overview-zoom-button {
-  background: #ffffff;
-  border: 1px solid #2c7fb8;
-  border-radius: 6px;
-  color: #2c7fb8;
-  cursor: pointer;
-  font-size: 0.875rem;
-  line-height: 1.2;
-  padding: 5px 9px;
+    background: #ffffff;
+    border: 1px solid #2c7fb8;
+    border-radius: 6px;
+    color: #2c7fb8;
+    cursor: pointer;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    padding: 5px 9px;
 }
 
 .overview-zoom-button:hover,
 .overview-zoom-button:focus {
-  background: #edf6fb;
+    background: #edf6fb;
 }
 
 .overview-zoom-value {
-  align-items: center;
-  color: #4b5563;
-  display: inline-flex;
-  font-size: 0.875rem;
-  min-width: 44px;
+    align-items: center;
+    color: #4b5563;
+    display: inline-flex;
+    font-size: 0.875rem;
+    min-width: 44px;
 }
 
 .overview-svg-frame {
-  background: #ffffff;
-  border: 1px solid #d9e2ec;
-  border-radius: 6px;
-  max-height: 680px;
-  overflow: auto;
-  padding: 10px;
+    background: #ffffff;
+    border: 1px solid #d9e2ec;
+    border-radius: 6px;
+    max-height: 680px;
+    overflow: auto;
+    padding: 10px;
 }
 
 .overview-svg-frame img {
-  display: block;
-  height: auto;
-  max-width: none;
-  width: calc(1600px * var(--overview-scale, 1));
+    display: block;
+    height: auto;
+    max-width: none;
+    width: calc(1600px * var(--overview-scale, 1));
 }
 
 .overview-figure:fullscreen {
-  background: #ffffff;
-  margin: 0;
-  overflow: hidden;
-  padding: 16px;
+    background: #ffffff;
+    margin: 0;
+    overflow: hidden;
+    padding: 16px;
 }
 
 .overview-figure:fullscreen .overview-svg-frame {
-  height: calc(100vh - 88px);
-  max-height: none;
+    height: calc(100vh - 88px);
+    max-height: none;
 }
 
 @media (max-width: 768px) {
-  .overview-svg-frame {
+    .overview-svg-frame {
     max-height: 520px;
-  }
+    }
 
-  .overview-svg-frame img {
+    .overview-svg-frame img {
     width: calc(1200px * var(--overview-scale, 1));
-  }
+    }
 }
 </style>
 <script>
 function setOverviewZoom(figureId, scale) {
-  var figure = document.getElementById(figureId);
-  if (!figure) {
+    var figure = document.getElementById(figureId);
+    if (!figure) {
     return;
-  }
+    }
 
-  var next = Math.max(0.5, Math.min(3, scale));
-  figure.dataset.scale = next.toFixed(2);
-  figure.style.setProperty('--overview-scale', next.toString());
+    var next = Math.max(0.5, Math.min(3, scale));
+    figure.dataset.scale = next.toFixed(2);
+    figure.style.setProperty('--overview-scale', next.toString());
 
-  var label = figure.querySelector('.overview-zoom-value');
-  if (label) {
+    var label = figure.querySelector('.overview-zoom-value');
+    if (label) {
     label.textContent = Math.round(next * 100) + '%';
-  }
+    }
 }
 
 function changeOverviewZoom(figureId, delta) {
-  var figure = document.getElementById(figureId);
-  var current = figure ? parseFloat(figure.dataset.scale || '1') : 1;
-  setOverviewZoom(figureId, current + delta);
+    var figure = document.getElementById(figureId);
+    var current = figure ? parseFloat(figure.dataset.scale || '1') : 1;
+    setOverviewZoom(figureId, current + delta);
 }
 
 function openOverviewFullscreen(figureId) {
-  var figure = document.getElementById(figureId);
-  if (!figure || !figure.requestFullscreen) {
+    var figure = document.getElementById(figureId);
+    if (!figure || !figure.requestFullscreen) {
     return;
-  }
+    }
 
-  figure.requestFullscreen();
+    figure.requestFullscreen();
 }
 </script>
 ")
 
 overview_svgs <- c(
-  preprocessingMinfiEwasWater =
-    "preprocessingMinfiEwasWater_pipeline_overview.svg",
-  svaEnmix =
-    "svaEnmix_pipeline_overview.svg",
-  preprocessingPheno =
-    "preprocessingPheno_pipeline_overview.svg",
-  methylationGLM =
-    "methylationGLM_pipeline_overview.svg",
-  methylationLME =
-    "methylationLME_pipeline_overview.svg",
-  dnamReport =
-    "dnamReport_pipeline_overview.svg"
+    preprocessingMinfiEwasWater =
+        "preprocessingMinfiEwasWater_pipeline_overview.svg",
+    svaEnmix =
+        "svaEnmix_pipeline_overview.svg",
+    preprocessingPheno =
+        "preprocessingPheno_pipeline_overview.svg",
+    methylationGLM =
+        "methylationGLM_pipeline_overview.svg",
+    methylationLME =
+        "methylationLME_pipeline_overview.svg",
+    dnamReport =
+        "dnamReport_pipeline_overview.svg"
 )
 
 html_escape <- function(x) {
-  x <- gsub("&", "&amp;", x, fixed = TRUE)
-  x <- gsub("<", "&lt;", x, fixed = TRUE)
-  x <- gsub(">", "&gt;", x, fixed = TRUE)
-  x <- gsub('"', "&quot;", x, fixed = TRUE)
-  x
+    x <- gsub("&", "&amp;", x, fixed = TRUE)
+    x <- gsub("<", "&lt;", x, fixed = TRUE)
+    x <- gsub(">", "&gt;", x, fixed = TRUE)
+    x <- gsub('"', "&quot;", x, fixed = TRUE)
+    x
 }
 
 svg_to_html <- function(svg_path, title = NULL) {
-  if (!file.exists(svg_path)) {
-    stop("Missing overview SVG: ", svg_path)
-  }
+    if (!file.exists(svg_path)) {
+        stop("Missing overview SVG: ", svg_path)
+    }
 
-  if (is.null(title)) {
-    title <- sub(
-      "_pipeline_overview$",
-      "() overview",
-      tools::file_path_sans_ext(basename(svg_path))
-    )
-  }
+    if (is.null(title)) {
+        title <- sub(
+            "_pipeline_overview$",
+            "() overview",
+            tools::file_path_sans_ext(basename(svg_path))
+        )
+    }
 
-  figure_id <- gsub("[^A-Za-z0-9_-]", "-", tools::file_path_sans_ext(
-    basename(svg_path)
-  ))
+    figure_id <- gsub("[^A-Za-z0-9_-]", "-", tools::file_path_sans_ext(
+        basename(svg_path)
+    ))
 
-  cat(sprintf(
-    '<div class="overview-figure" id="%s" data-scale="1">\n',
-    figure_id
-  ))
-  cat('<div class="overview-controls">\n')
-  cat(sprintf(
-    '<button class="overview-zoom-button" type="button" onclick="changeOverviewZoom(\'%s\', 0.25)">Zoom +</button>\n',
-    figure_id
-  ))
-  cat(sprintf(
-    '<button class="overview-zoom-button" type="button" onclick="changeOverviewZoom(\'%s\', -0.25)">Zoom -</button>\n',
-    figure_id
-  ))
-  cat(sprintf(
-    '<button class="overview-zoom-button" type="button" onclick="setOverviewZoom(\'%s\', 1)">Reset</button>\n',
-    figure_id
-  ))
-  cat(sprintf(
-    '<button class="overview-zoom-button" type="button" onclick="openOverviewFullscreen(\'%s\')">Full screen</button>\n',
-    figure_id
-  ))
-  cat('<span class="overview-zoom-value">100%</span>\n')
-  cat('</div>\n')
-  cat('<div class="overview-svg-frame">\n')
-  cat(sprintf(
-    '<img src="%s" alt="%s">\n',
-    html_escape(svg_path),
-    html_escape(title)
-  ))
-  cat('\n</div>\n</div>\n')
+    cat(sprintf(
+        '<div class="overview-figure" id="%s" data-scale="1">\n',
+        figure_id
+    ))
+    cat('<div class="overview-controls">\n')
+    cat(sprintf(
+        '<button class="overview-zoom-button" type="button" onclick="changeOverviewZoom(\'%s\', 0.25)">Zoom +</button>\n',
+        figure_id
+    ))
+    cat(sprintf(
+        '<button class="overview-zoom-button" type="button" onclick="changeOverviewZoom(\'%s\', -0.25)">Zoom -</button>\n',
+        figure_id
+    ))
+    cat(sprintf(
+        '<button class="overview-zoom-button" type="button" onclick="setOverviewZoom(\'%s\', 1)">Reset</button>\n',
+        figure_id
+    ))
+    cat(sprintf(
+        '<button class="overview-zoom-button" type="button" onclick="openOverviewFullscreen(\'%s\')">Full screen</button>\n',
+        figure_id
+    ))
+    cat('<span class="overview-zoom-value">100%</span>\n')
+    cat('</div>\n')
+    cat('<div class="overview-svg-frame">\n')
+    cat(sprintf(
+        '<img src="%s" alt="%s">\n',
+        html_escape(svg_path),
+        html_escape(title)
+    ))
+    cat('\n</div>\n</div>\n')
 }
 ```
 
@@ -293,15 +290,15 @@ estimates cell composition.
 Its role in the package is to create analysis-ready methylation data:
 
 - Inputs: phenotype metadata, IDAT files, array annotation, and filtering
-  settings.
+    settings.
 - Processing tasks: import, quality control, normalisation, probe
-  filtering, metric extraction, and cell-composition estimation.
+    filtering, metric extraction, and cell-composition estimation.
 - Outputs: filtered phenotype data, `RGSet`, beta values, M-values,
-  copy-number values, quality-control figures, and `phenoLC`.
+    copy-number values, quality-control figures, and `phenoLC`.
 
 ```{r preprocessingMinfiEwasWater-overview, echo = FALSE, results = "asis"}
 svg_to_html(
-  overview_svgs[["preprocessingMinfiEwasWater"]]
+    overview_svgs[["preprocessingMinfiEwasWater"]]
 )
 ```
 
@@ -315,14 +312,14 @@ Its role is to prepare covariates for batch and technical adjustment:
 
 - Inputs: the phenotype table from preprocessing and the saved `RGSet`.
 - Processing tasks: control-probe extraction, surrogate-variable
-  estimation, association checks with array-position metadata, and phenotype
-  merging.
+    estimation, association checks with array-position metadata, and phenotype
+    merging.
 - Outputs: surrogate-variable matrices, an updated phenotype table, and
-  diagnostic summaries.
+    diagnostic summaries.
 
 ```{r svaEnmix-overview, echo = FALSE, results = "asis"}
 svg_to_html(
-  overview_svgs[["svaEnmix"]])
+    overview_svgs[["svaEnmix"]])
 ```
 
 ## preprocessingPheno()
@@ -333,15 +330,15 @@ It prepares timepoint-specific data, combines longitudinal records, and creates 
 Its role is to organise samples and methylation matrices for modelling:
 
 - Inputs: phenotype data, beta values, M-values, copy-number values, and
-  timepoint settings.
+    timepoint settings.
 - Processing tasks: sample alignment, timepoint splitting, longitudinal
-  merging, and Clock Foundation export preparation.
+    merging, and Clock Foundation export preparation.
 - Outputs: timepoint-specific phenotype-methylation tables, combined
-  longitudinal tables, and Clock Foundation input files.
+    longitudinal tables, and Clock Foundation input files.
 
 ```{r preprocessingPheno-overview, echo = FALSE, results = "asis"}
 svg_to_html(
-  overview_svgs[["preprocessingPheno"]])
+    overview_svgs[["preprocessingPheno"]])
 ```
 
 ## methylationGLM()
@@ -353,15 +350,15 @@ methylation while adjusting for selected covariates.
 Its role is to run single-timepoint association testing:
 
 - Inputs: a phenotype-methylation table, phenotype variables,
-  covariates, optional PRS mappings, and annotation settings.
+    covariates, optional PRS mappings, and annotation settings.
 - Processing tasks: model preparation, CpG-GLM model fitting, diagnostic
-  plotting, result summarisation, multiple-testing adjustment, and annotation.
+    plotting, result summarisation, multiple-testing adjustment, and annotation.
 - Outputs: model objects, summary tables, diagnostic figures,
-  significant-CpG exports, and annotated workbooks.
+    significant-CpG exports, and annotated workbooks.
 
 ```{r methylationGLM-overview, echo = FALSE, results = "asis"}
 svg_to_html(
-  overview_svgs[["methylationGLM"]])
+    overview_svgs[["methylationGLM"]])
 ```
 
 ## methylationLME()
@@ -373,17 +370,17 @@ timepoint-related terms.
 Its role is to model methylation change across repeated observations:
 
 - Inputs: combined longitudinal phenotype-methylation data, participant
-  identifiers, timepoint variables, phenotypes, covariates, and annotation
-  settings.
+    identifiers, timepoint variables, phenotypes, covariates, and annotation
+    settings.
 - Processing tasks: longitudinal model preparation, CpG-LME model
-  fitting, interaction testing, diagnostic plotting, summarisation, and
-  annotation.
+    fitting, interaction testing, diagnostic plotting, summarisation, and
+    annotation.
 - Outputs: mixed-model objects, interaction summaries, diagnostic figures,
-  significant-interaction exports, and annotated longitudinal workbooks.
+    significant-interaction exports, and annotated longitudinal workbooks.
 
 ```{r methylationLME-overview, echo = FALSE, results = "asis"}
 svg_to_html(
-  overview_svgs[["methylationLME"]])
+    overview_svgs[["methylationLME"]])
 ```
 
 ## dnamReport()
@@ -395,15 +392,15 @@ outputs have been written to disk.
 Its role is to make the package outputs easier to inspect and share:
 
 - Inputs: phenotype tables, QC figures, ENmix figures, SVA figures,
-  metric figures, model annotation tables, detection P-value data, and logs.
+    metric figures, model annotation tables, detection P-value data, and logs.
 - Processing tasks: input validation, report file preparation, Quarto
-  rendering, and post-processing.
+    rendering, and post-processing.
 - Outputs: a rendered report site with organised tabs for data,
-  preprocessing, modelling, logs, and supporting diagnostics.
+    preprocessing, modelling, logs, and supporting diagnostics.
 
 ```{r dnamReport-overview, echo = FALSE, results = "asis"}
 svg_to_html(
-  overview_svgs[["dnamReport"]])
+    overview_svgs[["dnamReport"]])
 ```
 
 # Summary
@@ -416,11 +413,11 @@ tables, figures, and logs into a browsable output.
 In practice, the main functions are:
 
 - run `preprocessingMinfiEwasWater()` to prepare methylation objects and QC
-  outputs,
+    outputs,
 - run `svaEnmix()` when control-probe surrogate variables are needed,
 - run `preprocessingPheno()` to prepare modelling tables,
 - run `methylationGLM()` or `methylationLME()` for association
-  testing, and
+    testing, and
 - run `dnamReport()` to review the completed outputs.
 
 # Basics

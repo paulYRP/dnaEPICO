@@ -6,8 +6,9 @@
 \alias{dnaEPICO_dnamReport_prepared}
 \title{Result class returned by prepareDnamReportInputs}
 \description{
-Objects of class \code{"dnaEPICO_dnamReport_prepared"} are list-based results
-returned by \code{\link[=prepareDnamReportInputs]{prepareDnamReportInputs()}}. They capture normalized report paths,
+Objects of class \code{'dnaEPICO_dnamReport_prepared'} are list-based results
+returned by \code{\link[=prepareDnamReportInputs]{prepareDnamReportInputs()}}. They capture normalized report
+paths,
 available figures, and logging metadata before rendering.
 }
 \section{Structure}{

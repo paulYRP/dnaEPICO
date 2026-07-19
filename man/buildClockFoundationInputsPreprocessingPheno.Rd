@@ -35,7 +35,7 @@ columns.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_preprocessingPheno_clock"}
+A list with class \code{'dnaEPICO_preprocessingPheno_clock'}
 containing \code{betaCSV} and \code{phenoCF}.
 }
 \description{
@@ -45,12 +45,12 @@ style downstream workflows, without writing them to disk.
 \examples{
 ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 clock_inputs <- buildClockFoundationInputsPreprocessingPheno(
-  beta = ex$timepointData$data[["1"]]$beta,
-  pheno = ex$timepointData$data[["1"]]$pheno,
-  SampleID = "Sample_Name",
-  sexColumn = "Sex",
-  verbose = FALSE,
-  logs = FALSE
+    beta = ex$timepointData$data[["1"]]$beta,
+    pheno = ex$timepointData$data[["1"]]$pheno,
+    SampleID = "Sample_Name",
+    sexColumn = "Sex",
+    verbose = FALSE,
+    logs = FALSE
 )
 names(clock_inputs)
 

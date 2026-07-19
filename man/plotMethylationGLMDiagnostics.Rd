@@ -34,7 +34,8 @@ CpGs in the diagnostic plots.}
 \item{outputDir}{Character or \code{NULL}. Directory used for TIFF files. When
 \code{NULL}, plots are returned in memory only.}
 
-\item{plotWidth}{Integer. TIFF width in pixels when plots are written to disk.}
+\item{plotWidth}{Integer. TIFF width in pixels when plots are written to
+disk.}
 
 \item{plotHeight}{Integer. TIFF height in pixels when plots are written to
 disk.}
@@ -54,7 +55,7 @@ disk.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationGLM_diagnostic_plots"}
+A list with class \code{'dnaEPICO_methylationGLM_diagnostic_plots'}
 containing the generated \code{ggplot2} objects, genomic inflation factors, and
 any saved TIFF file paths.
 }
@@ -65,11 +66,11 @@ by \code{summarizeMethylationGLMModels()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 diagnostic_plots <- plotMethylationGLMDiagnostics(
-  modelSummaries = ex$modelSummaries,
-  preparedData = ex$preparedData,
-  display = FALSE,
-  verbose = FALSE,
-  logs = FALSE
+    modelSummaries = ex$modelSummaries,
+    preparedData = ex$preparedData,
+    display = FALSE,
+    verbose = FALSE,
+    logs = FALSE
 )
 names(diagnostic_plots$plots)
 

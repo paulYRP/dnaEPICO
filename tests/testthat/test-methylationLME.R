@@ -13,7 +13,7 @@ create_methylation_lme_example <- function(path, include_person = TRUE) {
         phenoBT1T2$person <- c(1, 1, 2, 2, 3, 3, 4, 4)
     }
 
-    input_path <- file.path(path, "phenoBetaT1T2.RData")
+    input_path <- file.path(path, "phenoBT1T2.RData")
     save(phenoBT1T2, file = input_path)
 
     list(
@@ -58,6 +58,145 @@ create_methylation_lme_ar1_example <- function(path) {
     )
 }
 
+test_that("lme4 singular fits remain available and are reported per CpG", {
+    model_data <- data.frame(
+        person = factor(rep(seq_len(8), each = 3)),
+        visit = rep(c(-1, 0, 1), times = 8)
+    )
+    cpg_values <-
+        0.4 +
+        (0.03 * model_data$visit) +
+        rep(c(0.001, -0.002, 0.001), times = 8)
+
+    fit <- suppressMessages(dnaEPICO:::fitCpGModelMethylationLME(
+        cpg = "cg_singular",
+        cpgValues = cpg_values,
+        modelData = model_data,
+        formulaText = "beta ~ visit + (1 | person)",
+        personVar = "person",
+        lmeEngine = "lme4",
+        responseVar = "beta"
+    ))
+    expect_false(inherits(fit, "dnaEPICO_methylationLME_fit_error"))
+    expect_true(isTRUE(fit$fitStatus$singular))
+
+    summary_table <- dnaEPICO:::summarizeCpGFitMethylationLME(
+        cpg = "cg_singular",
+        modelObj = fit,
+        phenotype = "visit"
+    )
+    expect_equal(summary_table$Fit.Status, "fitted_singular")
+    expect_true(summary_table$Singular.Fit)
+    expect_match(summary_table$Fit.Warning, "singular", ignore.case = TRUE)
+
+    fits <- list(visit = list(cg_singular = fit))
+    fit_diagnostics <- dnaEPICO:::collectFitDiagnosticsMethylationLME(fits)
+    fit_failures <- dnaEPICO:::collectFitFailuresMethylationModels(
+        fits,
+        "dnaEPICO_methylationLME_fit_error"
+    )
+    annotation <- annotateMethylationLMESummaries(
+        modelSummaries = list(
+            diagnosticSummaries = list(visit = summary_table),
+            summaries = list(visit = summary_table),
+            phenotypes = "visit",
+            fitFailures = fit_failures,
+            fitDiagnostics = fit_diagnostics
+        ),
+        annotationObject = data.frame(
+            CpG = "cg_singular",
+            chr = "chr1",
+            pos = 1,
+            stringsAsFactors = FALSE
+        ),
+        annotationCols = c("chr", "pos"),
+        verbose = FALSE,
+        logs = FALSE
+    )
+    expect_true(annotation$data$visit_Singular.Fit)
+    expect_equal(annotation$data$visit_Fit.Status, "fitted_singular")
+    expect_match(annotation$data$visit_Fit.Warning, "singular", ignore.case = TRUE)
+    expect_true(annotation$data$visit_Converged)
+    expect_false(any(c("Fit.Status", "Singular.Fit", "Converged") %in% names(annotation$data)))
+    expect_equal(names(annotation$data)[[1L]], "IlmnID")
+    expect_lt(match("pos", names(annotation$data)), match("visit_Fit.Status", names(annotation$data)))
+
+    excluded <- summarizeMethylationLMEModels(
+        modelResults = list(
+            fits = fits,
+            summaryCache = list(visit = summary_table),
+            fitFailures = fit_failures,
+            fitDiagnostics = fit_diagnostics,
+            settings = list(interactionTerm = NULL)
+        ),
+        preparedData = list(interactionTerm = NULL),
+        summaryPval = NA,
+        excludeSingular = TRUE,
+        nCores = 1,
+        logs = FALSE
+    )
+    excluded_row <- excluded$summaries$visit
+    expect_equal(nrow(excluded_row), 1L)
+    expect_true(is.finite(excluded_row$Estimate))
+    expect_true(is.na(excluded_row$P.value))
+    expect_false(excluded_row$Inference.Included)
+    expect_match(excluded_row$Exclusion.Reason, "singular")
+
+    excluded_annotation <- annotateMethylationLMESummaries(
+        modelSummaries = excluded,
+        annotationObject = data.frame(
+            CpG = "cg_singular",
+            chr = "chr1",
+            stringsAsFactors = FALSE
+        ),
+        annotationCols = "chr",
+        logs = FALSE
+    )
+    expect_equal(excluded_annotation$data$IlmnID, "cg_singular")
+    expect_true(excluded_annotation$data$visit_Singular.Fit)
+    expect_false(excluded_annotation$data$visit_Inference.Included)
+    expect_match(excluded_annotation$data$visit_Exclusion.Reason, "singular")
+})
+
+test_that("non-converged mixed fits retain coefficients and can be excluded", {
+    coefficient_table <- matrix(
+        c(0.4, 0.01, 40, 1e-08, 0.03, 0.01, 3, 0.01),
+        nrow = 2,
+        byrow = TRUE,
+        dimnames = list(
+            c("(Intercept)", "visit"),
+            c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
+        )
+    )
+    fit <- list(
+        coef = coefficient_table,
+        coefficientTerms = c("(Intercept)" = "(Intercept)", visit = "visit"),
+        fitStatus = list(
+            singular = FALSE,
+            converged = FALSE,
+            warnings = "failed to converge with max|grad| = 0.01",
+            convergenceMessages = "failed to converge with max|grad| = 0.01"
+        )
+    )
+    summary_table <- dnaEPICO:::summarizeCpGFitMethylationLME(
+        cpg = "cg_nonconverged",
+        modelObj = fit,
+        phenotype = "visit"
+    )
+    expect_equal(summary_table$Fit.Status, "fitted_not_converged")
+    expect_false(summary_table$Converged)
+    expect_match(summary_table$Convergence.Message, "failed to converge")
+
+    excluded <- dnaEPICO:::applyFitQualityExclusionsMethylationLME(
+        summary_table,
+        excludeNonConverged = TRUE
+    )
+    expect_equal(nrow(excluded), 1L)
+    expect_true(is.na(excluded$P.value))
+    expect_false(excluded$Inference.Included)
+    expect_match(excluded$Exclusion.Reason, "did not converge")
+})
+
 test_that("methylationLME returns in-memory results quietly by default", {
     testthat::skip_if_not_installed("IlluminaHumanMethylation450kanno.ilmn12.hg19")
     testthat::skip_if_not_installed("lmerTest")
@@ -71,6 +210,9 @@ test_that("methylationLME returns in-memory results quietly by default", {
             outputLogs = file.path(tmp, "logs"),
             outputRData = file.path(tmp, "rData", "methylationLME", "models"),
             outputPlots = file.path(tmp, "figures", "methylationLME"),
+            summaryTxtDir = file.path(tmp, "results", "summary"),
+            significantInteractionDir = file.path(tmp, "results", "significant"),
+            annotatedLMEOut = file.path(tmp, "data", "methylationLME"),
             personVar = "person",
             timeVar = "Timepoint",
             phenotypes = "score",
@@ -143,6 +285,9 @@ test_that("methylationLME can write outputs and derive person IDs on request", {
 
     tmp <- withr::local_tempdir()
     example_data <- create_methylation_lme_example(tmp, include_person = FALSE)
+    report_assets <- file.path(
+        tmp, "reports", "model1", "assets", "results", "lme_results"
+    )
 
     expect_message(
         result <- methylationLME(
@@ -166,6 +311,7 @@ test_that("methylationLME can write outputs and derive person IDs on request", {
             annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
             annotationCols = "Name,chr,pos",
             annotatedLMEOut = file.path(tmp, "data", "methylationLME"),
+            reportAssetsDir = report_assets,
             display = FALSE,
             verbose = TRUE,
             logs = TRUE,
@@ -180,16 +326,44 @@ test_that("methylationLME can write outputs and derive person IDs on request", {
     log_text <- paste(readLines(log_file, warn = FALSE), collapse = "\n")
     expect_match(log_text, "Fit-time summary rows cached")
     expect_match(log_text, "Summary source:\\s+fit-time cache")
-    expect_equal(result$runSettings$methylationObjectPrefix, "phenoBeta")
+    expect_equal(result$runSettings$methylationObjectPrefix, "phenoB")
     expect_equal(result$modelFits$settings$internalResponseColumn, "beta")
     expect_true(file.exists(result$savedFiles$modelFiles[["score"]]))
     expect_true(file.exists(result$savedFiles$summaryFiles[["score"]]))
     expect_true(file.exists(result$savedFiles$summaryTxtFiles[["score"]]))
     expect_true(file.exists(result$savedFiles$annotatedLME))
+    expect_true(file.exists(result$savedFiles$annotatedLMEText))
+    expect_true(file.exists(result$savedFiles$annotatedLMEReportMetadata))
+    expect_true(file.exists(result$savedFiles$annotatedLMEDictionary))
+    expect_true(file.exists(result$savedFiles$annotatedLMEMetadata))
     expect_match(result$savedFiles$annotatedLME, "annotatedLME\\.xlsx$")
     expect_equal(
+        normalizePath(
+            dirname(result$savedFiles$annotatedLMEText),
+            winslash = "/", mustWork = FALSE
+        ),
+        normalizePath(report_assets, winslash = "/", mustWork = FALSE)
+    )
+    expect_false(dir.exists(file.path(
+        dirname(result$savedFiles$annotatedLME), "report-assets"
+    )))
+    expect_equal(
+        sort(basename(unlist(result$savedFiles[c(
+            "annotatedLMEText",
+            "annotatedLMEReportMetadata",
+            "annotatedLMEDictionary",
+            "annotatedLMEMetadata"
+        )]))),
+        sort(c(
+            "annotatedLME.tsv.gz",
+            "annotatedLME.report.tsv",
+            "annotatedLME.dictionary.tsv",
+            "annotatedLME.metadata.tsv"
+        ))
+    )
+    expect_equal(
         openxlsx::getSheetNames(result$savedFiles$annotatedLME),
-        c("annotatedLME", "dictionary", "metadata")
+        c("annotatedLME", "metadata", "dictionary")
     )
     dictionary <- openxlsx::read.xlsx(
         result$savedFiles$annotatedLME,
@@ -218,6 +392,9 @@ test_that("methylationLME supports nlme AR1 models through lmeLibs", {
 
     tmp <- withr::local_tempdir()
     example_data <- create_methylation_lme_ar1_example(tmp)
+    report_assets <- file.path(
+        tmp, "reports", "nlme", "assets", "results", "lme_results"
+    )
 
     expect_message(
         result <- methylationLME(
@@ -230,6 +407,10 @@ test_that("methylationLME supports nlme AR1 models through lmeLibs", {
             phenotypes = "status",
             covariates = "sex",
             factorVars = "status,sex",
+            summaryTxtDir = file.path(tmp, "results", "summary", "nlme"),
+            significantInteractionDir = file.path(tmp, "results", "significant", "nlme"),
+            annotatedLMEOut = file.path(tmp, "data", "nlme"),
+            reportAssetsDir = report_assets,
             lmeLibs = "nlme",
             correlationStructure = "AR1",
             correlationVar = "VisitOrder",
@@ -244,7 +425,7 @@ test_that("methylationLME supports nlme AR1 models through lmeLibs", {
             display = FALSE,
             verbose = FALSE,
             logs = TRUE,
-            saveOutputs = FALSE
+            saveOutputs = TRUE
         ),
         NA
     )
@@ -257,14 +438,79 @@ test_that("methylationLME supports nlme AR1 models through lmeLibs", {
     expect_equal(result$runSettings$correlationVar, "VisitOrder")
     expect_equal(result$runSettings$methylationScale, "m")
     expect_equal(nrow(result$modelFits$summaryCache$status), 2)
-    expect_true(all(c("CpG", "Interaction.Term", "Estimate", "Std.Error", "t.value", "P.value") %in%
+    expect_true(all(c(
+        "CpG", "Interaction.Term", "Estimate", "Std.Error", "t.value", "P.value",
+        "Fit.Status", "Converged", "Convergence.Message",
+        "Fit.Warning", "Inference.Included", "Exclusion.Reason"
+    ) %in%
         colnames(result$modelSummaries$summaries$status)))
+    expect_true(all(is.na(result$modelFits$fitDiagnostics$Singular.Fit)))
+    expect_true(all(result$modelFits$fitDiagnostics$Converged))
+    expect_equal(
+        openxlsx::getSheetNames(result$savedFiles$annotatedLME),
+        c("annotatedLME", "metadata", "dictionary")
+    )
+    metadata <- openxlsx::read.xlsx(
+        result$savedFiles$annotatedLME,
+        sheet = "metadata",
+        check.names = FALSE
+    )
+    expect_equal(metadata$Value[metadata$Key == "backend"], "nlme")
+    expect_equal(metadata$Value[metadata$Key == "fitting_function"], "nlme::lme")
+    annotated <- openxlsx::read.xlsx(
+        result$savedFiles$annotatedLME,
+        sheet = "annotatedLME",
+        check.names = FALSE
+    )
+    expect_false(any(grepl("Singular\\.Fit$", colnames(annotated))))
+    expect_true(file.exists(file.path(report_assets, "annotatedLME.tsv.gz")))
+    expect_false(dir.exists(file.path(
+        dirname(result$savedFiles$annotatedLME), "report-assets"
+    )))
 
     log_text <- paste(readLines(file.path(tmp, "logs", "log_methylationLME.txt"), warn = FALSE), collapse = "\n")
     expect_match(log_text, "LME libraries:\\s+nlme")
     expect_match(log_text, "Correlation structure:\\s+AR1")
     expect_match(log_text, "Correlation variable:\\s+VisitOrder")
     expect_false(grepl("Resolved LME engine", log_text, fixed = TRUE))
+})
+
+test_that("scaleVars standardizes selected longitudinal fixed effects", {
+    tmp <- withr::local_tempdir()
+    example_data <- create_methylation_lme_example(tmp)
+    prepared <- prepareMethylationLMEData(
+        inputPheno = example_data$inputPheno,
+        personVar = "person",
+        timeVar = "Timepoint",
+        phenotypes = "score",
+        covariates = "sex",
+        factorVars = "sex",
+        scaleVars = "score",
+        cpgLimit = 1,
+        logs = FALSE
+    )
+
+    expect_equal(prepared$data$score, example_data$phenoBT1T2$score)
+    expect_equal(mean(prepared$modelData$score), 0, tolerance = 1e-12)
+    expect_equal(stats::sd(prepared$modelData$score), 1, tolerance = 1e-12)
+    expect_equal(prepared$scalingMetadata$Variable, "score")
+
+    prepared_with_correlation_scaled <- prepared
+    prepared_with_correlation_scaled$scaleVars <- c(
+        prepared_with_correlation_scaled$scaleVars,
+        "Timepoint"
+    )
+    expect_error(
+        fitMethylationLMEModels(
+            preparedData = prepared_with_correlation_scaled,
+            nCores = 1,
+            lmeLibs = "nlme",
+            correlationStructure = "AR1",
+            correlationVar = "Timepoint",
+            logs = FALSE
+        ),
+        "correlationVar cannot also"
+    )
 })
 
 test_that("methylationLME requires a correlation variable for AR1 models", {

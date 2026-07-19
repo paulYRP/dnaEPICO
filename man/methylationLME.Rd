@@ -2,10 +2,11 @@
 % Please edit documentation in R/methylationLME.R
 \name{methylationLME}
 \alias{methylationLME}
-\title{Fit CpG-wise linear mixed-effects models for longitudinal methylation analyses}
+\title{Fit CpG-wise linear mixed-effects models for longitudinal methylation
+analyses}
 \usage{
 methylationLME(
-  inputPheno = "rData/preprocessingPheno/mergeData/phenoBetaT1T2.RData",
+  inputPheno = "rData/preprocessingPheno/mergeData/phenoBT1T2.RData",
   outputLogs = "logs",
   outputRData = "rData/methylationLME/models",
   outputPlots = "figures/methylationLME",
@@ -15,6 +16,7 @@ methylationLME(
     "MHCSF_TotalScore", "BRS_TotalScore"),
   covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
   factorVars = "Sex,Ethnicity,TraumaDefinition",
+  scaleVars = NULL,
   lmeLibs = "lme4,lmerTest",
   correlationStructure = "none",
   correlationVar = NULL,
@@ -25,6 +27,8 @@ methylationLME(
   methylationScale = "beta",
   nCores = 32,
   summaryPval = NA,
+  excludeSingular = FALSE,
+  excludeNonConverged = FALSE,
   plotWidth = 2000,
   plotHeight = 1000,
   plotDPI = 150,
@@ -41,6 +45,7 @@ methylationLME(
   annotationCols = c("Name", "chr", "pos", "UCSC_RefGene_Group", "UCSC_RefGene_Name",
     "Relation_to_Island", "GencodeV41_Group"),
   annotatedLMEOut = "data/methylationLME",
+  reportAssetsDir = NULL,
   display = FALSE,
   verbose = FALSE,
   logs = FALSE,
@@ -55,10 +60,12 @@ produced by the package workflow.}
 
 \item{outputLogs}{Character. Directory used for optional log files.}
 
-\item{outputRData}{Character. Directory used for optional serialized mixed-model
+\item{outputRData}{Character. Directory used for optional serialized
+mixed-model
 and summary outputs.}
 
-\item{outputPlots}{Character. Directory used for optional TIFF diagnostic plots.}
+\item{outputPlots}{Character. Directory used for optional TIFF diagnostic
+plots.}
 
 \item{personVar}{Character. Subject identifier variable used for the random
 intercept. When this column is missing, it is derived from \code{SID} using the
@@ -77,44 +84,61 @@ in every mixed model.}
 to factors before modeling. This usually includes categorical phenotypes,
 covariates, or interaction variables.}
 
+\item{scaleVars}{Character vector, comma-separated variable names, or \code{NULL}.
+Numeric fixed-effect variables to centre and divide by their sample standard
+deviations before fitting.}
+
 \item{lmeLibs}{Character. Comma-separated package names to validate on worker
-processes and select the LME backend. Use \code{"lme4,lmerTest"} or \code{"lme4"}
-for the \code{lmerTest}/\code{lme4} path, or \code{"nlme"} for the \code{nlme::lme()} path.}
+processes and select the LME backend. Use \code{'lme4,lmerTest'} or \code{'lme4'}
+for the \code{lmerTest}/\code{lme4} path, or \code{'nlme'} for the \code{nlme::lme()} path.}
 
 \item{correlationStructure}{Character. Residual correlation structure used
-when \code{lmeLibs = "nlme"}. One of \code{"none"}, \code{"AR1"}, or \code{"CAR1"}. The
-default is \code{"none"}.}
+when \code{lmeLibs = 'nlme'}. One of \code{'none'}, \code{'AR1'}, or \code{'CAR1'}. The
+default is \code{'none'}.}
 
 \item{correlationVar}{Character or \code{NULL}. Variable used to order repeated
 observations within \code{personVar} for \code{AR1} or \code{CAR1} residual correlation
 structures. Must be supplied explicitly for \code{AR1} or \code{CAR1}.}
 
 \item{prsMap}{Character or \code{NULL}. Optional phenotype-to-PRS mapping in the
-form \code{"Phenotype1:PRS_1,Phenotype2:PRS_2"}.}
+form \code{'Phenotype1:PRS_1,Phenotype2:PRS_2'}.}
 
-\item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded to
+\item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
+to
 worker processes. By default, the current \code{.libPaths()} are used.}
 
-\item{cpgPrefix}{Character. Prefix used to identify methylation columns in the
-merged phenotype-plus-methylation input object. The default is \code{"cg"}.}
+\item{cpgPrefix}{Character. Prefix used to identify methylation columns in
+the
+merged phenotype-plus-methylation input object. The default is \code{'cg'}.}
 
 \item{cpgLimit}{Integer or \code{NA}. Maximum number of CpGs to analyse. Use \code{NA}
 to keep all CpGs matching \code{cpgPrefix}.}
 
 \item{methylationScale}{Character. Methylation metric represented by the CpG
-columns. One of \code{"beta"}, \code{"m"}, or \code{"cn"}. The default is \code{"beta"}.}
+columns. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, in any combination of
+upper- and lower-case letters. The default is \code{'beta'}.}
 
 \item{nCores}{Integer. Number of worker processes to use while fitting models
-and extracting summaries.}
+and extracting summaries. Automatic fitting uses engine-specific empirical
+crossovers and caps workers by the CpG workload and detected physical cores.}
 
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value threshold applied to the
 returned longitudinal CpG summary tables. Use \code{NA} to keep all summary rows.}
 
-\item{plotWidth}{Integer. TIFF width in pixels when plots are written to disk.}
+\item{excludeSingular}{Logical. If \code{TRUE}, retain singular lme4 CpG rows and
+reasons but exclude their p-values from inference.}
 
-\item{plotHeight}{Integer. TIFF height in pixels when plots are written to disk.}
+\item{excludeNonConverged}{Logical. If \code{TRUE}, retain non-converged CpG rows
+and reasons but exclude their p-values from inference.}
 
-\item{plotDPI}{Integer. TIFF resolution in DPI when plots are written to disk.}
+\item{plotWidth}{Integer. TIFF width in pixels when plots are written to
+disk.}
+
+\item{plotHeight}{Integer. TIFF height in pixels when plots are written to
+disk.}
+
+\item{plotDPI}{Integer. TIFF resolution in DPI when plots are written to
+disk.}
 
 \item{interactionTerm}{Character or \code{NULL}. Optional interaction term. When
 supplied and present in the input data, the phenotype is modeled together
@@ -127,7 +151,8 @@ and optionally write them to disk when \code{saveOutputs = TRUE}.}
 \item{significantInteractionDir}{Character. Directory used for optional
 significant-interaction coefficient tables.}
 
-\item{significantInteractionPval}{Numeric. P-value threshold used to collect or
+\item{significantInteractionPval}{Numeric. P-value threshold used to collect
+or
 write significant interaction coefficient tables.}
 
 \item{saveTxtSummaries}{Logical. If \code{TRUE} and \code{saveOutputs = TRUE}, write
@@ -143,27 +168,34 @@ summary tables.}
 CpGs in the residual-significance diagnostic plots.}
 
 \item{padjmethod}{Character. P-value adjustment method passed to
-\code{stats::p.adjust()}. The default is \code{"fdr"}.}
+\code{stats::p.adjust()}. The default is \code{'fdr'}.}
 
-\item{annotationPackage}{Character. Annotation package or object name passed to
+\item{annotationPackage}{Character. Annotation package or object name passed
+to
 \code{minfi::getAnnotation()}, for example
-\code{"IlluminaHumanMethylationEPICv2anno.20a1.hg38"}.}
+\code{'IlluminaHumanMethylationEPICv2anno.20a1.hg38'}.}
 
 \item{annotationCols}{Character vector or comma-separated annotation columns
 to append to the combined LME summary table. Available columns depend on
 the selected annotation package.}
 
-\item{annotatedLMEOut}{Character. Directory used for the optional annotated LME
+\item{annotatedLMEOut}{Character. Directory used for the optional annotated
+LME
 summary XLSX workbook.}
+
+\item{reportAssetsDir}{Character or \code{NULL}. Report results directory used for
+the compressed TSV table and its compact metadata sidecars. \code{NULL} writes
+only the model outputs and annotated workbook.}
 
 \item{display}{Logical. If \code{TRUE}, draw diagnostic plots on the active
 graphics device.}
 
-\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}. The
+\item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.
+The
 default is \code{FALSE}, so the function is quiet unless requested.}
 
 \item{logs}{Logical. If \code{TRUE}, write the same progress messages to
-\code{file.path(outputLogs, "log_methylationLME.txt")}.}
+\code{file.path(outputLogs, 'log_methylationLME.txt')}.}
 
 \item{saveOutputs}{Logical. If \code{TRUE}, write optional serialized model files,
 summary tables, significant-interaction tables, annotated results, and TIFF
@@ -171,10 +203,11 @@ plots to the requested output directories. The default is \code{FALSE}, so the
 function returns in-memory results without writing files.}
 }
 \value{
-A list with class \code{"dnaEPICO_methylationLME"}.
+A list with class \code{'dnaEPICO_methylationLME'}.
 \describe{
 \item{preparedData}{Object returned by \code{\link[=prepareMethylationLMEData]{prepareMethylationLMEData()}}
-containing the merged longitudinal phenotype-plus-methylation analysis table and
+containing the merged longitudinal phenotype-plus-methylation analysis table
+and
 modeling metadata.}
 \item{modelFits}{Object returned by \code{\link[=fitMethylationLMEModels]{fitMethylationLMEModels()}}
 containing the per-phenotype CpG mixed-effects model fits.}
@@ -202,50 +235,51 @@ See \linkS4class{dnaEPICO_methylationLME} for a class-level overview.
 \description{
 \code{methylationLME()} is the high-level coordinator for the longitudinal
 linear mixed-effects stage of the \code{dnaEPICO} workflow. It prepares the merged
-phenotype-plus-methylation input, fits one mixed-effects model per CpG for each
+phenotype-plus-methylation input, fits one mixed-effects model per CpG for
+each
 requested phenotype, extracts phenotype-specific coefficient summaries,
-optionally collects significant interaction tables, generates diagnostic plots,
-annotates the combined summary table, and optionally writes legacy-style
-outputs to disk. The default behavior is now in-memory and quiet, which makes
-the function easier to compose with other package functions and more aligned
-with typical Bioconductor usage.
+optionally collects significant interaction tables, generates diagnostic
+plots,
+annotates the combined summary table, and optionally writes model outputs to
+disk. By default, the function runs quietly and returns its results in
+memory.
 }
 \examples{
 if (
-  requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE) &&
-    requireNamespace("lmerTest", quietly = TRUE)
+    requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE) &&
+        requireNamespace("lmerTest", quietly = TRUE)
 ) {
-  tmp <- tempdir()
-  toy_path <- file.path(tmp, "phenoBetaT1T2.RData")
-  phenoBT1T2 <- data.frame(
-    SID = c("P1A", "P1B", "P2A", "P2B", "P3A", "P3B", "P4A", "P4B"),
-    person = c(1, 1, 2, 2, 3, 3, 4, 4),
-    Timepoint = factor(c("1", "2", "1", "2", "1", "2", "1", "2")),
-    score = c(10, 12, 9, 11, 13, 14, 8, 9),
-    sex = factor(c("F", "F", "M", "M", "F", "F", "M", "M")),
-    cg00000029 = c(0.25, 0.27, 0.20, 0.22, 0.30, 0.31, 0.18, 0.20),
-    cg00000108 = c(0.50, 0.53, 0.55, 0.57, 0.48, 0.49, 0.60, 0.61),
-    check.names = FALSE
-  )
-  save(phenoBT1T2, file = toy_path)
+    tmp <- tempdir()
+    toy_path <- file.path(tmp, "phenoBT1T2.RData")
+    phenoBT1T2 <- data.frame(
+        SID = c("P1A", "P1B", "P2A", "P2B", "P3A", "P3B", "P4A", "P4B"),
+        person = c(1, 1, 2, 2, 3, 3, 4, 4),
+        Timepoint = factor(c("1", "2", "1", "2", "1", "2", "1", "2")),
+        score = c(10, 12, 9, 11, 13, 14, 8, 9),
+        sex = factor(c("F", "F", "M", "M", "F", "F", "M", "M")),
+        cg00000029 = c(0.25, 0.27, 0.20, 0.22, 0.30, 0.31, 0.18, 0.20),
+        cg00000108 = c(0.50, 0.53, 0.55, 0.57, 0.48, 0.49, 0.60, 0.61),
+        check.names = FALSE
+    )
+    save(phenoBT1T2, file = toy_path)
 
-  result <- methylationLME(
-    inputPheno = toy_path,
-    phenotypes = "score",
-    covariates = "sex",
-    factorVars = "sex",
-    cpgLimit = 2,
-    nCores = 1,
-    summaryPval = 1,
-    annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
-    annotationCols = "Name,chr,pos",
-    display = FALSE,
-    verbose = FALSE,
-    logs = FALSE,
-    saveOutputs = FALSE
-  )
+    result <- methylationLME(
+        inputPheno = toy_path,
+        phenotypes = "score",
+        covariates = "sex",
+        factorVars = "sex",
+        cpgLimit = 2,
+        nCores = 1,
+        summaryPval = 1,
+        annotationPackage = "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+        annotationCols = "Name,chr,pos",
+        display = FALSE,
+        verbose = FALSE,
+        logs = FALSE,
+        saveOutputs = FALSE
+    )
 
-  class(result)
+    class(result)
 }
 
 }
