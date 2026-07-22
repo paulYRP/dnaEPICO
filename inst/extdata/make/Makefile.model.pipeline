@@ -6,8 +6,10 @@ MAKEFLAGS += --output-sync
 # ===============================================
 # MODELS SELECTION PARALLEL RUN
 # ===============================================
-MODEL ?= model1 # Single model
-MODELS = modelA modelB modelC # Multiple models for parallel run
+# Single model
+MODEL ?= model1
+# Multiple models for parallel runs
+MODELS = modelA modelB modelC
 
 # ===============================================
 # PER-MODEL OVERRIDES
@@ -144,6 +146,8 @@ LME_LIBS = lme4,lmerTest
 LME_CORRELATION_STRUCTURE = none
 LME_CORRELATION_VAR = NULL
 INTERACTION_LME = NULL
+LME_OMNIBUS_TEST = FALSE
+LME_OMNIBUS_DDF = Satterthwaite
 SAVE_SIGNIFICANT_INTERACTIONS = TRUE
 SIGNIFICANT_INTERACTION_PVAL = 0.1
 

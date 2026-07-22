@@ -641,6 +641,12 @@ Arguments:
     summaries and preprocessing checks.
 - `phenotypes`, `covariates`, and optional `interactionTerm` define the
     fixed-effect portion of the mixed model.
+- `omnibusTest = TRUE` adds one joint fixed-effect F test per CpG. With an
+    interaction, all estimable phenotype-by-interaction coefficients are tested
+    together; without an interaction, the phenotype main effect is tested.
+- `omnibusDdf` selects `"Satterthwaite"` or `"Kenward-Roger"` denominator
+    degrees of freedom. Kenward-Roger testing requires `pbkrtest` and is more
+    computationally intensive for an EWAS.
 - `cpgLimit = 2` keeps the example short by fitting only two CpG models.
 - `nCores = 1` keeps the example lightweight; production HPC runs usually use
     higher parallel settings.
@@ -655,6 +661,29 @@ Arguments:
     into the report project rather than beside the workbook.
 - `saveOutputs = TRUE` enables the file-based longitudinal workflow expected by
     Makefile and HPC use.
+
+For a full-cohort longitudinal interaction analysis, the following structure
+fits a participant-level random intercept and returns one joint interaction
+p-value per CpG in addition to the component coefficient p-values:
+
+```{r lme-omnibus-example, eval = FALSE}
+omnibusResult <- methylationLME(
+    inputPheno = "rData/model/preprocessingPheno/mergeData/phenoBT1T2T3.RData",
+    personVar = "Participant",
+    timeVar = "Timepoint",
+    phenotypes = "Timepoint",
+    covariates = "Age,Sex,PC1,PC2,PC3",
+    factorVars = "Timepoint,Profession,Sex",
+    interactionTerm = "Profession",
+    omnibusTest = TRUE,
+    omnibusDdf = "Satterthwaite"
+)
+```
+
+This model uses the fixed effects `Timepoint * Profession` together with
+`(1 | Participant)`. A significant omnibus result indicates that at least one
+timepoint contrast differs by profession; the component coefficients are used
+to identify its direction and location.
 
 ## Generate the report from the example outputs
 
@@ -1166,6 +1195,10 @@ phenotype-methylation data.
     participant for `AR1` or `CAR1`; required for those structures.
 - `INTERACTION_LME`: optional interaction term used in the longitudinal model;
     `NULL` omits the interaction.
+- `LME_OMNIBUS_TEST`: whether lmerTest/lme4 models calculate one joint test for
+    the selected phenotype main effect or phenotype-by-interaction term.
+- `LME_OMNIBUS_DDF`: denominator degrees-of-freedom method for the joint test;
+    use `Satterthwaite` or `Kenward-Roger`.
 - `SAVE_SIGNIFICANT_INTERACTIONS`: whether significant interaction tables are
     exported.
 - `SIGNIFICANT_INTERACTION_PVAL`: p-value threshold for those exported

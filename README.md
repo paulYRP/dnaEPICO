@@ -32,6 +32,10 @@ preprocessing, quality control, phenotype preparation, and automated
 report generation for local and High-Performance Computing (HPC)
 environments through a **GNU Make-based workflow**.
 
+For lmerTest/lme4 analyses, optional omnibus F tests jointly evaluate
+complete phenotype main effects or phenotype-by-interaction terms while
+retaining the participant-level random-intercept model.
+
 ## Installation instructions
 
 Get the latest stable `R` release from
@@ -89,7 +93,7 @@ print(citation("dnaEPICO"), bibtex = TRUE)
     ## 
     ##   Ruiz P (2026). "dnaEPICO: Analysis Pipeline for Illumina DNA
     ##   Methylation Array Data." _Epigenomes_. doi:10.3390/epigenomes9040039
-    ##   <https://doi.org/10.3390/epigenomes9040039>.
+    ##   <https://doi.org/10.3390/epigenomes9040039>,
     ##   <https://bioconductor.org/packages/dnaEPICO>.
     ## 
     ## A BibTeX entry for LaTeX users is
@@ -122,7 +126,7 @@ contributing to this project, you agree to abide by its terms.
   *[rcmdcheck](https://CRAN.R-project.org/package=rcmdcheck)* customized
   to use [Bioconductor’s docker
   containers](https://www.bioconductor.org/help/docker/) and
-  *[BiocCheck](https://bioconductor.org/packages/3.24/BiocCheck)*.
+  *[BiocCheck](https://bioconductor.org/packages/3.20/BiocCheck)*.
 - Code coverage assessment is possible thanks to
   [codecov](https://codecov.io/gh) and
   *[covr](https://CRAN.R-project.org/package=covr)*.
@@ -138,4 +142,4 @@ contributing to this project, you agree to abide by its terms.
 For more details, check the `dev` directory.
 
 This package was developed using
-*[biocthis](https://bioconductor.org/packages/3.24/biocthis)*.
+*[biocthis](https://bioconductor.org/packages/3.20/biocthis)*.

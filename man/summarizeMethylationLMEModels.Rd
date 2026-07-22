@@ -10,6 +10,7 @@ summarizeMethylationLMEModels(
   summaryPval = NA,
   excludeSingular = FALSE,
   excludeNonConverged = FALSE,
+  padjmethod = "fdr",
   nCores = 1L,
   chunkSize = NULL,
   verbose = FALSE,
@@ -31,6 +32,9 @@ reasons but set their inferential p-values to \code{NA}.}
 
 \item{excludeNonConverged}{Logical. If \code{TRUE}, retain non-converged CpG rows
 and reasons but set their inferential p-values to \code{NA}.}
+
+\item{padjmethod}{Character. Adjustment method passed to \code{stats::p.adjust()}
+for omnibus p-values across CpGs within each phenotype and tested term.}
 
 \item{nCores}{Integer. Number of worker processes to use while extracting
 summary rows.}

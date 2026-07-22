@@ -33,6 +33,8 @@ methylationLME(
   plotHeight = 1000,
   plotDPI = 150,
   interactionTerm = NULL,
+  omnibusTest = FALSE,
+  omnibusDdf = "Satterthwaite",
   saveSignificantInteractions = TRUE,
   significantInteractionDir = "preliminaryResults/cpgs/methylationLME",
   significantInteractionPval = 0.05,
@@ -143,6 +145,14 @@ disk.}
 \item{interactionTerm}{Character or \code{NULL}. Optional interaction term. When
 supplied and present in the input data, the phenotype is modeled together
 with its interaction against this variable.}
+
+\item{omnibusTest}{Logical. If \code{TRUE}, use \code{lmerTest::contestMD()} to test
+the complete phenotype-by-interaction term, or the phenotype main effect
+when \code{interactionTerm = NULL}, once per CpG. This is available only for
+the lmerTest/lme4 engine.}
+
+\item{omnibusDdf}{Character. Denominator degrees-of-freedom method for the
+omnibus F test. One of \code{'Satterthwaite'} or \code{'Kenward-Roger'}.}
 
 \item{saveSignificantInteractions}{Logical. If \code{TRUE}, collect coefficient
 tables for CpGs passing \code{significantInteractionPval} in the returned object

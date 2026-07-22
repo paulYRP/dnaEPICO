@@ -454,6 +454,14 @@ two finite observations, and have non-zero sample variance. A variable cannot be
 listed in both `factorVars` and `scaleVars`. The applied centres and sample
 standard deviations are stored in the annotated workbook metadata.
 
+Longitudinal lmerTest/lme4 analyses use a participant-level random intercept,
+`(1 | personVar)`. Set `omnibusTest = TRUE` to obtain one joint F test per CpG.
+When `interactionTerm` is supplied, the joint null covers all estimable
+phenotype-by-interaction coefficients; otherwise, it covers the phenotype main
+effect. `omnibusDdf = "Satterthwaite"` is the computationally efficient default,
+while `"Kenward-Roger"` is available when `pbkrtest` is installed. The nlme
+backend does not currently support this option.
+
 # Summary
 
 In interactive local use, the most important habit is to inspect the returned

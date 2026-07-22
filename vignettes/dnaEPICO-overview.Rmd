@@ -364,8 +364,10 @@ svg_to_html(
 ## methylationLME()
 
 `methylationLME()` fits longitudinal mixed-effects models. It supports
-repeated-measures designs by including participant-level random effects and
-timepoint-related terms.
+repeated-measures designs with a participant-level random intercept and
+timepoint-related fixed effects. For lmerTest/lme4 models, an optional omnibus
+F test jointly evaluates all estimable coefficients for a phenotype main
+effect or phenotype-by-interaction term.
 
 Its role is to model methylation change across repeated observations:
 
@@ -373,8 +375,8 @@ Its role is to model methylation change across repeated observations:
     identifiers, timepoint variables, phenotypes, covariates, and annotation
     settings.
 - Processing tasks: longitudinal model preparation, CpG-LME model
-    fitting, interaction testing, diagnostic plotting, summarisation, and
-    annotation.
+    fitting, coefficient and optional omnibus testing, diagnostic plotting,
+    summarisation, multiple-testing adjustment, and annotation.
 - Outputs: mixed-model objects, interaction summaries, diagnostic figures,
     significant-interaction exports, and annotated longitudinal workbooks.
 

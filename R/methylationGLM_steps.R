@@ -1395,6 +1395,7 @@ buildAnnotatedWorkbookDictionaryMethylationGLM <- function(
     modelDescription, formulaText, modelLabel, responseLabel
 ) {
     pvalue_columns <- grepl("P\\.Value$|P\\.value$", columns)
+    omnibus_columns <- grepl("_Omnibus_", columns, fixed = TRUE)
     default_formula <- paste(responseLabel, "~ formula unavailable")
     formula_values <- stats::setNames(
         as.character(formulaText),
@@ -1444,6 +1445,24 @@ buildAnnotatedWorkbookDictionaryMethylationGLM <- function(
 
     descriptions <- vapply(seq_along(columns), function(index) {
         column <- columns[[index]]
+        if (grepl("_Omnibus_F\\.Value$", column)) {
+            return("F statistic for the joint fixed-effect omnibus test")
+        }
+        if (grepl("_Omnibus_Num\\.DF$", column)) {
+            return("Numerator degrees of freedom equal to the estimable rank of the omnibus contrast")
+        }
+        if (grepl("_Omnibus_Den\\.DF$", column)) {
+            return("Denominator degrees of freedom for the omnibus F test")
+        }
+        if (grepl("_Omnibus_Adjusted\\.P\\.Value$", column)) {
+            return("Omnibus p-value adjusted across valid CpGs within the phenotype and tested term")
+        }
+        if (grepl("_Omnibus_P\\.Value$", column)) {
+            return("Raw p-value for the joint null hypothesis that all estimable coefficients in the tested fixed-effect term equal zero")
+        }
+        if (grepl("_Omnibus_Method$", column)) {
+            return("Denominator degrees-of-freedom method used for the omnibus F test")
+        }
         if (pvalue_columns[[index]]) {
             return(modelDescription)
         }
@@ -1495,8 +1514,9 @@ buildAnnotatedWorkbookDictionaryMethylationGLM <- function(
         "Genomic annotation or supporting result column"
     }, character(1))
     formulas <- rep("", length(columns))
-    formulas[pvalue_columns] <- vapply(
-        columns[pvalue_columns],
+    formula_columns <- pvalue_columns | omnibus_columns
+    formulas[formula_columns] <- vapply(
+        columns[formula_columns],
         display_formula, character(1)
     )
 
@@ -1508,14 +1528,23 @@ buildAnnotatedWorkbookDictionaryMethylationGLM <- function(
 
 orderAnnotatedModelColumnsDnaEpico <- function(
     data, annotationCols = character(0),
-    includeSingular = FALSE
+    includeSingular = FALSE, modelNames = NULL
 ) {
     columns <- colnames(data)
     id_columns <- intersect(c("IlmnID", "CpG"), columns)
-    pvalue_columns <- columns[grepl(
+    omnibus_columns <- columns[grepl("_Omnibus_", columns, fixed = TRUE)]
+    omnibus_pvalue_columns <- omnibus_columns[endsWith(
+        omnibus_columns,
+        "_Omnibus_P.Value"
+    )]
+    omnibus_detail_columns <- setdiff(
+        omnibus_columns,
+        omnibus_pvalue_columns
+    )
+    pvalue_columns <- setdiff(columns[grepl(
         "P\\.Value$|P\\.value$",
         columns
-    )]
+    )], omnibus_columns)
     annotation_columns <- intersect(annotationCols, columns)
     diagnostic_suffixes <- c(
         "Fit.Status", if (isTRUE(includeSingular)) "Singular.Fit",
@@ -1537,11 +1566,77 @@ orderAnnotatedModelColumnsDnaEpico <- function(
     }
     supporting_columns <- setdiff(columns, c(
         id_columns, pvalue_columns,
-        annotation_columns, diagnostic_columns
+        omnibus_columns, annotation_columns, diagnostic_columns
     ))
+    omnibus_suffix_order <- c(
+        "_Omnibus_F.Value", "_Omnibus_Num.DF", "_Omnibus_Den.DF",
+        "_Omnibus_P.Value", "_Omnibus_Adjusted.P.Value",
+        "_Omnibus_Method"
+    )
+    order_omnibus <- function(values) {
+        ranks <- vapply(values, function(value) {
+            matches <- which(endsWith(value, omnibus_suffix_order))
+            if (length(matches) == 0L) {
+                length(omnibus_suffix_order) + 1L
+            } else {
+                matches[[1L]]
+            }
+        }, integer(1))
+        values[order(ranks, match(values, columns))]
+    }
+    result_columns <- c(pvalue_columns, omnibus_pvalue_columns)
+    model_names <- as.character(modelNames)
+    model_names <- model_names[!is.na(model_names) & nzchar(model_names)]
+    if (length(model_names) > 0L && length(result_columns) > 0L) {
+        owners <- vapply(result_columns, function(column) {
+            candidates <- model_names[startsWith(
+                column,
+                paste0(model_names, "_")
+            )]
+            if (length(candidates) == 0L) {
+                return(NA_character_)
+            }
+            candidates[[which.max(nchar(candidates))]]
+        }, character(1))
+        grouped_results <- unlist(lapply(model_names, function(model_name) {
+            model_columns <- result_columns[owners == model_name]
+            c(
+                intersect(pvalue_columns, model_columns),
+                intersect(omnibus_pvalue_columns, model_columns)
+            )
+        }), use.names = FALSE)
+        result_columns <- unique(c(
+            grouped_results,
+            result_columns[is.na(owners)]
+        ))
+    }
+    ordered_omnibus_details <- order_omnibus(omnibus_detail_columns)
+    if (length(model_names) > 0L &&
+        length(ordered_omnibus_details) > 0L) {
+        detail_owners <- vapply(ordered_omnibus_details, function(column) {
+            candidates <- model_names[startsWith(
+                column,
+                paste0(model_names, "_")
+            )]
+            if (length(candidates) == 0L) {
+                return(NA_character_)
+            }
+            candidates[[which.max(nchar(candidates))]]
+        }, character(1))
+        grouped_details <- unlist(lapply(model_names, function(model_name) {
+            order_omnibus(ordered_omnibus_details[
+                detail_owners == model_name
+            ])
+        }), use.names = FALSE)
+        ordered_omnibus_details <- unique(c(
+            grouped_details,
+            ordered_omnibus_details[is.na(detail_owners)]
+        ))
+    }
     ordered_columns <- unique(c(
-        id_columns, pvalue_columns, annotation_columns,
-        supporting_columns, diagnostic_columns
+        id_columns, result_columns, annotation_columns,
+        ordered_omnibus_details, supporting_columns,
+        diagnostic_columns
     ))
     data[, ordered_columns, drop = FALSE]
 }
@@ -1679,12 +1774,50 @@ buildModelWorkbookMetadataDnaEpico <- function(
         metadata <- rbind(metadata, factor_rows)
     }
     if (identical(analysis, "lme")) {
+        omnibus_tables <- modelSummaries$omnibusTests
+        omnibus_rows <- if (is.list(omnibus_tables)) {
+            Filter(function(table) {
+                is.data.frame(table) && nrow(table) > 0L
+            }, omnibus_tables)
+        } else {
+            list()
+        }
+        omnibus_data <- if (length(omnibus_rows) > 0L) {
+            do.call(rbind, omnibus_rows)
+        } else {
+            data.frame()
+        }
+        omnibus_tested <- if ("Omnibus.Status" %in%
+            colnames(omnibus_data)) {
+            sum(omnibus_data$Omnibus.Status == "tested", na.rm = TRUE)
+        } else {
+            0L
+        }
+        omnibus_unavailable <- if ("Omnibus.Status" %in%
+            colnames(omnibus_data)) {
+            sum(omnibus_data$Omnibus.Status != "tested", na.rm = TRUE)
+        } else {
+            0L
+        }
+        lmer_test_version <- tryCatch(
+            as.character(utils::packageVersion("lmerTest")),
+            error = function(error) "unavailable"
+        )
+        pbkrtest_version <- tryCatch(
+            as.character(utils::packageVersion("pbkrtest")),
+            error = function(error) "unavailable"
+        )
         lme_rows <- data.frame(
             Key = c(
                 "libraries", "person_variable",
                 "time_variable", "correlation_structure",
                     "correlation_variable",
-                "exclude_singular", "exclude_non_converged"
+                "random_effect_structure", "exclude_singular",
+                "exclude_non_converged", "omnibus_test",
+                "omnibus_target", "omnibus_ddf", "omnibus_rhs",
+                "omnibus_joint", "omnibus_eps", "omnibus_tested_count",
+                "omnibus_unavailable_count", "p_adjust_method",
+                "p_adjust_scope", "lmerTest_version", "pbkrtest_version"
             ), Value = c(
                 modelSettingTextDnaEpico(settings$lmeLibs),
                 modelSettingTextDnaEpico(settings$personVar),
@@ -1692,8 +1825,23 @@ buildModelWorkbookMetadataDnaEpico <- function(
                 modelSettingTextDnaEpico(settings$correlationStructure,
                     empty = "none"
                 ), modelSettingTextDnaEpico(settings$correlationVar),
+                paste0(
+                    "(1 | ",
+                    modelSettingTextDnaEpico(settings$personVar), ")"
+                ),
                 modelSettingTextDnaEpico(modelSummaries$settings$excludeSingular),
-                modelSettingTextDnaEpico(modelSummaries$settings$excludeNonConverged)
+                modelSettingTextDnaEpico(modelSummaries$settings$excludeNonConverged),
+                modelSettingTextDnaEpico(settings$omnibusTest),
+                modelSettingTextDnaEpico(modelResults$omnibusTargets),
+                modelSettingTextDnaEpico(settings$omnibusDdf),
+                modelSettingTextDnaEpico(settings$omnibusRhs),
+                modelSettingTextDnaEpico(settings$omnibusJoint),
+                modelSettingTextDnaEpico(settings$omnibusEps),
+                as.character(omnibus_tested),
+                as.character(omnibus_unavailable),
+                modelSettingTextDnaEpico(modelSummaries$settings$padjmethod),
+                "within each phenotype and omnibus term across valid CpGs",
+                lmer_test_version, pbkrtest_version
             ),
             stringsAsFactors = FALSE, check.names = FALSE
         )

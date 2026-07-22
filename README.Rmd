@@ -24,6 +24,8 @@ dnaEPICO provides a **modular and reproducible pipeline** for preprocessing and 
 
 The package supports CpG-wise generalised linear models and longitudinal mixed-effects models using lmerTest/lme4 or nlme. It also integrates preprocessing, quality control, phenotype preparation, and automated report generation for local and High-Performance Computing (HPC) environments through a **GNU Make-based workflow**.
 
+For lmerTest/lme4 analyses, optional omnibus F tests jointly evaluate complete phenotype main effects or phenotype-by-interaction terms while retaining the participant-level random-intercept model.
+
 ## Installation instructions
 
 Get the latest stable `R` release from [CRAN](http://cran.r-project.org/). Then install `dnaEPICO` from [Bioconductor](http://bioconductor.org/) using the following code:

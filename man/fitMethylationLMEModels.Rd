@@ -11,6 +11,8 @@ fitMethylationLMEModels(
   lmeLibs = "lme4,lmerTest",
   correlationStructure = "none",
   correlationVar = NULL,
+  omnibusTest = FALSE,
+  omnibusDdf = "Satterthwaite",
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
@@ -36,6 +38,13 @@ when \code{lmeLibs} selects \code{'nlme'}. One of \code{'none'}, \code{'AR1'}, o
 \item{correlationVar}{Character or \code{NULL}. Variable used to order repeated
 observations within \code{personVar} for \code{AR1} or \code{CAR1} residual correlation
 structures. Must be supplied explicitly for \code{AR1} or \code{CAR1}.}
+
+\item{omnibusTest}{Logical. If \code{TRUE}, calculate one joint fixed-effect test
+per CpG for the phenotype-by-interaction term, or the phenotype main effect
+when no interaction is requested.}
+
+\item{omnibusDdf}{Character. Denominator degrees-of-freedom method used by
+\code{lmerTest::contestMD()}: \code{'Satterthwaite'} or \code{'Kenward-Roger'}.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 

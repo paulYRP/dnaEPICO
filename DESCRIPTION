@@ -1,6 +1,6 @@
 Package: dnaEPICO
 Title: dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data
-Version: 0.99.34
+Version: 0.99.35
 Date: 2026-01-18
 Authors@R: person("Paul", "Ruiz", role = c("aut", "cre"),
             email = "ruizpint@qut.edu.au",
@@ -69,7 +69,8 @@ Suggests:
     tinytex,
     FlowSorted.Blood.EPIC,
     FlowSorted.Blood.450k,
-    BeadSorted.Saliva.EPIC
+    BeadSorted.Saliva.EPIC,
+    pbkrtest
 VignetteBuilder: knitr
 biocViews:
   Software, 

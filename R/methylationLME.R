@@ -66,6 +66,12 @@
 #' @param interactionTerm Character or `NULL`. Optional interaction term. When
 #'   supplied and present in the input data, the phenotype is modeled together
 #'   with its interaction against this variable.
+#' @param omnibusTest Logical. If `TRUE`, use `lmerTest::contestMD()` to test
+#'   the complete phenotype-by-interaction term, or the phenotype main effect
+#'   when `interactionTerm = NULL`, once per CpG. This is available only for
+#'   the lmerTest/lme4 engine.
+#' @param omnibusDdf Character. Denominator degrees-of-freedom method for the
+#'   omnibus F test. One of `'Satterthwaite'` or `'Kenward-Roger'`.
 #' @param saveSignificantInteractions Logical. If `TRUE`, collect coefficient
 #'   tables for CpGs passing `significantInteractionPval` in the returned object
 #'   and optionally write them to disk when `saveOutputs = TRUE`.
@@ -206,6 +212,7 @@ methylationLME <- function(
     cpgLimit = NA, methylationScale = "beta", nCores = 32, summaryPval = NA,
     excludeSingular = FALSE, excludeNonConverged = FALSE, plotWidth = 2000,
     plotHeight = 1000, plotDPI = 150, interactionTerm = NULL,
+    omnibusTest = FALSE, omnibusDdf = "Satterthwaite",
     saveSignificantInteractions = TRUE,
         significantInteractionDir = "preliminaryResults/cpgs/methylationLME",
     significantInteractionPval = 0.05, saveTxtSummaries = TRUE,
@@ -224,10 +231,18 @@ methylationLME <- function(
     cpgLimit <- normalizeOptionalNumericMethylationGLM(cpgLimit)
     summaryPval <- normalizeOptionalNumericMethylationGLM(summaryPval)
     chunkSize <- normalizeChunkSizeMethylationGLM(chunkSize)
+    padjmethod <- validatePAdjustmentMethodMethylationModels(padjmethod)
     correlationStructure <-
         normalizeCorrelationStructureMethylationLME(correlationStructure)
     correlationVar <-
         normalizeCorrelationVariableMethylationLME(correlationVar = correlationVar)
+    lme_config <- resolveLmeLibrariesMethylationLME(lmeLibs)
+    omnibus_config <- validateOmnibusConfigurationMethylationLME(
+        omnibusTest = omnibusTest, omnibusDdf = omnibusDdf,
+        lmeEngine = lme_config$engine
+    )
+    omnibusTest <- omnibus_config$test
+    omnibusDdf <- omnibus_config$ddf
     if (!identical(correlationStructure, "none")) {
         if (is.null(correlationVar)) {
             stop("correlationVar must be supplied when correlationStructure is AR1 or CAR1.",
@@ -313,6 +328,9 @@ methylationLME <- function(
                 isTRUE(excludeNonConverged)),
             paste("Interaction term:               ",
                 if (is.null(interactionTerm)) "None" else interactionTerm),
+            paste("Omnibus test:                  ", omnibusTest),
+            paste("Omnibus denominator DF:        ",
+                if (isTRUE(omnibusTest)) omnibusDdf else "None"),
             paste("Save significant interactions:  ",
                 isTRUE(saveSignificantInteractions)),
             paste("Significant interaction p-value:",
@@ -345,6 +363,7 @@ methylationLME <- function(
             nCores = nCores, libPath = libPath, lmeLibs = lmeLibs,
             correlationStructure = correlationStructure,
                 correlationVar = correlationVar,
+            omnibusTest = omnibusTest, omnibusDdf = omnibusDdf,
             verbose = verbose, logs = logs, log_dir = outputLogs,
             log_file = log_file
         )
@@ -354,6 +373,7 @@ methylationLME <- function(
             preparedData = preparedData, summaryPval = summaryPval,
             excludeSingular = excludeSingular,
                 excludeNonConverged = excludeNonConverged,
+            padjmethod = padjmethod,
             nCores = nCores, chunkSize = chunkSize, verbose = verbose,
             logs = logs, log_dir = outputLogs, log_file = log_file
         )
@@ -438,6 +458,7 @@ methylationLME <- function(
                 scalingMetadata = preparedData$scalingMetadata,
                 timeVar = timeVar, excludeSingular = isTRUE(excludeSingular),
                 excludeNonConverged = isTRUE(excludeNonConverged),
+                omnibusTest = omnibusTest, omnibusDdf = omnibusDdf,
                 reportAssetsDir = reportAssetsDir,
                 correlationStructure = correlationStructure,
                 correlationVar = if (identical(

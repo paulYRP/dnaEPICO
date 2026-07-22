@@ -1,14 +1,16 @@
-CHANGES IN VERSION 0.99.34
+CHANGES IN VERSION 0.99.35
 ------------------------
 
 NEW FEATURES
 
+    o [22-07-2026] Added optional lmerTest omnibus F tests for complete
+      phenotype main effects or phenotype-by-interaction terms, with
+      Satterthwaite or Kenward-Roger denominator degrees of freedom and
+      CpG-adjusted results in annotated LME workbooks and reports.
+
     o [19-07-2026] Added scaleVars predictor standardisation, consistent
       GLM/lme4/nlme metadata, single-file SVA phenotype updates,
-      ordered annotated workbooks, source-defined report card titles, and
-      space-safe exported Makefiles with normalized optional model variables
-      and reliable report-completion checks, with report TSV sidecars written
-      directly into report projects.
+      ordered annotated workbooks, and source-defined report card titles.
 
     o [18-07-2026] Added optional sex-mismatch removal.
 

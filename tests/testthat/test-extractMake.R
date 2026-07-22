@@ -15,6 +15,20 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
     expect_match(basename(makefile_path), "^Makefile$")
     makefile <- readLines(makefile_path, warn = FALSE)
     expect_true(any(grepl("SCALE_VARS = NULL", makefile, fixed = TRUE)))
+    expect_true(any(makefile == "MODEL ?= model1"))
+    expect_true(any(makefile == "MODELS = modelA modelB modelC"))
+    expect_false(any(grepl(
+        "^[A-Za-z0-9_ ?:+.-]+=[^#]*#",
+        makefile
+    )))
+    expect_true(any(grepl(
+        "LME_OMNIBUS_TEST = FALSE", makefile,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        "LME_OMNIBUS_DDF = Satterthwaite", makefile,
+        fixed = TRUE
+    )))
     expect_true(any(grepl(
         "REMOVE_SEX_MISMATCH = FALSE",
         makefile,
@@ -128,6 +142,16 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
     )))
     expect_true(any(grepl(
         "reportAssetsDir = '$(LME_REPORT_ASSET_DIR)'",
+        rules,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        "omnibusTest = $(LME_OMNIBUS_TEST)",
+        rules,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        "omnibusDdf = '$(LME_OMNIBUS_DDF)'",
         rules,
         fixed = TRUE
     )))
