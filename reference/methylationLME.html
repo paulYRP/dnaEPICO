@@ -26,7 +26,7 @@ memory."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mat
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.34</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.35</span>
       </span>
     </div>
 
@@ -115,6 +115,8 @@ memory.</p>
 <span>  plotHeight <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  plotDPI <span class="op">=</span> <span class="fl">150</span>,</span>
 <span>  interactionTerm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  omnibusTest <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  omnibusDdf <span class="op">=</span> <span class="st">"Satterthwaite"</span>,</span>
 <span>  saveSignificantInteractions <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  significantInteractionDir <span class="op">=</span> <span class="st">"preliminaryResults/cpgs/methylationLME"</span>,</span>
 <span>  significantInteractionPval <span class="op">=</span> <span class="fl">0.05</span>,</span>
@@ -280,6 +282,18 @@ disk.</p></dd>
 <dd><p>Character or <code>NULL</code>. Optional interaction term. When
 supplied and present in the input data, the phenotype is modeled together
 with its interaction against this variable.</p></dd>
+
+
+<dt id="arg-omnibustest">omnibusTest<a class="anchor" aria-label="anchor" href="#arg-omnibustest"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, use <code><a href="https://rdrr.io/pkg/lmerTest/man/contest.html" class="external-link">lmerTest::contestMD()</a></code> to test
+the complete phenotype-by-interaction term, or the phenotype main effect
+when <code>interactionTerm = NULL</code>, once per CpG. This is available only for
+the lmerTest/lme4 engine.</p></dd>
+
+
+<dt id="arg-omnibusddf">omnibusDdf<a class="anchor" aria-label="anchor" href="#arg-omnibusddf"></a></dt>
+<dd><p>Character. Denominator degrees-of-freedom method for the
+omnibus F test. One of <code>'Satterthwaite'</code> or <code>'Kenward-Roger'</code>.</p></dd>
 
 
 <dt id="arg-savesignificantinteractions">saveSignificantInteractions<a class="anchor" aria-label="anchor" href="#arg-savesignificantinteractions"></a></dt>

@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.34</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.35</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@
 Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpint@qut.edu.au" class="email">ruizpint@qut.edu.au</a>
       </address>
                   
-            <h4 data-toc-skip class="date">2026-07-19</h4>
+            <h4 data-toc-skip class="date">2026-07-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-overview.Rmd" class="external-link"><code>vignettes/dnaEPICO-overview.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-overview.Rmd</code></div>
@@ -451,8 +451,10 @@ Full screen
 <h3 id="methylationlme">methylationLME()<a class="anchor" aria-label="anchor" href="#methylationlme"></a>
 </h3>
 <p><code><a href="../reference/methylationLME.html">methylationLME()</a></code> fits longitudinal mixed-effects models.
-It supports repeated-measures designs by including participant-level
-random effects and timepoint-related terms.</p>
+It supports repeated-measures designs with a participant-level random
+intercept and timepoint-related fixed effects. For lmerTest/lme4 models,
+an optional omnibus F test jointly evaluates all estimable coefficients
+for a phenotype main effect or phenotype-by-interaction term.</p>
 <p>Its role is to model methylation change across repeated
 observations:</p>
 <ul>
@@ -460,8 +462,8 @@ observations:</p>
 participant identifiers, timepoint variables, phenotypes, covariates,
 and annotation settings.</li>
 <li>Processing tasks: longitudinal model preparation, CpG-LME model
-fitting, interaction testing, diagnostic plotting, summarisation, and
-annotation.</li>
+fitting, coefficient and optional omnibus testing, diagnostic plotting,
+summarisation, multiple-testing adjustment, and annotation.</li>
 <li>Outputs: mixed-model objects, interaction summaries, diagnostic
 figures, significant-interaction exports, and annotated longitudinal
 workbooks.</li>
@@ -551,9 +553,9 @@ for association testing, and</li>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-07-19 08:48:59 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-07-22 08:34:38 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 0.598 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 0.432 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -578,7 +580,7 @@ for association testing, and</li>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dnaEPICO_0.99.34 BiocStyle_2.34.0</span></span>
+<span><span class="co">#&gt; [1] dnaEPICO_0.99.35 BiocStyle_2.34.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] cli_3.6.6           knitr_1.51          rlang_1.3.0        </span></span>

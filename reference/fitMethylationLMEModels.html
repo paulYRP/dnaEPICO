@@ -19,7 +19,7 @@ object returned by prepareMethylationLMEData()."><!-- mathjax --><script src="ht
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.34</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.35</span>
       </span>
     </div>
 
@@ -80,6 +80,8 @@ object returned by <code><a href="prepareMethylationLMEData.html">prepareMethyla
 <span>  lmeLibs <span class="op">=</span> <span class="st">"lme4,lmerTest"</span>,</span>
 <span>  correlationStructure <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  correlationVar <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  omnibusTest <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  omnibusDdf <span class="op">=</span> <span class="st">"Satterthwaite"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  log_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -120,6 +122,17 @@ when <code>lmeLibs</code> selects <code>'nlme'</code>. One of <code>'none'</code
 <dd><p>Character or <code>NULL</code>. Variable used to order repeated
 observations within <code>personVar</code> for <code>AR1</code> or <code>CAR1</code> residual correlation
 structures. Must be supplied explicitly for <code>AR1</code> or <code>CAR1</code>.</p></dd>
+
+
+<dt id="arg-omnibustest">omnibusTest<a class="anchor" aria-label="anchor" href="#arg-omnibustest"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, calculate one joint fixed-effect test
+per CpG for the phenotype-by-interaction term, or the phenotype main effect
+when no interaction is requested.</p></dd>
+
+
+<dt id="arg-omnibusddf">omnibusDdf<a class="anchor" aria-label="anchor" href="#arg-omnibusddf"></a></dt>
+<dd><p>Character. Denominator degrees-of-freedom method used by
+<code><a href="https://rdrr.io/pkg/lmerTest/man/contest.html" class="external-link">lmerTest::contestMD()</a></code>: <code>'Satterthwaite'</code> or <code>'Kenward-Roger'</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
