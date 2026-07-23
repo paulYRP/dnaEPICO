@@ -333,7 +333,7 @@ test_that("failed phenotype validation leaves the original file unchanged", {
     invalid <- cbind(original, PC1 = c(0.1, Inf, 0.3))
 
     expect_error(
-        replacePhenotypeFileSvaEnmix(
+        getFromNamespace("replacePhenotypeFileSvaEnmix", "dnaEPICO")(
             mergedPheno = invalid,
             phenoFile = pheno_file,
             SampleID = "Sample_Name",

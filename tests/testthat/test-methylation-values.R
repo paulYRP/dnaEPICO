@@ -1,4 +1,4 @@
-test_that("methylation-scale validation follows Beta, M, and CN definitions", {
+test_that("methylation scales are normalized and ranges are read-only", {
     expect_identical(
         vapply(
             c("beta", "Beta", "BETA", "m", "M", "cn", "CN", "cN"),
@@ -18,37 +18,20 @@ test_that("methylation-scale validation follows Beta, M, and CN definitions", {
     beta <- rbind(
         cg_boundary = c(0, 1),
         cg_nan = c(NaN, 0.5),
-        cg_low = c(-0.01, 0.2),
-        cg_inf = c(Inf, 0.3),
-        cg_missing = c(NA_real_, NA_real_)
+        cg_outside = c(-0.01, 1.01),
+        cg_inf = c(Inf, 0.3)
     )
-    beta_result <- dnaEPICO:::inspectMethylationMatrixDnaEpico(beta, "beta")
-
-    expect_true(is.na(beta_result$values["cg_nan", 1]))
-    expect_equal(beta_result$boundaries$Observed.Minimum, -0.01)
-    expect_equal(beta_result$boundaries$Observed.Maximum, 1)
-    expect_equal(beta_result$boundaries$At.Lower.Boundary, 1L)
-    expect_equal(beta_result$boundaries$At.Upper.Boundary, 1L)
-    expect_equal(beta_result$boundaries$NaN.Converted, 1L)
-    expect_equal(beta_result$boundaries$Invalid.CpGs, 3L)
-    expect_setequal(
-        beta_result$invalidCpGs$CpG,
-        c("cg_low", "cg_inf", "cg_missing")
-    )
+    original <- beta
+    range <- dnaEPICO:::summarizeMethylationRangeDnaEpico(beta, "Beta")
+    expect_identical(beta, original)
     expect_identical(
-        beta_result$issues$Status[beta_result$issues$CpG == "cg_nan"],
-        "NaN converted to NA"
+        names(range),
+        c("Scale", "Observed.Minimum", "Observed.Maximum")
     )
-
-    m_values <- rbind(cg_finite = c(-100, 100), cg_inf = c(-Inf, 0))
-    m_result <- dnaEPICO:::inspectMethylationMatrixDnaEpico(m_values, "m")
-    expect_equal(m_result$boundaries$Out.Of.Range, 0L)
-    expect_identical(m_result$invalidCpGs$CpG, "cg_inf")
-
-    cn_values <- rbind(cg_finite = c(-20, 30), cg_inf = c(Inf, 0))
-    cn_result <- dnaEPICO:::inspectMethylationMatrixDnaEpico(cn_values, "cn")
-    expect_equal(cn_result$boundaries$Out.Of.Range, 0L)
-    expect_identical(cn_result$invalidCpGs$CpG, "cg_inf")
+    expect_identical(range$Scale, "beta")
+    expect_equal(range$Observed.Minimum, -0.01)
+    expect_equal(range$Observed.Maximum, 1.01)
+    expect_false("Defined.Domain" %in% names(range))
 })
 
 test_that("methylation probe identifiers must be present and unique", {
@@ -70,20 +53,20 @@ test_that("methylation probe identifiers must be present and unique", {
     )
 })
 
-test_that("GLM skips and reports invalid CpGs without stopping valid fits", {
+test_that("GLM passes numeric CpG values to glm2 without range rejection", {
     tmp <- withr::local_tempdir()
     phenoBT1 <- data.frame(
         Sample_Name = paste0("S", seq_len(12)),
         phenotype = rep(c(0, 1), 6),
         cg_valid = seq(0.1, 0.65, length.out = 12),
         cg_nan = c(NaN, seq(0.2, 0.7, length.out = 11)),
-        cg_invalid = c(1.1, seq(0.2, 0.7, length.out = 11)),
+        cg_outside = c(1.1, seq(0.2, 0.7, length.out = 11)),
         check.names = FALSE
     )
     input_file <- file.path(tmp, "phenoBT1.RData")
     save(phenoBT1, file = input_file)
 
-    prepared <- suppressWarnings(prepareMethylationGLMData(
+    prepared <- prepareMethylationGLMData(
         inputPheno = input_file,
         phenotypes = "phenotype",
         covariates = character(0),
@@ -91,7 +74,10 @@ test_that("GLM skips and reports invalid CpGs without stopping valid fits", {
         methylationScale = "beta",
         verbose = FALSE,
         logs = FALSE
-    ))
+    )
+    expect_true(is.nan(prepared$data$cg_nan[[1L]]))
+    expect_equal(prepared$data$cg_outside[[1L]], 1.1)
+
     fits <- fitMethylationGLMModels(
         preparedData = prepared,
         nCores = 1,
@@ -107,7 +93,7 @@ test_that("GLM skips and reports invalid CpGs without stopping valid fits", {
     annotation <- annotateMethylationGLMSummaries(
         modelSummaries = summaries,
         annotationObject = data.frame(
-            CpG = c("cg_valid", "cg_nan", "cg_invalid"),
+            CpG = c("cg_valid", "cg_nan", "cg_outside"),
             chr = "chr1",
             stringsAsFactors = FALSE
         ),
@@ -116,53 +102,44 @@ test_that("GLM skips and reports invalid CpGs without stopping valid fits", {
         logs = FALSE
     )
 
-    expect_identical(fits$fitFailures$CpG, "cg_invalid")
-    expect_identical(fits$fitFailures$Status, "invalid")
-    expect_match(fits$fitFailures$Error, "outside \\[0, 1\\]")
-    expect_setequal(summaries$summaries$phenotype$CpG, c("cg_valid", "cg_nan"))
-    expect_setequal(annotation$data$IlmnID, c("cg_valid", "cg_nan", "cg_invalid"))
-    expect_identical(
-        annotation$data$phenotype_Fit.Status[
-            annotation$data$IlmnID == "cg_invalid"
-        ],
-        "invalid"
+    expect_equal(nrow(fits$fitFailures), 0L)
+    expect_setequal(
+        summaries$summaries$phenotype$CpG,
+        c("cg_valid", "cg_nan", "cg_outside")
     )
-    expect_match(
-        annotation$data$phenotype_Exclusion.Reason[
-            annotation$data$IlmnID == "cg_invalid"
-        ],
-        "outside \\[0, 1\\]"
+    expect_setequal(
+        annotation$data$IlmnID,
+        c("cg_valid", "cg_nan", "cg_outside")
     )
 })
 
-test_that("GLM retains an inventory when every CpG is invalid", {
+test_that("GLM retains p-values returned by glm2 for a constant response", {
     tmp <- withr::local_tempdir()
     phenoBT1 <- data.frame(
         Sample_Name = paste0("S", seq_len(8)),
         phenotype = rep(c(0, 1), 4),
-        cg_invalid = rep(1.2, 8),
+        cg_constant = rep(1.2, 8),
         check.names = FALSE
     )
     input_file <- file.path(tmp, "phenoBT1.RData")
     save(phenoBT1, file = input_file)
-    prepared <- suppressWarnings(prepareMethylationGLMData(
+    prepared <- prepareMethylationGLMData(
         inputPheno = input_file,
         phenotypes = "phenotype",
         covariates = character(0),
         factorVars = character(0),
         verbose = FALSE,
         logs = FALSE
-    ))
-
-    expect_warning(
-        fits <- fitMethylationGLMModels(prepared, nCores = 1, logs = FALSE),
-        "failure inventory was retained"
     )
-    expect_equal(nrow(fits$fitFailures), 1L)
-    expect_identical(fits$fitFailures$Status, "invalid")
+
+    fits <- suppressWarnings(
+        fitMethylationGLMModels(prepared, nCores = 1, logs = FALSE)
+    )
+    expect_true(fits$modelMessages$P.Value.Available)
+    expect_equal(fits$failureCounts[["phenotype"]], 0L)
 })
 
-test_that("lme4 and nlme skip the same invalid longitudinal CpG", {
+test_that("lme4 and nlme do not reject numeric CpGs by methylation range", {
     testthat::skip_if_not_installed("lmerTest")
     testthat::skip_if_not_installed("nlme")
 
@@ -174,12 +151,12 @@ test_that("lme4 and nlme skip the same invalid longitudinal CpG", {
         Timepoint = factor(rep(c("T1", "T2"), 10)),
         phenotype = rep(c(0, 1), each = 10),
         cg_valid = 0.3 + rep(c(0, 0.04), 10) + stats::rnorm(20, 0, 0.01),
-        cg_invalid = c(-0.1, rep(0.4, 19)),
+        cg_outside = c(-0.1, 0.3 + rep(c(0, 0.04), 9), 0.36),
         check.names = FALSE
     )
     input_file <- file.path(tmp, "phenoBT1T2.RData")
     save(phenoBT1T2, file = input_file)
-    prepared <- suppressWarnings(prepareMethylationLMEData(
+    prepared <- prepareMethylationLMEData(
         inputPheno = input_file,
         personVar = "person",
         timeVar = "Timepoint",
@@ -188,7 +165,7 @@ test_that("lme4 and nlme skip the same invalid longitudinal CpG", {
         factorVars = "phenotype",
         verbose = FALSE,
         logs = FALSE
-    ))
+    )
 
     lme4_fits <- fitMethylationLMEModels(
         preparedData = prepared,
@@ -203,12 +180,14 @@ test_that("lme4 and nlme skip the same invalid longitudinal CpG", {
         logs = FALSE
     )
 
-    expect_identical(lme4_fits$fitFailures$CpG, "cg_invalid")
-    expect_identical(nlme_fits$fitFailures$CpG, "cg_invalid")
-    expect_identical(lme4_fits$fitFailures$Status, "invalid")
-    expect_identical(nlme_fits$fitFailures$Status, "invalid")
-    expect_false(inherits(lme4_fits$fits$phenotype$cg_valid, "dnaEPICO_methylationLME_fit_error"))
-    expect_false(inherits(nlme_fits$fits$phenotype$cg_valid, "dnaEPICO_methylationLME_fit_error"))
+    expect_false(inherits(
+        lme4_fits$fits$phenotype$cg_outside,
+        "dnaEPICO_methylationLME_fit_error"
+    ))
+    expect_false(inherits(
+        nlme_fits$fits$phenotype$cg_outside,
+        "dnaEPICO_methylationLME_fit_error"
+    ))
 })
 
 test_that("model preparation selects scale-specific data from multi-object external files", {

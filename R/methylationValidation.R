@@ -201,20 +201,69 @@ methylationScaleDefinitionDnaEpico <- function(methylationScale = "beta") {
     definitions <- list(
         beta = list(
             objectPrefix = "phenoB",
-            responseLabel = "Beta values", responseColumn = "beta",
-            domain = "[0, 1]"
+            responseLabel = "Beta values", responseColumn = "beta"
         ), m = list(
             objectPrefix = "phenoM",
-            responseLabel = "M-values", responseColumn = "m",
-                domain = "Unbounded; finite values required for modeling"
+            responseLabel = "M-values", responseColumn = "m"
         ),
         cn = list(
             objectPrefix = "phenoCN", responseLabel = "Copy number values",
-            responseColumn = "cn",
-                domain = "Unbounded; finite values required for modeling"
+            responseColumn = "cn"
         )
     )
     definitions[[normalizeMethylationScaleDnaEpico(methylationScale)]]
+}
+
+summarizeMethylationRangeDnaEpico <- function(
+    values, methylationScale = "beta"
+) {
+    methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
+    if (!is.matrix(values) || !is.numeric(values)) {
+        stop("Methylation values must be supplied as a numeric matrix.",
+            call. = FALSE
+        )
+    }
+
+    finite_minimum <- Inf
+    finite_maximum <- -Inf
+    for (column in seq_len(ncol(values))) {
+        column_values <- values[, column]
+        finite_values <- column_values[is.finite(column_values)]
+        if (length(finite_values) == 0L) {
+            next
+        }
+        finite_minimum <- min(finite_minimum, min(finite_values))
+        finite_maximum <- max(finite_maximum, max(finite_values))
+    }
+
+    if (!is.finite(finite_minimum)) {
+        finite_minimum <- NA_real_
+        finite_maximum <- NA_real_
+    }
+
+    data.frame(
+        Scale = methylation_scale,
+        Observed.Minimum = finite_minimum,
+        Observed.Maximum = finite_maximum,
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+    )
+}
+
+formatMethylationRangeLogDnaEpico <- function(rangeSummary) {
+    if (!is.data.frame(rangeSummary) || nrow(rangeSummary) == 0L) {
+        return(c(
+            "Methylation scale:            unavailable",
+            "Observed finite minimum:      NA",
+            "Observed finite maximum:      NA"
+        ))
+    }
+    row <- rangeSummary[1L, , drop = FALSE]
+    c(
+        paste("Methylation scale:           ", row$Scale),
+        paste("Observed finite minimum:     ", row$Observed.Minimum),
+        paste("Observed finite maximum:     ", row$Observed.Maximum)
+    )
 }
 
 methylationScaleObjectPrefixDnaEpico <- function(methylationScale = "beta") {
@@ -229,290 +278,19 @@ methylationScaleResponseColumnDnaEpico <- function(methylationScale = "beta") {
     methylationScaleDefinitionDnaEpico(methylationScale)$responseColumn
 }
 
-methylationScaleDomainDnaEpico <- function(methylationScale = "beta") {
-    methylationScaleDefinitionDnaEpico(methylationScale)$domain
-}
-
-buildMethylationValidationDnaEpico <- function(
-    cpgIDs, methylationScale,
-    numericCpGs, finiteCounts, naCounts, nanCounts, positiveInfCounts,
-    negativeInfCounts, outOfRangeCounts, lowerBoundaryCounts,
-    upperBoundaryCounts, observedMinimum, observedMaximum,
-        overallMinimum = NA_real_,
-    overallMaximum = NA_real_
-) {
-    methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
-    n_cpgs <- length(cpgIDs)
-    invalid_cpgs <- !numericCpGs | positiveInfCounts > 0L | negativeInfCounts >
-        0L | outOfRangeCounts > 0L | (numericCpGs & finiteCounts ==
-        0L)
-    issue_cpgs <- invalid_cpgs | nanCounts > 0L
-    issue_indices <- which(issue_cpgs)
-
-    reason_rules <- list(
-        `CpG column is not numeric` = !numericCpGs,
-        `NaN converted to NA` = nanCounts > 0L,
-            `infinite methylation value` = positiveInfCounts >
-            0L | negativeInfCounts > 0L,
-                `beta value outside [0, 1]` = outOfRangeCounts >
-            0L, `no finite methylation values` = numericCpGs &
-            finiteCounts == 0L
-    )
-    reasons <- vapply(issue_indices, function(index) {
-        active <- vapply(reason_rules, `[[`, logical(1), index)
-        paste(names(reason_rules)[active], collapse = "; ")
-    }, character(1))
-
-    issues <- data.frame(
-        CpG = cpgIDs[issue_indices], Scale = rep(
-            methylation_scale,
-            length(issue_indices)
-        ), Status = ifelse(invalid_cpgs[issue_indices],
-            "invalid", "NaN converted to NA"
-        ), Observed.Minimum = observedMinimum[issue_indices],
-        Observed.Maximum = observedMaximum[issue_indices],
-            Finite.Values = finiteCounts[issue_indices],
-        NA.Values = naCounts[issue_indices],
-            NaN.Converted = nanCounts[issue_indices],
-        Positive.Inf = positiveInfCounts[issue_indices],
-            Negative.Inf = negativeInfCounts[issue_indices],
-        Out.Of.Range = outOfRangeCounts[issue_indices], Reason = reasons,
-        stringsAsFactors = FALSE, check.names = FALSE
-    )
-
-    beta_scale <- identical(methylation_scale, "beta")
-    boundaries <- data.frame(
-        Scale = methylation_scale,
-            Defined.Domain = methylationScaleDomainDnaEpico(methylation_scale),
-        Observed.Minimum = overallMinimum, Observed.Maximum = overallMaximum,
-        Finite.Values = sum(finiteCounts), NA.Values = sum(naCounts),
-        NaN.Converted = sum(nanCounts), Positive.Inf = sum(positiveInfCounts),
-        Negative.Inf = sum(negativeInfCounts),
-            Out.Of.Range = sum(outOfRangeCounts),
-        At.Lower.Boundary = if (beta_scale) {
-            sum(lowerBoundaryCounts)
-        } else {
-            NA_real_
-        }, At.Upper.Boundary = if (beta_scale) {
-            sum(upperBoundaryCounts)
-        } else {
-            NA_real_
-        }, CpGs = n_cpgs, Numeric.CpGs = sum(numericCpGs),
-        Invalid.CpGs = sum(invalid_cpgs), stringsAsFactors = FALSE,
-        check.names = FALSE
-    )
-
-    list(boundaries = boundaries, issues = issues,
-        invalidCpGs = issues[issues$Status ==
-        "invalid", , drop = FALSE])
-}
-
-inspectMethylationMatrixDnaEpico <- function(values,
-    methylationScale = "beta") {
-    methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
-    if (!is.matrix(values) || !is.numeric(values)) {
-        stop("Methylation values must be supplied as a numeric matrix.",
-            call. = FALSE
-        )
-    }
-
-    cpg_ids <- rownames(values)
-    if (is.null(cpg_ids)) {
-        cpg_ids <- as.character(seq_len(nrow(values)))
-    }
-
-    nan_by_cpg <- rowSums(is.nan(values))
-    values[is.nan(values)] <- NA_real_
-    finite_index <- is.finite(values)
-    finite_by_cpg <- rowSums(finite_index)
-    na_by_cpg <- rowSums(is.na(values))
-    positive_inf_by_cpg <- rowSums(is.infinite(values) & values >
-        0)
-    negative_inf_by_cpg <- rowSums(is.infinite(values) & values <
-        0)
-    beta_scale <- identical(methylation_scale, "beta")
-    out_of_range_by_cpg <- if (beta_scale) {
-        rowSums(finite_index & (values < 0 | values > 1))
-    } else {
-        integer(nrow(values))
-    }
-    lower_boundary_by_cpg <- if (beta_scale) {
-        rowSums(values == 0, na.rm = TRUE)
-    } else {
-        integer(nrow(values))
-    }
-    upper_boundary_by_cpg <- if (beta_scale) {
-        rowSums(values == 1, na.rm = TRUE)
-    } else {
-        integer(nrow(values))
-    }
-
-    finite_values <- values[finite_index]
-    overall_minimum <- if (length(finite_values)) {
-        min(finite_values)
-    } else {
-        NA_real_
-    }
-    overall_maximum <- if (length(finite_values)) {
-        max(finite_values)
-    } else {
-        NA_real_
-    }
-    observed_minimum <- rep(NA_real_, nrow(values))
-    observed_maximum <- rep(NA_real_, nrow(values))
-    issue_indices <- which(nan_by_cpg > 0L | positive_inf_by_cpg >
-        0L | negative_inf_by_cpg > 0L | out_of_range_by_cpg >
-        0L | finite_by_cpg == 0L)
-    for (index in issue_indices) {
-        finite_row <- values[index, is.finite(values[index, ]),
-            drop = TRUE
-        ]
-        if (length(finite_row)) {
-            observed_minimum[[index]] <- min(finite_row)
-            observed_maximum[[index]] <- max(finite_row)
-        }
-    }
-
-    validation <- buildMethylationValidationDnaEpico(
-        cpgIDs = cpg_ids,
-        methylationScale = methylation_scale, numericCpGs = rep(
-            TRUE,
-            nrow(values)
-        ), finiteCounts = finite_by_cpg, naCounts = na_by_cpg,
-        nanCounts = nan_by_cpg, positiveInfCounts = positive_inf_by_cpg,
-        negativeInfCounts = negative_inf_by_cpg,
-            outOfRangeCounts = out_of_range_by_cpg,
-        lowerBoundaryCounts = lower_boundary_by_cpg,
-            upperBoundaryCounts = upper_boundary_by_cpg,
-        observedMinimum = observed_minimum, observedMaximum = observed_maximum,
-        overallMinimum = overall_minimum, overallMaximum = overall_maximum
-    )
-    c(list(values = values), validation)
-}
-
-inspectMethylationColumnsDnaEpico <- function(
-    data, cpgColumns,
-    methylationScale = "beta"
-) {
-    methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
-    n_cpgs <- length(cpgColumns)
-    numeric_cpgs <- vapply(data[cpgColumns], is.numeric, logical(1))
-    finite_counts <- na_counts <- nan_counts <- positive_inf_counts <-
-        negative_inf_counts <- out_of_range_counts <- lower_boundary_counts <-
-        upper_boundary_counts <- integer(n_cpgs)
-    observed_minimum <- observed_maximum <- rep(NA_real_, n_cpgs)
-    beta_scale <- identical(methylation_scale, "beta")
-
-    for (index in which(numeric_cpgs)) {
-        cpg <- cpgColumns[[index]]
-        values <- data[[cpg]]
-        nan_index <- is.nan(values)
-        nan_counts[[index]] <- sum(nan_index)
-        values[nan_index] <- NA_real_
-        data[[cpg]] <- values
-
-        finite_values <- values[is.finite(values)]
-        finite_counts[[index]] <- length(finite_values)
-        na_counts[[index]] <- sum(is.na(values))
-        positive_inf_counts[[index]] <- sum(is.infinite(values) &
-            values > 0)
-        negative_inf_counts[[index]] <- sum(is.infinite(values) &
-            values < 0)
-        if (length(finite_values)) {
-            observed_minimum[[index]] <- min(finite_values)
-            observed_maximum[[index]] <- max(finite_values)
-        }
-        if (beta_scale) {
-            out_of_range_counts[[index]] <- sum(finite_values <
-                0 | finite_values > 1)
-            lower_boundary_counts[[index]] <- sum(finite_values ==
-                0)
-            upper_boundary_counts[[index]] <- sum(finite_values ==
-                1)
-        }
-    }
-    na_counts[!numeric_cpgs] <- vapply(
-        data[cpgColumns[!numeric_cpgs]],
-        function(values) sum(is.na(values)), integer(1)
-    )
-
-    finite_minimum <- observed_minimum[is.finite(observed_minimum)]
-    finite_maximum <- observed_maximum[is.finite(observed_maximum)]
-    validation <- buildMethylationValidationDnaEpico(
-        cpgIDs = cpgColumns,
-        methylationScale = methylation_scale, numericCpGs = numeric_cpgs,
-        finiteCounts = finite_counts, naCounts = na_counts,
-            nanCounts = nan_counts,
-        positiveInfCounts = positive_inf_counts,
-            negativeInfCounts = negative_inf_counts,
-        outOfRangeCounts = out_of_range_counts,
-            lowerBoundaryCounts = lower_boundary_counts,
-        upperBoundaryCounts = upper_boundary_counts,
-            observedMinimum = observed_minimum,
-        observedMaximum = observed_maximum,
-            overallMinimum = if (length(finite_minimum)) {
-            min(finite_minimum)
-        } else {
-            NA_real_
-        }, overallMaximum = if (length(finite_maximum)) {
-            max(finite_maximum)
-        } else {
-            NA_real_
-        }
-    )
-    c(list(data = data), validation)
-}
-
-formatMethylationBoundariesLogDnaEpico <- function(boundaries) {
-    if (!is.data.frame(boundaries) || nrow(boundaries) == 0L) {
-        return("Methylation boundaries: unavailable")
-    }
-    row <- boundaries[1L, , drop = FALSE]
-    c(
-        paste("Methylation scale:           ", row$Scale), paste(
-            "Defined domain:              ",
-            row$Defined.Domain
-        ), paste(
-            "Observed finite minimum:     ",
-            row$Observed.Minimum
-        ), paste(
-            "Observed finite maximum:     ",
-            row$Observed.Maximum
-        ), paste(
-            "Values at lower boundary:    ",
-            row$At.Lower.Boundary
-        ), paste(
-            "Values at upper boundary:    ",
-            row$At.Upper.Boundary
-        ), paste(
-            "NaN values converted to NA:  ",
-            row$NaN.Converted
-        ), paste(
-            "Positive/negative infinity:  ",
-            paste(row$Positive.Inf, row$Negative.Inf, sep = "/")
-        ),
-        paste("Out-of-range beta values:    ", row$Out.Of.Range),
-        paste("Invalid CpGs:                ", row$Invalid.CpGs)
-    )
-}
-
-invalidMethylationReasonsDnaEpico <- function(validation) {
-    invalid <- validation$invalidCpGs
-    if (!is.data.frame(invalid) || nrow(invalid) == 0L) {
-        return(stats::setNames(character(0), character(0)))
-    }
-    stats::setNames(as.character(invalid$Reason), as.character(invalid$CpG))
-}
-
 newMethylationFitErrorDnaEpico <- function(
-    reason, errorClass,
-    status = "failed", converged = NA, convergenceMessage = NA_character_
+    reason, errorClass, modelMessage = NULL
 ) {
+    resolved_message <- if (is.null(modelMessage)) {
+        paste0("ERROR: ", as.character(reason))
+    } else {
+        as.character(modelMessage)
+    }
     structure(
         list(
-            error = as.character(reason), status = as.character(status),
-            converged = as.logical(converged),
-                convergenceMessage = as.character(convergenceMessage)
+            error = as.character(reason),
+            modelMessage = resolved_message,
+            pValueAvailable = FALSE
         ),
         class = errorClass
     )

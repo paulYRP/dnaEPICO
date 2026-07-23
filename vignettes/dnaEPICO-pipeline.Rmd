@@ -541,6 +541,10 @@ Arguments:
     factors before model fitting.
 - `scaleVars` identifies numeric fixed-effect variables to centre and divide by
     their sample standard deviations before fitting.
+- Numeric CpG columns are passed unchanged to glm2. Native messages, warnings,
+    or errors are stored in `<Phenotype>_Model.Message`; model attempts without
+    a returned p-value are counted in workbook metadata and are not added to the
+    annotated result table.
 - `cpgLimit = 2` keeps the example fast by fitting only two CpG models.
 - `nCores = 1` keeps the example deterministic and lightweight; production HPC
     runs typically use higher values.
@@ -647,6 +651,11 @@ Arguments:
 - `omnibusDdf` selects `"Satterthwaite"` or `"Kenward-Roger"` denominator
     degrees of freedom. Kenward-Roger testing requires `pbkrtest` and is more
     computationally intensive for an EWAS.
+- Numeric CpG columns are passed unchanged to the selected lmerTest/lme4 or
+    nlme engine. Native conditions are stored in
+    `<Phenotype>_Model.Message`; model attempts without a returned coefficient
+    or omnibus p-value are counted in workbook metadata and are not added to
+    the annotated result table.
 - `cpgLimit = 2` keeps the example short by fitting only two CpG models.
 - `nCores = 1` keeps the example lightweight; production HPC runs usually use
     higher parallel settings.
@@ -1181,6 +1190,9 @@ phenotype-methylation data.
 - `SAVE_SIGNIFICANT_CPGS`: whether tables of significant CpGs are exported.
 - `SIGNIFICANT_CPG_PVAL`: p-value threshold used for those significant-CpG
     exports.
+- Annotated GLM rows require at least one returned coefficient p-value. Native
+    glm2 conditions are written to the phenotype-specific `Model.Message`
+    column and aggregate availability counts are written to metadata.
 
 ## Step 5 parameters
 
@@ -1203,6 +1215,10 @@ phenotype-methylation data.
     exported.
 - `SIGNIFICANT_INTERACTION_PVAL`: p-value threshold for those exported
     interaction results.
+- Annotated LME rows require at least one returned coefficient or omnibus
+    p-value. Native lmerTest/lme4 or nlme conditions are written to the
+    phenotype-specific `Model.Message` column and aggregate availability counts
+    are written to metadata.
 
 ## Argument normalisation
 

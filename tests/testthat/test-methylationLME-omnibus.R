@@ -185,11 +185,9 @@ test_that("non-estimable omnibus tests retain the CpG and reason", {
     summary <- dnaEPICO:::summarizeCpGFitMethylationLME(
         "cg00000029", fit, "Timepoint", "Profession"
     )
-    summary <- dnaEPICO:::applyFitQualityExclusionsMethylationLME(summary)
     expect_true(all(summary$CpG == "cg00000029"))
-    expect_true(all(is.na(summary$P.value)))
-    expect_false(any(summary$Inference.Included))
-    expect_match(summary$Exclusion.Reason[[1L]], "omnibus test not estimable")
+    expect_true(any(is.finite(summary$P.value)))
+    expect_match(summary$Model.Message[[1L]], "no estimable")
 })
 
 test_that("Kenward-Roger omnibus testing is available through pbkrtest", {
@@ -231,11 +229,6 @@ test_that("significant interaction collection uses omnibus p-values", {
             coefficientTerms = c(
                 "(Intercept)" = "(Intercept)",
                 "TimepointT2:ProfessionB" = "Timepoint:Profession"
-            ),
-            fitStatus = list(
-                singular = FALSE, converged = TRUE,
-                warnings = character(0),
-                convergenceMessages = character(0)
             ),
             omnibus = list(
                 status = "tested", pValue = omnibus_p,
@@ -336,7 +329,7 @@ test_that("multiple phenotypes receive separate omnibus tests", {
         match("Name", columns)
     )
     expect_lt(match("pos", columns), min(omnibus_details))
-    expect_lt(max(omnibus_details), match("Timepoint_Fit.Status", columns))
+    expect_lt(max(omnibus_details), match("Timepoint_Model.Message", columns))
 })
 
 test_that("omnibus results propagate to workbook and report sidecars", {
@@ -417,7 +410,7 @@ test_that("omnibus results propagate to workbook and report sidecars", {
     )
     expect_lt(
         max(match(detail_omnibus, columns)),
-        match("Timepoint_Fit.Status", columns)
+        match("Timepoint_Model.Message", columns)
     )
     expect_equal(
         openxlsx::getSheetNames(workbook),

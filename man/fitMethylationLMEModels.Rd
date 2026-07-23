@@ -57,8 +57,8 @@ when no interaction is requested.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationLME_models'}
-containing fitted model lists, model formulas, and counts of failed CpG
-fits.
+containing fitted model lists, model formulas, p-value availability
+counts, native model conditions, omnibus results, and hard model errors.
 }
 \description{
 Fit one linear mixed-effects model per CpG for each phenotype requested in

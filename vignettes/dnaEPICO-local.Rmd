@@ -454,6 +454,13 @@ two finite observations, and have non-zero sample variance. A variable cannot be
 listed in both `factorVars` and `scaleVars`. The applied centres and sample
 standard deviations are stored in the annotated workbook metadata.
 
+The preprocessed beta, M-value, or copy-number columns are passed unchanged to
+the selected model engine. Their observed finite minima and maxima are reported
+during preprocessing. GLM, lmerTest/lme4, and nlme messages, warnings, or errors
+are stored in one `<Phenotype>_Model.Message` column. An annotated workbook row
+is written when at least one requested p-value is returned; workbook metadata
+counts model attempts with and without p-values.
+
 Longitudinal lmerTest/lme4 analyses use a participant-level random intercept,
 `(1 | personVar)`. Set `omnibusTest = TRUE` to obtain one joint F test per CpG.
 When `interactionTerm` is supplied, the joint null covers all estimable

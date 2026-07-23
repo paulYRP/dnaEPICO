@@ -8,8 +8,6 @@ summarizeMethylationLMEModels(
   modelResults,
   preparedData,
   summaryPval = NA,
-  excludeSingular = FALSE,
-  excludeNonConverged = FALSE,
   padjmethod = "fdr",
   nCores = 1L,
   chunkSize = NULL,
@@ -26,12 +24,6 @@ summarizeMethylationLMEModels(
 
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value filter applied to the
 returned summary tables. \code{NA} keeps all rows.}
-
-\item{excludeSingular}{Logical. If \code{TRUE}, retain singular CpG rows and
-reasons but set their inferential p-values to \code{NA}.}
-
-\item{excludeNonConverged}{Logical. If \code{TRUE}, retain non-converged CpG rows
-and reasons but set their inferential p-values to \code{NA}.}
 
 \item{padjmethod}{Character. Adjustment method passed to \code{stats::p.adjust()}
 for omnibus p-values across CpGs within each phenotype and tested term.}
@@ -56,9 +48,8 @@ A list with class \code{'dnaEPICO_methylationLME_summaries'}
 containing the optionally filtered summary tables in \code{summaries} and the
 complete CpG-level tables in \code{diagnosticSummaries}. Diagnostics,
 annotation, and report output use the complete tables so \code{summaryPval}
-does not remove CpGs from those outputs. \code{fitDiagnostics} retains the
-phenotype-specific fit status, lme4 singular-fit flag, and warning text for
-every attempted CpG.
+does not remove CpGs from those outputs. \code{modelMessages} retains native
+messages, warnings, and errors for every attempted CpG.
 }
 \description{
 Extract phenotype-specific fixed-effect tables from the fitted mixed-effects

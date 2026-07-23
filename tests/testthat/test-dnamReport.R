@@ -241,7 +241,7 @@ test_that("report table sidecars are read in bounded chunks without losing rows"
     table_data <- data.frame(
         IlmnID = sprintf("cg%08d", seq_len(10025)),
         P.Value = seq_len(10025) / 10026,
-        Fit.Status = "fitted",
+        Profession_Model.Message = NA_character_,
         stringsAsFactors = FALSE,
         check.names = FALSE
     )

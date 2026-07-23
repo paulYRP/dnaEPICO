@@ -188,7 +188,7 @@ test_that("preprocessingPheno selects M and CN modeling scales without changing 
     expect_equal(loaded$phenoCNT1$cg1, c(10, 30))
 })
 
-test_that("Clock Foundation input reports and excludes invalid beta CpGs", {
+test_that("Clock Foundation input preserves numeric beta values", {
     beta <- rbind(
         cg_boundary = c(0, 1),
         cg_nan = c(NaN, 0.4),
@@ -202,20 +202,21 @@ test_that("Clock Foundation input reports and excludes invalid beta CpGs", {
         stringsAsFactors = FALSE
     )
 
-    result <- suppressWarnings(buildClockFoundationInputsPreprocessingPheno(
+    result <- buildClockFoundationInputsPreprocessingPheno(
         beta = beta,
         pheno = pheno,
         verbose = FALSE,
         logs = FALSE
-    ))
+    )
 
-    expect_identical(result$betaCSV$ProbeID, c("cg_boundary", "cg_nan"))
-    expect_true(is.na(result$betaCSV$S1[result$betaCSV$ProbeID == "cg_nan"]))
+    expect_identical(
+        result$betaCSV$ProbeID,
+        c("cg_boundary", "cg_nan", "cg_outside", "cg_missing")
+    )
+    expect_true(is.nan(result$betaCSV$S1[result$betaCSV$ProbeID == "cg_nan"]))
     expect_identical(result$phenoCF$id, c("S1", "S2"))
-    expect_identical(result$invalidCpGs$CpG, c("cg_outside", "cg_missing"))
-    expect_equal(result$methylationBoundaries$At.Lower.Boundary, 1L)
-    expect_equal(result$methylationBoundaries$At.Upper.Boundary, 1L)
-    expect_equal(result$methylationBoundaries$NaN.Converted, 1L)
+    expect_equal(result$methylationRange$Observed.Minimum, -0.01)
+    expect_equal(result$methylationRange$Observed.Maximum, 1)
 })
 
 test_that("Clock Foundation input rejects ambiguous CpG identifiers", {

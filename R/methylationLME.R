@@ -53,10 +53,6 @@
 #' crossovers and caps workers by the CpG workload and detected physical cores.
 #' @param summaryPval Numeric or `NA`. Optional p-value threshold applied to the
 #' returned longitudinal CpG summary tables. Use `NA` to keep all summary rows.
-#' @param excludeSingular Logical. If `TRUE`, retain singular lme4 CpG rows and
-#'   reasons but exclude their p-values from inference.
-#' @param excludeNonConverged Logical. If `TRUE`, retain non-converged CpG rows
-#'   and reasons but exclude their p-values from inference.
 #' @param plotWidth Integer. TIFF width in pixels when plots are written to
 #' disk.
 #' @param plotHeight Integer. TIFF height in pixels when plots are written to
@@ -155,6 +151,12 @@
 #' annotates the combined summary table, and optionally writes model outputs to
 #' disk. By default, the function runs quietly and returns its results in
 #' memory.
+#' Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
+#' without a separate methylation-domain filter. Native model messages,
+#' warnings, and errors are recorded in one phenotype-specific `Model.Message`
+#' field. Annotated outputs contain CpGs with at least one returned coefficient
+#' or omnibus p-value; aggregate availability and condition counts are recorded
+#' in workbook metadata.
 #'
 #' @examples
 #' if (
@@ -210,7 +212,7 @@ methylationLME <- function(
     lmeLibs = "lme4,lmerTest", correlationStructure = "none",
     correlationVar = NULL, prsMap = NULL, libPath = NULL, cpgPrefix = "cg",
     cpgLimit = NA, methylationScale = "beta", nCores = 32, summaryPval = NA,
-    excludeSingular = FALSE, excludeNonConverged = FALSE, plotWidth = 2000,
+    plotWidth = 2000,
     plotHeight = 1000, plotDPI = 150, interactionTerm = NULL,
     omnibusTest = FALSE, omnibusDdf = "Satterthwaite",
     saveSignificantInteractions = TRUE,
@@ -323,9 +325,6 @@ methylationLME <- function(
                 "Summary p-value filter:         ",
                 if (is.na(summaryPval)) "None" else summaryPval
             ),
-            paste("Exclude singular fits:          ", isTRUE(excludeSingular)),
-            paste("Exclude non-converged fits:     ",
-                isTRUE(excludeNonConverged)),
             paste("Interaction term:               ",
                 if (is.null(interactionTerm)) "None" else interactionTerm),
             paste("Omnibus test:                  ", omnibusTest),
@@ -371,8 +370,6 @@ methylationLME <- function(
         modelSummaries <- summarizeMethylationLMEModels(
             modelResults = modelFits,
             preparedData = preparedData, summaryPval = summaryPval,
-            excludeSingular = excludeSingular,
-                excludeNonConverged = excludeNonConverged,
             padjmethod = padjmethod,
             nCores = nCores, chunkSize = chunkSize, verbose = verbose,
             logs = logs, log_dir = outputLogs, log_file = log_file
@@ -385,8 +382,6 @@ methylationLME <- function(
                 modelResults = modelFits,
                 pvalThreshold = significantInteractionPval,
                     interactionTerm = preparedData$interactionTerm,
-                excludeSingular = excludeSingular,
-                    excludeNonConverged = excludeNonConverged,
                 verbose = verbose, logs = logs, log_dir = outputLogs,
                 log_file = log_file
             )
@@ -456,8 +451,7 @@ methylationLME <- function(
                 internalResponseColumn = responseColumn,
                     scaleVars = preparedData$scaleVars,
                 scalingMetadata = preparedData$scalingMetadata,
-                timeVar = timeVar, excludeSingular = isTRUE(excludeSingular),
-                excludeNonConverged = isTRUE(excludeNonConverged),
+                timeVar = timeVar,
                 omnibusTest = omnibusTest, omnibusDdf = omnibusDdf,
                 reportAssetsDir = reportAssetsDir,
                 correlationStructure = correlationStructure,

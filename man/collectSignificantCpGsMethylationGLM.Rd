@@ -8,7 +8,6 @@ collectSignificantCpGsMethylationGLM(
   modelResults,
   pvalThreshold = 0.05,
   interactionTerm = NULL,
-  excludeNonConverged = FALSE,
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
@@ -22,10 +21,6 @@ collectSignificantCpGsMethylationGLM(
 interaction p-values.}
 
 \item{interactionTerm}{Character or \code{NULL}. Optional interaction term.}
-
-\item{excludeNonConverged}{Logical. If \code{TRUE}, do not collect CpGs whose GLM
-did not converge; their rows and reasons remain in diagnostic and annotated
-output.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 

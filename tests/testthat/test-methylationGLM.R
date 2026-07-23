@@ -289,7 +289,7 @@ test_that("multiple GLM formulas use one consistent response label", {
     )
 })
 
-test_that("GLM diagnostics retain convergence quality in summaries and annotation", {
+test_that("GLM native model conditions use one message column", {
     tmp <- withr::local_tempdir()
     example_data <- create_methylation_glm_t1_example(tmp)
     prepared <- prepareMethylationGLMData(
@@ -302,20 +302,14 @@ test_that("GLM diagnostics retain convergence quality in summaries and annotatio
     )
     fits <- fitMethylationGLMModels(prepared, nCores = 1, logs = FALSE)
     summaries <- summarizeMethylationGLMModels(
-        fits,
-        prepared,
-        excludeNonConverged = TRUE,
-        logs = FALSE
+        fits, prepared, logs = FALSE
     )
     summary_table <- summaries$summaries$status
-    quality_columns <- c(
+    expect_true("Model.Message" %in% names(summary_table))
+    expect_false(any(c(
         "Fit.Status", "Converged", "Convergence.Message",
         "Fit.Warning", "Inference.Included", "Exclusion.Reason"
-    )
-    expect_true(all(quality_columns %in% names(summary_table)))
-    expect_true(summary_table$Converged)
-    expect_true(summary_table$Inference.Included)
-    expect_false("Singular.Fit" %in% names(summary_table))
+    ) %in% names(summary_table)))
 
     annotation <- annotateMethylationGLMSummaries(
         modelSummaries = summaries,
@@ -327,37 +321,35 @@ test_that("GLM diagnostics retain convergence quality in summaries and annotatio
         annotationCols = "chr",
         logs = FALSE
     )
-    expect_true(all(c(
-        "status_Converged", "status_Inference.Included",
-        "status_Convergence.Message"
-    ) %in% names(annotation$data)))
-    expect_false(any(c("Fit.Status", "Converged", "Inference.Included") %in% names(annotation$data)))
-    expect_true(annotation$data$status_Converged)
+    expect_true("status_Model.Message" %in% names(annotation$data))
     expect_equal(names(annotation$data)[[1L]], "IlmnID")
-    expect_lt(match("chr", names(annotation$data)), match("status_Fit.Status", names(annotation$data)))
+    expect_lt(
+        match("chr", names(annotation$data)),
+        match("status_Model.Message", names(annotation$data))
+    )
 })
 
-test_that("non-converged GLM failures retain their CpG and convergence reason", {
+test_that("GLM failures are retained internally and omitted without a p-value", {
     failed_fit <- dnaEPICO:::newMethylationFitErrorDnaEpico(
-        reason = "The GLM did not converge.",
-        errorClass = "dnaEPICO_methylationGLM_fit_error",
-        status = "not_converged",
-        converged = FALSE,
-        convergenceMessage = "The GLM did not converge."
+        reason = "The GLM did not produce a result.",
+        errorClass = "dnaEPICO_methylationGLM_fit_error"
     )
     fits <- list(status = list(cg_failed = failed_fit))
-    diagnostics <- dnaEPICO:::collectFitDiagnosticsMethylationGLM(fits)
+    model_messages <- dnaEPICO:::collectModelMessagesMethylationGLM(fits)
     failures <- dnaEPICO:::collectFitFailuresMethylationModels(
         fits,
         "dnaEPICO_methylationGLM_fit_error"
     )
+    expect_false(model_messages$P.Value.Available)
+    expect_match(model_messages$Model.Message, "^ERROR:")
+
     annotation <- annotateMethylationGLMSummaries(
         modelSummaries = list(
             diagnosticSummaries = list(status = data.frame()),
             summaries = list(status = data.frame()),
             phenotypes = "status",
             fitFailures = failures,
-            fitDiagnostics = diagnostics
+            modelMessages = model_messages
         ),
         annotationObject = data.frame(
             CpG = "cg_failed",
@@ -367,14 +359,8 @@ test_that("non-converged GLM failures retain their CpG and convergence reason", 
         annotationCols = "chr",
         logs = FALSE
     )
-
-    expect_equal(annotation$data$IlmnID, "cg_failed")
-    expect_equal(annotation$data$status_Fit.Status, "not_converged")
-    expect_false(annotation$data$status_Converged)
-    expect_match(annotation$data$status_Convergence.Message, "did not converge")
-    expect_match(annotation$data$status_Exclusion.Reason, "did not converge")
+    expect_equal(nrow(annotation$data), 0L)
 })
-
 test_that("scaleVars standardizes only selected GLM fixed effects", {
     tmp <- withr::local_tempdir()
     example_data <- create_methylation_glm_t1_example(tmp)

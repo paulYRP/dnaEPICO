@@ -103,41 +103,24 @@ test_that("estimateLCMinfiEwasWater validates reference and beta inputs", {
         "TRUE or FALSE"
     )
 
-    invalid_beta <- example_data$beta
-    invalid_beta[1, 1] <- Inf
-    expect_warning(
-        result <- estimateLCMinfiEwasWater(
-            beta = invalid_beta,
-            targets = targets,
-            lcRef = "saliva"
-        ),
-        "invalid CpG"
+    result <- estimateLCMinfiEwasWater(
+        beta = example_data$beta,
+        targets = targets,
+        lcRef = "saliva"
     )
-    expect_equal(nrow(result$invalidCpGs), 1L)
-    expect_identical(result$invalidCpGs$CpG, rownames(invalid_beta)[1L])
-    expect_equal(result$methylationBoundaries$Positive.Inf, 1L)
-    expect_equal(nrow(result$lc), ncol(invalid_beta))
-})
-
-test_that("estimateLCMinfiEwasWater converts NaN to NA and reports it", {
-    example_data <- build_estimate_lc_example_data()
-    nan_beta <- example_data$beta
-    nan_beta[1, 1] <- NaN
-
-    expect_warning(
-        result <- estimateLCMinfiEwasWater(
-            beta = nan_beta,
-            targets = example_data$targets,
-            lcRef = "saliva"
-        ),
-        "converted to NA"
-    )
-
-    expect_equal(result$methylationBoundaries$NaN.Converted, 1L)
-    expect_equal(nrow(result$methylationIssues), 1L)
     expect_identical(
-        result$methylationIssues$Status,
-        "NaN converted to NA"
+        names(result$methylationRange),
+        c("Scale", "Observed.Minimum", "Observed.Maximum")
     )
-    expect_equal(nrow(result$invalidCpGs), 0L)
+    expect_equal(
+        result$methylationRange$Observed.Minimum,
+        min(example_data$beta)
+    )
+    expect_equal(
+        result$methylationRange$Observed.Maximum,
+        max(example_data$beta)
+    )
+    expect_false(any(c(
+        "methylationBoundaries", "methylationIssues", "invalidCpGs"
+    ) %in% names(result)))
 })

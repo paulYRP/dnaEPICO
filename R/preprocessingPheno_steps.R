@@ -283,38 +283,13 @@ loadMetricsPreprocessingPheno <- function(
         }
     }
 
-    validations <- lapply(names(metric_objects), function(metric_name) {
-        inspectMethylationMatrixDnaEpico(
+    range_summaries <- lapply(names(metric_objects), function(metric_name) {
+        summarizeMethylationRangeDnaEpico(
             values = metric_objects[[metric_name]],
             methylationScale = metric_name
         )
     })
-    names(validations) <- names(metric_objects)
-    metric_objects <- lapply(validations, `[[`, "values")
-    beta <- metric_objects$beta
-    m <- metric_objects$m
-    cn <- metric_objects$cn
-
-    converted_nan <- sum(vapply(
-        validations, function(validation) validation$boundaries$NaN.Converted,
-        numeric(1)
-    ))
-    invalid_cpgs <- sum(vapply(
-        validations, function(validation) validation$boundaries$Invalid.CpGs,
-        numeric(1)
-    ))
-    if (converted_nan > 0L) {
-        warning(converted_nan,
-            " NaN methylation values were converted to NA while loading metrics.",
-            call. = FALSE
-        )
-    }
-    if (invalid_cpgs > 0L) {
-        warning(invalid_cpgs,
-            " invalid scale-specific CpG records were retained for downstream reporting.",
-            call. = FALSE
-        )
-    }
+    names(range_summaries) <- names(metric_objects)
 
     preview_rows <- seq_len(min(nrow(beta), 5L))
     preview_cols <- seq_len(min(ncol(beta), 5L))
@@ -335,9 +310,9 @@ loadMetricsPreprocessingPheno <- function(
                 "CN dimensions:            ",
                 paste(dim(cn), collapse = " x ")
             ), unlist(lapply(
-                validations,
-                function(validation) {
-                    formatMethylationBoundariesLogDnaEpico(validation$boundaries)
+                range_summaries,
+                function(range_summary) {
+                    formatMethylationRangeLogDnaEpico(range_summary)
                 }
             ), use.names = FALSE), "Preview of beta values:",
             previewLinesMinfiEwasWater(beta[preview_rows, preview_cols,
@@ -347,7 +322,10 @@ loadMetricsPreprocessingPheno <- function(
         verbose = verbose, log_path = log_path
     )
 
-    structure(list(beta = beta, m = m, cn = cn, validation = validations),
+    structure(list(
+        beta = beta, m = m, cn = cn,
+        methylationRanges = range_summaries
+    ),
         class = "dnaEPICO_preprocessingPheno_metrics"
     )
 }
@@ -718,31 +696,7 @@ buildClockFoundationInputsPreprocessingPheno <- function(
         rownames(beta),
         "Clock Foundation beta row names"
     )
-    beta_validation <- inspectMethylationMatrixDnaEpico(
-        beta,
-        "beta"
-    )
-    beta <- beta_validation$values
-    if (beta_validation$boundaries$NaN.Converted > 0L) {
-        warning(beta_validation$boundaries$NaN.Converted,
-            " NaN beta value(s) were converted to NA for Clock Foundation input.",
-            call. = FALSE
-        )
-    }
-    if (nrow(beta_validation$invalidCpGs) > 0L) {
-        warning(nrow(beta_validation$invalidCpGs),
-            " invalid CpG(s) were excluded from Clock Foundation input.",
-            call. = FALSE
-        )
-        beta <- beta[!(rownames(beta) %in% beta_validation$invalidCpGs$CpG), ,
-            drop = FALSE
-        ]
-    }
-    if (nrow(beta) == 0L) {
-        stop("No valid beta CpGs remain for Clock Foundation input.",
-            call. = FALSE
-        )
-    }
+    beta_range <- summarizeMethylationRangeDnaEpico(beta, "beta")
     beta_sample_ids <- validateSampleIdentifiersDnaEpico(
         colnames(beta),
         "Beta-matrix sample identifiers"
@@ -802,7 +756,7 @@ buildClockFoundationInputsPreprocessingPheno <- function(
             ), paste(
                 "Clock Foundation pheno rows:",
                 nrow(pheno_cf)
-            ), formatMethylationBoundariesLogDnaEpico(beta_validation$boundaries),
+            ), formatMethylationRangeLogDnaEpico(beta_range),
             sex_line, "Preview of Clock Foundation beta table:",
             previewLinesMinfiEwasWater(beta_csv[preview_rows, preview_cols,
                 drop = FALSE
@@ -814,9 +768,7 @@ buildClockFoundationInputsPreprocessingPheno <- function(
     structure(
         list(
             betaCSV = beta_csv, phenoCF = pheno_cf,
-                methylationBoundaries = beta_validation$boundaries,
-            methylationIssues = beta_validation$issues,
-                invalidCpGs = beta_validation$invalidCpGs
+            methylationRange = beta_range
         ),
         class = "dnaEPICO_preprocessingPheno_clock"
     )

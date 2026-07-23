@@ -27,7 +27,6 @@ methylationGLM(
   prsMap = NULL,
   summaryPval = NA,
   summaryResidualSD = TRUE,
-  excludeNonConverged = FALSE,
   saveSignificantCpGs = FALSE,
   significantCpGDir = "preliminaryResults/cpgs/methylationGLM",
   significantCpGPval = 0.05,
@@ -118,9 +117,6 @@ returned CpG summary tables. Use \code{NA} to keep all summary rows.}
 
 \item{summaryResidualSD}{Logical. If \code{TRUE}, append residual standard
 deviations to the CpG summary tables and residual diagnostic plots.}
-
-\item{excludeNonConverged}{Logical. If \code{TRUE}, retain non-converged CpG rows
-and reasons but exclude their p-values from inference.}
 
 \item{saveSignificantCpGs}{Logical. If \code{TRUE}, collect significant CpG
 coefficient tables in the returned object and optionally write them to disk
@@ -217,6 +213,11 @@ each requested phenotype, extracts CpG-level summaries, optionally collects
 significant CpG coefficient tables, generates diagnostic plots, annotates the
 combined summary table, and optionally writes model outputs to disk. By
 default, the function runs quietly and returns its results in memory.
+Numeric CpG columns are passed to \code{glm2::glm2()} without a separate
+methylation-domain filter. Native model messages, warnings, and errors are
+recorded in one phenotype-specific \code{Model.Message} field. Annotated outputs
+contain CpGs with at least one returned p-value; aggregate availability and
+condition counts are recorded in workbook metadata.
 }
 \examples{
 if (requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {

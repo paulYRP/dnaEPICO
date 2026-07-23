@@ -69,26 +69,12 @@ estimateLC <- function(meth, ref, constrained = FALSE) {
         requireSampleNames = FALSE, objectName = "meth"
     )
     validateCellCompositionReferenceDnaEpico(ref)
-    prepared <- prepareBetaForCellCompositionDnaEpico(meth)
-    if (prepared$boundaries$NaN.Converted > 0L) {
-        warning(prepared$boundaries$NaN.Converted,
-            " NaN value(s) were converted to NA before cell-composition estimation.",
-            call. = FALSE
-        )
-    }
-    if (nrow(prepared$invalidCpGs) > 0L) {
-        warning(nrow(prepared$invalidCpGs),
-            " invalid CpG(s) were excluded from cell-composition estimation.",
-            call. = FALSE
-        )
-    }
-    estimate <- estimateLCFromValidatedBetaDnaEpico(
-        meth = prepared$beta,
+    methylation_range <- summarizeMethylationRangeDnaEpico(meth, "beta")
+    estimate <- estimateLCFromBetaDnaEpico(
+        meth = meth,
         ref = ref, constrained = constrained
     )
-    attr(estimate, "methylationBoundaries") <- prepared$boundaries
-    attr(estimate, "methylationIssues") <- prepared$issues
-    attr(estimate, "invalidCpGs") <- prepared$invalidCpGs
+    attr(estimate, "methylationRange") <- methylation_range
     estimate
 }
 
@@ -136,21 +122,7 @@ validateCellCompositionReferenceDnaEpico <- function(ref) {
     invisible(ref)
 }
 
-prepareBetaForCellCompositionDnaEpico <- function(beta) {
-    validation <- inspectMethylationMatrixDnaEpico(
-        values = beta,
-        methylationScale = "beta"
-    )
-    invalid_ids <- as.character(validation$invalidCpGs$CpG)
-    keep <- !(rownames(validation$values) %in% invalid_ids)
-    list(
-        beta = validation$values[keep, , drop = FALSE],
-            boundaries = validation$boundaries,
-        issues = validation$issues, invalidCpGs = validation$invalidCpGs
-    )
-}
-
-estimateLCFromValidatedBetaDnaEpico <- function(meth, ref, constrained) {
+estimateLCFromBetaDnaEpico <- function(meth, ref, constrained) {
     ref_file <- system.file("extdata", paste0(ref, ".txt"),
         package = "dnaEPICO")
     if (!nzchar(ref_file)) {

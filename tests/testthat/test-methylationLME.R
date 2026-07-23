@@ -58,7 +58,7 @@ create_methylation_lme_ar1_example <- function(path) {
     )
 }
 
-test_that("lme4 singular fits remain available and are reported per CpG", {
+test_that("lme4 native singular messages are retained without changing p-values", {
     model_data <- data.frame(
         person = factor(rep(seq_len(8), each = 3)),
         visit = rep(c(-1, 0, 1), times = 8)
@@ -68,7 +68,7 @@ test_that("lme4 singular fits remain available and are reported per CpG", {
         (0.03 * model_data$visit) +
         rep(c(0.001, -0.002, 0.001), times = 8)
 
-    fit <- suppressMessages(dnaEPICO:::fitCpGModelMethylationLME(
+    fit <- dnaEPICO:::fitCpGModelMethylationLME(
         cpg = "cg_singular",
         cpgValues = cpg_values,
         modelData = model_data,
@@ -76,32 +76,35 @@ test_that("lme4 singular fits remain available and are reported per CpG", {
         personVar = "person",
         lmeEngine = "lme4",
         responseVar = "beta"
-    ))
+    )
     expect_false(inherits(fit, "dnaEPICO_methylationLME_fit_error"))
-    expect_true(isTRUE(fit$fitStatus$singular))
+    expect_match(fit$modelMessage, "singular", ignore.case = TRUE)
 
     summary_table <- dnaEPICO:::summarizeCpGFitMethylationLME(
         cpg = "cg_singular",
         modelObj = fit,
         phenotype = "visit"
     )
-    expect_equal(summary_table$Fit.Status, "fitted_singular")
-    expect_true(summary_table$Singular.Fit)
-    expect_match(summary_table$Fit.Warning, "singular", ignore.case = TRUE)
+    expect_true(is.finite(summary_table$P.value))
+    expect_match(summary_table$Model.Message, "singular", ignore.case = TRUE)
+    expect_false(any(c(
+        "Fit.Status", "Singular.Fit", "Converged",
+        "Convergence.Message", "Fit.Warning",
+        "Inference.Included", "Exclusion.Reason"
+    ) %in% names(summary_table)))
 
+    fit$pValueAvailable <- TRUE
     fits <- list(visit = list(cg_singular = fit))
-    fit_diagnostics <- dnaEPICO:::collectFitDiagnosticsMethylationLME(fits)
-    fit_failures <- dnaEPICO:::collectFitFailuresMethylationModels(
-        fits,
-        "dnaEPICO_methylationLME_fit_error"
-    )
+    model_messages <- dnaEPICO:::collectModelMessagesMethylationLME(fits)
     annotation <- annotateMethylationLMESummaries(
         modelSummaries = list(
             diagnosticSummaries = list(visit = summary_table),
             summaries = list(visit = summary_table),
             phenotypes = "visit",
-            fitFailures = fit_failures,
-            fitDiagnostics = fit_diagnostics
+            fitFailures = data.frame(),
+            modelMessages = model_messages,
+            omnibusTests = list(),
+            settings = list(interactionTerm = NULL)
         ),
         annotationObject = data.frame(
             CpG = "cg_singular",
@@ -113,52 +116,19 @@ test_that("lme4 singular fits remain available and are reported per CpG", {
         verbose = FALSE,
         logs = FALSE
     )
-    expect_true(annotation$data$visit_Singular.Fit)
-    expect_equal(annotation$data$visit_Fit.Status, "fitted_singular")
-    expect_match(annotation$data$visit_Fit.Warning, "singular", ignore.case = TRUE)
-    expect_true(annotation$data$visit_Converged)
-    expect_false(any(c("Fit.Status", "Singular.Fit", "Converged") %in% names(annotation$data)))
-    expect_equal(names(annotation$data)[[1L]], "IlmnID")
-    expect_lt(match("pos", names(annotation$data)), match("visit_Fit.Status", names(annotation$data)))
-
-    excluded <- summarizeMethylationLMEModels(
-        modelResults = list(
-            fits = fits,
-            summaryCache = list(visit = summary_table),
-            fitFailures = fit_failures,
-            fitDiagnostics = fit_diagnostics,
-            settings = list(interactionTerm = NULL)
-        ),
-        preparedData = list(interactionTerm = NULL),
-        summaryPval = NA,
-        excludeSingular = TRUE,
-        nCores = 1,
-        logs = FALSE
+    expect_equal(annotation$data$IlmnID, "cg_singular")
+    expect_match(
+        annotation$data$visit_Model.Message,
+        "singular",
+        ignore.case = TRUE
     )
-    excluded_row <- excluded$summaries$visit
-    expect_equal(nrow(excluded_row), 1L)
-    expect_true(is.finite(excluded_row$Estimate))
-    expect_true(is.na(excluded_row$P.value))
-    expect_false(excluded_row$Inference.Included)
-    expect_match(excluded_row$Exclusion.Reason, "singular")
-
-    excluded_annotation <- annotateMethylationLMESummaries(
-        modelSummaries = excluded,
-        annotationObject = data.frame(
-            CpG = "cg_singular",
-            chr = "chr1",
-            stringsAsFactors = FALSE
-        ),
-        annotationCols = "chr",
-        logs = FALSE
+    expect_lt(
+        match("pos", names(annotation$data)),
+        match("visit_Model.Message", names(annotation$data))
     )
-    expect_equal(excluded_annotation$data$IlmnID, "cg_singular")
-    expect_true(excluded_annotation$data$visit_Singular.Fit)
-    expect_false(excluded_annotation$data$visit_Inference.Included)
-    expect_match(excluded_annotation$data$visit_Exclusion.Reason, "singular")
 })
 
-test_that("non-converged mixed fits retain coefficients and can be excluded", {
+test_that("mixed-model messages do not override returned coefficient p-values", {
     coefficient_table <- matrix(
         c(0.4, 0.01, 40, 1e-08, 0.03, 0.01, 3, 0.01),
         nrow = 2,
@@ -171,30 +141,15 @@ test_that("non-converged mixed fits retain coefficients and can be excluded", {
     fit <- list(
         coef = coefficient_table,
         coefficientTerms = c("(Intercept)" = "(Intercept)", visit = "visit"),
-        fitStatus = list(
-            singular = FALSE,
-            converged = FALSE,
-            warnings = "failed to converge with max|grad| = 0.01",
-            convergenceMessages = "failed to converge with max|grad| = 0.01"
-        )
+        modelMessage = "WARNING: failed to converge with max|grad| = 0.01"
     )
     summary_table <- dnaEPICO:::summarizeCpGFitMethylationLME(
-        cpg = "cg_nonconverged",
+        cpg = "cg_message",
         modelObj = fit,
         phenotype = "visit"
     )
-    expect_equal(summary_table$Fit.Status, "fitted_not_converged")
-    expect_false(summary_table$Converged)
-    expect_match(summary_table$Convergence.Message, "failed to converge")
-
-    excluded <- dnaEPICO:::applyFitQualityExclusionsMethylationLME(
-        summary_table,
-        excludeNonConverged = TRUE
-    )
-    expect_equal(nrow(excluded), 1L)
-    expect_true(is.na(excluded$P.value))
-    expect_false(excluded$Inference.Included)
-    expect_match(excluded$Exclusion.Reason, "did not converge")
+    expect_equal(summary_table$P.value, 0.01)
+    expect_match(summary_table$Model.Message, "failed to converge")
 })
 
 test_that("methylationLME returns in-memory results quietly by default", {
@@ -440,12 +395,13 @@ test_that("methylationLME supports nlme AR1 models through lmeLibs", {
     expect_equal(nrow(result$modelFits$summaryCache$status), 2)
     expect_true(all(c(
         "CpG", "Interaction.Term", "Estimate", "Std.Error", "t.value", "P.value",
-        "Fit.Status", "Converged", "Convergence.Message",
-        "Fit.Warning", "Inference.Included", "Exclusion.Reason"
+        "Model.Message"
     ) %in%
         colnames(result$modelSummaries$summaries$status)))
-    expect_true(all(is.na(result$modelFits$fitDiagnostics$Singular.Fit)))
-    expect_true(all(result$modelFits$fitDiagnostics$Converged))
+    expect_true(all(c(
+        "Phenotype", "CpG", "Model.Message", "P.Value.Available"
+    ) %in% colnames(result$modelFits$modelMessages)))
+    expect_true(all(result$modelFits$modelMessages$P.Value.Available))
     expect_equal(
         openxlsx::getSheetNames(result$savedFiles$annotatedLME),
         c("annotatedLME", "metadata", "dictionary")
@@ -462,7 +418,7 @@ test_that("methylationLME supports nlme AR1 models through lmeLibs", {
         sheet = "annotatedLME",
         check.names = FALSE
     )
-    expect_false(any(grepl("Singular\\.Fit$", colnames(annotated))))
+    expect_true("status_Model.Message" %in% colnames(annotated))
     expect_true(file.exists(file.path(report_assets, "annotatedLME.tsv.gz")))
     expect_false(dir.exists(file.path(
         dirname(result$savedFiles$annotatedLME), "report-assets"

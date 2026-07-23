@@ -344,8 +344,8 @@ emptyOmnibusResultMethylationLME <- function(
         term = term, method = method,
         fValue = NA_real_, numeratorDf = NA_real_,
         denominatorDf = NA_real_, pValue = NA_real_,
-        status = status, reason = reason, warning = NA_character_,
-        rhs = 0, eps = sqrt(.Machine$double.eps)
+        status = status, reason = reason, modelMessage = NA_character_,
+        rhs = 0
     )
 }
 
@@ -358,7 +358,7 @@ computeOmnibusTestMethylationLME <- function(
         method = omnibusDdf
     )
 
-    tryCatch({
+    captured <- captureModelConditionsDnaEpico({
         fixed_effects <- lme4::fixef(fit)
         fixed_names <- names(fixed_effects)
         mapped_terms <- coefficientTerms[fixed_names]
@@ -377,21 +377,9 @@ computeOmnibusTestMethylationLME <- function(
         )
         contrast[cbind(seq_along(selected), selected)] <- 1
 
-        warning_state <- new.env(parent = emptyenv())
-        warning_state$messages <- character(0)
-        test <- withCallingHandlers(
-            lmerTest::contestMD(
-                model = fit, L = contrast, rhs = 0,
-                ddf = omnibusDdf, joint = TRUE,
-                eps = sqrt(.Machine$double.eps)
-            ),
-            warning = function(condition) {
-                warning_state$messages <- c(
-                    warning_state$messages,
-                    conditionMessage(condition)
-                )
-                invokeRestart("muffleWarning")
-            }
+        test <- lmerTest::contestMD(
+            model = fit, L = contrast, rhs = 0,
+            ddf = omnibusDdf, joint = TRUE
         )
         required <- c("F value", "NumDF", "DenDF", "Pr(>F)")
         if (!all(required %in% colnames(test))) {
@@ -408,23 +396,23 @@ computeOmnibusTestMethylationLME <- function(
             )
         }
 
-        result$fValue <- unname(test[["F value"]][[1L]])
-        result$numeratorDf <- unname(test[["NumDF"]][[1L]])
-        result$denominatorDf <- unname(test[["DenDF"]][[1L]])
-        result$pValue <- unname(test[["Pr(>F)"]][[1L]])
+        list(
+            fValue = unname(test[["F value"]][[1L]]),
+            numeratorDf = unname(test[["NumDF"]][[1L]]),
+            denominatorDf = unname(test[["DenDF"]][[1L]]),
+            pValue = unname(test[["Pr(>F)"]][[1L]])
+        )
+    })
+    result$modelMessage <- captured$modelMessage
+    if (!is.null(captured$error)) {
+        result$reason <- conditionMessage(captured$error)
+        result
+    } else {
+        result[names(captured$value)] <- captured$value
         result$status <- "tested"
         result$reason <- NA_character_
-        warning_messages <- unique(
-            warning_state$messages[nzchar(warning_state$messages)]
-        )
-        if (length(warning_messages) > 0L) {
-            result$warning <- paste(warning_messages, collapse = " | ")
-        }
         result
-    }, error = function(error) {
-        result$reason <- conditionMessage(error)
-        result
-    })
+    }
 }
 
 collectOmnibusTestsMethylationLME <- function(fits, phenotype) {
@@ -605,91 +593,19 @@ findCoefficientRowsMethylationLME <- function(
     )
 }
 
-fitStatusValuesMethylationLME <- function(modelObj) {
-    if (inherits(modelObj, "dnaEPICO_methylationLME_fit_error")) {
-        return(list(
-            status = if (is.null(modelObj$status)) "failed" else as.character(modelObj$status),
-            singular = NA,
-                converged = if (is.null(modelObj$converged)) NA else as.logical(modelObj$converged)[[1L]],
-            convergenceMessage = if (is.null(modelObj$convergenceMessage)) {
-                NA_character_
-            } else {
-                as.character(modelObj$convergenceMessage)[[1L]]
-            }, warning = NA_character_
-        ))
-    }
-
-    fit_status <- modelObj$fitStatus
-    singular_fit <- if (is.null(fit_status$singular)) {
-        NA
-    } else {
-        as.logical(fit_status$singular)[[1L]]
-    }
-    converged <- if (is.null(fit_status$converged)) {
-        length(fit_status$convergenceMessages) == 0L
-    } else {
-        isTRUE(fit_status$converged)
-    }
-    convergence_messages <- unique(as.character(fit_status$convergenceMessages))
-    convergence_messages <- convergence_messages[!is.na(convergence_messages) &
-        nzchar(convergence_messages)]
-    fit_warnings <- unique(as.character(fit_status$warnings))
-    fit_warnings <- fit_warnings[!is.na(fit_warnings) & nzchar(fit_warnings)]
-
-    list(status = if (!isTRUE(converged)) {
-        "fitted_not_converged"
-    } else if (isTRUE(singular_fit)) {
-        "fitted_singular"
-    } else if (length(fit_warnings) > 0L) {
-        "fitted_with_warning"
-    } else {
-        "fitted"
-    }, singular = singular_fit, converged = converged,
-        convergenceMessage = if (length(convergence_messages) >
-        0L) {
-        paste(convergence_messages, collapse = " | ")
-    } else {
-        NA_character_
-    }, warning = if (length(fit_warnings) > 0L) {
-        paste(fit_warnings, collapse = " | ")
-    } else {
-        NA_character_
-    })
-}
-
-collectFitDiagnosticsMethylationLME <- function(fits) {
+collectModelMessagesMethylationLME <- function(fits) {
     rows <- list()
     row_index <- 1L
     for (phenotype in names(fits)) {
         fit_group <- fits[[phenotype]]
         for (cpg in names(fit_group)) {
             fit_object <- fit_group[[cpg]]
-            values <- fitStatusValuesMethylationLME(fit_object)
-            inference_included <- startsWith(values$status, "fitted")
-            omnibus_failure <- !is.null(fit_object$omnibus) &&
-                !identical(fit_object$omnibus$status, "tested")
-            if (isTRUE(omnibus_failure)) {
-                inference_included <- FALSE
-            }
             rows[[row_index]] <- data.frame(
                 Phenotype = phenotype,
-                CpG = cpg, Fit.Status = values$status,
-                    Singular.Fit = values$singular,
-                Converged = values$converged,
-                    Convergence.Message = values$convergenceMessage,
-                Fit.Warning = values$warning,
-                    Inference.Included = inference_included,
-                Exclusion.Reason = if (!inference_included &&
-                    !is.null(fit_object$error)) {
-                    as.character(fit_object$error)
-                } else if (isTRUE(omnibus_failure)) {
-                    paste0(
-                        "omnibus test not estimable: ",
-                        fit_object$omnibus$reason
-                    )
-                } else {
-                    NA_character_
-                }, stringsAsFactors = FALSE, check.names = FALSE
+                CpG = cpg,
+                Model.Message = modelMessageDnaEpico(fit_object),
+                P.Value.Available = isTRUE(fit_object$pValueAvailable),
+                stringsAsFactors = FALSE, check.names = FALSE
             )
             row_index <- row_index + 1L
         }
@@ -698,17 +614,14 @@ collectFitDiagnosticsMethylationLME <- function(fits) {
     if (length(rows) == 0L) {
         return(data.frame(
             Phenotype = character(0), CpG = character(0),
-            Fit.Status = character(0), Singular.Fit = logical(0),
-            Converged = logical(0), Convergence.Message = character(0),
-            Fit.Warning = character(0), Inference.Included = logical(0),
-            Exclusion.Reason = character(0), stringsAsFactors = FALSE,
-            check.names = FALSE
+            Model.Message = character(0), P.Value.Available = logical(0),
+            stringsAsFactors = FALSE, check.names = FALSE
         ))
     }
 
-    diagnostics <- do.call(rbind, rows)
-    rownames(diagnostics) <- NULL
-    diagnostics
+    model_messages <- do.call(rbind, rows)
+    rownames(model_messages) <- NULL
+    model_messages
 }
 
 #' Summarize a single CpG-level mixed-effects model fit
@@ -749,10 +662,6 @@ summarizeCpGFitMethylationLME <- function(
         return(NULL)
     }
 
-    fit_status <- fitStatusValuesMethylationLME(modelObj)
-    omnibus_failure <- !is.null(modelObj$omnibus) &&
-        !identical(modelObj$omnibus$status, "tested")
-
     do.call(rbind, lapply(matched_terms, function(term) {
         coef_row <- coef_table[term, ]
         data.frame(
@@ -761,79 +670,11 @@ summarizeCpGFitMethylationLME <- function(
             Std.Error = unname(coef_row["Std. Error"]),
                 t.value = unname(coef_row["t value"]),
             P.value = unname(coef_row["Pr(>|t|)"]),
-                Fit.Status = fit_status$status,
-            Singular.Fit = fit_status$singular,
-                Converged = fit_status$converged,
-            Convergence.Message = fit_status$convergenceMessage,
-            Fit.Warning = fit_status$warning,
-            Inference.Included = !omnibus_failure,
-            Exclusion.Reason = if (isTRUE(omnibus_failure)) {
-                paste0(
-                    "omnibus test not estimable: ",
-                    modelObj$omnibus$reason
-                )
-            } else {
-                NA_character_
-            }, stringsAsFactors = FALSE,
+            Model.Message = modelMessageDnaEpico(modelObj),
+            stringsAsFactors = FALSE,
             row.names = NULL
         )
     }))
-}
-
-applyFitQualityExclusionsMethylationLME <- function(
-    summaryDf,
-    excludeSingular = FALSE, excludeNonConverged = FALSE
-) {
-    summary_df <- summaryDf
-    if (is.null(summary_df) || nrow(summary_df) == 0L) {
-        return(summary_df)
-    }
-    reasons <- if ("Exclusion.Reason" %in% names(summary_df)) {
-        as.character(summary_df$Exclusion.Reason)
-    } else {
-        rep(NA_character_, nrow(summary_df))
-    }
-    initially_excluded <- if ("Inference.Included" %in%
-        names(summary_df)) {
-        included <- as.logical(summary_df$Inference.Included)
-        !is.na(included) & !included
-    } else {
-        rep(FALSE, nrow(summary_df))
-    }
-    singular <- rep(FALSE, nrow(summary_df))
-    if (isTRUE(excludeSingular) && "Singular.Fit" %in% names(summary_df)) {
-        singular_values <- as.logical(summary_df[["Singular.Fit"]])
-        singular <- !is.na(singular_values) & singular_values
-    }
-    not_converged <- rep(FALSE, nrow(summary_df))
-    if (isTRUE(excludeNonConverged) && "Converged" %in% names(summary_df)) {
-        converged <- as.logical(summary_df[["Converged"]])
-        not_converged <- !is.na(converged) & !converged
-    }
-    append_reason <- function(existing, added) {
-        ifelse(
-            is.na(existing) | !nzchar(existing),
-            added,
-            paste(existing, added, sep = "; ")
-        )
-    }
-    reasons[singular] <- append_reason(
-        reasons[singular],
-        "singular random-effects fit"
-    )
-    reasons[not_converged] <- ifelse(is.na(reasons[not_converged]),
-        "model did not converge", paste(reasons[not_converged],
-            "model did not converge",
-            sep = "; "
-        )
-    )
-    excluded <- initially_excluded | singular | not_converged
-    summary_df$Inference.Included <- !excluded
-    summary_df$Exclusion.Reason <- reasons
-    if (any(excluded) && "P.value" %in% names(summary_df)) {
-        summary_df$P.value[excluded] <- NA_real_
-    }
-    summary_df
 }
 
 filterSummaryByPvalueMethylationLME <- function(summaryDf, pValueFilter) {
@@ -859,43 +700,26 @@ fitCpGModelMethylationLME <- function(
     omnibusTest = FALSE, omnibusDdf = "Satterthwaite",
     omnibusTerm = NULL
 ) {
-    tryCatch(
-        {
+    captured <- captureModelConditionsDnaEpico({
             model_data <- modelData
-            model_data[[responseVar]] <- as.numeric(cpgValues)
-            observed_response <-
-                model_data[[responseVar]][is.finite(model_data[[responseVar]])]
-            if (length(unique(observed_response)) < 2L) {
-                stop("The CpG response has no observed variation.",
-                    call. = FALSE
-                )
+            if (!is.numeric(cpgValues)) {
+                stop("The CpG response is not numeric.", call. = FALSE)
             }
-
-            warning_state <- new.env(parent = emptyenv())
-            warning_state$messages <- character(0)
+            model_data[[responseVar]] <- cpgValues
 
             if (identical(lmeEngine, "nlme")) {
-                fit <- withCallingHandlers(
-                    nlme::lme(
-                        fixed = stats::as.formula(formulaText),
-                        random = stats::as.formula(paste("~ 1 |",
-                            quoteNamesMethylationGLM(personVar))),
-                        correlation = buildCorrelationMethylationLME(
-                            correlationStructure = correlationStructure,
-                            correlationTimeVar = correlationTimeVar,
-                                personVar = personVar
-                        ),
-                        data = model_data, na.action = stats::na.exclude,
-                        method = "REML",
-                            control = nlme::lmeControl(returnObject = TRUE)
+                fit <- nlme::lme(
+                    fixed = stats::as.formula(formulaText),
+                    random = stats::as.formula(paste("~ 1 |",
+                        quoteNamesMethylationGLM(personVar))),
+                    correlation = buildCorrelationMethylationLME(
+                        correlationStructure = correlationStructure,
+                        correlationTimeVar = correlationTimeVar,
+                        personVar = personVar
                     ),
-                    warning = function(condition) {
-                        warning_state$messages <- c(
-                            warning_state$messages,
-                            conditionMessage(condition)
-                        )
-                        invokeRestart("muffleWarning")
-                    }
+                    data = model_data, na.action = stats::na.exclude,
+                    method = "REML",
+                    control = nlme::lmeControl(returnObject = TRUE)
                 )
                 coef_table <-
                     coerceCoefficientTableMethylationLME(summary(fit)$tTable,
@@ -903,79 +727,18 @@ fitCpGModelMethylationLME <- function(
                 )
                 ranef_values <- nlme::ranef(fit)
                 fixef_values <- nlme::fixef(fit)
-                singular_fit <- NA
-                fit_warnings <- warning_state$messages
-                convergence_messages <- fit_warnings
             } else {
-                fit <- withCallingHandlers(lmerTest::lmer(
+                fit <- lmerTest::lmer(
                     formula = stats::as.formula(formulaText),
                     data = model_data, na.action = stats::na.exclude,
                     REML = TRUE
-                ), warning = function(condition) {
-                    warning_state$messages <- c(
-                        warning_state$messages,
-                        conditionMessage(condition)
-                    )
-                    invokeRestart("muffleWarning")
-                })
-                fit_warnings <- warning_state$messages
+                )
                 coef_table <-
                     coerceCoefficientTableMethylationLME(summary(fit)$coefficients,
                     engine = lmeEngine
                 )
                 ranef_values <- lme4::ranef(fit)
                 fixef_values <- lme4::fixef(fit)
-                singular_fit <- lme4::isSingular(fit, tol = 1e-04)
-                raw_optimizer_codes <- unlist(fit@optinfo$conv$opt,
-                    use.names = FALSE
-                )
-                optimizer_codes <- vapply(raw_optimizer_codes, function(value) {
-                    converted <- utils::type.convert(as.character(value),
-                        as.is = TRUE, na.strings = character()
-                    )
-                    if (is.numeric(converted)) {
-                        as.numeric(converted)
-                    } else {
-                        NA_real_
-                    }
-                }, numeric(1))
-                optimizer_codes <- optimizer_codes[is.finite(optimizer_codes) &
-                    optimizer_codes != 0]
-                optimizer_messages <- if (length(optimizer_codes) >
-                    0L) {
-                    paste0("lme4 optimizer convergence code: ",
-                        paste(unique(optimizer_codes),
-                        collapse = ", "
-                    ))
-                } else {
-                    character(0)
-                }
-                convergence_messages <- c(
-                    fit_warnings, fit@optinfo$conv$lme4$messages,
-                    optimizer_messages
-                )
-            }
-
-            fit_warnings <- unique(as.character(convergence_messages))
-            fit_warnings <-
-                fit_warnings[!is.na(fit_warnings) & nzchar(fit_warnings)]
-            convergence_messages <-
-                fit_warnings[grepl("converg|unable to evaluate|degenerate|failed to|gradient|iteration limit",
-                fit_warnings,
-                ignore.case = TRUE
-            )]
-
-            required_statistics <- c(
-                "Estimate", "Std. Error", "t value",
-                "Pr(>|t|)"
-            )
-            if (!all(required_statistics %in% colnames(coef_table)) ||
-                any(!is.finite(as.matrix(coef_table[, required_statistics,
-                    drop = FALSE
-                ])))) {
-                stop("The mixed model returned missing or non-finite coefficient statistics.",
-                    call. = FALSE
-                )
             }
 
             coefficient_terms <- buildCoefficientTermMapMethylationModels(
@@ -1004,46 +767,33 @@ fitCpGModelMethylationLME <- function(
                 coef = coef_table, residuals = stats::residuals(fit),
                 fitted = stats::fitted(fit), ranef = ranef_values,
                 fixef = fixef_values, coefficientTerms = coefficient_terms,
-                omnibus = omnibus_result,
-                fitStatus = list(singular = singular_fit,
-                    converged = length(convergence_messages) ==
-                    0L, warnings = fit_warnings,
-                        convergenceMessages = convergence_messages)
+                omnibus = omnibus_result, model = fit,
+                pValueAvailable = FALSE
             )
-        },
-        error = function(error) {
-            reason <- conditionMessage(error)
-            convergence_failure <-
-                grepl("converg|unable to evaluate|degenerate|failed to|gradient|iteration limit",
-                reason,
-                ignore.case = TRUE
-            )
-            newMethylationFitErrorDnaEpico(
-                reason = reason,
-                    errorClass = "dnaEPICO_methylationLME_fit_error",
-                status = if (convergence_failure) {
-                    "not_converged"
-                } else {
-                    "failed"
-                }, converged = if (convergence_failure) {
-                    FALSE
-                } else {
-                    NA
-                }, convergenceMessage = if (convergence_failure) {
-                    reason
-                } else {
-                    NA_character_
-                }
-            )
+    })
+    if (!is.null(captured$error)) {
+        return(newMethylationFitErrorDnaEpico(
+            reason = conditionMessage(captured$error),
+            errorClass = "dnaEPICO_methylationLME_fit_error",
+            modelMessage = captured$modelMessage
+        ))
+    }
+    captured$value$modelMessage <- combineModelMessagesDnaEpico(
+        captured$modelMessage,
+        if (!is.null(captured$value$omnibus)) {
+            captured$value$omnibus$modelMessage
+        } else {
+            NULL
         }
     )
+    captured$value
 }
 
 fitMethylationLMEBatch <- function(
     cpgBatch, data, modelData,
     formulaText, personVar, lmeEngine = "lme4", correlationStructure = "none",
     correlationTimeVar = NULL, phenotype, interactionTerm = NULL,
-    responseVar = "beta", invalidCpgReasons = character(0),
+    responseVar = "beta",
     omnibusTest = FALSE, omnibusDdf = "Satterthwaite",
     omnibusTerm = NULL
 ) {
@@ -1053,35 +803,33 @@ fitMethylationLMEBatch <- function(
     names(summaries) <- cpgBatch
 
     for (cpg in cpgBatch) {
-        invalid_reason <- if (cpg %in% names(invalidCpgReasons)) {
-            invalidCpgReasons[[cpg]]
-        } else {
-            NULL
-        }
-        model_obj <- if (!is.null(invalid_reason)) {
-            newMethylationFitErrorDnaEpico(
-                reason = invalid_reason,
-                errorClass = "dnaEPICO_methylationLME_fit_error",
-                status = "invalid"
-            )
-        } else {
-            fitCpGModelMethylationLME(
-                cpg = cpg, cpgValues = data[[cpg]],
-                modelData = modelData, formulaText = formulaText,
-                personVar = personVar, lmeEngine = lmeEngine,
-                correlationStructure = correlationStructure,
-                correlationTimeVar = correlationTimeVar,
-                    responseVar = responseVar,
-                omnibusTest = omnibusTest, omnibusDdf = omnibusDdf,
-                omnibusTerm = omnibusTerm
-            )
-        }
-        fits[[cpg]] <- model_obj
-        summaries[[cpg]] <- summarizeCpGFitMethylationLME(
+        model_obj <- fitCpGModelMethylationLME(
+            cpg = cpg, cpgValues = data[[cpg]],
+            modelData = modelData, formulaText = formulaText,
+            personVar = personVar, lmeEngine = lmeEngine,
+            correlationStructure = correlationStructure,
+            correlationTimeVar = correlationTimeVar,
+            responseVar = responseVar,
+            omnibusTest = omnibusTest, omnibusDdf = omnibusDdf,
+            omnibusTerm = omnibusTerm
+        )
+        summary_row <- summarizeCpGFitMethylationLME(
             cpg = cpg,
             modelObj = model_obj, phenotype = phenotype,
-                interactionTerm = interactionTerm
+            interactionTerm = interactionTerm
         )
+        coefficient_p_available <- !is.null(summary_row) &&
+            "P.value" %in% colnames(summary_row) &&
+            any(is.finite(summary_row$P.value))
+        omnibus_p_available <- !is.null(model_obj$omnibus) &&
+            is.finite(model_obj$omnibus$pValue)
+        p_value_available <- coefficient_p_available || omnibus_p_available
+        model_obj$pValueAvailable <- p_value_available
+        if (!is.null(summary_row)) {
+            summary_row$Model.Message <- modelMessageDnaEpico(model_obj)
+        }
+        fits[[cpg]] <- model_obj
+        summaries[[cpg]] <- summary_row
     }
 
     summaries <- Filter(Negate(is.null), summaries)
@@ -1406,24 +1154,6 @@ prepareMethylationLMEData <- function(
         cpg_columns,
         "CpG columns in the LME input"
     )
-    methylation_validation <- inspectMethylationColumnsDnaEpico(
-        data = analysis_data,
-        cpgColumns = cpg_columns, methylationScale = methylation_scale
-    )
-    analysis_data <- methylation_validation$data
-    if (methylation_validation$boundaries$NaN.Converted > 0L) {
-        warning(methylation_validation$boundaries$NaN.Converted,
-            " NaN methylation values were converted to NA. See methylationIssues.",
-            call. = FALSE
-        )
-    }
-    if (nrow(methylation_validation$invalidCpGs) > 0L) {
-        warning(nrow(methylation_validation$invalidCpGs),
-            " invalid CpG columns will be reported as failed fits instead of stopping the analysis.",
-            call. = FALSE
-        )
-    }
-
     fixed_effect_variables <- unique(c(
         phenotype_list, covariate_list,
         mapped_prs, resolved_interaction
@@ -1482,13 +1212,7 @@ prepareMethylationLMEData <- function(
             paste(factor_list, collapse = ", ")
         ), formatScalingMetadataLogDnaEpico(scaling$metadata),
         paste("CpG columns retained:             ", length(cpg_columns)),
-        formatMethylationBoundariesLogDnaEpico(methylation_validation$boundaries),
-        if (nrow(methylation_validation$issues) > 0L) {
-            c("Methylation value issues:",
-                previewLinesMinfiEwasWater(methylation_validation$issues))
-        } else {
-            "Methylation value issues:            none"
-        }, if (isTRUE(person_data$personCreated)) {
+        if (isTRUE(person_data$personCreated)) {
             paste("Created person variable from SID: ", personVar)
         } else {
             paste("Person variable already present:  ", personVar)
@@ -1528,9 +1252,6 @@ prepareMethylationLMEData <- function(
             internalResponseColumn = response_column,
                 interactionTerm = resolved_interaction,
             requestedInteractionTerm = interactionTerm,
-                methylationBoundaries = methylation_validation$boundaries,
-            methylationIssues = methylation_validation$issues,
-                invalidCpGs = methylation_validation$invalidCpGs,
             personCreated = person_data$personCreated,
                 personCounts = person_data$personCounts,
             personMappingPreview = person_data$mappingPreview,
@@ -1566,8 +1287,8 @@ prepareMethylationLMEData <- function(
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
 #' @return A list with class `'dnaEPICO_methylationLME_models'`
-#'   containing fitted model lists, model formulas, and counts of failed CpG
-#'   fits.
+#'   containing fitted model lists, model formulas, p-value availability
+#'   counts, native model conditions, omnibus results, and hard model errors.
 #'
 #' @description
 #' Fit one linear mixed-effects model per CpG for each phenotype requested in
@@ -1649,7 +1370,6 @@ fitMethylationLMEModels <- function(
         analysis_data
     }
     cpg_columns <- preparedData$cpgColumns
-    invalid_cpg_reasons <- invalidMethylationReasonsDnaEpico(preparedData)
     n_cores <- validatePositiveIntegerMethylationModels(
         nCores,
         "nCores"
@@ -1666,14 +1386,6 @@ fitMethylationLMEModels <- function(
         preparedData$phenotypes
     )
     failure_reasons <- list()
-    singular_counts <- stats::setNames(
-        integer(length(preparedData$phenotypes)),
-        preparedData$phenotypes
-    )
-    convergence_issue_counts <- stats::setNames(
-        integer(length(preparedData$phenotypes)),
-        preparedData$phenotypes
-    )
     omnibus_targets <- stats::setNames(
         character(length(preparedData$phenotypes)),
         preparedData$phenotypes
@@ -1706,7 +1418,7 @@ fitMethylationLMEModels <- function(
         parallel::clusterExport(psock_cluster,
             varlist = c(
                 "analysis_data",
-                "invalid_cpg_reasons", "libPath", "required_lme_lib_list",
+                "libPath", "required_lme_lib_list",
                 "validateWorkerPackagesMethylationModels",
                     "newMethylationFitErrorDnaEpico",
                 "fitMethylationLMEBatch", "fitCpGModelMethylationLME",
@@ -1717,7 +1429,8 @@ fitMethylationLMEModels <- function(
                 "computeOmnibusTestMethylationLME",
                     "emptyOmnibusResultMethylationLME",
                 "summarizeCpGFitMethylationLME",
-                    "fitStatusValuesMethylationLME",
+                    "captureModelConditionsDnaEpico",
+                "combineModelMessagesDnaEpico", "modelMessageDnaEpico",
                 "findCoefficientRowsMethylationLME",
                     "findCoefficientRowsMethylationGLM",
                 "quoteNamesMethylationGLM", "escapeRegexMethylationGLM"
@@ -1839,7 +1552,6 @@ fitMethylationLMEModels <- function(
                             phenotype = phenotype,
                                 interactionTerm = resolved_interaction,
                             responseVar = response_var,
-                                invalidCpgReasons = invalid_cpg_reasons,
                             omnibusTest = omnibus_config$test,
                             omnibusDdf = omnibus_config$ddf,
                             omnibusTerm = omnibus_target
@@ -1871,7 +1583,6 @@ fitMethylationLMEModels <- function(
                             phenotype = phenotype,
                                 interactionTerm = resolved_interaction,
                             responseVar = response_var,
-                                invalidCpgReasons = invalid_cpg_reasons,
                             omnibusTest = omnibus_config$test,
                             omnibusDdf = omnibus_config$ddf,
                             omnibusTerm = omnibus_target
@@ -1894,7 +1605,6 @@ fitMethylationLMEModels <- function(
                     phenotype = phenotype,
                         interactionTerm = resolved_interaction,
                     responseVar = response_var,
-                        invalidCpgReasons = invalid_cpg_reasons,
                     omnibusTest = omnibus_config$test,
                     omnibusDdf = omnibus_config$ddf,
                     omnibusTerm = omnibus_target
@@ -1915,36 +1625,19 @@ fitMethylationLMEModels <- function(
             summaryDf = combined_results$summaries,
             pValueFilter = NA_real_
         )
-        failures <- vapply(fit_list, function(x) {
-            inherits(
-                x,
-                "dnaEPICO_methylationLME_fit_error"
-            )
-        }, logical(1))
         error_counts <- summarizeFitErrorsMethylationModels(
             fitList = fit_list,
             errorClass = "dnaEPICO_methylationLME_fit_error"
         )
-        valid_fits <- fit_list[!failures]
-        singular_fits <- vapply(
-            valid_fits, function(x) isTRUE(x$fitStatus$singular),
-            logical(1)
-        )
-        convergence_issues <- vapply(valid_fits, function(x) {
-            identical(
-                x$fitStatus$converged,
-                FALSE
-            )
-        }, logical(1))
-
         fits[[phenotype]] <- fit_list
         summary_cache[[phenotype]] <- phenotype_summary_cache
         omnibus_tests[[phenotype]] <- phenotype_omnibus
         formulas[[phenotype]] <- display_formula_text
-        failure_counts[[phenotype]] <- sum(failures)
+        p_value_available <- vapply(
+            fit_list, function(x) isTRUE(x$pValueAvailable), logical(1)
+        )
+        failure_counts[[phenotype]] <- sum(!p_value_available)
         failure_reasons[[phenotype]] <- error_counts
-        singular_counts[[phenotype]] <- sum(singular_fits)
-        convergence_issue_counts[[phenotype]] <- sum(convergence_issues)
 
         emitLogMinfiEwasWater(
             c(
@@ -1963,14 +1656,8 @@ fitMethylationLMEModels <- function(
                     "CpGs attempted:              ",
                     length(cpg_columns)
                 ), paste(
-                    "Failed CpG fits:             ",
+                    "CpGs without p-values:       ",
                     failure_counts[[phenotype]]
-                ), paste(
-                    "Singular CpG fits:           ",
-                    singular_counts[[phenotype]]
-                ), paste(
-                    "Non-converged CpG fits:      ",
-                    convergence_issue_counts[[phenotype]]
                 ), paste(
                     "Omnibus tests requested:     ",
                     isTRUE(omnibus_config$test)
@@ -2014,9 +1701,9 @@ fitMethylationLMEModels <- function(
             verbose = verbose, log_path = log_path
         )
 
-        if (length(fit_list) > 0L && all(failures)) {
-            warning("All CpG ", toupper(lme_engine),
-                " fits failed for phenotype '",
+        if (length(fit_list) > 0L && !any(p_value_available)) {
+            warning("No CpG ", toupper(lme_engine),
+                " p-values were available for phenotype '",
                 phenotype, "'. Top failure reasons: ",
                     formatFitErrorsMethylationModels(error_counts),
                 ". The failure inventory was retained and the analysis continued.",
@@ -2029,7 +1716,7 @@ fitMethylationLMEModels <- function(
         fits = fits,
         errorClass = "dnaEPICO_methylationLME_fit_error"
     )
-    fit_diagnostics <- collectFitDiagnosticsMethylationLME(fits)
+    model_messages <- collectModelMessagesMethylationLME(fits)
 
     if (!is.null(psock_cluster)) {
         parallel::stopCluster(psock_cluster)
@@ -2041,14 +1728,9 @@ fitMethylationLMEModels <- function(
             fits = fits, summaryCache = summary_cache,
             omnibusTests = omnibus_tests, omnibusTargets = omnibus_targets,
             formulas = formulas, phenotypes = names(fits),
-                failureCounts = failure_counts,
+            failureCounts = failure_counts,
             failureReasons = failure_reasons, fitFailures = fit_failures,
-            fitDiagnostics = fit_diagnostics,
-                methylationBoundaries = preparedData$methylationBoundaries,
-            methylationIssues = preparedData$methylationIssues,
-                invalidCpGs = preparedData$invalidCpGs,
-            singularCounts = singular_counts,
-                convergenceIssueCounts = convergence_issue_counts,
+            modelMessages = model_messages,
             settings = list(
                 nCores = n_cores, parallelBackend = backend,
                 workerCount = worker_count,
@@ -2078,8 +1760,7 @@ fitMethylationLMEModels <- function(
                 omnibusDdf = omnibus_config$ddf,
                 omnibusRhs = 0,
                 omnibusJoint = TRUE,
-                omnibusEps = sqrt(.Machine$double.eps),
-                    phenotypes = preparedData$phenotypes,
+                phenotypes = preparedData$phenotypes,
                 covariates = preparedData$covariates,
                     factorVars = preparedData$factorVars,
                 factorLevels = lapply(stats::setNames(
@@ -2098,8 +1779,7 @@ fitMethylationLMEModels <- function(
 }
 
 summarizeOmnibusTestsMethylationLME <- function(
-    modelResults, padjmethod = "fdr",
-    excludeSingular = FALSE, excludeNonConverged = FALSE
+    modelResults, padjmethod = "fdr"
 ) {
     adjustment_method <- validatePAdjustmentMethodMethylationModels(
         padjmethod
@@ -2113,35 +1793,6 @@ summarizeOmnibusTestsMethylationLME <- function(
         table <- omnibus_tables[[phenotype]]
         if (!is.data.frame(table) || nrow(table) == 0L) {
             return(data.frame())
-        }
-
-        fits <- modelResults$fits[[phenotype]]
-        for (index in seq_len(nrow(table))) {
-            cpg <- table$CpG[[index]]
-            fit <- fits[[cpg]]
-            if (is.null(fit) || inherits(
-                fit,
-                "dnaEPICO_methylationLME_fit_error"
-            )) {
-                next
-            }
-            status <- fitStatusValuesMethylationLME(fit)
-            reasons <- character(0)
-            if (isTRUE(excludeSingular) && isTRUE(status$singular)) {
-                reasons <- c(reasons, "singular random-effects fit")
-            }
-            if (isTRUE(excludeNonConverged) &&
-                identical(status$converged, FALSE)) {
-                reasons <- c(reasons, "model did not converge")
-            }
-            if (length(reasons) > 0L) {
-                table$Omnibus.P.Value[[index]] <- NA_real_
-                existing <- table$Omnibus.Reason[[index]]
-                table$Omnibus.Reason[[index]] <- paste(
-                    c(existing[!is.na(existing) & nzchar(existing)], reasons),
-                    collapse = "; "
-                )
-            }
         }
 
         table$Omnibus.Adjusted.P.Value <- NA_real_
@@ -2163,10 +1814,6 @@ summarizeOmnibusTestsMethylationLME <- function(
 #' @param preparedData Object returned by `prepareMethylationLMEData()`.
 #' @param summaryPval Numeric or `NA`. Optional p-value filter applied to the
 #'   returned summary tables. `NA` keeps all rows.
-#' @param excludeSingular Logical. If `TRUE`, retain singular CpG rows and
-#'   reasons but set their inferential p-values to `NA`.
-#' @param excludeNonConverged Logical. If `TRUE`, retain non-converged CpG rows
-#'   and reasons but set their inferential p-values to `NA`.
 #' @param padjmethod Character. Adjustment method passed to `stats::p.adjust()`
 #'   for omnibus p-values across CpGs within each phenotype and tested term.
 #' @param nCores Integer. Number of worker processes to use while extracting
@@ -2183,9 +1830,8 @@ summarizeOmnibusTestsMethylationLME <- function(
 #'   containing the optionally filtered summary tables in `summaries` and the
 #'   complete CpG-level tables in `diagnosticSummaries`. Diagnostics,
 #'   annotation, and report output use the complete tables so `summaryPval`
-#'   does not remove CpGs from those outputs. `fitDiagnostics` retains the
-#'   phenotype-specific fit status, lme4 singular-fit flag, and warning text for
-#'   every attempted CpG.
+#'   does not remove CpGs from those outputs. `modelMessages` retains native
+#'   messages, warnings, and errors for every attempted CpG.
 #'
 #' @description
 #' Extract phenotype-specific fixed-effect tables from the fitted mixed-effects
@@ -2206,8 +1852,7 @@ summarizeOmnibusTestsMethylationLME <- function(
 #' @export
 summarizeMethylationLMEModels <- function(
     modelResults, preparedData,
-    summaryPval = NA, excludeSingular = FALSE, excludeNonConverged = FALSE,
-    padjmethod = "fdr", nCores = 1L, chunkSize = NULL,
+    summaryPval = NA, padjmethod = "fdr", nCores = 1L, chunkSize = NULL,
     verbose = FALSE, logs = FALSE,
     log_dir = NULL, log_file = "log_methylationLME.txt"
 ) {
@@ -2230,23 +1875,6 @@ summarizeMethylationLMEModels <- function(
     )
     summaries <- list()
     diagnostic_summaries <- list()
-    lme_engine <- modelResults$settings$lmeEngine
-    if (is.null(lme_engine) || !nzchar(lme_engine)) {
-        lme_engine <- "lme4"
-    }
-    if (identical(lme_engine, "nlme") && isTRUE(excludeSingular)) {
-        warning("excludeSingular is not applicable to nlme fits and was ignored.",
-            call. = FALSE
-        )
-    }
-    remove_inapplicable_singular <- function(data) {
-        if (identical(lme_engine, "nlme") && "Singular.Fit" %in%
-            colnames(data)) {
-            data$Singular.Fit <- NULL
-        }
-        data
-    }
-
     for (phenotype in names(modelResults$fits)) {
         if (!is.null(modelResults$summaryCache) &&
             !is.null(modelResults$summaryCache[[phenotype]])) {
@@ -2254,14 +1882,6 @@ summarizeMethylationLMEModels <- function(
                 summaryDf = modelResults$summaryCache[[phenotype]],
                 pValueFilter = NA_real_
             )
-            diagnostic_df <- applyFitQualityExclusionsMethylationLME(
-                summaryDf = diagnostic_df,
-                excludeSingular = excludeSingular && identical(
-                    lme_engine,
-                    "lme4"
-                ), excludeNonConverged = excludeNonConverged
-            )
-            diagnostic_df <- remove_inapplicable_singular(diagnostic_df)
             summary_df <- filterSummaryByPvalueMethylationLME(
                 summaryDf = diagnostic_df,
                 pValueFilter = p_value_filter
@@ -2309,7 +1929,7 @@ summarizeMethylationLMEModels <- function(
             parallel::clusterExport(cl, varlist = c(
                 "fit_list",
                 "phenotype", "resolved_interaction", "summary_worker",
-                "fitStatusValuesMethylationLME"
+                "modelMessageDnaEpico"
             ), envir = environment())
 
             result_chunks <- parallel::parLapplyLB(
@@ -2356,14 +1976,6 @@ summarizeMethylationLMEModels <- function(
             rownames(summary_df) <- NULL
         }
 
-        summary_df <- applyFitQualityExclusionsMethylationLME(
-            summaryDf = summary_df,
-            excludeSingular = excludeSingular && identical(
-                lme_engine,
-                "lme4"
-            ), excludeNonConverged = excludeNonConverged
-        )
-        summary_df <- remove_inapplicable_singular(summary_df)
         diagnostic_summaries[[phenotype]] <- summary_df
         if (nrow(summary_df) > 0L && !is.na(p_value_filter)) {
             keep <- is.finite(summary_df$P.value) & summary_df$P.value <
@@ -2391,25 +2003,20 @@ summarizeMethylationLMEModels <- function(
     }
 
     omnibus_summaries <- summarizeOmnibusTestsMethylationLME(
-        modelResults = modelResults, padjmethod = adjustment_method,
-        excludeSingular = excludeSingular && identical(lme_engine, "lme4"),
-        excludeNonConverged = excludeNonConverged
+        modelResults = modelResults, padjmethod = adjustment_method
     )
 
     structure(list(
         summaries = summaries, diagnosticSummaries = diagnostic_summaries,
         omnibusTests = omnibus_summaries,
         phenotypes = names(summaries), fitFailures = modelResults$fitFailures,
-        fitDiagnostics = resolveFitDiagnosticsMethylationLME(modelSummaries = list(fitDiagnostics = if (!is.null(modelResults$fitDiagnostics)) {
-            modelResults$fitDiagnostics
+        modelMessages = if (!is.null(modelResults$modelMessages)) {
+            modelResults$modelMessages
         } else {
-            collectFitDiagnosticsMethylationLME(modelResults$fits)
-        }, fitFailures = modelResults$fitFailures),
-            summaryList = diagnostic_summaries),
+            collectModelMessagesMethylationLME(modelResults$fits)
+        },
         settings = list(
             summaryPval = p_value_filter,
-                excludeSingular = isTRUE(excludeSingular),
-            excludeNonConverged = isTRUE(excludeNonConverged),
             padjmethod = adjustment_method,
             chunkSize = chunk_size,
                 interactionTerm = preparedData$interactionTerm,
@@ -2425,11 +2032,6 @@ summarizeMethylationLMEModels <- function(
 #'   interaction p-values.
 #' @param interactionTerm Character or `NULL`. Optional interaction term. When
 #'   `NULL`, phenotype main effects are used.
-#' @param excludeSingular Logical. If `TRUE`, do not collect significant CpGs
-#'   with singular lme4 fits.
-#' @param excludeNonConverged Logical. If `TRUE`, do not collect significant
-#'   CpGs whose mixed model did not converge. Excluded CpG rows and reasons
-#'   remain available in diagnostic and annotated output.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
@@ -2456,8 +2058,8 @@ summarizeMethylationLMEModels <- function(
 #' @export
 collectSignificantInteractionsMethylationLME <- function(
     modelResults,
-    pvalThreshold = 0.05, interactionTerm = NULL, excludeSingular = FALSE,
-    excludeNonConverged = FALSE, verbose = FALSE, logs = FALSE,
+    pvalThreshold = 0.05, interactionTerm = NULL,
+    verbose = FALSE, logs = FALSE,
     log_dir = NULL, log_file = "log_methylationLME.txt"
 ) {
     log_path <- resolveLogPathMinfiEwasWater(
@@ -2492,15 +2094,6 @@ collectSignificantInteractionsMethylationLME <- function(
                     model_obj$omnibus$pValue >= threshold) {
                     next
                 }
-                fit_quality <- fitStatusValuesMethylationLME(model_obj)
-                if ((isTRUE(excludeSingular) &&
-                    isTRUE(fit_quality$singular)) ||
-                    (isTRUE(excludeNonConverged) && identical(
-                        fit_quality$converged,
-                        FALSE
-                    ))) {
-                    next
-                }
                 if (!is.null(model_obj$coef)) {
                     phenotype_hits[[cpg]] <- as.data.frame(model_obj$coef)
                 }
@@ -2528,15 +2121,6 @@ collectSignificantInteractionsMethylationLME <- function(
                     )) {
                         next
                     }
-                    fit_quality <- fitStatusValuesMethylationLME(model_obj)
-                    if ((isTRUE(excludeSingular) &&
-                        isTRUE(fit_quality$singular)) ||
-                        (isTRUE(excludeNonConverged) && identical(
-                            fit_quality$converged,
-                            FALSE
-                        ))) {
-                        next
-                    }
                     if (!is.null(model_obj$coef)) {
                         phenotype_hits[[cpg]] <- as.data.frame(model_obj$coef)
                     }
@@ -2553,15 +2137,6 @@ collectSignificantInteractionsMethylationLME <- function(
                 "dnaEPICO_methylationLME_fit_error")) {
                 next
             }
-            fit_quality <- fitStatusValuesMethylationLME(model_obj)
-            if ((isTRUE(excludeSingular) && isTRUE(fit_quality$singular)) ||
-                (isTRUE(excludeNonConverged) && identical(
-                    fit_quality$converged,
-                    FALSE
-                ))) {
-                next
-            }
-
             coef_table <- model_obj$coef
             if (is.null(coef_table)) {
                 next
@@ -2785,230 +2360,6 @@ plotMethylationLMEDiagnostics <- function(
     ), class = "dnaEPICO_methylationLME_diagnostic_plots")
 }
 
-resolveFitDiagnosticsMethylationLME <- function(
-    modelSummaries,
-    summaryList
-) {
-    required_columns <- c(
-        "Phenotype", "CpG", "Fit.Status", "Singular.Fit",
-        "Converged", "Convergence.Message", "Fit.Warning", "Inference.Included",
-        "Exclusion.Reason"
-    )
-    rows <- list()
-    row_index <- 1L
-    for (phenotype in names(summaryList)) {
-        summary_df <- summaryList[[phenotype]]
-        if (is.null(summary_df) || nrow(summary_df) == 0L ||
-            !("CpG" %in% names(summary_df))) {
-            next
-        }
-        value_or_default <- function(column, default) {
-            if (column %in% names(summary_df)) {
-                summary_df[[column]]
-            } else {
-                rep(default, nrow(summary_df))
-            }
-        }
-        phenotype_rows <- unique(data.frame(
-            Phenotype = phenotype,
-            CpG = as.character(summary_df$CpG),
-                Fit.Status = as.character(value_or_default(
-                "Fit.Status",
-                "fitted"
-            )), Singular.Fit = as.logical(value_or_default(
-                "Singular.Fit",
-                NA
-            )), Converged = as.logical(value_or_default(
-                "Converged",
-                TRUE
-            )), Convergence.Message = as.character(value_or_default(
-                "Convergence.Message",
-                NA_character_
-            )), Fit.Warning = as.character(value_or_default(
-                "Fit.Warning",
-                NA_character_
-            )), Inference.Included = as.logical(value_or_default(
-                "Inference.Included",
-                TRUE
-            )), Exclusion.Reason = as.character(value_or_default(
-                "Exclusion.Reason",
-                NA_character_
-            )), stringsAsFactors = FALSE, check.names = FALSE
-        ))
-        rows[[row_index]] <- phenotype_rows
-        row_index <- row_index + 1L
-    }
-
-    diagnostics <- modelSummaries$fitDiagnostics
-    if (is.data.frame(diagnostics) && all(c(
-        "Phenotype", "CpG",
-        "Fit.Status"
-    ) %in% names(diagnostics))) {
-        defaults <- list(
-            Singular.Fit = NA, Converged = NA,
-                Convergence.Message = NA_character_,
-            Fit.Warning = NA_character_, Inference.Included = startsWith(
-                as.character(diagnostics$Fit.Status),
-                "fitted"
-            ), Exclusion.Reason = NA_character_
-        )
-        for (column in names(defaults)) {
-            if (!(column %in% names(diagnostics))) {
-                value <- defaults[[column]]
-                diagnostics[[column]] <- if (length(value) ==
-                    1L) {
-                    rep(value, nrow(diagnostics))
-                } else {
-                    value
-                }
-            }
-        }
-        rows[[row_index]] <- diagnostics[, required_columns,
-            drop = FALSE
-        ]
-        row_index <- row_index + 1L
-    }
-
-    fit_failures <- modelSummaries$fitFailures
-    if (is.data.frame(fit_failures) && nrow(fit_failures) > 0L) {
-        rows[[row_index]] <- data.frame(
-            Phenotype = as.character(fit_failures$Phenotype),
-            CpG = as.character(fit_failures$CpG),
-                Fit.Status = as.character(fit_failures$Status),
-            Singular.Fit = NA, Converged = ifelse(fit_failures$Status ==
-                "not_converged", FALSE, NA),
-                    Convergence.Message = ifelse(fit_failures$Status ==
-                "not_converged", as.character(fit_failures$Error),
-            NA_character_
-            ), Fit.Warning = NA_character_,
-            Inference.Included = FALSE,
-                Exclusion.Reason = as.character(fit_failures$Error),
-            stringsAsFactors = FALSE, check.names = FALSE
-        )
-    }
-
-    if (length(rows) == 0L) {
-        return(data.frame(
-            Phenotype = character(0), CpG = character(0),
-            Fit.Status = character(0), Singular.Fit = logical(0),
-            Converged = logical(0), Convergence.Message = character(0),
-            Fit.Warning = character(0), Inference.Included = logical(0),
-            Exclusion.Reason = character(0), stringsAsFactors = FALSE,
-            check.names = FALSE
-        ))
-    }
-
-    diagnostics <- do.call(rbind, rows)
-    key <- paste(diagnostics$Phenotype, diagnostics$CpG, sep = "\r")
-    diagnostics <- diagnostics[!duplicated(key), , drop = FALSE]
-    rownames(diagnostics) <- NULL
-    diagnostics
-}
-
-buildAnnotationFitDiagnosticsMethylationLME <- function(fitDiagnostics) {
-    if (!is.data.frame(fitDiagnostics) || nrow(fitDiagnostics) ==
-        0L) {
-        return(list(overall = data.frame(), byPhenotype = data.frame()))
-    }
-
-    aggregate_logical <- function(values, falseDominates = TRUE) {
-        values <- as.logical(values)
-        values <- values[!is.na(values)]
-        if (length(values) == 0L) {
-            return(NA)
-        }
-        if (isTRUE(falseDominates) && any(!values)) {
-            return(FALSE)
-        }
-        if (!isTRUE(falseDominates) && any(values)) {
-            return(TRUE)
-        }
-        if (isTRUE(falseDominates)) {
-            TRUE
-        } else {
-            FALSE
-        }
-    }
-    diagnostics_by_cpg <- split(fitDiagnostics, fitDiagnostics$CpG,
-        drop = TRUE
-    )
-    overall_rows <- lapply(names(diagnostics_by_cpg), function(cpg) {
-        diagnostic <- diagnostics_by_cpg[[cpg]]
-        statuses <- as.character(diagnostic$Fit.Status)
-        failed <- statuses %in% c("failed", "invalid", "not_converged")
-        status <- if (any(failed)) {
-            if (!all(failed)) {
-                "partial"
-            } else if (all(statuses == "invalid")) {
-                "invalid"
-            } else if (all(statuses == "not_converged")) {
-                "not_converged"
-            } else {
-                "failed"
-            }
-        } else if (any(statuses == "fitted_not_converged")) {
-            "fitted_not_converged"
-        } else if (any(statuses == "fitted_singular")) {
-            "fitted_singular"
-        } else if (any(statuses == "fitted_with_warning")) {
-            "fitted_with_warning"
-        } else {
-            "fitted"
-        }
-        reason_index <- !is.na(diagnostic$Exclusion.Reason) &
-            nzchar(diagnostic$Exclusion.Reason)
-        reasons <- unique(paste0(
-            diagnostic$Phenotype[reason_index],
-            ": ", diagnostic$Exclusion.Reason[reason_index]
-        ))
-        data.frame(
-            CpG = cpg, Diagnostic.Fit.Status = status,
-            Singular.Fit = aggregate_logical(diagnostic$Singular.Fit,
-                falseDominates = FALSE
-            ), Converged = aggregate_logical(diagnostic$Converged),
-            Inference.Included = aggregate_logical(diagnostic$Inference.Included),
-            Fit.Quality.Reason = if (length(reasons)) {
-                paste(reasons, collapse = " | ")
-            } else {
-                NA_character_
-            }, stringsAsFactors = FALSE, check.names = FALSE
-        )
-    })
-    overall <- do.call(rbind, overall_rows)
-    rownames(overall) <- NULL
-
-    diagnostic_columns <- setdiff(names(fitDiagnostics), c(
-        "Phenotype",
-        "CpG"
-    ))
-    phenotype_tables <- lapply(
-        unique(as.character(fitDiagnostics$Phenotype)),
-        function(phenotype) {
-            diagnostic <- fitDiagnostics[fitDiagnostics$Phenotype ==
-                phenotype, c("CpG", diagnostic_columns), drop = FALSE]
-            diagnostic <- unique(diagnostic)
-            colnames(diagnostic)[-1L] <- paste0(
-                phenotype, "_",
-                diagnostic_columns
-            )
-            diagnostic
-        }
-    )
-    phenotype_tables <- Filter(Negate(is.null), phenotype_tables)
-    by_phenotype <- if (length(phenotype_tables) == 0L) {
-        data.frame()
-    } else if (length(phenotype_tables) == 1L) {
-        phenotype_tables[[1L]]
-    } else {
-        Reduce(
-            function(x, y) merge(x, y, by = "CpG", all = TRUE),
-            phenotype_tables
-        )
-    }
-
-    list(overall = overall, byPhenotype = by_phenotype)
-}
-
 buildAnnotationOmnibusTablesMethylationLME <- function(modelSummaries) {
     omnibus_tables <- modelSummaries$omnibusTests
     if (!is.list(omnibus_tables) || length(omnibus_tables) == 0L) {
@@ -3111,12 +2462,9 @@ annotateMethylationLMESummaries <- function(
     if (is.null(summary_phenotypes)) {
         summary_phenotypes <- names(summary_list)
     }
-    fit_diagnostics <- resolveFitDiagnosticsMethylationLME(
-        modelSummaries = modelSummaries,
-        summaryList = summary_list
+    model_messages <- buildAnnotationModelMessagesDnaEpico(
+        modelSummaries$modelMessages
     )
-    annotation_diagnostics <-
-        buildAnnotationFitDiagnosticsMethylationLME(fitDiagnostics = fit_diagnostics)
 
     annotation_cols <- splitOptionMinfiEwasWater(annotationCols,
         sep = ","
@@ -3182,20 +2530,18 @@ annotateMethylationLMESummaries <- function(
             by = "CpG", all = TRUE
         )
     }
-    lme_engine <- modelSummaries$settings$lmeEngine
-    if (is.null(lme_engine) || !nzchar(lme_engine)) {
-        lme_engine <- "lme4"
+    p_value_columns <- grep("P\\.Value$|P\\.value$", names(merged_summary),
+        value = TRUE
+    )
+    if (length(p_value_columns) > 0L && nrow(merged_summary) > 0L) {
+        has_p_value <- apply(merged_summary[, p_value_columns, drop = FALSE],
+            1L, function(values) any(is.finite(as.numeric(values)))
+        )
+        merged_summary <- merged_summary[has_p_value, , drop = FALSE]
     }
-    if (nrow(annotation_diagnostics$byPhenotype) > 0L) {
-        lme_diagnostics <- annotation_diagnostics$byPhenotype
-        if (!identical(lme_engine, "lme4")) {
-            lme_diagnostics <- lme_diagnostics[, !grepl(
-                "_Singular\\.Fit$",
-                colnames(lme_diagnostics)
-            ), drop = FALSE]
-        }
-        merged_summary <- merge(merged_summary, lme_diagnostics,
-            by = "CpG", all = TRUE
+    if (nrow(model_messages) > 0L) {
+        merged_summary <- merge(merged_summary, model_messages,
+            by = "CpG", all.x = TRUE
         )
     }
 
@@ -3216,11 +2562,7 @@ annotateMethylationLMESummaries <- function(
     annotated_results <- orderAnnotatedModelColumnsDnaEpico(
         data = annotated_results,
         annotationCols = available_annotation_cols,
-        modelNames = summary_phenotypes,
-        includeSingular = identical(
-            lme_engine,
-            "lme4"
-        )
+        modelNames = summary_phenotypes
     )
 
     emitLogMinfiEwasWater(
@@ -3245,7 +2587,7 @@ annotateMethylationLMESummaries <- function(
 
     structure(list(
         data = annotated_results, fitFailures = fit_failures,
-        fitDiagnostics = fit_diagnostics,
+        modelMessages = modelSummaries$modelMessages,
             annotationColumnsUsed = available_annotation_cols,
         missingAnnotationCols = missing_annotation_cols
     ), class = "dnaEPICO_methylationLME_annotation")
@@ -3352,7 +2694,6 @@ writeMethylationLMEOutputs <- function(
     )
     summary_txt_files <- list()
     significant_files <- list()
-    fit_failure_file <- character(0)
 
     for (phenotype in names(modelResults$fits)) {
         model_file <- file.path(outputRData, paste0(
@@ -3444,13 +2785,6 @@ writeMethylationLMEOutputs <- function(
     if (is.null(fit_failures)) {
         fit_failures <- modelResults$fitFailures
     }
-    if (is.data.frame(fit_failures) && nrow(fit_failures) > 0L) {
-        fit_failure_file <- file.path(annotatedLMEOut, "CpGFitFailuresLME.txt")
-        utils::write.table(fit_failures,
-            file = fit_failure_file,
-            sep = "\t", row.names = FALSE, quote = FALSE
-        )
-    }
     dictionary <- buildAnnotatedWorkbookDictionaryMethylationGLM(
         columns = colnames(annotated_df),
         modelDescription = "Pvalue from LME model",
@@ -3492,7 +2826,7 @@ writeMethylationLMEOutputs <- function(
             } else {
                 paste("Report table sidecar:         ", report_sidecar$table)
             },
-            paste("CpG fit failures reported:   ", nrow(fit_failures)),
+            paste("Hard model errors retained:  ", nrow(fit_failures)),
             if (isTRUE(saveTxtSummaries)) {
                 paste("Summary text files written:   ",
                     length(summary_txt_files))
@@ -3515,7 +2849,7 @@ writeMethylationLMEOutputs <- function(
             modelFiles = model_files, summaryFiles = summary_files,
             summaryTxtFiles = summary_txt_files,
                 significantInteractionFiles = significant_files,
-            fitFailureFile = fit_failure_file, annotatedLME = annotated_file,
+            annotatedLME = annotated_file,
             annotatedLMEText = report_sidecar$table,
                 annotatedLMEReportMetadata = report_sidecar$metadata,
             annotatedLMEDictionary = report_sidecar$dictionary,

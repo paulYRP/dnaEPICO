@@ -1762,45 +1762,19 @@ extractMetricsMinfiEwasWater <- function(
         )
     }
 
-    validations <- list(
-        beta = inspectMethylationMatrixDnaEpico(
-            beta,
-            "beta"
-        ), m = inspectMethylationMatrixDnaEpico(m, "m"),
-        cn = inspectMethylationMatrixDnaEpico(cn, "cn")
+    range_summaries <- list(
+        beta = summarizeMethylationRangeDnaEpico(beta, "beta"),
+        m = summarizeMethylationRangeDnaEpico(m, "m"),
+        cn = summarizeMethylationRangeDnaEpico(cn, "cn")
     )
-    beta <- validations$beta$values
-    m <- validations$m$values
-    cn <- validations$cn$values
-
-    converted_nan <- sum(vapply(
-        validations, function(validation) validation$boundaries$NaN.Converted,
-        numeric(1)
-    ))
-    invalid_cpgs <- sum(vapply(
-        validations, function(validation) validation$boundaries$Invalid.CpGs,
-        numeric(1)
-    ))
-    if (converted_nan > 0L) {
-        warning(converted_nan,
-            " NaN values returned by methylation accessors were converted to NA.",
-            call. = FALSE
-        )
-    }
-    if (invalid_cpgs > 0L) {
-        warning(invalid_cpgs,
-            " invalid scale-specific CpG records were retained for reporting.",
-            call. = FALSE
-        )
-    }
 
     preview_cols <- seq_len(min(ncol(beta), 5L))
 
     emitLogMinfiEwasWater(
         c(
             "Extracting final DNAm matrices (M, Beta, CN).",
-            unlist(lapply(validations, function(validation) {
-                formatMethylationBoundariesLogDnaEpico(validation$boundaries)
+            unlist(lapply(range_summaries, function(range_summary) {
+                formatMethylationRangeLogDnaEpico(range_summary)
             }), use.names = FALSE), "Preview of beta values:",
                 previewLinesMinfiEwasWater(beta[,
                 preview_cols,
@@ -1815,7 +1789,10 @@ extractMetricsMinfiEwasWater <- function(
         verbose = verbose, log_path = log_path
     )
 
-    structure(list(beta = beta, m = m, cn = cn, validation = validations),
+    structure(list(
+        beta = beta, m = m, cn = cn,
+        methylationRanges = range_summaries
+    ),
         class = "dnaEPICO_minfiEwasWater_metrics"
     )
 }

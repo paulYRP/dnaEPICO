@@ -73,20 +73,7 @@ estimateLCMinfiEwasWater <- function(
         requireSampleNames = TRUE, objectName = "beta"
     )
     beta_sample_ids <- as.character(colnames(beta))
-    beta_validation <- prepareBetaForCellCompositionDnaEpico(beta)
-    beta <- beta_validation$beta
-    if (beta_validation$boundaries$NaN.Converted > 0L) {
-        warning(beta_validation$boundaries$NaN.Converted,
-            " NaN value(s) were converted to NA before cell-composition estimation.",
-            call. = FALSE
-        )
-    }
-    if (nrow(beta_validation$invalidCpGs) > 0L) {
-        warning(nrow(beta_validation$invalidCpGs),
-            " invalid CpG(s) were excluded from cell-composition estimation.",
-            call. = FALSE
-        )
-    }
+    beta_range <- summarizeMethylationRangeDnaEpico(beta, "beta")
     if (!(SampleID %in% colnames(targets))) {
         stop("SampleID column not found in targets: ", SampleID,
             call. = FALSE
@@ -116,17 +103,11 @@ estimateLCMinfiEwasWater <- function(
             "Using internal Houseman implementation (estimateLC)."
         } else {
             "Using ENmix Houseman-based cell composition."
-        }, formatMethylationBoundariesLogDnaEpico(beta_validation$boundaries),
-        if (nrow(beta_validation$issues) > 0L) {
-            c("Methylation value issues:",
-                previewLinesMinfiEwasWater(beta_validation$issues))
-        } else {
-            "Methylation value issues:     none"
-        }
+        }, formatMethylationRangeLogDnaEpico(beta_range)
     ), verbose = verbose, log_path = log_path)
 
     if (use_internal) {
-        lc <- estimateLCFromValidatedBetaDnaEpico(
+        lc <- estimateLCFromBetaDnaEpico(
             meth = beta,
             ref = lcRef, constrained = constrained
         )
@@ -171,9 +152,7 @@ estimateLCMinfiEwasWater <- function(
         list(
             lc = lc, phenoLC = phenoLC, sampleIDs = beta_sample_ids,
             SampleID = SampleID, ref = lcRef, method = method,
-                methylationBoundaries = beta_validation$boundaries,
-            methylationIssues = beta_validation$issues,
-                invalidCpGs = beta_validation$invalidCpGs
+            methylationRange = beta_range
         ),
         class = "dnaEPICO_minfiEwasWater_lc"
     )

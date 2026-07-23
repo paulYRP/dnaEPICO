@@ -39,7 +39,8 @@ check on worker processes. The default is \code{'glm2'}.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationGLM_models'} containing
-fitted model lists, model formulas, and counts of failed CpG fits.
+fitted model lists, model formulas, p-value availability counts, native
+model conditions, and hard model errors.
 }
 \description{
 Fit one Gaussian GLM per CpG for each phenotype requested in the object

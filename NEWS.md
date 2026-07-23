@@ -3,7 +3,10 @@ CHANGES IN VERSION 0.99.35
 
 NEW FEATURES
 
-    o [22-07-2026] Added optional lmerTest omnibus F tests for complete
+    o [23-07-2026] Recorded conditions in one Model.Message column, and
+      reporting unavailable results through workbook metadata.
+
+    o [22-07-2026] Added lmerTest omnibus F tests for complete
       phenotype main effects or phenotype-by-interaction terms, with
       Satterthwaite or Kenward-Roger denominator degrees of freedom and
       CpG-adjusted results in annotated LME workbooks and reports.

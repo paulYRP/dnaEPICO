@@ -27,8 +27,6 @@ methylationLME(
   methylationScale = "beta",
   nCores = 32,
   summaryPval = NA,
-  excludeSingular = FALSE,
-  excludeNonConverged = FALSE,
   plotWidth = 2000,
   plotHeight = 1000,
   plotDPI = 150,
@@ -126,12 +124,6 @@ crossovers and caps workers by the CpG workload and detected physical cores.}
 
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value threshold applied to the
 returned longitudinal CpG summary tables. Use \code{NA} to keep all summary rows.}
-
-\item{excludeSingular}{Logical. If \code{TRUE}, retain singular lme4 CpG rows and
-reasons but exclude their p-values from inference.}
-
-\item{excludeNonConverged}{Logical. If \code{TRUE}, retain non-converged CpG rows
-and reasons but exclude their p-values from inference.}
 
 \item{plotWidth}{Integer. TIFF width in pixels when plots are written to
 disk.}
@@ -253,6 +245,12 @@ plots,
 annotates the combined summary table, and optionally writes model outputs to
 disk. By default, the function runs quietly and returns its results in
 memory.
+Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
+without a separate methylation-domain filter. Native model messages,
+warnings, and errors are recorded in one phenotype-specific \code{Model.Message}
+field. Annotated outputs contain CpGs with at least one returned coefficient
+or omnibus p-value; aggregate availability and condition counts are recorded
+in workbook metadata.
 }
 \examples{
 if (

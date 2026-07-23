@@ -209,7 +209,7 @@ test_that("phenotype-to-PRS mappings are unambiguous", {
     )
 })
 
-test_that("constant CpG responses are reported as failed GLM fits", {
+test_that("constant GLM responses are passed to glm2", {
     result <- dnaEPICO:::fitCpGModelMethylationGLM(
         cpg = "cg00000001",
         cpgValues = rep(0.5, 8),
@@ -217,11 +217,12 @@ test_that("constant CpG responses are reported as failed GLM fits", {
         formulaText = "beta ~ status"
     )
 
-    expect_s3_class(result, "dnaEPICO_methylationGLM_fit_error")
-    expect_match(result$error, "no observed variation")
+    expect_false(inherits(result, "dnaEPICO_methylationGLM_fit_error"))
+    expect_s3_class(result$model, "glm")
+    expect_true("Pr(>|t|)" %in% colnames(result$coef))
 })
 
-test_that("constant CpG responses are reported before mixed-model fitting", {
+test_that("constant mixed-model responses report the native model error", {
     result <- dnaEPICO:::fitCpGModelMethylationLME(
         cpg = "cg00000001",
         cpgValues = rep(0.5, 8),
@@ -235,7 +236,8 @@ test_that("constant CpG responses are reported before mixed-model fitting", {
     )
 
     expect_s3_class(result, "dnaEPICO_methylationLME_fit_error")
-    expect_match(result$error, "no observed variation")
+    expect_match(result$modelMessage, "ERROR:")
+    expect_false(grepl("no observed variation", result$error, fixed = TRUE))
 })
 
 test_that("external annotation identifiers cannot be implicit or duplicated", {
@@ -279,8 +281,7 @@ test_that("diagnostic means stay on the declared methylation scale", {
         ),
         cpgColumns = c("cg_boundary", "cg_valid", "cg_invalid"),
         methylationScale = "beta",
-        responseLabel = "Beta values",
-        invalidCpGs = data.frame(CpG = "cg_invalid")
+        responseLabel = "Beta values"
     )
     result <- dnaEPICO:::diagnosticMeanMethylationModels(prepared)
 
@@ -332,8 +333,7 @@ test_that("GLM filtering does not truncate diagnostics or annotated CpGs", {
         cpgColumns = c("cg1", "cg2"),
         methylationScale = "beta",
         responseLabel = "Beta values",
-        interactionTerm = NULL,
-        invalidCpGs = data.frame(CpG = character(0))
+        interactionTerm = NULL
     )
     summaries <- summarizeMethylationGLMModels(
         modelResults = list(
@@ -382,8 +382,7 @@ test_that("LME filtering does not truncate diagnostics or annotated CpGs", {
         cpgColumns = c("cg1", "cg2"),
         methylationScale = "beta",
         responseLabel = "Beta values",
-        interactionTerm = "visit",
-        invalidCpGs = data.frame(CpG = character(0))
+        interactionTerm = "visit"
     )
     summaries <- summarizeMethylationLMEModels(
         modelResults = list(

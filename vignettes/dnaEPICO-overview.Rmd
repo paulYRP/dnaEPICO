@@ -291,10 +291,15 @@ Its role in the package is to create analysis-ready methylation data:
 
 - Inputs: phenotype metadata, IDAT files, array annotation, and filtering
     settings.
-- Processing tasks: import, quality control, normalisation, probe
-    filtering, metric extraction, and cell-composition estimation.
+- Processing tasks: import, quality control, normalisation, probe filtering,
+    metric extraction, and cell-composition estimation. When
+    `removeSexMismatch = TRUE`, samples are removed only when both reported and
+    predicted sex are available and disagree; samples with missing or unknown
+    sex information remain because their mismatch status cannot be determined.
 - Outputs: filtered phenotype data, `RGSet`, beta values, M-values,
-    copy-number values, quality-control figures, and `phenoLC`.
+    copy-number values, quality-control figures, and `phenoLC`. The log reports
+    the observed finite minimum and maximum for each methylation matrix without
+    modifying its values.
 
 ```{r preprocessingMinfiEwasWater-overview, echo = FALSE, results = "asis"}
 svg_to_html(
@@ -350,11 +355,14 @@ methylation while adjusting for selected covariates.
 Its role is to run single-timepoint association testing:
 
 - Inputs: a phenotype-methylation table, phenotype variables,
-    covariates, optional PRS mappings, and annotation settings.
+    covariates, categorical and scaled-variable selections, optional PRS
+    mappings, and annotation settings.
 - Processing tasks: model preparation, CpG-GLM model fitting, diagnostic
     plotting, result summarisation, multiple-testing adjustment, and annotation.
 - Outputs: model objects, summary tables, diagnostic figures,
-    significant-CpG exports, and annotated workbooks.
+    significant-CpG exports, and annotated workbooks. Native glm2 conditions
+    are stored in `<Phenotype>_Model.Message`; CpGs without a returned p-value
+    remain in serialized model records and are counted in workbook metadata.
 
 ```{r methylationGLM-overview, echo = FALSE, results = "asis"}
 svg_to_html(
@@ -372,13 +380,17 @@ effect or phenotype-by-interaction term.
 Its role is to model methylation change across repeated observations:
 
 - Inputs: combined longitudinal phenotype-methylation data, participant
-    identifiers, timepoint variables, phenotypes, covariates, and annotation
-    settings.
+    identifiers, timepoint variables, phenotypes, covariates, categorical and
+    scaled-variable selections, and annotation settings.
 - Processing tasks: longitudinal model preparation, CpG-LME model
     fitting, coefficient and optional omnibus testing, diagnostic plotting,
     summarisation, multiple-testing adjustment, and annotation.
 - Outputs: mixed-model objects, interaction summaries, diagnostic figures,
     significant-interaction exports, and annotated longitudinal workbooks.
+    Native lmerTest/lme4 or nlme conditions are stored in
+    `<Phenotype>_Model.Message`; CpGs without a returned coefficient or omnibus
+    p-value remain in serialized model records and are counted in workbook
+    metadata.
 
 ```{r methylationLME-overview, echo = FALSE, results = "asis"}
 svg_to_html(

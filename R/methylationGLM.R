@@ -50,8 +50,6 @@
 #'   returned CpG summary tables. Use `NA` to keep all summary rows.
 #' @param summaryResidualSD Logical. If `TRUE`, append residual standard
 #'   deviations to the CpG summary tables and residual diagnostic plots.
-#' @param excludeNonConverged Logical. If `TRUE`, retain non-converged CpG rows
-#'   and reasons but exclude their p-values from inference.
 #' @param saveSignificantCpGs Logical. If `TRUE`, collect significant CpG
 #'   coefficient tables in the returned object and optionally write them to disk
 #'   when `saveOutputs = TRUE`.
@@ -131,6 +129,11 @@
 #' significant CpG coefficient tables, generates diagnostic plots, annotates the
 #' combined summary table, and optionally writes model outputs to disk. By
 #' default, the function runs quietly and returns its results in memory.
+#' Numeric CpG columns are passed to `glm2::glm2()` without a separate
+#' methylation-domain filter. Native model messages, warnings, and errors are
+#' recorded in one phenotype-specific `Model.Message` field. Annotated outputs
+#' contain CpGs with at least one returned p-value; aggregate availability and
+#' condition counts are recorded in workbook metadata.
 #'
 #' @examples
 #' if (requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
@@ -181,7 +184,7 @@ methylationGLM <- function(
     nCores = 32, plotWidth = 2000, plotHeight = 1000, plotDPI = 150,
     interactionTerm = NULL, libPath = NULL, glmLibs = "glm2",
     prsMap = NULL, summaryPval = NA, summaryResidualSD = TRUE,
-    excludeNonConverged = FALSE, saveSignificantCpGs = FALSE,
+    saveSignificantCpGs = FALSE,
     significantCpGDir = "preliminaryResults/cpgs/methylationGLM",
     significantCpGPval = 0.05, saveTxtSummaries = TRUE, chunkSize = NULL,
     summaryTxtDir = "preliminaryResults/summary/methylationGLM",
@@ -261,7 +264,6 @@ methylationGLM <- function(
                 if (is.na(summaryPval)) "None" else summaryPval
             ),
             paste("Include Residual SD:       ", isTRUE(summaryResidualSD)),
-            paste("Exclude non-converged:     ", isTRUE(excludeNonConverged)),
             paste("Chunk size:                ",
                 if (is.null(chunkSize)) "Auto" else chunkSize),
             paste("FDR threshold:             ", fdrThreshold), paste(
@@ -312,7 +314,6 @@ methylationGLM <- function(
             modelResults = modelFits,
             preparedData = preparedData, summaryResidualSD = summaryResidualSD,
             summaryPval = summaryPval,
-                excludeNonConverged = excludeNonConverged,
             nCores = nCores, libPath = libPath, glmLibs = glmLibs,
             chunkSize = chunkSize, verbose = verbose, logs = logs,
             log_dir = outputLogs, log_file = log_file
@@ -324,7 +325,7 @@ methylationGLM <- function(
                 modelResults = modelFits,
                 pvalThreshold = significantCpGPval,
                     interactionTerm = preparedData$interactionTerm,
-                excludeNonConverged = excludeNonConverged, verbose = verbose,
+                verbose = verbose,
                 logs = logs, log_dir = outputLogs, log_file = log_file
             )
         }
@@ -395,7 +396,6 @@ methylationGLM <- function(
                     internalResponseColumn = responseColumn,
                         scaleVars = preparedData$scaleVars,
                     scalingMetadata = preparedData$scalingMetadata,
-                    excludeNonConverged = isTRUE(excludeNonConverged),
                     reportAssetsDir = reportAssetsDir
                 )
             ),

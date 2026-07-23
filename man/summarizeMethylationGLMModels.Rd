@@ -9,7 +9,6 @@ summarizeMethylationGLMModels(
   preparedData,
   summaryResidualSD = TRUE,
   summaryPval = NA,
-  excludeNonConverged = FALSE,
   nCores = 1L,
   libPath = NULL,
   glmLibs = "glm2",
@@ -30,9 +29,6 @@ to each CpG summary row.}
 
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value filter applied to the
 returned summary tables. \code{NA} keeps all rows.}
-
-\item{excludeNonConverged}{Logical. If \code{TRUE}, retain non-converged CpG rows
-and their reasons but set their inferential p-values to \code{NA}.}
 
 \item{nCores}{Integer. Number of worker processes to use while extracting
 summary rows.}
@@ -60,7 +56,8 @@ A list with class \code{'dnaEPICO_methylationGLM_summaries'}
 containing the optionally filtered summary tables in \code{summaries} and the
 complete CpG-level tables in \code{diagnosticSummaries}. Diagnostics,
 annotation, and report output use the complete tables so \code{summaryPval}
-does not remove CpGs from those outputs.
+does not remove CpGs from those outputs. \code{modelMessages} retains native
+messages, warnings, and errors for every attempted CpG.
 }
 \description{
 Extract phenotype-specific CpG coefficient tables from the fitted model
