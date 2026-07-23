@@ -75,7 +75,6 @@ interaction p-value passes the requested threshold.</p>
 <span>  <span class="va">modelResults</span>,</span>
 <span>  pvalThreshold <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  interactionTerm <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  excludeNonConverged <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  log_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -98,12 +97,6 @@ interaction p-values.</p></dd>
 
 <dt id="arg-interactionterm">interactionTerm<a class="anchor" aria-label="anchor" href="#arg-interactionterm"></a></dt>
 <dd><p>Character or <code>NULL</code>. Optional interaction term.</p></dd>
-
-
-<dt id="arg-excludenonconverged">excludeNonConverged<a class="anchor" aria-label="anchor" href="#arg-excludenonconverged"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, do not collect CpGs whose GLM
-did not converge; their rows and reasons remain in diagnostic and annotated
-output.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>

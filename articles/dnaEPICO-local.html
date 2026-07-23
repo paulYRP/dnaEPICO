@@ -90,7 +90,7 @@
 Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpint@qut.edu.au" class="email">ruizpint@qut.edu.au</a>
       </address>
                   
-            <h4 data-toc-skip class="date">2026-07-22</h4>
+            <h4 data-toc-skip class="date">2026-07-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-local.Rmd" class="external-link"><code>vignettes/dnaEPICO-local.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-local.Rmd</code></div>
@@ -232,7 +232,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmppKpCzk/dnaEPICO-idat-example-25bc5fb8ef41"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpl1V5oi/dnaEPICO-idat-example-245061f2bb03"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -353,7 +353,8 @@ augmented with cell-composition estimates.</p>
 <span><span class="co">#&gt; attr(,"package")</span></span>
 <span><span class="co">#&gt; [1] "minfi"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">preprocessResult</span><span class="op">$</span><span class="va">metricsData</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "beta"       "m"          "cn"         "validation"</span></span>
+<span><span class="co">#&gt; [1] "beta"              "m"                 "cn"               </span></span>
+<span><span class="co">#&gt; [4] "methylationRanges"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">preprocessResult</span><span class="op">$</span><span class="va">lcData</span><span class="op">$</span><span class="va">phenoLC</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Sample_Name Sex          Basename Sentrix_ID Sentrix_Position Sample_Well</span></span>
 <span><span class="co">#&gt; 1    GroupA_3   M 5723646052_R02C02 5723646052           R02C02          H5</span></span>
@@ -515,7 +516,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmppKpCzk/dnaEPICO-preprocessingPheno-example-25bc27a5cec5"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpl1V5oi/dnaEPICO-preprocessingPheno-example-245027c7f788"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -622,8 +623,7 @@ deciding whether they should be used in a reporting or export
 workflow.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">$</span><span class="va">clockFoundation</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "betaCSV"               "phenoCF"               "methylationBoundaries"</span></span>
-<span><span class="co">#&gt; [4] "methylationIssues"     "invalidCpGs"</span></span>
+<span><span class="co">#&gt; [1] "betaCSV"          "phenoCF"          "methylationRange"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">phenoResult</span><span class="op">$</span><span class="va">clockFoundation</span><span class="op">$</span><span class="va">phenoCF</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   id Timepoint    Sex Age</span></span>
 <span><span class="co">#&gt; 1 S1         1 Female  20</span></span>
@@ -653,6 +653,13 @@ have at least two finite observations, and have non-zero sample
 variance. A variable cannot be listed in both <code>factorVars</code>
 and <code>scaleVars</code>. The applied centres and sample standard
 deviations are stored in the annotated workbook metadata.</p>
+<p>The preprocessed beta, M-value, or copy-number columns are passed
+unchanged to the selected model engine. Their observed finite minima and
+maxima are reported during preprocessing. GLM, lmerTest/lme4, and nlme
+messages, warnings, or errors are stored in one
+<code>&lt;Phenotype&gt;_Model.Message</code> column. An annotated
+workbook row is written when at least one requested p-value is returned;
+workbook metadata counts model attempts with and without p-values.</p>
 <p>Longitudinal lmerTest/lme4 analyses use a participant-level random
 intercept, <code>(1 | personVar)</code>. Set
 <code>omnibusTest = TRUE</code> to obtain one joint F test per CpG. When
@@ -692,9 +699,9 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-07-22 08:34:36 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-07-23 01:47:43 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 50.086 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 58.508 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>

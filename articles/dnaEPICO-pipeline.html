@@ -90,7 +90,7 @@
 Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpint@qut.edu.au" class="email">ruizpint@qut.edu.au</a>
       </address>
                   
-            <h4 data-toc-skip class="date">2026-07-22</h4>
+            <h4 data-toc-skip class="date">2026-07-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-pipeline.Rmd" class="external-link"><code>vignettes/dnaEPICO-pipeline.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-pipeline.Rmd</code></div>
@@ -252,7 +252,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpVq5Qji/dnaEPICO-idat-example-26283a07e3cf"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpwO95hD/dnaEPICO-idat-example-24bc67002a05"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -537,7 +537,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpVq5Qji/dnaEPICO-preprocessingPheno-example-2628423a833c"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpwO95hD/dnaEPICO-preprocessingPheno-example-24bc26b06fbc"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -663,7 +663,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpVq5Qji/dnaEPICO-glm-example-26285e80ecd8"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpwO95hD/dnaEPICO-glm-example-24bc6a70d12c"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -706,11 +706,11 @@ produced during helper construction: <code>preparedData</code>,
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">glmPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "dnaEPICO_methylationGLM_paths"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">glmPipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "modelFiles"                 "summaryFiles"              </span></span>
-<span><span class="co">#&gt;  [3] "summaryTxtFiles"            "significantCpGFiles"       </span></span>
-<span><span class="co">#&gt;  [5] "fitFailureFile"             "annotatedGLM"              </span></span>
-<span><span class="co">#&gt;  [7] "annotatedGLMText"           "annotatedGLMReportMetadata"</span></span>
-<span><span class="co">#&gt;  [9] "annotatedGLMDictionary"     "annotatedGLMMetadata"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "modelFiles"                 "summaryFiles"              </span></span>
+<span><span class="co">#&gt; [3] "summaryTxtFiles"            "significantCpGFiles"       </span></span>
+<span><span class="co">#&gt; [5] "annotatedGLM"               "annotatedGLMText"          </span></span>
+<span><span class="co">#&gt; [7] "annotatedGLMReportMetadata" "annotatedGLMDictionary"    </span></span>
+<span><span class="co">#&gt; [9] "annotatedGLMMetadata"</span></span></code></pre></div>
 <p>The returned <code>savedFiles</code> object records the groups of
 outputs written by the GLM step.
 <code>names(glmPipelineResult$savedFiles)</code> typically includes the
@@ -736,6 +736,11 @@ should be treated as factors before model fitting.</li>
 <code>scaleVars</code> identifies numeric fixed-effect variables to
 centre and divide by their sample standard deviations before
 fitting.</li>
+<li>Numeric CpG columns are passed unchanged to glm2. Native messages,
+warnings, or errors are stored in
+<code>&lt;Phenotype&gt;_Model.Message</code>; model attempts without a
+returned p-value are counted in workbook metadata and are not added to
+the annotated result table.</li>
 <li>
 <code>cpgLimit = 2</code> keeps the example fast by fitting only two
 CpG models.</li>
@@ -779,7 +784,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpVq5Qji/dnaEPICO-lme-example-26287c5c7fb1"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpwO95hD/dnaEPICO-lme-example-24bc693bd98b"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -835,11 +840,11 @@ in-memory objects used to build that example: <code>preparedData</code>,
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">lmePipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "dnaEPICO_methylationLME_paths"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">lmePipelineResult</span><span class="op">$</span><span class="va">savedFiles</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "modelFiles"                  "summaryFiles"               </span></span>
-<span><span class="co">#&gt;  [3] "summaryTxtFiles"             "significantInteractionFiles"</span></span>
-<span><span class="co">#&gt;  [5] "fitFailureFile"              "annotatedLME"               </span></span>
-<span><span class="co">#&gt;  [7] "annotatedLMEText"            "annotatedLMEReportMetadata" </span></span>
-<span><span class="co">#&gt;  [9] "annotatedLMEDictionary"      "annotatedLMEMetadata"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "modelFiles"                  "summaryFiles"               </span></span>
+<span><span class="co">#&gt; [3] "summaryTxtFiles"             "significantInteractionFiles"</span></span>
+<span><span class="co">#&gt; [5] "annotatedLME"                "annotatedLMEText"           </span></span>
+<span><span class="co">#&gt; [7] "annotatedLMEReportMetadata"  "annotatedLMEDictionary"     </span></span>
+<span><span class="co">#&gt; [9] "annotatedLMEMetadata"</span></span></code></pre></div>
 <p>The returned <code>savedFiles</code> object records the groups of
 outputs written by the LME step.
 <code>names(lmePipelineResult$savedFiles)</code> typically includes the
@@ -872,6 +877,11 @@ main effect is tested.</li>
 <code>"Kenward-Roger"</code> denominator degrees of freedom.
 Kenward-Roger testing requires <code>pbkrtest</code> and is more
 computationally intensive for an EWAS.</li>
+<li>Numeric CpG columns are passed unchanged to the selected
+lmerTest/lme4 or nlme engine. Native conditions are stored in
+<code>&lt;Phenotype&gt;_Model.Message</code>; model attempts without a
+returned coefficient or omnibus p-value are counted in workbook metadata
+and are not added to the annotated result table.</li>
 <li>
 <code>cpgLimit = 2</code> keeps the example short by fitting only
 two CpG models.</li>
@@ -1782,6 +1792,10 @@ CpGs are exported.</li>
 <li>
 <code>SIGNIFICANT_CPG_PVAL</code>: p-value threshold used for those
 significant-CpG exports.</li>
+<li>Annotated GLM rows require at least one returned coefficient
+p-value. Native glm2 conditions are written to the phenotype-specific
+<code>Model.Message</code> column and aggregate availability counts are
+written to metadata.</li>
 </ul>
 </div>
 <div class="section level3">
@@ -1823,6 +1837,10 @@ interaction tables are exported.</li>
 <li>
 <code>SIGNIFICANT_INTERACTION_PVAL</code>: p-value threshold for
 those exported interaction results.</li>
+<li>Annotated LME rows require at least one returned coefficient or
+omnibus p-value. Native lmerTest/lme4 or nlme conditions are written to
+the phenotype-specific <code>Model.Message</code> column and aggregate
+availability counts are written to metadata.</li>
 </ul>
 </div>
 <div class="section level3">
@@ -1884,9 +1902,9 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-07-22 08:36:05 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-07-23 01:49:29 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.418 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.663 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>

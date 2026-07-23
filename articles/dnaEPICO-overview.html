@@ -90,7 +90,7 @@
 Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpint@qut.edu.au" class="email">ruizpint@qut.edu.au</a>
       </address>
                   
-            <h4 data-toc-skip class="date">2026-07-22</h4>
+            <h4 data-toc-skip class="date">2026-07-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-overview.Rmd" class="external-link"><code>vignettes/dnaEPICO-overview.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-overview.Rmd</code></div>
@@ -306,10 +306,15 @@ data:</p>
 <li>Inputs: phenotype metadata, IDAT files, array annotation, and
 filtering settings.</li>
 <li>Processing tasks: import, quality control, normalisation, probe
-filtering, metric extraction, and cell-composition estimation.</li>
+filtering, metric extraction, and cell-composition estimation. When
+<code>removeSexMismatch = TRUE</code>, samples are removed only when
+both reported and predicted sex are available and disagree; samples with
+missing or unknown sex information remain because their mismatch status
+cannot be determined.</li>
 <li>Outputs: filtered phenotype data, <code>RGSet</code>, beta values,
 M-values, copy-number values, quality-control figures, and
-<code>phenoLC</code>.</li>
+<code>phenoLC</code>. The log reports the observed finite minimum and
+maximum for each methylation matrix without modifying its values.</li>
 </ul>
 <div id="preprocessingMinfiEwasWater_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -419,12 +424,16 @@ covariates.</p>
 <p>Its role is to run single-timepoint association testing:</p>
 <ul>
 <li>Inputs: a phenotype-methylation table, phenotype variables,
-covariates, optional PRS mappings, and annotation settings.</li>
+covariates, categorical and scaled-variable selections, optional PRS
+mappings, and annotation settings.</li>
 <li>Processing tasks: model preparation, CpG-GLM model fitting,
 diagnostic plotting, result summarisation, multiple-testing adjustment,
 and annotation.</li>
 <li>Outputs: model objects, summary tables, diagnostic figures,
-significant-CpG exports, and annotated workbooks.</li>
+significant-CpG exports, and annotated workbooks. Native glm2 conditions
+are stored in <code>&lt;Phenotype&gt;_Model.Message</code>; CpGs without
+a returned p-value remain in serialized model records and are counted in
+workbook metadata.</li>
 </ul>
 <div id="methylationGLM_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -460,13 +469,17 @@ observations:</p>
 <ul>
 <li>Inputs: combined longitudinal phenotype-methylation data,
 participant identifiers, timepoint variables, phenotypes, covariates,
-and annotation settings.</li>
+categorical and scaled-variable selections, and annotation
+settings.</li>
 <li>Processing tasks: longitudinal model preparation, CpG-LME model
 fitting, coefficient and optional omnibus testing, diagnostic plotting,
 summarisation, multiple-testing adjustment, and annotation.</li>
 <li>Outputs: mixed-model objects, interaction summaries, diagnostic
 figures, significant-interaction exports, and annotated longitudinal
-workbooks.</li>
+workbooks. Native lmerTest/lme4 or nlme conditions are stored in
+<code>&lt;Phenotype&gt;_Model.Message</code>; CpGs without a returned
+coefficient or omnibus p-value remain in serialized model records and
+are counted in workbook metadata.</li>
 </ul>
 <div id="methylationLME_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -553,9 +566,9 @@ for association testing, and</li>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-07-22 08:34:38 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-07-23 01:47:47 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 0.432 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 0.631 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>

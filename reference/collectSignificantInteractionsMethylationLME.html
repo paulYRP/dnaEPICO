@@ -75,8 +75,6 @@ requested interaction p-value passes the chosen threshold.</p>
 <span>  <span class="va">modelResults</span>,</span>
 <span>  pvalThreshold <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  interactionTerm <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  excludeSingular <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  excludeNonConverged <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  log_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -100,17 +98,6 @@ interaction p-values.</p></dd>
 <dt id="arg-interactionterm">interactionTerm<a class="anchor" aria-label="anchor" href="#arg-interactionterm"></a></dt>
 <dd><p>Character or <code>NULL</code>. Optional interaction term. When
 <code>NULL</code>, phenotype main effects are used.</p></dd>
-
-
-<dt id="arg-excludesingular">excludeSingular<a class="anchor" aria-label="anchor" href="#arg-excludesingular"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, do not collect significant CpGs
-with singular lme4 fits.</p></dd>
-
-
-<dt id="arg-excludenonconverged">excludeNonConverged<a class="anchor" aria-label="anchor" href="#arg-excludenonconverged"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, do not collect significant
-CpGs whose mixed model did not converge. Excluded CpG rows and reasons
-remain available in diagnostic and annotated output.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>

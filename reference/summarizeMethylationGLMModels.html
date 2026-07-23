@@ -76,7 +76,6 @@ object returned by <code><a href="fitMethylationGLMModels.html">fitMethylationGL
 <span>  <span class="va">preparedData</span>,</span>
 <span>  summaryResidualSD <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  summaryPval <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  excludeNonConverged <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  nCores <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  libPath <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  glmLibs <span class="op">=</span> <span class="st">"glm2"</span>,</span>
@@ -108,11 +107,6 @@ to each CpG summary row.</p></dd>
 <dt id="arg-summarypval">summaryPval<a class="anchor" aria-label="anchor" href="#arg-summarypval"></a></dt>
 <dd><p>Numeric or <code>NA</code>. Optional p-value filter applied to the
 returned summary tables. <code>NA</code> keeps all rows.</p></dd>
-
-
-<dt id="arg-excludenonconverged">excludeNonConverged<a class="anchor" aria-label="anchor" href="#arg-excludenonconverged"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, retain non-converged CpG rows
-and their reasons but set their inferential p-values to <code>NA</code>.</p></dd>
 
 
 <dt id="arg-ncores">nCores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
@@ -158,7 +152,8 @@ chunk. <code>NULL</code> chooses a value automatically.</p></dd>
 containing the optionally filtered summary tables in <code>summaries</code> and the
 complete CpG-level tables in <code>diagnosticSummaries</code>. Diagnostics,
 annotation, and report output use the complete tables so <code>summaryPval</code>
-does not remove CpGs from those outputs.</p>
+does not remove CpGs from those outputs. <code>modelMessages</code> retains native
+messages, warnings, and errors for every attempted CpG.</p>
     </div>
 
     <div id="ref-examples">
