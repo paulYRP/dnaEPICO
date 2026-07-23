@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.35</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.36</span>
       </span>
     </div>
 
@@ -429,11 +429,11 @@ mappings, and annotation settings.</li>
 <li>Processing tasks: model preparation, CpG-GLM model fitting,
 diagnostic plotting, result summarisation, multiple-testing adjustment,
 and annotation.</li>
-<li>Outputs: model objects, summary tables, diagnostic figures,
-significant-CpG exports, and annotated workbooks. Native glm2 conditions
-are stored in <code>&lt;Phenotype&gt;_Model.Message</code>; CpGs without
-a returned p-value remain in serialized model records and are counted in
-workbook metadata.</li>
+<li>Outputs: compact phenotype summaries, summary tables, diagnostic
+figures, significant-CpG exports, and annotated workbooks. Native glm2
+conditions are stored in <code>&lt;Phenotype&gt;_Model.Message</code>;
+CpGs without a returned p-value remain in the compact summary and are
+counted in workbook metadata.</li>
 </ul>
 <div id="methylationGLM_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -474,12 +474,12 @@ settings.</li>
 <li>Processing tasks: longitudinal model preparation, CpG-LME model
 fitting, coefficient and optional omnibus testing, diagnostic plotting,
 summarisation, multiple-testing adjustment, and annotation.</li>
-<li>Outputs: mixed-model objects, interaction summaries, diagnostic
-figures, significant-interaction exports, and annotated longitudinal
-workbooks. Native lmerTest/lme4 or nlme conditions are stored in
-<code>&lt;Phenotype&gt;_Model.Message</code>; CpGs without a returned
-coefficient or omnibus p-value remain in serialized model records and
-are counted in workbook metadata.</li>
+<li>Outputs: compact phenotype summaries, interaction summaries,
+diagnostic figures, significant-interaction exports, and annotated
+longitudinal workbooks. Native lmerTest/lme4 or nlme conditions are
+stored in <code>&lt;Phenotype&gt;_Model.Message</code>; CpGs without a
+returned coefficient or omnibus p-value remain in the compact summary
+and are counted in workbook metadata.</li>
 </ul>
 <div id="methylationLME_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -566,9 +566,9 @@ for association testing, and</li>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-07-23 01:47:47 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-07-23 12:41:21 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 0.631 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 0.548 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -593,7 +593,7 @@ for association testing, and</li>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dnaEPICO_0.99.35 BiocStyle_2.34.0</span></span>
+<span><span class="co">#&gt; [1] dnaEPICO_0.99.36 BiocStyle_2.34.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] cli_3.6.6           knitr_1.51          rlang_1.3.0        </span></span>

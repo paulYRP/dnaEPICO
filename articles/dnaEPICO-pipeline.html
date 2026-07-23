@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.35</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.36</span>
       </span>
     </div>
 
@@ -252,7 +252,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpwO95hD/dnaEPICO-idat-example-24bc67002a05"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmp3iVJki/dnaEPICO-idat-example-264b3e4eb496"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -537,7 +537,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpwO95hD/dnaEPICO-preprocessingPheno-example-24bc26b06fbc"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmp3iVJki/dnaEPICO-preprocessingPheno-example-264b62b41352"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -646,9 +646,9 @@ files.</li>
 </div>
 </div>
 <div class="section level2">
-<h2 id="write-glm-model-outputs-to-disk">Write GLM model outputs to disk<a class="anchor" aria-label="anchor" href="#write-glm-model-outputs-to-disk"></a>
+<h2 id="write-glm-outputs-to-disk">Write GLM outputs to disk<a class="anchor" aria-label="anchor" href="#write-glm-outputs-to-disk"></a>
 </h2>
-<p>The modeling function also separate in-memory results from file
+<p>The modeling function also separates in-memory results from file
 outputs. The next example runs a small GLM analysis and prints the names
 of the files written to disk.</p>
 <div class="section level4">
@@ -663,7 +663,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpwO95hD/dnaEPICO-glm-example-24bc6a70d12c"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmp3iVJki/dnaEPICO-glm-example-264b4b8745de"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -713,11 +713,11 @@ produced during helper construction: <code>preparedData</code>,
 <span><span class="co">#&gt; [9] "annotatedGLMMetadata"</span></span></code></pre></div>
 <p>The returned <code>savedFiles</code> object records the groups of
 outputs written by the GLM step.
-<code>names(glmPipelineResult$savedFiles)</code> typically includes the
-model files, summary files, diagnostic plot files, significant-CpG
-exports, summary text files, and the annotated results workbook. This is
-the object to inspect when you want to confirm which modeling outputs
-were written and how they are grouped.</p>
+<code>names(glmPipelineResult$savedFiles)</code> includes compact
+phenotype summary files, significant-CpG exports, summary text files,
+and the annotated results workbook. This is the object to inspect when
+you want to confirm which modeling outputs were written and how they are
+grouped.</p>
 <p>Arguments:</p>
 <ul>
 <li>
@@ -746,7 +746,9 @@ the annotated result table.</li>
 CpG models.</li>
 <li>
 <code>nCores = 1</code> keeps the example deterministic and
-lightweight; production HPC runs typically use higher values.</li>
+lightweight. In production, <code>nCores</code> is a maximum; the
+effective worker count is also limited by the workload, detected CPUs,
+and available memory.</li>
 <li>
 <code>annotationPackage</code> and <code>annotationCols</code>
 control which array annotation is merged into the final summary
@@ -754,8 +756,13 @@ tables.</li>
 <li>
 <code>outputRData</code>, <code>outputPlots</code>,
 <code>significantCpGDir</code>, <code>summaryTxtDir</code>, and
-<code>annotatedGLMOut</code> define where model objects, plots,
-summaries, and the annotated GLM workbook are written.</li>
+<code>annotatedGLMOut</code> define where compact phenotype summaries,
+plots, text summaries, and the annotated GLM workbook are written.</li>
+<li>
+<code>resumeFromSummary = TRUE</code> reuses a complete phenotype
+summary only when it was generated from the same input file and model
+configuration. A phenotype without a complete summary restarts from its
+first CpG.</li>
 <li>
 <code>reportAssetsDir</code> writes the compressed report table
 directly into the report project, leaving the annotated workbook
@@ -767,7 +774,7 @@ behaviour expected by Makefile and HPC use.</li>
 </div>
 </div>
 <div class="section level2">
-<h2 id="write-lme-model-outputs-to-disk">Write LME model outputs to disk<a class="anchor" aria-label="anchor" href="#write-lme-model-outputs-to-disk"></a>
+<h2 id="write-lme-outputs-to-disk">Write LME outputs to disk<a class="anchor" aria-label="anchor" href="#write-lme-outputs-to-disk"></a>
 </h2>
 <p>The longitudinal modeling step follows the same pattern as the GLM
 function, but the saved outputs now correspond to mixed-effects models,
@@ -784,7 +791,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpwO95hD/dnaEPICO-lme-example-24bc693bd98b"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmp3iVJki/dnaEPICO-lme-example-264b567d6db7"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -847,11 +854,11 @@ in-memory objects used to build that example: <code>preparedData</code>,
 <span><span class="co">#&gt; [9] "annotatedLMEMetadata"</span></span></code></pre></div>
 <p>The returned <code>savedFiles</code> object records the groups of
 outputs written by the LME step.
-<code>names(lmePipelineResult$savedFiles)</code> typically includes the
-model files, summary files, diagnostic plot files, summary text files,
-significant interaction exports, and the annotated longitudinal results
-table. This is the object to inspect when you want to confirm which
-longitudinal modeling outputs were written and how they are grouped.</p>
+<code>names(lmePipelineResult$savedFiles)</code> includes compact
+phenotype summary files, summary text files, significant interaction
+exports, and the annotated longitudinal results table. This is the
+object to inspect when you want to confirm which longitudinal modeling
+outputs were written and how they are grouped.</p>
 <p>Arguments:</p>
 <ul>
 <li>
@@ -886,8 +893,10 @@ and are not added to the annotated result table.</li>
 <code>cpgLimit = 2</code> keeps the example short by fitting only
 two CpG models.</li>
 <li>
-<code>nCores = 1</code> keeps the example lightweight; production
-HPC runs usually use higher parallel settings.</li>
+<code>nCores = 1</code> keeps the example lightweight. In
+production, <code>nCores</code> is a maximum; the effective worker count
+is also limited by the workload, detected CPUs, and available
+memory.</li>
 <li>
 <code>saveSignificantInteractions</code>,
 <code>significantInteractionDir</code>, and
@@ -904,6 +913,11 @@ location for the final longitudinal summary workbook.</li>
 <code>reportAssetsDir</code> writes the compressed longitudinal
 report table directly into the report project rather than beside the
 workbook.</li>
+<li>
+<code>resumeFromSummary = TRUE</code> reuses a complete phenotype
+summary only when it was generated from the same input file and model
+configuration. A phenotype without a complete summary restarts from its
+first CpG.</li>
 <li>
 <code>saveOutputs = TRUE</code> enables the file-based longitudinal
 workflow expected by Makefile and HPC use.</li>
@@ -1374,6 +1388,7 @@ PRS_MAP = NULL
 SUMMARY_PVAL = NA
 N_CORES = 64
 SAVE_TXT_SUMMARIES = TRUE
+RESUME_FROM_SUMMARY = TRUE
 CHUNK_SIZE = 10000
 FDR_THRESHOLD = 0.05
 PADJ_METHOD = fdr
@@ -1660,9 +1675,14 @@ tables; <code>NA</code> keeps all summary rows.</li>
 <code>SAVE_TXT_SUMMARIES</code>: whether plain-text summaries should
 be written.</li>
 <li>
+<code>RESUME_FROM_SUMMARY</code>: whether complete phenotype
+summaries generated from the same input files and model configurations
+may be reused after a model stage stops.</li>
+<li>
 <code>CHUNK_SIZE</code>: number of CpGs processed per chunk;
 <code>NULL</code> lets the R helpers choose the chunk size
-automatically.</li>
+automatically. Chunks bound in-memory computation; they are not saved as
+restart checkpoints.</li>
 <li>
 <code>FDR_THRESHOLD</code>: false-discovery-rate threshold used for
 filtering.</li>
@@ -1902,9 +1922,9 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-07-23 01:49:29 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-07-23 12:43:08 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.663 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.763 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1948,7 +1968,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.35                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.36                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>

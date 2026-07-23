@@ -6,7 +6,7 @@ input, optionally creates exploratory plots, fits one Gaussian GLM per CpG
 for
 each requested phenotype, extracts CpG-level summaries, optionally collects
 significant CpG coefficient tables, generates diagnostic plots, annotates the
-combined summary table, and optionally writes model outputs to disk. By
+combined summary table, and optionally writes analysis outputs to disk. By
 default, the function runs quietly and returns its results in memory.
 Numeric CpG columns are passed to glm2::glm2() without a separate
 methylation-domain filter. Native model messages, warnings, and errors are
@@ -30,7 +30,7 @@ condition counts are recorded in workbook metadata."><!-- mathjax --><script src
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.35</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.36</span>
       </span>
     </div>
 
@@ -85,7 +85,7 @@ input, optionally creates exploratory plots, fits one Gaussian GLM per CpG
 for
 each requested phenotype, extracts CpG-level summaries, optionally collects
 significant CpG coefficient tables, generates diagnostic plots, annotates the
-combined summary table, and optionally writes model outputs to disk. By
+combined summary table, and optionally writes analysis outputs to disk. By
 default, the function runs quietly and returns its results in memory.
 Numeric CpG columns are passed to <code><a href="https://rdrr.io/pkg/glm2/man/glm2.html" class="external-link">glm2::glm2()</a></code> without a separate
 methylation-domain filter. Native model messages, warnings, and errors are
@@ -134,7 +134,8 @@ condition counts are recorded in workbook metadata.</p>
 <span>  display <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  saveOutputs <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  saveOutputs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  resumeFromSummary <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -154,9 +155,8 @@ the timepoint-1 object produced by the package workflow.</p></dd>
 
 
 <dt id="arg-outputrdata">outputRData<a class="anchor" aria-label="anchor" href="#arg-outputrdata"></a></dt>
-<dd><p>Character. Directory used for optional serialized model
-and
-summary outputs.</p></dd>
+<dd><p>Character. Directory used for compact, resumable
+phenotype summaries.</p></dd>
 
 
 <dt id="arg-outputplots">outputPlots<a class="anchor" aria-label="anchor" href="#arg-outputplots"></a></dt>
@@ -202,10 +202,9 @@ upper- and lower-case letters. The default is <code>'beta'</code>.</p></dd>
 
 
 <dt id="arg-ncores">nCores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
-<dd><p>Integer. Number of worker processes to use while fitting models
-and extracting summaries. Automatic fitting remains serial below the
-empirical glm2 crossover and caps workers by the CpG workload and detected
-physical cores.</p></dd>
+<dd><p>Integer. Maximum number of worker processes to use while
+fitting models. Automatic fitting remains serial below the glm2 crossover
+and caps workers by the CpG workload, available CPUs, and detected memory.</p></dd>
 
 
 <dt id="arg-plotwidth">plotWidth<a class="anchor" aria-label="anchor" href="#arg-plotwidth"></a></dt>
@@ -335,10 +334,17 @@ The default is <code>FALSE</code>, so the function is quiet unless requested.</p
 
 
 <dt id="arg-saveoutputs">saveOutputs<a class="anchor" aria-label="anchor" href="#arg-saveoutputs"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, write optional serialized model files,
-summary tables, significant-CpG tables, annotated results, and TIFF plots to
+<dd><p>Logical. If <code>TRUE</code>, write compact phenotype summaries,
+text summaries, significant-CpG tables, annotated results, and TIFF plots to
 the requested output directories. The default is <code>FALSE</code>, so the function
 returns in-memory results without writing files.</p></dd>
+
+
+<dt id="arg-resumefromsummary">resumeFromSummary<a class="anchor" aria-label="anchor" href="#arg-resumefromsummary"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> and <code>saveOutputs = TRUE</code>, reuse a
+complete phenotype summary when its input file and model configuration
+match the current analysis. If processing stops before a phenotype summary
+is complete, that phenotype is fitted again from its first CpG.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -355,7 +361,7 @@ were generated or written.</p></dd>
 
 <dt>modelFits</dt>
 <dd><p>Object returned by <code><a href="fitMethylationGLMModels.html">fitMethylationGLMModels()</a></code>
-containing the per-phenotype CpG model fits.</p></dd>
+containing compact per-phenotype coefficient and condition results.</p></dd>
 
 <dt>modelSummaries</dt>
 <dd><p>Object returned by

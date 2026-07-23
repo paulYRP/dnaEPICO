@@ -6,8 +6,8 @@ each
 requested phenotype, extracts phenotype-specific coefficient summaries,
 optionally collects significant interaction tables, generates diagnostic
 plots,
-annotates the combined summary table, and optionally writes model outputs to
-disk. By default, the function runs quietly and returns its results in
+annotates the combined summary table, and optionally writes analysis outputs
+to disk. By default, the function runs quietly and returns its results in
 memory.
 Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
 without a separate methylation-domain filter. Native model messages,
@@ -32,7 +32,7 @@ in workbook metadata."><!-- mathjax --><script src="https://cdnjs.cloudflare.com
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.35</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.36</span>
       </span>
     </div>
 
@@ -87,8 +87,8 @@ each
 requested phenotype, extracts phenotype-specific coefficient summaries,
 optionally collects significant interaction tables, generates diagnostic
 plots,
-annotates the combined summary table, and optionally writes model outputs to
-disk. By default, the function runs quietly and returns its results in
+annotates the combined summary table, and optionally writes analysis outputs
+to disk. By default, the function runs quietly and returns its results in
 memory.
 Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
 without a separate methylation-domain filter. Native model messages,
@@ -143,7 +143,8 @@ in workbook metadata.</p>
 <span>  display <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  saveOutputs <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  saveOutputs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  resumeFromSummary <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -163,9 +164,8 @@ produced by the package workflow.</p></dd>
 
 
 <dt id="arg-outputrdata">outputRData<a class="anchor" aria-label="anchor" href="#arg-outputrdata"></a></dt>
-<dd><p>Character. Directory used for optional serialized
-mixed-model
-and summary outputs.</p></dd>
+<dd><p>Character. Directory used for compact, resumable
+phenotype summaries.</p></dd>
 
 
 <dt id="arg-outputplots">outputPlots<a class="anchor" aria-label="anchor" href="#arg-outputplots"></a></dt>
@@ -253,9 +253,9 @@ upper- and lower-case letters. The default is <code>'beta'</code>.</p></dd>
 
 
 <dt id="arg-ncores">nCores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
-<dd><p>Integer. Number of worker processes to use while fitting models
-and extracting summaries. Automatic fitting uses engine-specific empirical
-crossovers and caps workers by the CpG workload and detected physical cores.</p></dd>
+<dd><p>Integer. Maximum number of worker processes to use while
+fitting models. Automatic fitting uses an engine-specific crossover and
+caps workers by the CpG workload, available CPUs, and detected memory.</p></dd>
 
 
 <dt id="arg-summarypval">summaryPval<a class="anchor" aria-label="anchor" href="#arg-summarypval"></a></dt>
@@ -380,10 +380,17 @@ default is <code>FALSE</code>, so the function is quiet unless requested.</p></d
 
 
 <dt id="arg-saveoutputs">saveOutputs<a class="anchor" aria-label="anchor" href="#arg-saveoutputs"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, write optional serialized model files,
-summary tables, significant-interaction tables, annotated results, and TIFF
+<dd><p>Logical. If <code>TRUE</code>, write compact phenotype summaries,
+text summaries, significant-interaction tables, annotated results, and TIFF
 plots to the requested output directories. The default is <code>FALSE</code>, so the
 function returns in-memory results without writing files.</p></dd>
+
+
+<dt id="arg-resumefromsummary">resumeFromSummary<a class="anchor" aria-label="anchor" href="#arg-resumefromsummary"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> and <code>saveOutputs = TRUE</code>, reuse a
+complete phenotype summary when its input file and model configuration
+match the current analysis. If processing stops before a phenotype summary
+is complete, that phenotype is fitted again from its first CpG.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -396,7 +403,8 @@ modeling metadata.</p></dd>
 
 <dt>modelFits</dt>
 <dd><p>Object returned by <code><a href="fitMethylationLMEModels.html">fitMethylationLMEModels()</a></code>
-containing the per-phenotype CpG mixed-effects model fits.</p></dd>
+containing compact per-phenotype coefficient, omnibus, and condition
+results.</p></dd>
 
 <dt>modelSummaries</dt>
 <dd><p>Object returned by
