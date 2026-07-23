@@ -9,6 +9,8 @@ fitMethylationGLMModels(
   nCores = 1L,
   libPath = NULL,
   glmLibs = "glm2",
+  summaryDir = NULL,
+  resumeFromSummary = TRUE,
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
@@ -19,14 +21,21 @@ fitMethylationGLMModels(
 \item{preparedData}{Object returned by \code{prepareMethylationGLMData()}.}
 
 \item{nCores}{Integer. Maximum number of worker processes to use. Automatic
-fitting remains serial below the empirical glm2 crossover and caps workers
-by available CpGs and detected physical cores.}
+fitting remains serial below the glm2 crossover and caps workers by
+available CpGs, CPUs, and detected memory.}
 
 \item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
 to worker processes.}
 
 \item{glmLibs}{Character vector or comma-separated string of package names to
 check on worker processes. The default is \code{'glm2'}.}
+
+\item{summaryDir}{Character or \code{NULL}. Directory used for one complete
+compact summary per phenotype. \code{NULL} disables disk persistence.}
+
+\item{resumeFromSummary}{Logical. If \code{TRUE}, reuse a complete summary in
+\code{summaryDir} when it was generated from the same input file and model
+configuration.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -39,12 +48,13 @@ check on worker processes. The default is \code{'glm2'}.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationGLM_models'} containing
-fitted model lists, model formulas, p-value availability counts, native
-model conditions, and hard model errors.
+compact coefficient matrices, unfiltered target summaries, formulas,
+model conditions, hard errors, and phenotype summary artifacts.
 }
 \description{
 Fit one Gaussian GLM per CpG for each phenotype requested in the object
-returned by \code{prepareMethylationGLMData()}.
+returned by \code{prepareMethylationGLMData()}. Each native fit is reduced to
+compact numerical results and discarded before the next batch is returned.
 }
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()

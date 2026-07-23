@@ -88,7 +88,8 @@ NULL
 #'
 #' Objects of class `'dnaEPICO_methylationGLM'` are list-based results
 #' returned by [methylationGLM()]. They collect the prepared analysis table,
-#' fitted models, summaries, diagnostics, annotations, and optional saved files.
+#' compact model results, summaries, diagnostics, annotations, and optional
+#' saved files.
 #'
 #' @section Structure:
 #' \describe{
@@ -118,8 +119,8 @@ NULL
 #'
 #' Objects of class `'dnaEPICO_methylationLME'` are list-based results
 #' returned by [methylationLME()]. They collect the prepared longitudinal
-#' analysis table, fitted mixed models, summaries, diagnostics, annotations, and
-#' optional saved files.
+#' analysis table, compact mixed-model results, summaries, diagnostics,
+#' annotations, and optional saved files.
 #'
 #' @section Structure:
 #' \describe{

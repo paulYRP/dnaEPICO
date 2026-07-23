@@ -135,8 +135,21 @@ test_that("methylationGLM can write outputs and logs on request", {
     expect_match(log_text, "Summary source:\\s+fit-time cache")
     expect_equal(result$runSettings$methylationObjectPrefix, "phenoB")
     expect_equal(result$modelFits$settings$internalResponseColumn, "beta")
-    expect_true(file.exists(result$savedFiles$modelFiles[["status"]]))
+    expect_length(result$savedFiles$modelFiles, 0L)
     expect_true(file.exists(result$savedFiles$summaryFiles[["status"]]))
+    compact_summary <- readRDS(result$savedFiles$summaryFiles[["status"]])
+    expect_s3_class(
+        compact_summary,
+        "dnaEPICO_methylation_phenotype_summary"
+    )
+    expect_true(compact_summary$complete)
+    expect_identical(compact_summary$cpgOrder, result$preparedData$cpgColumns)
+    expect_false(any(vapply(
+        compact_summary,
+        inherits,
+        logical(1),
+        what = "glm"
+    )))
     expect_true(file.exists(result$savedFiles$summaryTxtFiles[["status"]]))
     expect_true(file.exists(result$savedFiles$annotatedGLM))
     expect_true(file.exists(result$savedFiles$annotatedGLMText))
@@ -410,6 +423,15 @@ test_that("scaleVars standardizes only selected GLM fixed effects", {
 })
 
 test_that("parallel plans use engine crossover and resource caps", {
+    expect_equal(dnaEPICO:::parseFiniteNumericMethylationModels("64"), 64)
+    expect_equal(
+        dnaEPICO:::parseFiniteNumericMethylationModels(" 1.5e3 "),
+        1500
+    )
+    expect_true(is.na(
+        dnaEPICO:::parseFiniteNumericMethylationModels("not-a-number")
+    ))
+
     withr::local_envvar(c(
         DNAEPICO_PARALLEL_BACKEND = "auto",
         DNAEPICO_MAX_WORKERS = "2"

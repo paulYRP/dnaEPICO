@@ -383,6 +383,7 @@ $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION)
 	  annotationCols = '$(ANNOTATION_COLS)', \
 	  annotatedGLMOut = '$(DATA_DIR)/$(MODEL)/$(STEP4)', \
 	  reportAssetsDir = '$(GLM_REPORT_ASSET_DIR)', \
+	  resumeFromSummary = $(RESUME_FROM_SUMMARY), \
 	  logs = TRUE, \
 	  saveOutputs = TRUE )) "
 
@@ -429,6 +430,7 @@ $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION)
 	  annotationCols = '$(ANNOTATION_COLS)', \
 	  annotatedLMEOut = '$(DATA_DIR)/$(MODEL)/$(STEP5)', \
 	  reportAssetsDir = '$(LME_REPORT_ASSET_DIR)', \
+	  resumeFromSummary = $(RESUME_FROM_SUMMARY), \
 	  logs = TRUE, \
 	  saveOutputs = TRUE ))"
 

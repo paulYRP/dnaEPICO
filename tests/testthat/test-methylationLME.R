@@ -283,8 +283,21 @@ test_that("methylationLME can write outputs and derive person IDs on request", {
     expect_match(log_text, "Summary source:\\s+fit-time cache")
     expect_equal(result$runSettings$methylationObjectPrefix, "phenoB")
     expect_equal(result$modelFits$settings$internalResponseColumn, "beta")
-    expect_true(file.exists(result$savedFiles$modelFiles[["score"]]))
+    expect_length(result$savedFiles$modelFiles, 0L)
     expect_true(file.exists(result$savedFiles$summaryFiles[["score"]]))
+    compact_summary <- readRDS(result$savedFiles$summaryFiles[["score"]])
+    expect_s3_class(
+        compact_summary,
+        "dnaEPICO_methylation_phenotype_summary"
+    )
+    expect_true(compact_summary$complete)
+    expect_identical(compact_summary$cpgOrder, result$preparedData$cpgColumns)
+    expect_false(any(vapply(
+        compact_summary,
+        inherits,
+        logical(1),
+        what = "merMod"
+    )))
     expect_true(file.exists(result$savedFiles$summaryTxtFiles[["score"]]))
     expect_true(file.exists(result$savedFiles$annotatedLME))
     expect_true(file.exists(result$savedFiles$annotatedLMEText))

@@ -465,9 +465,9 @@ Arguments:
 - `saveOutputs = TRUE` is what makes this step useful in a file-based pipeline,
     because later modeling steps consume these written files.
 
-# Write GLM model outputs to disk
+# Write GLM outputs to disk
 
-The modeling function also separate in-memory results from file outputs. The
+The modeling function also separates in-memory results from file outputs. The
 next example runs a small GLM analysis and prints the names of the files written
 to disk.
 
@@ -525,8 +525,8 @@ names(glmPipelineResult$savedFiles)
 ```
 
 The returned `savedFiles` object records the groups of outputs written by the
-GLM step. `names(glmPipelineResult$savedFiles)` typically includes the model
-files, summary files, diagnostic plot files, significant-CpG exports, summary
+GLM step. `names(glmPipelineResult$savedFiles)` includes compact phenotype
+summary files, significant-CpG exports, summary
 text files, and the annotated results workbook. This is the object to inspect when
 you want to confirm which modeling outputs were written and how they are
 grouped.
@@ -546,19 +546,24 @@ Arguments:
     a returned p-value are counted in workbook metadata and are not added to the
     annotated result table.
 - `cpgLimit = 2` keeps the example fast by fitting only two CpG models.
-- `nCores = 1` keeps the example deterministic and lightweight; production HPC
-    runs typically use higher values.
+- `nCores = 1` keeps the example deterministic and lightweight. In production,
+    `nCores` is a maximum; the effective worker count is also limited by the
+    workload, detected CPUs, and available memory.
 - `annotationPackage` and `annotationCols` control which array annotation is
     merged into the final summary tables.
 - `outputRData`, `outputPlots`, `significantCpGDir`, `summaryTxtDir`, and
-    `annotatedGLMOut` define where model objects, plots, summaries, and the
+    `annotatedGLMOut` define where compact phenotype summaries, plots, text
+    summaries, and the
     annotated GLM workbook are written.
+- `resumeFromSummary = TRUE` reuses a complete phenotype summary only when it
+    was generated from the same input file and model configuration. A phenotype
+    without a complete summary restarts from its first CpG.
 - `reportAssetsDir` writes the compressed report table directly into the report
     project, leaving the annotated workbook directory free of report sidecars.
 - `saveOutputs = TRUE` enables the file-based pipeline behaviour expected by
     Makefile and HPC use.
 
-# Write LME model outputs to disk
+# Write LME outputs to disk
 
 The longitudinal modeling step follows the same pattern as the GLM function, but
 the saved outputs now correspond to mixed-effects models, longitudinal summary
@@ -631,8 +636,8 @@ names(lmePipelineResult$savedFiles)
 ```
 
 The returned `savedFiles` object records the groups of outputs written by the
-LME step. `names(lmePipelineResult$savedFiles)` typically includes the model
-files, summary files, diagnostic plot files, summary text files, significant
+LME step. `names(lmePipelineResult$savedFiles)` includes compact phenotype
+summary files, summary text files, significant
 interaction exports, and the annotated longitudinal results table. This is the
 object to inspect when you want to confirm which longitudinal modeling outputs
 were written and how they are grouped.
@@ -657,8 +662,9 @@ Arguments:
     or omnibus p-value are counted in workbook metadata and are not added to
     the annotated result table.
 - `cpgLimit = 2` keeps the example short by fitting only two CpG models.
-- `nCores = 1` keeps the example lightweight; production HPC runs usually use
-    higher parallel settings.
+- `nCores = 1` keeps the example lightweight. In production, `nCores` is a
+    maximum; the effective worker count is also limited by the workload,
+    detected CPUs, and available memory.
 - `saveSignificantInteractions`, `significantInteractionDir`, and
     `significantInteractionPval` control the export of interaction-specific
     results.
@@ -668,6 +674,9 @@ Arguments:
     workbook.
 - `reportAssetsDir` writes the compressed longitudinal report table directly
     into the report project rather than beside the workbook.
+- `resumeFromSummary = TRUE` reuses a complete phenotype summary only when it
+    was generated from the same input file and model configuration. A phenotype
+    without a complete summary restarts from its first CpG.
 - `saveOutputs = TRUE` enables the file-based longitudinal workflow expected by
     Makefile and HPC use.
 
@@ -1122,8 +1131,12 @@ These parameters are shared across multiple workflow steps.
     summary rows.
 - `N_CORES`: number of cores used within each R job.
 - `SAVE_TXT_SUMMARIES`: whether plain-text summaries should be written.
+- `RESUME_FROM_SUMMARY`: whether complete phenotype summaries generated from
+    the same input files and model configurations may be reused after a model
+    stage stops.
 - `CHUNK_SIZE`: number of CpGs processed per chunk; `NULL` lets the R helpers
-    choose the chunk size automatically.
+    choose the chunk size automatically. Chunks bound in-memory computation;
+    they are not saved as restart checkpoints.
 - `FDR_THRESHOLD`: false-discovery-rate threshold used for filtering.
 - `PADJ_METHOD`: multiple-testing correction method.
 - `ANNOTATION_PACKAGE`: array annotation package used for annotated summaries.

@@ -33,8 +33,8 @@ writeMethylationLMEOutputs(
 \item{significantInteractions}{Object returned by
 \code{collectSignificantInteractionsMethylationLME()} or \code{NULL}.}
 
-\item{outputRData}{Character. Directory used for serialized model and summary
-outputs.}
+\item{outputRData}{Character. Directory used for complete compact phenotype
+summaries.}
 
 \item{summaryTxtDir}{Character. Directory used for tab-delimited summary
 tables.}
@@ -69,7 +69,7 @@ containing the paths of the files written to disk, including the annotated
 workbook and any requested report-table sidecars.
 }
 \description{
-Write optional serialized outputs, summary tables, significant interaction
+Write compact phenotype summaries, optional text and significant-interaction
 tables, and annotated results from the longitudinal mixed-effects workflow.
 }
 \examples{

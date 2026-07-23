@@ -359,10 +359,10 @@ Its role is to run single-timepoint association testing:
     mappings, and annotation settings.
 - Processing tasks: model preparation, CpG-GLM model fitting, diagnostic
     plotting, result summarisation, multiple-testing adjustment, and annotation.
-- Outputs: model objects, summary tables, diagnostic figures,
+- Outputs: compact phenotype summaries, summary tables, diagnostic figures,
     significant-CpG exports, and annotated workbooks. Native glm2 conditions
     are stored in `<Phenotype>_Model.Message`; CpGs without a returned p-value
-    remain in serialized model records and are counted in workbook metadata.
+    remain in the compact summary and are counted in workbook metadata.
 
 ```{r methylationGLM-overview, echo = FALSE, results = "asis"}
 svg_to_html(
@@ -385,11 +385,11 @@ Its role is to model methylation change across repeated observations:
 - Processing tasks: longitudinal model preparation, CpG-LME model
     fitting, coefficient and optional omnibus testing, diagnostic plotting,
     summarisation, multiple-testing adjustment, and annotation.
-- Outputs: mixed-model objects, interaction summaries, diagnostic figures,
-    significant-interaction exports, and annotated longitudinal workbooks.
+- Outputs: compact phenotype summaries, interaction summaries, diagnostic
+    figures, significant-interaction exports, and annotated longitudinal workbooks.
     Native lmerTest/lme4 or nlme conditions are stored in
     `<Phenotype>_Model.Message`; CpGs without a returned coefficient or omnibus
-    p-value remain in serialized model records and are counted in workbook
+    p-value remain in the compact summary and are counted in workbook
     metadata.
 
 ```{r methylationLME-overview, echo = FALSE, results = "asis"}

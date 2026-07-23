@@ -43,7 +43,8 @@ methylationGLM(
   display = FALSE,
   verbose = FALSE,
   logs = FALSE,
-  saveOutputs = FALSE
+  saveOutputs = FALSE,
+  resumeFromSummary = TRUE
 )
 }
 \arguments{
@@ -54,9 +55,8 @@ the timepoint-1 object produced by the package workflow.}
 
 \item{outputLogs}{Character. Directory used for optional log files.}
 
-\item{outputRData}{Character. Directory used for optional serialized model
-and
-summary outputs.}
+\item{outputRData}{Character. Directory used for compact, resumable
+phenotype summaries.}
 
 \item{outputPlots}{Character. Directory used for optional TIFF plots.}
 
@@ -84,10 +84,9 @@ to keep all CpGs matching \code{cpgPrefix}.}
 columns. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, in any combination of
 upper- and lower-case letters. The default is \code{'beta'}.}
 
-\item{nCores}{Integer. Number of worker processes to use while fitting models
-and extracting summaries. Automatic fitting remains serial below the
-empirical glm2 crossover and caps workers by the CpG workload and detected
-physical cores.}
+\item{nCores}{Integer. Maximum number of worker processes to use while
+fitting models. Automatic fitting remains serial below the glm2 crossover
+and caps workers by the CpG workload, available CPUs, and detected memory.}
 
 \item{plotWidth}{Integer. TIFF width in pixels when plots are written to
 disk.}
@@ -167,10 +166,15 @@ The default is \code{FALSE}, so the function is quiet unless requested.}
 \item{logs}{Logical. If \code{TRUE}, write the same progress messages to
 \code{file.path(outputLogs, 'log_methylationGLM.txt')}.}
 
-\item{saveOutputs}{Logical. If \code{TRUE}, write optional serialized model files,
-summary tables, significant-CpG tables, annotated results, and TIFF plots to
+\item{saveOutputs}{Logical. If \code{TRUE}, write compact phenotype summaries,
+text summaries, significant-CpG tables, annotated results, and TIFF plots to
 the requested output directories. The default is \code{FALSE}, so the function
 returns in-memory results without writing files.}
+
+\item{resumeFromSummary}{Logical. If \code{TRUE} and \code{saveOutputs = TRUE}, reuse a
+complete phenotype summary when its input file and model configuration
+match the current analysis. If processing stops before a phenotype summary
+is complete, that phenotype is fitted again from its first CpG.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationGLM'}.
@@ -182,7 +186,7 @@ metadata.}
 \code{\link[=plotMethylationGLMDistributions]{plotMethylationGLMDistributions()}} describing any exploratory plots that
 were generated or written.}
 \item{modelFits}{Object returned by \code{\link[=fitMethylationGLMModels]{fitMethylationGLMModels()}}
-containing the per-phenotype CpG model fits.}
+containing compact per-phenotype coefficient and condition results.}
 \item{modelSummaries}{Object returned by
 \code{\link[=summarizeMethylationGLMModels]{summarizeMethylationGLMModels()}} containing the combined CpG summary
 tables used for reporting and annotation.}
@@ -211,7 +215,7 @@ input, optionally creates exploratory plots, fits one Gaussian GLM per CpG
 for
 each requested phenotype, extracts CpG-level summaries, optionally collects
 significant CpG coefficient tables, generates diagnostic plots, annotates the
-combined summary table, and optionally writes model outputs to disk. By
+combined summary table, and optionally writes analysis outputs to disk. By
 default, the function runs quietly and returns its results in memory.
 Numeric CpG columns are passed to \code{glm2::glm2()} without a separate
 methylation-domain filter. Native model messages, warnings, and errors are

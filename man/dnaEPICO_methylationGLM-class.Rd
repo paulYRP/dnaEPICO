@@ -8,7 +8,8 @@
 \description{
 Objects of class \code{'dnaEPICO_methylationGLM'} are list-based results
 returned by \code{\link[=methylationGLM]{methylationGLM()}}. They collect the prepared analysis table,
-fitted models, summaries, diagnostics, annotations, and optional saved files.
+compact model results, summaries, diagnostics, annotations, and optional
+saved files.
 }
 \section{Structure}{
 

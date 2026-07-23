@@ -2,7 +2,7 @@
 % Please edit documentation in R/methylationLME_steps.R
 \name{collectSignificantInteractionsMethylationLME}
 \alias{collectSignificantInteractionsMethylationLME}
-\title{Collect significant longitudinal model terms from fitted mixed-effects models}
+\title{Collect significant longitudinal terms from compact mixed-effects results}
 \usage{
 collectSignificantInteractionsMethylationLME(
   modelResults,

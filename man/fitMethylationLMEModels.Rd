@@ -13,6 +13,8 @@ fitMethylationLMEModels(
   correlationVar = NULL,
   omnibusTest = FALSE,
   omnibusDdf = "Satterthwaite",
+  summaryDir = NULL,
+  resumeFromSummary = TRUE,
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
@@ -23,8 +25,8 @@ fitMethylationLMEModels(
 \item{preparedData}{Object returned by \code{prepareMethylationLMEData()}.}
 
 \item{nCores}{Integer. Maximum number of worker processes to use. Automatic
-fitting uses the empirical lme4 or nlme crossover and caps workers by
-available CpGs and detected physical cores.}
+fitting uses the lme4 or nlme crossover and caps workers by available CpGs,
+CPUs, and detected memory.}
 
 \item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
 to worker processes.}
@@ -46,6 +48,13 @@ when no interaction is requested.}
 \item{omnibusDdf}{Character. Denominator degrees-of-freedom method used by
 \code{lmerTest::contestMD()}: \code{'Satterthwaite'} or \code{'Kenward-Roger'}.}
 
+\item{summaryDir}{Character or \code{NULL}. Directory used for one complete
+compact summary per phenotype. \code{NULL} disables disk persistence.}
+
+\item{resumeFromSummary}{Logical. If \code{TRUE}, reuse a complete summary in
+\code{summaryDir} when it was generated from the same input file and model
+configuration.}
+
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
 \item{logs}{Logical. If \code{TRUE}, write the same messages to a log file.}
@@ -57,13 +66,15 @@ when no interaction is requested.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationLME_models'}
-containing fitted model lists, model formulas, p-value availability
-counts, native model conditions, omnibus results, and hard model errors.
+containing compact coefficient matrices, unfiltered target summaries,
+formulas, model conditions, omnibus results, hard errors, and phenotype
+summary artifacts.
 }
 \description{
 Fit one linear mixed-effects model per CpG for each phenotype requested in
-the
-object returned by \code{prepareMethylationLMEData()}.
+the object returned by \code{prepareMethylationLMEData()}. Each native fit is
+reduced to compact numerical results and discarded before the next batch is
+returned.
 }
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()

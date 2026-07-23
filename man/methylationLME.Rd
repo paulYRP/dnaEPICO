@@ -49,7 +49,8 @@ methylationLME(
   display = FALSE,
   verbose = FALSE,
   logs = FALSE,
-  saveOutputs = FALSE
+  saveOutputs = FALSE,
+  resumeFromSummary = TRUE
 )
 }
 \arguments{
@@ -60,9 +61,8 @@ produced by the package workflow.}
 
 \item{outputLogs}{Character. Directory used for optional log files.}
 
-\item{outputRData}{Character. Directory used for optional serialized
-mixed-model
-and summary outputs.}
+\item{outputRData}{Character. Directory used for compact, resumable
+phenotype summaries.}
 
 \item{outputPlots}{Character. Directory used for optional TIFF diagnostic
 plots.}
@@ -118,9 +118,9 @@ to keep all CpGs matching \code{cpgPrefix}.}
 columns. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, in any combination of
 upper- and lower-case letters. The default is \code{'beta'}.}
 
-\item{nCores}{Integer. Number of worker processes to use while fitting models
-and extracting summaries. Automatic fitting uses engine-specific empirical
-crossovers and caps workers by the CpG workload and detected physical cores.}
+\item{nCores}{Integer. Maximum number of worker processes to use while
+fitting models. Automatic fitting uses an engine-specific crossover and
+caps workers by the CpG workload, available CPUs, and detected memory.}
 
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value threshold applied to the
 returned longitudinal CpG summary tables. Use \code{NA} to keep all summary rows.}
@@ -199,10 +199,15 @@ default is \code{FALSE}, so the function is quiet unless requested.}
 \item{logs}{Logical. If \code{TRUE}, write the same progress messages to
 \code{file.path(outputLogs, 'log_methylationLME.txt')}.}
 
-\item{saveOutputs}{Logical. If \code{TRUE}, write optional serialized model files,
-summary tables, significant-interaction tables, annotated results, and TIFF
+\item{saveOutputs}{Logical. If \code{TRUE}, write compact phenotype summaries,
+text summaries, significant-interaction tables, annotated results, and TIFF
 plots to the requested output directories. The default is \code{FALSE}, so the
 function returns in-memory results without writing files.}
+
+\item{resumeFromSummary}{Logical. If \code{TRUE} and \code{saveOutputs = TRUE}, reuse a
+complete phenotype summary when its input file and model configuration
+match the current analysis. If processing stops before a phenotype summary
+is complete, that phenotype is fitted again from its first CpG.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationLME'}.
@@ -212,7 +217,8 @@ containing the merged longitudinal phenotype-plus-methylation analysis table
 and
 modeling metadata.}
 \item{modelFits}{Object returned by \code{\link[=fitMethylationLMEModels]{fitMethylationLMEModels()}}
-containing the per-phenotype CpG mixed-effects model fits.}
+containing compact per-phenotype coefficient, omnibus, and condition
+results.}
 \item{modelSummaries}{Object returned by
 \code{\link[=summarizeMethylationLMEModels]{summarizeMethylationLMEModels()}} containing the combined CpG summary
 tables used for reporting and annotation.}
@@ -242,8 +248,8 @@ each
 requested phenotype, extracts phenotype-specific coefficient summaries,
 optionally collects significant interaction tables, generates diagnostic
 plots,
-annotates the combined summary table, and optionally writes model outputs to
-disk. By default, the function runs quietly and returns its results in
+annotates the combined summary table, and optionally writes analysis outputs
+to disk. By default, the function runs quietly and returns its results in
 memory.
 Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
 without a separate methylation-domain filter. Native model messages,

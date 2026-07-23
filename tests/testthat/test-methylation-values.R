@@ -180,14 +180,16 @@ test_that("lme4 and nlme do not reject numeric CpGs by methylation range", {
         logs = FALSE
     )
 
-    expect_false(inherits(
-        lme4_fits$fits$phenotype$cg_outside,
-        "dnaEPICO_methylationLME_fit_error"
-    ))
-    expect_false(inherits(
-        nlme_fits$fits$phenotype$cg_outside,
-        "dnaEPICO_methylationLME_fit_error"
-    ))
+    expect_true("cg_outside" %in%
+        lme4_fits$coefficientResults$phenotype$cpgOrder)
+    expect_true("cg_outside" %in%
+        nlme_fits$coefficientResults$phenotype$cpgOrder)
+    expect_true(any(is.finite(
+        lme4_fits$coefficientResults$phenotype$estimate["cg_outside", ]
+    )))
+    expect_true(any(is.finite(
+        nlme_fits$coefficientResults$phenotype$estimate["cg_outside", ]
+    )))
 })
 
 test_that("model preparation selects scale-specific data from multi-object external files", {

@@ -5,9 +5,8 @@
 #'   or `.rds` object created by `preprocessingPheno()`. The default points to
 #'   the timepoint-1 object produced by the package workflow.
 #' @param outputLogs Character. Directory used for optional log files.
-#' @param outputRData Character. Directory used for optional serialized model
-#' and
-#'   summary outputs.
+#' @param outputRData Character. Directory used for compact, resumable
+#'   phenotype summaries.
 #' @param outputPlots Character. Directory used for optional TIFF plots.
 #' @param phenotypes Character vector or comma-separated phenotype variables to
 #'   model.
@@ -26,10 +25,9 @@
 #' @param methylationScale Character. Methylation metric represented by the CpG
 #'   columns. One of `'Beta'`, `'M'`, or `'CN'`, in any combination of
 #'   upper- and lower-case letters. The default is `'beta'`.
-#' @param nCores Integer. Number of worker processes to use while fitting models
-#'   and extracting summaries. Automatic fitting remains serial below the
-#'   empirical glm2 crossover and caps workers by the CpG workload and detected
-#'   physical cores.
+#' @param nCores Integer. Maximum number of worker processes to use while
+#'   fitting models. Automatic fitting remains serial below the glm2 crossover
+#'   and caps workers by the CpG workload, available CPUs, and detected memory.
 #' @param plotWidth Integer. TIFF width in pixels when plots are written to
 #' disk.
 #' @param plotHeight Integer. TIFF height in pixels when plots are written to
@@ -84,10 +82,14 @@
 #'   The default is `FALSE`, so the function is quiet unless requested.
 #' @param logs Logical. If `TRUE`, write the same progress messages to
 #'   `file.path(outputLogs, 'log_methylationGLM.txt')`.
-#' @param saveOutputs Logical. If `TRUE`, write optional serialized model files,
-#' summary tables, significant-CpG tables, annotated results, and TIFF plots to
+#' @param saveOutputs Logical. If `TRUE`, write compact phenotype summaries,
+#' text summaries, significant-CpG tables, annotated results, and TIFF plots to
 #'   the requested output directories. The default is `FALSE`, so the function
 #'   returns in-memory results without writing files.
+#' @param resumeFromSummary Logical. If `TRUE` and `saveOutputs = TRUE`, reuse a
+#'   complete phenotype summary when its input file and model configuration
+#'   match the current analysis. If processing stops before a phenotype summary
+#'   is complete, that phenotype is fitted again from its first CpG.
 #'
 #' @return A list with class `'dnaEPICO_methylationGLM'`.
 #' \describe{
@@ -98,7 +100,7 @@
 #'   [plotMethylationGLMDistributions()] describing any exploratory plots that
 #'   were generated or written.}
 #'   \item{modelFits}{Object returned by [fitMethylationGLMModels()]
-#'   containing the per-phenotype CpG model fits.}
+#'   containing compact per-phenotype coefficient and condition results.}
 #'   \item{modelSummaries}{Object returned by
 #'   [summarizeMethylationGLMModels()] containing the combined CpG summary
 #'   tables used for reporting and annotation.}
@@ -127,7 +129,7 @@
 #' for
 #' each requested phenotype, extracts CpG-level summaries, optionally collects
 #' significant CpG coefficient tables, generates diagnostic plots, annotates the
-#' combined summary table, and optionally writes model outputs to disk. By
+#' combined summary table, and optionally writes analysis outputs to disk. By
 #' default, the function runs quietly and returns its results in memory.
 #' Numeric CpG columns are passed to `glm2::glm2()` without a separate
 #' methylation-domain filter. Native model messages, warnings, and errors are
@@ -196,8 +198,13 @@ methylationGLM <- function(
     ),
     annotatedGLMOut = "data/methylationGLM", reportAssetsDir = NULL,
     display = FALSE,
-    verbose = FALSE, logs = FALSE, saveOutputs = FALSE
+    verbose = FALSE, logs = FALSE, saveOutputs = FALSE,
+    resumeFromSummary = TRUE
 ) {
+    resumeFromSummary <- validateLogicalScalarDnaEpico(
+        resumeFromSummary,
+        "resumeFromSummary"
+    )
     cpgLimit <- normalizeOptionalNumericMethylationGLM(cpgLimit)
     summaryPval <- normalizeOptionalNumericMethylationGLM(summaryPval)
     chunkSize <- normalizeChunkSizeMethylationGLM(chunkSize)
@@ -306,6 +313,8 @@ methylationGLM <- function(
         modelFits <- fitMethylationGLMModels(
             preparedData = preparedData,
             nCores = nCores, libPath = libPath, glmLibs = glmLibs,
+            summaryDir = if (isTRUE(saveOutputs)) outputRData else NULL,
+            resumeFromSummary = resumeFromSummary,
             verbose = verbose, logs = logs, log_dir = outputLogs,
             log_file = log_file
         )

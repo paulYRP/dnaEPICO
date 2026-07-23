@@ -849,13 +849,27 @@ availableWorkersMethylationModels <- function() {
             "DNAEPICO_MAX_WORKERS"
         ))
     }
+    scheduler_values <- Sys.getenv(c(
+        "SLURM_CPUS_PER_TASK", "NSLOTS", "PBS_NP"
+    ), unset = "")
+    scheduler_values <- vapply(
+        scheduler_values,
+        parseFiniteNumericMethylationModels,
+        numeric(1)
+    )
+    scheduler_values <- scheduler_values[
+        is.finite(scheduler_values) & scheduler_values >= 1
+    ]
+    if (length(scheduler_values) > 0L) {
+        available <- min(available, scheduler_values)
+    }
 
     max(1L, as.integer(available))
 }
 
 resolveParallelPlanMethylationModels <- function(
     engine, nCores,
-    nCpGs
+    nCpGs, analysisData = NULL, modelData = NULL
 ) {
     requested_cores <- validatePositiveIntegerMethylationModels(
         nCores,
@@ -875,6 +889,18 @@ resolveParallelPlanMethylationModels <- function(
         1L,
         n_cpgs
     ))
+    memory_plan <- list(
+        cap = worker_count, availableMB = NA_real_,
+        reserveMB = NA_real_, estimatedWorkerMB = NA_real_,
+        reason = "memory estimation was not requested"
+    )
+    if (!is.null(analysisData) && !is.null(modelData)) {
+        memory_plan <- memoryWorkerCapMethylationModels(
+            engine = engine, analysisData = analysisData,
+            modelData = modelData, requestedWorkers = worker_count
+        )
+        worker_count <- min(worker_count, memory_plan$cap)
+    }
 
     if (requested_cores <= 1L || worker_count <= 1L) {
         backend <- "serial"
@@ -907,7 +933,12 @@ resolveParallelPlanMethylationModels <- function(
         crossoverCpGs = crossover, reason = reason, forced = !identical(
             requested_backend,
             "auto"
-        )
+        ),
+        availableMemoryMB = memory_plan$availableMB,
+        reservedMemoryMB = memory_plan$reserveMB,
+        estimatedWorkerMemoryMB = memory_plan$estimatedWorkerMB,
+        memoryWorkerCap = memory_plan$cap,
+        memoryReason = memory_plan$reason
     )
 }
 
@@ -1040,7 +1071,8 @@ filterSummaryByPvalueMethylationGLM <- function(
 
 fitCpGModelMethylationGLM <- function(
     cpg, cpgValues, modelData,
-    formulaText, responseVar = "beta"
+    formulaText, responseVar = "beta", retainModel = TRUE,
+    formulaObject = NULL, coefficientTerms = NULL
 ) {
     captured <- captureModelConditionsDnaEpico({
             model_data <- modelData
@@ -1048,16 +1080,25 @@ fitCpGModelMethylationGLM <- function(
                 stop("The CpG response is not numeric.", call. = FALSE)
             }
             model_data[[responseVar]] <- cpgValues
+            fit_formula <- if (is.null(formulaObject)) {
+                stats::as.formula(formulaText)
+            } else {
+                formulaObject
+            }
             fit <- glm2::glm2(
-                formula = stats::as.formula(formulaText),
+                formula = fit_formula,
                 data = model_data, family = stats::gaussian(),
                 na.action = stats::na.exclude
             )
             coef_table <- summary(fit)$coefficients
-            coefficient_terms <- buildCoefficientTermMapMethylationModels(
-                formulaText = formulaText,
-                data = model_data
-            )
+            coefficient_terms <- if (is.null(coefficientTerms)) {
+                buildCoefficientTermMapMethylationModels(
+                    formulaText = formulaText,
+                    data = model_data
+                )
+            } else {
+                coefficientTerms
+            }
             residuals <- stats::residuals(fit)
             residual_sd <- if (fit$df.residual > 0L) {
                 sqrt(sum(residuals^2, na.rm = TRUE) / fit$df.residual)
@@ -1065,12 +1106,17 @@ fitCpGModelMethylationGLM <- function(
                 NA_real_
             }
 
-            list(
-                coef = coef_table, residuals = residuals,
-                fitted = stats::fitted(fit),
+            result <- list(
+                coef = coef_table,
                 residualSD = residual_sd, coefficientTerms = coefficient_terms,
-                model = fit, pValueAvailable = FALSE
+                pValueAvailable = FALSE
             )
+            if (isTRUE(retainModel)) {
+                result$residuals <- residuals
+                result$fitted <- stats::fitted(fit)
+                result$model <- fit
+            }
+            result
     })
     if (!is.null(captured$error)) {
         return(newMethylationFitErrorDnaEpico(
@@ -1085,7 +1131,8 @@ fitCpGModelMethylationGLM <- function(
 
 fitMethylationGLMBatch <- function(
     cpgBatch, data, modelData,
-    formulaText, phenotype, interactionTerm = NULL, responseVar = "beta"
+    formulaText, phenotype, interactionTerm = NULL, responseVar = "beta",
+    formulaObject = NULL, coefficientTerms = NULL
 ) {
     fits <- vector("list", length(cpgBatch))
     names(fits) <- cpgBatch
@@ -1094,9 +1141,12 @@ fitMethylationGLMBatch <- function(
 
     for (cpg in cpgBatch) {
         model_obj <- fitCpGModelMethylationGLM(
-            cpg = cpg, cpgValues = data[[cpg]],
+            cpg = cpg,
+            cpgValues = cpgResponseMethylationModels(data, cpg),
             modelData = modelData, formulaText = formulaText,
-            responseVar = responseVar
+            responseVar = responseVar, retainModel = FALSE,
+            formulaObject = formulaObject,
+            coefficientTerms = coefficientTerms
         )
         summary_row <- summarizeCpGFitMethylationGLM(
             cpg = cpg,
@@ -1124,7 +1174,22 @@ fitMethylationGLMBatch <- function(
         out
     }
 
-    list(fits = fits, summaries = summary_df)
+    list(
+        coefficientResults =
+            compactCoefficientResultsMethylationModels(
+                fits = fits, cpgOrder = cpgBatch,
+                includeResidualSD = TRUE
+            ),
+        summaries = summary_df,
+        modelMessages = collectBatchModelMessagesMethylationModels(
+            fits,
+            phenotype
+        ),
+        fitFailures = collectBatchFitFailuresMethylationModels(
+            fits, phenotype,
+            "dnaEPICO_methylationGLM_fit_error"
+        )
+    )
 }
 
 #' Create a distribution plot used by methylationGLM helpers
@@ -2243,6 +2308,8 @@ prepareMethylationGLMData <- function(
 
     structure(list(
         data = analysis_data, modelData = scaling$data,
+        inputPheno = inputPheno,
+        inputIdentity = inputIdentityMethylationModels(inputPheno),
         phenotypes = phenotype_list, covariates = covariate_list,
         factorVars = factor_list, scaleVars = scaling$scaleVars,
         scalingMetadata = scaling$metadata, cpgColumns = cpg_columns,
@@ -2432,12 +2499,17 @@ plotMethylationGLMDistributions <- function(
 #'
 #' @param preparedData Object returned by `prepareMethylationGLMData()`.
 #' @param nCores Integer. Maximum number of worker processes to use. Automatic
-#'   fitting remains serial below the empirical glm2 crossover and caps workers
-#'   by available CpGs and detected physical cores.
+#'   fitting remains serial below the glm2 crossover and caps workers by
+#'   available CpGs, CPUs, and detected memory.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded
 #'   to worker processes.
 #' @param glmLibs Character vector or comma-separated string of package names to
 #'   check on worker processes. The default is `'glm2'`.
+#' @param summaryDir Character or `NULL`. Directory used for one complete
+#'   compact summary per phenotype. `NULL` disables disk persistence.
+#' @param resumeFromSummary Logical. If `TRUE`, reuse a complete summary in
+#'   `summaryDir` when it was generated from the same input file and model
+#'   configuration.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
@@ -2445,12 +2517,13 @@ plotMethylationGLMDistributions <- function(
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
 #' @return A list with class `'dnaEPICO_methylationGLM_models'` containing
-#'   fitted model lists, model formulas, p-value availability counts, native
-#'   model conditions, and hard model errors.
+#'   compact coefficient matrices, unfiltered target summaries, formulas,
+#'   model conditions, hard errors, and phenotype summary artifacts.
 #'
 #' @description
 #' Fit one Gaussian GLM per CpG for each phenotype requested in the object
-#' returned by `prepareMethylationGLMData()`.
+#' returned by `prepareMethylationGLMData()`. Each native fit is reduced to
+#' compact numerical results and discarded before the next batch is returned.
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
@@ -2465,9 +2538,14 @@ plotMethylationGLMDistributions <- function(
 #' @export
 fitMethylationGLMModels <- function(
     preparedData, nCores = 1L,
-    libPath = NULL, glmLibs = "glm2", verbose = FALSE, logs = FALSE,
+    libPath = NULL, glmLibs = "glm2", summaryDir = NULL,
+    resumeFromSummary = TRUE, verbose = FALSE, logs = FALSE,
     log_dir = NULL, log_file = "log_methylationGLM.txt"
 ) {
+    resumeFromSummary <- validateLogicalScalarDnaEpico(
+        resumeFromSummary,
+        "resumeFromSummary"
+    )
     log_path <- resolveLogPathMinfiEwasWater(
         logs = logs, log_dir = log_dir,
         log_file = log_file
@@ -2495,6 +2573,13 @@ fitMethylationGLMModels <- function(
     )
     fits <- list()
     summary_cache <- list()
+    coefficient_results <- list()
+    phenotype_summaries <- list()
+    summary_files <- list()
+    phenotype_model_messages <- list()
+    phenotype_fit_failures <- list()
+    resumed_phenotypes <- character(0)
+    fitted_phenotypes <- character(0)
     formulas <- stats::setNames(
         character(length(preparedData$phenotypes)),
         preparedData$phenotypes
@@ -2506,7 +2591,8 @@ fitMethylationGLMModels <- function(
     failure_reasons <- list()
     parallel_plan <- resolveParallelPlanMethylationModels(
         engine = "glm2",
-        nCores = n_cores, nCpGs = length(cpg_columns)
+        nCores = n_cores, nCpGs = length(cpg_columns),
+        analysisData = analysis_data, modelData = model_data
     )
     backend <- parallel_plan$backend
     worker_count <- parallel_plan$workerCount
@@ -2515,42 +2601,9 @@ fitMethylationGLMModels <- function(
         nCores = worker_count, batchesPerCore = 8L
     )
     psock_cluster <- NULL
-    if (identical(backend, "psock") && length(cpg_batches) >
-        1L) {
-        psock_cluster <- makePsockClusterMethylationModels(min(
-            worker_count,
-            length(cpg_batches)
-        ))
-        on.exit(
-            {
-                if (!is.null(psock_cluster)) {
-                    try(parallel::stopCluster(psock_cluster), silent = TRUE)
-                }
-            },
-            add = TRUE
-        )
-        parallel::clusterExport(psock_cluster,
-            varlist = c(
-                "analysis_data", "libPath", "glm_lib_list",
-                "validateWorkerPackagesMethylationModels",
-                    "newMethylationFitErrorDnaEpico",
-                "captureModelConditionsDnaEpico",
-                "combineModelMessagesDnaEpico", "modelMessageDnaEpico",
-                "fitMethylationGLMBatch", "fitCpGModelMethylationGLM",
-                "buildCoefficientTermMapMethylationModels",
-                    "removeRandomInterceptMethylationModels",
-                "summarizeCpGFitMethylationGLM",
-                "findCoefficientRowsMethylationGLM", "escapeRegexMethylationGLM"
-            ),
-            envir = environment()
-        )
-        parallel::clusterEvalQ(psock_cluster,
-            validateWorkerPackagesMethylationModels(
-            libPath = libPath,
-            packages = glm_lib_list
-        ))
-    }
-
+    psock_cluster_use_count <- 0L
+    pilot_completed <- FALSE
+    parallel_plan$pilotMemoryMB <- NA_real_
     for (phenotype in preparedData$phenotypes) {
         prs_var <- character(0)
         if (phenotype %in% names(preparedData$prsMap)) {
@@ -2585,6 +2638,149 @@ fitMethylationGLMModels <- function(
             formulaText = formula_text,
             data = base_model_data
         )
+        shared_formula <- stats::as.formula(formula_text, env = baseenv())
+        shared_coefficient_terms <- buildCoefficientTermMapMethylationModels(
+            formulaText = formula_text,
+            data = base_model_data
+        )
+        signature <- buildPhenotypeSignatureMethylationModels(
+            analysis = "glm", engine = "glm2", phenotype = phenotype,
+            formulaText = formula_text, preparedData = preparedData,
+            modelSettings = list(
+                family = "gaussian", link = "identity"
+            ),
+            packages = glm_lib_list
+        )
+        summary_path <- if (is.null(summaryDir)) {
+            NULL
+        } else {
+            phenotypeSummaryPathMethylationModels(
+                outputDir = summaryDir, phenotype = phenotype,
+                analysis = "glm"
+            )
+        }
+        resumed <- list(object = NULL, reason = "resume was not requested")
+        if (isTRUE(resumeFromSummary) && !is.null(summary_path)) {
+            resumed <- loadPhenotypeSummaryMethylationModels(
+                path = summary_path,
+                expectedSignature = signature
+            )
+        }
+        if (!is.null(resumed$object)) {
+            artifact <- resumed$object
+            fits[phenotype] <- list(structure(
+                list(),
+                class = "dnaEPICO_compact_fit_index"
+            ))
+            summary_cache[[phenotype]] <- artifact$targetSummary
+            coefficient_results[[phenotype]] <- artifact$coefficientResults
+            phenotype_model_messages[[phenotype]] <- artifact$modelMessages
+            phenotype_fit_failures[[phenotype]] <- artifact$fitFailures
+            formulas[[phenotype]] <- artifact$formula
+            failure_counts[[phenotype]] <- artifact$failureCount
+            failure_reasons[[phenotype]] <- artifact$failureReasons
+            phenotype_summaries[[phenotype]] <- artifact
+            summary_files[[phenotype]] <- summary_path
+            resumed_phenotypes <- c(resumed_phenotypes, phenotype)
+            emitLogMinfiEwasWater(
+                c(
+                    "============================================================",
+                    paste("Resumed phenotype:           ", phenotype),
+                    paste("Formula:                     ", formula_text),
+                    paste("Phenotype summary:           ", summary_path),
+                    paste("CpGs restored:               ", length(cpg_columns)),
+                    "No CpG models were refitted.",
+                    "============================================================"
+                ),
+                verbose = verbose, log_path = log_path
+            )
+            next
+        }
+        if (isTRUE(resumeFromSummary) && !is.null(summary_path)) {
+            emitLogMinfiEwasWater(
+                paste(
+                    "Phenotype summary was not reused for", phenotype,
+                    ":", resumed$reason
+                ),
+                verbose = verbose, log_path = log_path
+            )
+        }
+        fitted_phenotypes <- c(fitted_phenotypes, phenotype)
+        if (!isTRUE(pilot_completed) && worker_count > 1L &&
+            length(cpg_columns) > 0L) {
+            pilot_cpgs <- utils::head(cpg_columns, 3L)
+            pilot <- measurePilotMemoryMethylationModels(function() {
+                fitMethylationGLMBatch(
+                    cpgBatch = pilot_cpgs,
+                    data = analysis_data[, pilot_cpgs, drop = FALSE],
+                    modelData = base_model_data,
+                    formulaText = formula_text, phenotype = phenotype,
+                    interactionTerm = preparedData$interactionTerm,
+                    responseVar = preparedData$internalResponseColumn,
+                    formulaObject = shared_formula,
+                    coefficientTerms = shared_coefficient_terms
+                )
+            })
+            parallel_plan <- refineParallelPlanWithPilotMethylationModels(
+                plan = parallel_plan,
+                pilotMemoryMB = pilot$incrementalMB
+            )
+            backend <- parallel_plan$backend
+            worker_count <- parallel_plan$workerCount
+            cpg_batches <- chunkCpGColumnsMethylationModels(
+                cpgColumns = cpg_columns,
+                nCores = worker_count, batchesPerCore = 8L
+            )
+            pilot_completed <- TRUE
+            rm(pilot)
+            invisible(gc(FALSE))
+        }
+
+        if (identical(backend, "psock") &&
+            length(cpg_batches) > 1L && is.null(psock_cluster)) {
+            psock_cluster <- makePsockClusterMethylationModels(min(
+                worker_count,
+                length(cpg_batches)
+            ))
+            on.exit(
+                {
+                    if (!is.null(psock_cluster)) {
+                        try(
+                            parallel::stopCluster(psock_cluster),
+                            silent = TRUE
+                        )
+                    }
+                },
+                add = TRUE
+            )
+            parallel::clusterExport(psock_cluster,
+                varlist = c(
+                    "libPath", "glm_lib_list",
+                    "validateWorkerPackagesMethylationModels",
+                    "newMethylationFitErrorDnaEpico",
+                    "captureModelConditionsDnaEpico",
+                    "combineModelMessagesDnaEpico", "modelMessageDnaEpico",
+                    "fitMethylationGLMBatch", "fitCpGModelMethylationGLM",
+                    "buildCoefficientTermMapMethylationModels",
+                    "removeRandomInterceptMethylationModels",
+                    "summarizeCpGFitMethylationGLM",
+                    "findCoefficientRowsMethylationGLM",
+                    "escapeRegexMethylationGLM",
+                    "cpgResponseMethylationModels",
+                    "compactCoefficientResultsMethylationModels",
+                    "collectBatchModelMessagesMethylationModels",
+                    "collectBatchFitFailuresMethylationModels",
+                    "emptyModelMessagesDnaEpico",
+                    "emptyFitFailuresMethylationModels"
+                ),
+                envir = environment()
+            )
+            parallel::clusterEvalQ(psock_cluster,
+                validateWorkerPackagesMethylationModels(
+                    libPath = libPath,
+                    packages = glm_lib_list
+                ))
+        }
         batch_worker <- fitMethylationGLMBatch
         resolved_interaction <- preparedData$interactionTerm
         response_var <- preparedData$internalResponseColumn
@@ -2606,30 +2802,57 @@ fitMethylationGLMModels <- function(
                                 formulaText = formula_text,
                             phenotype = phenotype,
                             interactionTerm = resolved_interaction,
-                            responseVar = response_var
+                            responseVar = response_var,
+                            formulaObject = shared_formula,
+                            coefficientTerms = shared_coefficient_terms
                         )
                     },
-                    mc.cores = cluster_size, mc.preschedule = FALSE
+                    mc.cores = cluster_size, mc.preschedule = TRUE
                 )
             } else {
+                psock_cluster_use_count <- psock_cluster_use_count + 1L
                 parallel::clusterExport(psock_cluster, varlist = c(
-                    "base_model_data",
+                    "base_model_data", "shared_formula",
+                    "shared_coefficient_terms",
                     "formula_text", "phenotype", "resolved_interaction",
                     "response_var", "batch_worker"
                 ), envir = environment())
-                batch_results <- parallel::parLapplyLB(
-                    psock_cluster,
-                    cpg_batches, function(batch) {
-                        batch_worker(
-                            cpgBatch = batch, data = analysis_data,
-                            modelData = base_model_data,
-                                formulaText = formula_text,
-                            phenotype = phenotype,
-                            interactionTerm = resolved_interaction,
-                            responseVar = response_var
-                        )
-                    }
+                batch_results <- vector("list", length(cpg_batches))
+                cluster_size <- min(worker_count, length(cpg_batches))
+                batch_waves <- split(
+                    seq_along(cpg_batches),
+                    ceiling(seq_along(cpg_batches) / cluster_size)
                 )
+                for (wave in batch_waves) {
+                    tasks <- lapply(wave, function(index) {
+                        batch <- cpg_batches[[index]]
+                        list(
+                            cpgBatch = batch,
+                            responses = as.matrix(
+                                analysis_data[, batch, drop = FALSE]
+                            )
+                        )
+                    })
+                    wave_results <- parallel::parLapplyLB(
+                        psock_cluster,
+                        tasks, function(task) {
+                            batch_worker(
+                                cpgBatch = task$cpgBatch,
+                                data = task$responses,
+                                modelData = base_model_data,
+                                formulaText = formula_text,
+                                phenotype = phenotype,
+                                interactionTerm = resolved_interaction,
+                                responseVar = response_var,
+                                formulaObject = shared_formula,
+                                coefficientTerms = shared_coefficient_terms
+                            )
+                        }
+                    )
+                    batch_results[wave] <- wave_results
+                    rm(tasks, wave_results)
+                    invisible(gc(FALSE))
+                }
             }
         } else {
             validateWorkerPackagesMethylationModels(
@@ -2638,36 +2861,97 @@ fitMethylationGLMModels <- function(
             )
             batch_results <- lapply(cpg_batches, function(batch) {
                 batch_worker(
-                    cpgBatch = batch, data = analysis_data,
+                    cpgBatch = batch,
+                    data = analysis_data[, batch, drop = FALSE],
                     modelData = base_model_data, formulaText = formula_text,
                     phenotype = phenotype,
                     interactionTerm = resolved_interaction,
-                    responseVar = response_var
+                    responseVar = response_var,
+                    formulaObject = shared_formula,
+                    coefficientTerms = shared_coefficient_terms
                 )
             })
         }
 
-        combined_results <- combineFitBatchResultsMethylationModels(
-            batchResults = batch_results,
-            cpgColumns = cpg_columns
+        phenotype_coefficients <-
+            combineCompactCoefficientResultsMethylationModels(
+                batchResults = batch_results,
+                cpgOrder = cpg_columns
+            )
+        combined_summaries <- combineBatchTablesMethylationModels(
+            batchResults = batch_results, field = "summaries",
+            empty = data.frame()
         )
-        fit_list <- combined_results$fits
         phenotype_summary_cache <- filterSummaryByPvalueMethylationGLM(
-            summaryDf = combined_results$summaries,
+            summaryDf = combined_summaries,
             pValueFilter = NA_real_, includeResidualSD = TRUE
         )
-        error_counts <- summarizeFitErrorsMethylationModels(
-            fitList = fit_list,
-            errorClass = "dnaEPICO_methylationGLM_fit_error"
+        phenotype_messages <- combineBatchTablesMethylationModels(
+            batchResults = batch_results, field = "modelMessages",
+            empty = emptyModelMessagesDnaEpico()
         )
-        fits[[phenotype]] <- fit_list
+        phenotype_failures <- combineBatchTablesMethylationModels(
+            batchResults = batch_results, field = "fitFailures",
+            empty = emptyFitFailuresMethylationModels()
+        )
+        phenotype_messages <- phenotype_messages[
+            match(cpg_columns, phenotype_messages$CpG), ,
+            drop = FALSE
+        ]
+        rownames(phenotype_messages) <- NULL
+        error_counts <- if (nrow(phenotype_failures) == 0L) {
+            integer(0)
+        } else {
+            sort(table(phenotype_failures$Error), decreasing = TRUE)
+        }
+        fits[phenotype] <- list(structure(
+            list(),
+            class = "dnaEPICO_compact_fit_index"
+        ))
         summary_cache[[phenotype]] <- phenotype_summary_cache
+        coefficient_results[[phenotype]] <- phenotype_coefficients
+        phenotype_model_messages[[phenotype]] <- phenotype_messages
+        phenotype_fit_failures[[phenotype]] <- phenotype_failures
         formulas[[phenotype]] <- formula_text
-        p_value_available <- vapply(
-            fit_list, function(x) isTRUE(x$pValueAvailable), logical(1)
-        )
+        p_value_available <- phenotype_messages$P.Value.Available
         failure_counts[[phenotype]] <- sum(!p_value_available)
         failure_reasons[[phenotype]] <- error_counts
+        rm(batch_results, combined_summaries)
+        invisible(gc(FALSE))
+        artifact <- assemblePhenotypeSummaryMethylationModels(
+            analysis = "glm", engine = "glm2", phenotype = phenotype,
+            signature = signature, cpgOrder = cpg_columns,
+            coefficientResults = phenotype_coefficients,
+            targetSummary = phenotype_summary_cache,
+            omnibusTests = NULL, modelMessages = phenotype_messages,
+            fitFailures = phenotype_failures,
+            failureCount = failure_counts[[phenotype]],
+            failureReasons = error_counts, formulaText = formula_text,
+            settings = list(
+                methylationScale = preparedData$methylationScale,
+                responseLabel = preparedData$responseLabel,
+                interactionTerm = preparedData$interactionTerm,
+                covariates = covariates,
+                factorVars = preparedData$factorVars,
+                factorLevels = lapply(
+                    preparedData$data[preparedData$factorVars[
+                        preparedData$factorVars %in%
+                            colnames(preparedData$data)
+                    ]],
+                    levels
+                ),
+                scaleVars = preparedData$scaleVars,
+                scalingMetadata = preparedData$scalingMetadata
+            )
+        )
+        phenotype_summaries[[phenotype]] <- artifact
+        if (!is.null(summary_path)) {
+            savePhenotypeSummaryMethylationModels(
+                object = artifact,
+                path = summary_path
+            )
+            summary_files[[phenotype]] <- summary_path
+        }
 
         emitLogMinfiEwasWater(
             c(
@@ -2684,6 +2968,22 @@ fitMethylationGLMModels <- function(
                 paste("Parallel crossover CpGs:     ",
                     parallel_plan$crossoverCpGs),
                 paste("Parallel selection:          ", parallel_plan$reason),
+                paste("Available memory (MB):       ",
+                    if (is.finite(parallel_plan$availableMemoryMB)) {
+                        round(parallel_plan$availableMemoryMB)
+                    } else {
+                        "unknown"
+                    }),
+                paste("Estimated memory per worker: ",
+                    round(parallel_plan$estimatedWorkerMemoryMB), "MB"),
+                paste("Pilot incremental memory:    ",
+                    if (is.finite(parallel_plan$pilotMemoryMB)) {
+                        paste(round(parallel_plan$pilotMemoryMB), "MB")
+                    } else {
+                        "not required"
+                    }),
+                paste("Memory worker cap:           ",
+                    parallel_plan$memoryWorkerCap),
                 paste("Fit batches:                 ", length(cpg_batches)),
                 paste("Fit batch size:              ",
                     if (length(cpg_batches) ==
@@ -2699,7 +2999,7 @@ fitMethylationGLMModels <- function(
             verbose = verbose, log_path = log_path
         )
 
-        if (length(fit_list) > 0L && !any(p_value_available)) {
+        if (length(cpg_columns) > 0L && !any(p_value_available)) {
             warning("No CpG GLM p-values were available for phenotype '",
                 phenotype, "'. Top failure reasons: ",
                     formatFitErrorsMethylationModels(error_counts),
@@ -2709,11 +3009,18 @@ fitMethylationGLMModels <- function(
         }
     }
 
-    fit_failures <- collectFitFailuresMethylationModels(
-        fits = fits,
-        errorClass = "dnaEPICO_methylationGLM_fit_error"
+    fit_failures <- combineBatchTablesMethylationModels(
+        batchResults = lapply(phenotype_fit_failures, function(x) {
+            list(table = x)
+        }),
+        field = "table", empty = emptyFitFailuresMethylationModels()
     )
-    model_messages <- collectModelMessagesMethylationGLM(fits)
+    model_messages <- combineBatchTablesMethylationModels(
+        batchResults = lapply(phenotype_model_messages, function(x) {
+            list(table = x)
+        }),
+        field = "table", empty = emptyModelMessagesDnaEpico()
+    )
 
     if (!is.null(psock_cluster)) {
         parallel::stopCluster(psock_cluster)
@@ -2723,6 +3030,11 @@ fitMethylationGLMModels <- function(
     structure(
         list(
             fits = fits, summaryCache = summary_cache,
+            coefficientResults = coefficient_results,
+            phenotypeSummaries = phenotype_summaries,
+            summaryFiles = summary_files,
+            resumedPhenotypes = resumed_phenotypes,
+            fittedPhenotypes = fitted_phenotypes,
             formulas = formulas, phenotypes = names(fits),
                 failureCounts = failure_counts,
             failureReasons = failure_reasons, fitFailures = fit_failures,
@@ -2733,11 +3045,15 @@ fitMethylationGLMModels <- function(
                     resourceWorkerCap = parallel_plan$resourceWorkerCap,
                 parallelCrossoverCpGs = parallel_plan$crossoverCpGs,
                 parallelSelectionReason = parallel_plan$reason,
-                    clusterReusedAcrossPhenotypes = identical(
-                    backend,
-                    "psock"
-                ) && length(preparedData$phenotypes) >
-                    1L, fitBatchCount = length(cpg_batches), libPath = libPath,
+                availableMemoryMB = parallel_plan$availableMemoryMB,
+                reservedMemoryMB = parallel_plan$reservedMemoryMB,
+                estimatedWorkerMemoryMB =
+                    parallel_plan$estimatedWorkerMemoryMB,
+                pilotIncrementalMemoryMB = parallel_plan$pilotMemoryMB,
+                memoryWorkerCap = parallel_plan$memoryWorkerCap,
+                    clusterReusedAcrossPhenotypes =
+                        psock_cluster_use_count > 1L,
+                    fitBatchCount = length(cpg_batches), libPath = libPath,
                 glmLibs = glm_lib_list,
                     methylationScale = preparedData$methylationScale,
                 methylationObjectPrefix = preparedData$methylationObjectPrefix,
@@ -2760,7 +3076,7 @@ fitMethylationGLMModels <- function(
     )
 }
 
-#' Summarize CpG-wise Gaussian GLM fits for one-timepoint analyses
+#' Summarize CpG-wise Gaussian GLM results for one-timepoint analyses
 #'
 #' @param modelResults Object returned by `fitMethylationGLMModels()`.
 #' @param preparedData Object returned by `prepareMethylationGLMData()`.
@@ -2790,8 +3106,8 @@ fitMethylationGLMModels <- function(
 #'   messages, warnings, and errors for every attempted CpG.
 #'
 #' @description
-#' Extract phenotype-specific CpG coefficient tables from the fitted model
-#' object returned by `fitMethylationGLMModels()`.
+#' Return phenotype-specific CpG coefficient tables from the compact fit-time
+#' results produced by `fitMethylationGLMModels()`.
 #'
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
@@ -3056,7 +3372,11 @@ collectSignificantCpGsMethylationGLM <- function(
     threshold <- validateProbabilityDnaEpico(pvalThreshold, "pvalThreshold")
     retained <- list()
 
-    for (phenotype in names(modelResults$fits)) {
+    phenotype_names <- modelResults$phenotypes
+    if (is.null(phenotype_names)) {
+        phenotype_names <- names(modelResults$fits)
+    }
+    for (phenotype in phenotype_names) {
         fit_list <- modelResults$fits[[phenotype]]
         phenotype_hits <- list()
         if (!is.null(modelResults$summaryCache) &&
@@ -3070,18 +3390,22 @@ collectSignificantCpGsMethylationGLM <- function(
                 hit_cpgs <-
                     unique(cached_summary$CpG[cached_summary[["Pr(>|t|)"]] <
                     threshold])
-                hit_cpgs <- hit_cpgs[!is.na(hit_cpgs) & hit_cpgs %in%
-                    names(fit_list)]
+                hit_cpgs <- hit_cpgs[!is.na(hit_cpgs)]
                 for (cpg in hit_cpgs) {
-                    model_obj <- fit_list[[cpg]]
-                    if (is.null(model_obj) || inherits(
-                        model_obj,
-                        "dnaEPICO_methylationGLM_fit_error"
-                    )) {
-                        next
-                    }
-                    if (!is.null(model_obj$coef)) {
-                        phenotype_hits[[cpg]] <- as.data.frame(model_obj$coef)
+                    coefficient_table <-
+                        coefficientTableFromCompactMethylationModels(
+                            modelResults$coefficientResults[[phenotype]],
+                            cpg
+                        )
+                    if (!is.null(coefficient_table)) {
+                        phenotype_hits[[cpg]] <- coefficient_table
+                    } else if (!is.null(fit_list[[cpg]]) &&
+                        !inherits(
+                            fit_list[[cpg]],
+                            "dnaEPICO_methylationGLM_fit_error"
+                        ) && !is.null(fit_list[[cpg]]$coef)) {
+                        phenotype_hits[[cpg]] <-
+                            as.data.frame(fit_list[[cpg]]$coef)
                     }
                 }
             }
@@ -3544,8 +3868,8 @@ annotateMethylationGLMSummaries <- function(
 #'   `annotateMethylationGLMSummaries()` or a compatible data frame.
 #' @param significantCpGs Object returned by
 #'   `collectSignificantCpGsMethylationGLM()` or `NULL`.
-#' @param outputRData Character. Directory used for serialized model and summary
-#'   outputs.
+#' @param outputRData Character. Directory used for complete compact phenotype
+#'   summaries.
 #' @param summaryTxtDir Character. Directory used for tab-delimited summary
 #'   tables.
 #' @param significantCpGDir Character. Directory used for significant-CpG
@@ -3569,7 +3893,7 @@ annotateMethylationGLMSummaries <- function(
 #'   and any requested report-table sidecars.
 #'
 #' @description
-#' Write optional serialized outputs, summary tables, significant-CpG tables,
+#' Write compact phenotype summaries, optional text and significant-CpG tables,
 #' and annotated results from the one-timepoint GLM workflow.
 #'
 #' @examples
@@ -3626,10 +3950,7 @@ writeMethylationGLMOutputs <- function(
     dir.create(outputRData, recursive = TRUE, showWarnings = FALSE)
     dir.create(annotatedGLMOut, recursive = TRUE, showWarnings = FALSE)
 
-    model_files <- stats::setNames(
-        character(length(modelResults$fits)),
-        names(modelResults$fits)
-    )
+    model_files <- character(0)
     summary_files <- stats::setNames(
         character(length(modelSummaries$summaries)),
         names(modelSummaries$summaries)
@@ -3637,18 +3958,32 @@ writeMethylationGLMOutputs <- function(
     summary_txt_files <- list()
     significant_files <- list()
 
-    for (phenotype in names(modelResults$fits)) {
-        model_file <- file.path(outputRData, paste0(
-            phenotype,
-            "GLM.rds"
-        ))
+    phenotype_names <- modelResults$phenotypes
+    if (is.null(phenotype_names)) {
+        phenotype_names <- names(modelResults$summaryCache)
+    }
+    for (phenotype in phenotype_names) {
         summary_file <- file.path(outputRData, paste0(
             phenotype,
             "SummaryGLM.rds"
         ))
-        saveRDS(modelResults$fits[[phenotype]], file = model_file)
-        saveRDS(modelSummaries$summaries[[phenotype]], file = summary_file)
-        model_files[[phenotype]] <- model_file
+        artifact <- modelResults$phenotypeSummaries[[phenotype]]
+        if (is.null(artifact)) {
+            stop(
+                "A complete compact phenotype summary is unavailable for ",
+                phenotype, ".", call. = FALSE
+            )
+        }
+        existing <- loadPhenotypeSummaryMethylationModels(
+            path = summary_file,
+            expectedSignature = artifact$signature
+        )
+        if (is.null(existing$object)) {
+            savePhenotypeSummaryMethylationModels(
+                object = artifact,
+                path = summary_file
+            )
+        }
         summary_files[[phenotype]] <- summary_file
     }
 
@@ -3753,8 +4088,8 @@ writeMethylationGLMOutputs <- function(
     emitLogMinfiEwasWater(
         c(
             "============================================================",
-            paste("Serialized model outputs:    ", length(model_files)),
-            paste("Serialized summary outputs:  ", length(summary_files)),
+            paste("Full model files written:      ", length(model_files)),
+            paste("Compact phenotype summaries: ", length(summary_files)),
             paste("Annotated results file:      ", annotated_file),
             if (is.null(report_sidecar$table)) {
                 "Report table sidecar:          not requested"

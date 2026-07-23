@@ -8,8 +8,8 @@
 \description{
 Objects of class \code{'dnaEPICO_methylationLME'} are list-based results
 returned by \code{\link[=methylationLME]{methylationLME()}}. They collect the prepared longitudinal
-analysis table, fitted mixed models, summaries, diagnostics, annotations, and
-optional saved files.
+analysis table, compact mixed-model results, summaries, diagnostics,
+annotations, and optional saved files.
 }
 \section{Structure}{
 

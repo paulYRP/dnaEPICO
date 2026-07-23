@@ -155,6 +155,16 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         rules,
         fixed = TRUE
     )))
+    expect_true(any(grepl(
+        "resumeFromSummary = $(RESUME_FROM_SUMMARY)",
+        rules,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        "RESUME_FROM_SUMMARY = TRUE",
+        readLines(makefile_path, warn = FALSE),
+        fixed = TRUE
+    )))
     expect_false(any(grepl("phenoLC_withSVA", rules, fixed = TRUE)))
     expect_false(any(grepl("outputPhenoFile", rules, fixed = TRUE)))
     expect_false(any(grepl("PRE_SVA_PHENO", rules, fixed = TRUE)))

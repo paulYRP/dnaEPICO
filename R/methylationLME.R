@@ -6,9 +6,8 @@
 #'   `preprocessingPheno()`. The default points to the combined timepoint object
 #'   produced by the package workflow.
 #' @param outputLogs Character. Directory used for optional log files.
-#' @param outputRData Character. Directory used for optional serialized
-#' mixed-model
-#'   and summary outputs.
+#' @param outputRData Character. Directory used for compact, resumable
+#'   phenotype summaries.
 #' @param outputPlots Character. Directory used for optional TIFF diagnostic
 #' plots.
 #' @param personVar Character. Subject identifier variable used for the random
@@ -48,9 +47,9 @@
 #' @param methylationScale Character. Methylation metric represented by the CpG
 #'   columns. One of `'Beta'`, `'M'`, or `'CN'`, in any combination of
 #'   upper- and lower-case letters. The default is `'beta'`.
-#' @param nCores Integer. Number of worker processes to use while fitting models
-#'   and extracting summaries. Automatic fitting uses engine-specific empirical
-#' crossovers and caps workers by the CpG workload and detected physical cores.
+#' @param nCores Integer. Maximum number of worker processes to use while
+#'   fitting models. Automatic fitting uses an engine-specific crossover and
+#'   caps workers by the CpG workload, available CPUs, and detected memory.
 #' @param summaryPval Numeric or `NA`. Optional p-value threshold applied to the
 #' returned longitudinal CpG summary tables. Use `NA` to keep all summary rows.
 #' @param plotWidth Integer. TIFF width in pixels when plots are written to
@@ -106,10 +105,14 @@
 #'   default is `FALSE`, so the function is quiet unless requested.
 #' @param logs Logical. If `TRUE`, write the same progress messages to
 #'   `file.path(outputLogs, 'log_methylationLME.txt')`.
-#' @param saveOutputs Logical. If `TRUE`, write optional serialized model files,
-#'   summary tables, significant-interaction tables, annotated results, and TIFF
+#' @param saveOutputs Logical. If `TRUE`, write compact phenotype summaries,
+#'   text summaries, significant-interaction tables, annotated results, and TIFF
 #'   plots to the requested output directories. The default is `FALSE`, so the
 #'   function returns in-memory results without writing files.
+#' @param resumeFromSummary Logical. If `TRUE` and `saveOutputs = TRUE`, reuse a
+#'   complete phenotype summary when its input file and model configuration
+#'   match the current analysis. If processing stops before a phenotype summary
+#'   is complete, that phenotype is fitted again from its first CpG.
 #'
 #' @return A list with class `'dnaEPICO_methylationLME'`.
 #' \describe{
@@ -118,7 +121,8 @@
 #' and
 #'   modeling metadata.}
 #'   \item{modelFits}{Object returned by [fitMethylationLMEModels()]
-#'   containing the per-phenotype CpG mixed-effects model fits.}
+#'   containing compact per-phenotype coefficient, omnibus, and condition
+#'   results.}
 #'   \item{modelSummaries}{Object returned by
 #'   [summarizeMethylationLMEModels()] containing the combined CpG summary
 #'   tables used for reporting and annotation.}
@@ -148,8 +152,8 @@
 #' requested phenotype, extracts phenotype-specific coefficient summaries,
 #' optionally collects significant interaction tables, generates diagnostic
 #' plots,
-#' annotates the combined summary table, and optionally writes model outputs to
-#' disk. By default, the function runs quietly and returns its results in
+#' annotates the combined summary table, and optionally writes analysis outputs
+#' to disk. By default, the function runs quietly and returns its results in
 #' memory.
 #' Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
 #' without a separate methylation-domain filter. Native model messages,
@@ -228,8 +232,13 @@ methylationLME <- function(
     ),
     annotatedLMEOut = "data/methylationLME", reportAssetsDir = NULL,
     display = FALSE,
-    verbose = FALSE, logs = FALSE, saveOutputs = FALSE
+    verbose = FALSE, logs = FALSE, saveOutputs = FALSE,
+    resumeFromSummary = TRUE
 ) {
+    resumeFromSummary <- validateLogicalScalarDnaEpico(
+        resumeFromSummary,
+        "resumeFromSummary"
+    )
     cpgLimit <- normalizeOptionalNumericMethylationGLM(cpgLimit)
     summaryPval <- normalizeOptionalNumericMethylationGLM(summaryPval)
     chunkSize <- normalizeChunkSizeMethylationGLM(chunkSize)
@@ -360,6 +369,8 @@ methylationLME <- function(
         modelFits <- fitMethylationLMEModels(
             preparedData = preparedData,
             nCores = nCores, libPath = libPath, lmeLibs = lmeLibs,
+            summaryDir = if (isTRUE(saveOutputs)) outputRData else NULL,
+            resumeFromSummary = resumeFromSummary,
             correlationStructure = correlationStructure,
                 correlationVar = correlationVar,
             omnibusTest = omnibusTest, omnibusDdf = omnibusDdf,

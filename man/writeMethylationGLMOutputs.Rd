@@ -33,8 +33,8 @@ writeMethylationGLMOutputs(
 \item{significantCpGs}{Object returned by
 \code{collectSignificantCpGsMethylationGLM()} or \code{NULL}.}
 
-\item{outputRData}{Character. Directory used for serialized model and summary
-outputs.}
+\item{outputRData}{Character. Directory used for complete compact phenotype
+summaries.}
 
 \item{summaryTxtDir}{Character. Directory used for tab-delimited summary
 tables.}
@@ -69,7 +69,7 @@ the paths of the files written to disk, including the annotated workbook
 and any requested report-table sidecars.
 }
 \description{
-Write optional serialized outputs, summary tables, significant-CpG tables,
+Write compact phenotype summaries, optional text and significant-CpG tables,
 and annotated results from the one-timepoint GLM workflow.
 }
 \examples{

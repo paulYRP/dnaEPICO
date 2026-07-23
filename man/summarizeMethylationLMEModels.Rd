@@ -2,7 +2,7 @@
 % Please edit documentation in R/methylationLME_steps.R
 \name{summarizeMethylationLMEModels}
 \alias{summarizeMethylationLMEModels}
-\title{Summarize CpG-wise mixed-effects model fits for longitudinal analyses}
+\title{Summarize CpG-wise mixed-effects results for longitudinal analyses}
 \usage{
 summarizeMethylationLMEModels(
   modelResults,
@@ -52,8 +52,8 @@ does not remove CpGs from those outputs. \code{modelMessages} retains native
 messages, warnings, and errors for every attempted CpG.
 }
 \description{
-Extract phenotype-specific fixed-effect tables from the fitted mixed-effects
-model object returned by \code{fitMethylationLMEModels()}.
+Return phenotype-specific fixed-effect tables from the compact fit-time
+results produced by \code{fitMethylationLMEModels()}.
 }
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()

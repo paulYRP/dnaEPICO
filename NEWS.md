@@ -1,7 +1,11 @@
-CHANGES IN VERSION 0.99.35
+CHANGES IN VERSION 0.99.36
 ------------------------
 
 NEW FEATURES
+
+    o [23-07-2026] Reduced GLM, lmerTest/lme4, and nlme EWAS memory use with
+      bounded response-block parallelism, memory-aware workers, and resumable
+      compact phenotype summaries instead of genome-wide full-model RDS files.
 
     o [23-07-2026] Recorded conditions in one Model.Message column, and
       reporting unavailable results through workbook metadata.

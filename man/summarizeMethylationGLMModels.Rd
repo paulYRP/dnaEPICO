@@ -2,7 +2,7 @@
 % Please edit documentation in R/methylationGLM_steps.R
 \name{summarizeMethylationGLMModels}
 \alias{summarizeMethylationGLMModels}
-\title{Summarize CpG-wise Gaussian GLM fits for one-timepoint analyses}
+\title{Summarize CpG-wise Gaussian GLM results for one-timepoint analyses}
 \usage{
 summarizeMethylationGLMModels(
   modelResults,
@@ -60,8 +60,8 @@ does not remove CpGs from those outputs. \code{modelMessages} retains native
 messages, warnings, and errors for every attempted CpG.
 }
 \description{
-Extract phenotype-specific CpG coefficient tables from the fitted model
-object returned by \code{fitMethylationGLMModels()}.
+Return phenotype-specific CpG coefficient tables from the compact fit-time
+results produced by \code{fitMethylationGLMModels()}.
 }
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
