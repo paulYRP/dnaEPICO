@@ -6,15 +6,14 @@
 \alias{dnaEPICO}
 \title{dnaEPICO: DNA methylation preprocessing and modeling workflows}
 \description{
-The \code{dnaEPICO} package provides a structured workflow for preprocessing and
-analyzing Illumina DNA methylation array data, including quality control,
-normalization, cell-type estimation, surrogate-variable analysis, phenotype
-preparation, CpG-wise generalised linear models, longitudinal mixed-effects
-models using \code{lmerTest}/\code{lme4} or \code{nlme} with optional residual correlation
-structures, and interactive web reporting.
+\code{dnaEPICO} provides workflows for preprocessing and analyzing Illumina DNA
+methylation arrays. It supports quality control, normalization, cell-type
+estimation, surrogate-variable analysis, phenotype preparation, CpG-wise
+generalised linear models, longitudinal mixed-effects models using
+\code{lmerTest}/\code{lme4} or \code{nlme}, and web reporting.
 }
 \details{
-The package supports two complementary usage styles:
+The package supports two usage styles:
 \itemize{
 \item interactive use, where functions return structured in-memory result
 objects for inspection and composition; and

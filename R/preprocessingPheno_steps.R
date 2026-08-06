@@ -681,7 +681,7 @@ buildClockFoundationInputsPreprocessingPheno <- function(
 
     if ("id" %in% colnames(pheno) && !identical(SampleID, "id")) {
         stop("The phenotype data already contains a column named 'id'. ",
-            "Please rename either that column or SampleID before building Clock Foundation inputs.",
+            "Rename that column or SampleID before building Clock Foundation inputs.",
             call. = FALSE
         )
     }

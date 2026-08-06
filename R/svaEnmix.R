@@ -213,11 +213,9 @@ svaEnmixValidateRGSet <- function(
 
 #' Estimate surrogate variables from ENmix control probes
 #'
-#' Read the phenotype table and a saved `RGChannelSet`, estimate surrogate
-#' variables from ENmix control probes, analyze their association with Sentrix
-#' chip and position factors, and return a structured in-memory result. CSV,
-#' `.RData`, text-summary, and figure outputs are written only when
-#' `saveOutputs = TRUE`.
+#' Estimate surrogate variables from ENmix control probes and analyze their
+#' association with Sentrix chip and position factors. The function returns a
+#' structured result and writes files only when `saveOutputs = TRUE`.
 #'
 #' @param phenoFile Character. Path to the phenotype file with cell-composition
 #'   data. When `saveOutputs = TRUE`, the validated PC columns are appended to

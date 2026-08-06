@@ -144,8 +144,8 @@ grouping plots.}
 \code{'saliva'} and \code{'salivaEPIC'} use \code{estimateLC()}. Other values are passed
 to \code{ENmix::estimateCellProp()}.}
 
-\item{phenoOrder}{Character vector or semicolon-separated string describing
-which phenotype columns should appear first in the merged \code{phenoLC} table.}
+\item{phenoOrder}{Character vector or semicolon-separated phenotype columns
+to place first in the merged \code{phenoLC} table.}
 
 \item{lcPhenoDir}{Character. Directory used for the saved \code{phenoLC.csv} file
 when \code{saveOutputs = TRUE}.}
@@ -179,7 +179,7 @@ containing detection P values, QC summaries, and failed-sample tracking.}
 predicted sex labels, mismatch summaries, plotting data, and the sample IDs
 removed when \code{removeSexMismatch = TRUE}.}
 \item{normData}{Object returned by \code{\link[=normalizeMinfiEwasWater]{normalizeMinfiEwasWater()}} containing
-the requested normalized objects and metadata on the methods that were run.}
+the selected normalized objects and method metadata.}
 \item{filterData}{Object returned by \code{\link[=filterProbesMinfiEwasWater]{filterProbesMinfiEwasWater()}}
 containing the probe-filtered methylation objects at each filtering stage.}
 \item{metricsData}{Object returned by \code{\link[=extractMetricsMinfiEwasWater]{extractMetricsMinfiEwasWater()}}
@@ -194,10 +194,9 @@ logging was disabled.}
 See \linkS4class{dnaEPICO_preprocessingMinfiEwasWater} for a class-level overview.
 }
 \description{
-Run the \code{dnaEPICO} preprocessing workflow as a convenience wrapper around the
-smaller minfi/ENmix/wateRmelon helper functions in this package. The wrapper
-returns a structured result object containing the in-memory outputs from each
-stage. Files are written only when \code{saveOutputs = TRUE}.
+Run the \code{dnaEPICO} preprocessing workflow with the package's
+minfi/ENmix/wateRmelon helper functions. The function returns the output from
+each stage and writes files only when \code{saveOutputs = TRUE}.
 }
 \examples{
 if (requireNamespace("minfiData", quietly = TRUE) &&

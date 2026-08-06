@@ -120,11 +120,9 @@ logging was disabled.}
 See \linkS4class{dnaEPICO_svaEnmix} for a class-level overview.
 }
 \description{
-Read the phenotype table and a saved \code{RGChannelSet}, estimate surrogate
-variables from ENmix control probes, analyze their association with Sentrix
-chip and position factors, and return a structured in-memory result. CSV,
-\code{.RData}, text-summary, and figure outputs are written only when
-\code{saveOutputs = TRUE}.
+Estimate surrogate variables from ENmix control probes and analyze their
+association with Sentrix chip and position factors. The function returns a
+structured result and writes files only when \code{saveOutputs = TRUE}.
 }
 \examples{
 tmp <- tempdir()

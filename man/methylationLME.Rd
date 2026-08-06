@@ -80,9 +80,9 @@ model.}
 \item{covariates}{Character. Comma-separated fixed-effect covariates included
 in every mixed model.}
 
-\item{factorVars}{Character. Comma-separated variables that should be coerced
-to factors before modeling. This usually includes categorical phenotypes,
-covariates, or interaction variables.}
+\item{factorVars}{Character. Comma-separated variables to convert to factors
+before modeling, including categorical phenotypes, covariates, or
+interaction variables.}
 
 \item{scaleVars}{Character vector, comma-separated variable names, or \code{NULL}.
 Numeric fixed-effect variables to centre and divide by their sample standard
@@ -193,16 +193,14 @@ only the model outputs and annotated workbook.}
 graphics device.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.
-The
-default is \code{FALSE}, so the function is quiet unless requested.}
+The default is \code{FALSE}.}
 
 \item{logs}{Logical. If \code{TRUE}, write the same progress messages to
 \code{file.path(outputLogs, 'log_methylationLME.txt')}.}
 
 \item{saveOutputs}{Logical. If \code{TRUE}, write compact phenotype summaries,
-text summaries, significant-interaction tables, annotated results, and TIFF
-plots to the requested output directories. The default is \code{FALSE}, so the
-function returns in-memory results without writing files.}
+text summaries, significant-interaction tables, annotated results, and
+TIFF plots. The default is \code{FALSE}.}
 
 \item{resumeFromSummary}{Logical. If \code{TRUE} and \code{saveOutputs = TRUE}, reuse a
 complete phenotype summary when its input file and model configuration
@@ -241,16 +239,10 @@ internal response-column name, and longitudinal time variable.}
 See \linkS4class{dnaEPICO_methylationLME} for a class-level overview.
 }
 \description{
-\code{methylationLME()} is the high-level coordinator for the longitudinal
-linear mixed-effects stage of the \code{dnaEPICO} workflow. It prepares the merged
-phenotype-plus-methylation input, fits one mixed-effects model per CpG for
-each
-requested phenotype, extracts phenotype-specific coefficient summaries,
-optionally collects significant interaction tables, generates diagnostic
-plots,
-annotates the combined summary table, and optionally writes analysis outputs
-to disk. By default, the function runs quietly and returns its results in
-memory.
+\code{methylationLME()} prepares longitudinal phenotype-plus-methylation data,
+fits one mixed-effects model per CpG and phenotype, summarizes and annotates
+the results, and creates optional interaction tables and diagnostic plots. It
+writes outputs only when \code{saveOutputs = TRUE}.
 Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
 without a separate methylation-domain filter. Native model messages,
 warnings, and errors are recorded in one phenotype-specific \code{Model.Message}

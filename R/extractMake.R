@@ -1,15 +1,13 @@
-#' Copy dnaEPICO Makefile to a user directory
+#' Copy the dnaEPICO Makefile to a user directory
 #'
-#' Copies the example Makefile pipeline shipped with dnaEPICO to a
-#' user-specified directory for local execution or modification.
+#' Copy the example Makefile supplied with `dnaEPICO` to a user directory.
 #'
 #' @details
 #' The exported workflow requires GNU Make 4.3 or later and `Rscript` on the
 #' system path. Quarto is also required for report targets. The rules use
 #' relative project paths and support project directories containing spaces.
 #'
-#' @param destDir Character. Destination directory where the Makefile
-#'   will be copied.
+#' @param destDir Character. Destination directory for the Makefile.
 #' @param overwrite Logical. Whether to overwrite an existing `Makefile` in
 #'   `destDir`. The default is `FALSE`.
 #'

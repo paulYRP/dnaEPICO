@@ -12,8 +12,8 @@
 #'   model.
 #' @param covariates Character. Comma-separated covariate variables included in
 #'   each GLM.
-#' @param factorVars Character. Comma-separated variables that should be treated
-#'   as factors before modeling.
+#' @param factorVars Character. Comma-separated variables to convert to factors
+#'   before modeling.
 #' @param scaleVars Character vector, comma-separated variable names, or `NULL`.
 #' Numeric fixed-effect variables to centre and divide by their sample standard
 #'   deviations before model fitting.
@@ -85,13 +85,12 @@
 #' @param display Logical. If `TRUE`, draw exploratory and diagnostic plots on
 #'   the active graphics device.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
-#'   The default is `FALSE`, so the function is quiet unless requested.
+#'   The default is `FALSE`.
 #' @param logs Logical. If `TRUE`, write the same progress messages to
 #'   `file.path(outputLogs, 'log_methylationGLM.txt')`.
 #' @param saveOutputs Logical. If `TRUE`, write compact phenotype summaries,
-#' text summaries, significant-CpG tables, annotated results, and TIFF plots to
-#'   the requested output directories. The default is `FALSE`, so the function
-#'   returns in-memory results without writing files.
+#'   text summaries, significant-CpG tables, annotated results, and TIFF plots.
+#'   The default is `FALSE`.
 #' @param resumeFromSummary Logical. If `TRUE` and `saveOutputs = TRUE`, reuse a
 #'   complete phenotype summary when its input file and model configuration
 #'   match the current analysis. If processing stops before a phenotype summary
@@ -129,15 +128,10 @@
 #' See [dnaEPICO_methylationGLM-class] for a class-level overview.
 #'
 #' @description
-#' `methylationGLM()` is the high-level coordinator for the methylation GLM
-#' stage of the `dnaEPICO` workflow. It prepares the merged
-#' phenotype-plus-methylation
-#' input, optionally creates exploratory plots, fits one Gaussian GLM per CpG
-#' for
-#' each requested phenotype, extracts CpG-level summaries, optionally collects
-#' significant CpG coefficient tables, generates diagnostic plots, annotates the
-#' combined summary table, and optionally writes analysis outputs to disk. By
-#' default, the function runs quietly and returns its results in memory.
+#' `methylationGLM()` prepares phenotype-plus-methylation data, fits one
+#' Gaussian GLM per CpG and phenotype, summarizes and annotates the results, and
+#' creates optional coefficient tables and diagnostic plots. It writes outputs
+#' only when `saveOutputs = TRUE`.
 #' Numeric CpG columns are passed to `glm2::glm2()` without a separate
 #' methylation-domain filter. Native model messages, warnings, and errors are
 #' recorded in one phenotype-specific `Model.Message` field. Annotated outputs

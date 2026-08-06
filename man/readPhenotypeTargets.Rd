@@ -29,8 +29,7 @@ phenotype table. The default \code{NA} reads and returns all rows.}
 that will later be used to name methylation-array samples.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress and preview messages with
-\code{message()}. The default is \code{FALSE}, so the function is quiet unless the
-user explicitly requests messages.}
+\code{message()}. The default is \code{FALSE}.}
 
 \item{logs}{Logical. If \code{TRUE}, write the same progress messages to a log
 file. The default is \code{FALSE}.}

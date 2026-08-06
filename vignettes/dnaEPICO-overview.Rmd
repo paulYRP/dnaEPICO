@@ -39,13 +39,11 @@ library(dnaEPICO)
 
 # Introduction
 
-This vignette provides a visual overview of the main `r Biocpkg("dnaEPICO")`
-functions roles. It shows how the major functions organise their inputs, internal
-processing stages, and outputs.
+This vignette shows the roles, inputs, processing stages, and outputs of the
+main `r Biocpkg("dnaEPICO")` functions.
 
-The diagrams are intended as orientation maps. They are useful when deciding
-which function to run and checking how outputs move between stages. For detailed arguments and executable
-examples, use the local-use and pipeline-use vignettes.
+Use the diagrams to choose a function and follow outputs between stages. See
+the local-use and pipeline-use vignettes for arguments and executable examples.
 
 Read each overview as follows:
 
@@ -59,11 +57,10 @@ Read each overview as follows:
 
 `r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for
 high-dimensional genomic data, with a focus on Illumina DNA methylation arrays.
-To read this vignette, we assume that you are already familiar with the general
-DNA methylation pipeline. If not, we recommend first reading
+This vignette assumes familiarity with a general DNA methylation workflow. For
+an introduction, see
 [this tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html),
-which provides a practical introduction to the main concepts and analysis
-steps.
+which covers the main concepts and analysis steps.
 
 Preprocessing and quality control are performed using established
 Bioconductor tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and
@@ -73,9 +70,8 @@ mixed-effects models. Users are expected to have basic familiarity with R,
 Bioconductor pipelines, command-line execution, and Illumina IDAT file
 structures.
 
-If you are asking yourself the question "Where do I start using
-Bioconductor?", you might be interested in
-[this blog post](https://www.bioconductor.org/install/).
+For an introduction to Bioconductor, see the
+[installation guide](https://www.bioconductor.org/install/).
 
 ## Probe-exclusion reference files
 
@@ -276,10 +272,9 @@ svg_to_html <- function(svg_path, title = NULL) {
 
 # Functions
 
-The sections below describe the role of each main function in the package `r Biocpkg("dnaEPICO")`.
-They are ordered according to the analysis path: preprocessing,
-surrogate-variable estimation, phenotype preparation, cross-sectional modelling, longitudinal
-modelling, and report generation.
+The main functions follow the analysis path from preprocessing and
+surrogate-variable estimation through phenotype preparation, modelling, and
+report generation.
 
 ## preprocessingMinfiEwasWater()
 
@@ -357,8 +352,9 @@ Its role is to run single-timepoint association testing:
 - Inputs: a phenotype-methylation table, phenotype variables,
     covariates, categorical and scaled-variable selections, optional PRS
     mappings, and annotation settings.
-- Processing tasks: model preparation, CpG-GLM model fitting, diagnostic
-    plotting, result summarisation, multiple-testing adjustment, and annotation.
+- Processing tasks: model preparation, CpG-GLM fitting, coefficient and
+    optional omnibus testing, diagnostic plotting, multiple-testing adjustment,
+    summarisation, and annotation.
 - Outputs: compact phenotype summaries, summary tables, diagnostic figures,
     significant-CpG exports, and annotated workbooks. Native glm2 conditions
     are stored in `<Phenotype>_Model.Message`; CpGs without a returned p-value
@@ -419,12 +415,12 @@ svg_to_html(
 
 # Summary
 
-The preprocessing function create quality-controlled methylation data and
+The preprocessing functions create quality-controlled methylation data and
 analysis-ready phenotype tables. The modelling functions fit cross-sectional and
 longitudinal association models. The report function gathers the resulting
 tables, figures, and logs into a browsable output.
 
-In practice, the main functions are:
+The main workflow is:
 
 - run `preprocessingMinfiEwasWater()` to prepare methylation objects and QC
     outputs,
@@ -457,12 +453,7 @@ sessionInfo()
 
 ## Asking for help
 
-As package developers, we try to explain clearly how to use our packages and
-in which order to use the functions. But `R` and `Bioconductor` have a steep
-learning curve, so it is critical to learn where to ask for help. We would
-like to highlight the [Bioconductor support site](https://support.bioconductor.org/)
-as the main resource for getting help. Please remember to use the `dnaEPICO`
-tag and check the
-[older posts](https://support.bioconductor.org/tag/dnaEPICO/). If you want to
-receive help, please provide a small reproducible example and your session
-information so the source of the problem can be tracked efficiently.
+Use the [Bioconductor support site](https://support.bioconductor.org/) for
+package questions. Add the `dnaEPICO` tag, review
+[previous posts](https://support.bioconductor.org/tag/dnaEPICO/), and include a
+small reproducible example with session information.

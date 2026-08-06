@@ -85,7 +85,7 @@ test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Bio
     on.exit(setwd(oldWd), add = TRUE)
 })
 
-test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for Github", {
+test_that("preprocessingMinfiEwasWater runs using staged minfiData IDATs for GitHub", {
     library(minfi)
     library(minfiData)
     library(IlluminaHumanMethylation450kmanifest)

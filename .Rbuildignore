@@ -8,10 +8,6 @@
 ^Meta$
 ^desktop[.]ini$
 ^pkgdown$
-^\.positai$
-^\.claude$
-^\.codex-check-lib$
-^\.codex-check-output$
 ^dnaEPICO[.]BiocCheck$
 ^packageTEST$
 ^tests/testthat/_snaps$

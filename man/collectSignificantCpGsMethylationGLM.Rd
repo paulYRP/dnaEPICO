@@ -36,8 +36,10 @@ main-effect or interaction coefficient p-values otherwise.}
 A list with class \code{'dnaEPICO_methylationGLM_significant_cpgs'}.
 }
 \description{
-Collect the raw coefficient tables for CpGs whose phenotype main effect or
-interaction p-value passes the requested threshold.
+Collect coefficient tables for CpGs selected by the configured target test.
+Selection uses target-term omnibus p-values when omnibus testing was enabled
+during fitting, and phenotype main-effect or interaction coefficient
+p-values otherwise.
 }
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()

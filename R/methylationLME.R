@@ -19,9 +19,9 @@
 #'   model.
 #' @param covariates Character. Comma-separated fixed-effect covariates included
 #'   in every mixed model.
-#' @param factorVars Character. Comma-separated variables that should be coerced
-#'   to factors before modeling. This usually includes categorical phenotypes,
-#'   covariates, or interaction variables.
+#' @param factorVars Character. Comma-separated variables to convert to factors
+#'   before modeling, including categorical phenotypes, covariates, or
+#'   interaction variables.
 #' @param scaleVars Character vector, comma-separated variable names, or `NULL`.
 #' Numeric fixed-effect variables to centre and divide by their sample standard
 #'   deviations before fitting.
@@ -101,14 +101,12 @@
 #' @param display Logical. If `TRUE`, draw diagnostic plots on the active
 #'   graphics device.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
-#' The
-#'   default is `FALSE`, so the function is quiet unless requested.
+#'   The default is `FALSE`.
 #' @param logs Logical. If `TRUE`, write the same progress messages to
 #'   `file.path(outputLogs, 'log_methylationLME.txt')`.
 #' @param saveOutputs Logical. If `TRUE`, write compact phenotype summaries,
-#'   text summaries, significant-interaction tables, annotated results, and TIFF
-#'   plots to the requested output directories. The default is `FALSE`, so the
-#'   function returns in-memory results without writing files.
+#'   text summaries, significant-interaction tables, annotated results, and
+#'   TIFF plots. The default is `FALSE`.
 #' @param resumeFromSummary Logical. If `TRUE` and `saveOutputs = TRUE`, reuse a
 #'   complete phenotype summary when its input file and model configuration
 #'   match the current analysis. If processing stops before a phenotype summary
@@ -145,16 +143,10 @@
 #' See [dnaEPICO_methylationLME-class] for a class-level overview.
 #'
 #' @description
-#' `methylationLME()` is the high-level coordinator for the longitudinal
-#' linear mixed-effects stage of the `dnaEPICO` workflow. It prepares the merged
-#' phenotype-plus-methylation input, fits one mixed-effects model per CpG for
-#' each
-#' requested phenotype, extracts phenotype-specific coefficient summaries,
-#' optionally collects significant interaction tables, generates diagnostic
-#' plots,
-#' annotates the combined summary table, and optionally writes analysis outputs
-#' to disk. By default, the function runs quietly and returns its results in
-#' memory.
+#' `methylationLME()` prepares longitudinal phenotype-plus-methylation data,
+#' fits one mixed-effects model per CpG and phenotype, summarizes and annotates
+#' the results, and creates optional interaction tables and diagnostic plots. It
+#' writes outputs only when `saveOutputs = TRUE`.
 #' Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
 #' without a separate methylation-domain filter. Native model messages,
 #' warnings, and errors are recorded in one phenotype-specific `Model.Message`

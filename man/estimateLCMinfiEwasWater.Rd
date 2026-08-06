@@ -30,9 +30,8 @@ references supported through \code{estimateLC()} are \code{'saliva'} and
 \code{'salivaEPIC'}. Other references are passed to
 \code{ENmix::estimateCellProp()}.}
 
-\item{phenoOrder}{Character vector or semicolon-separated string describing
-the phenotype columns that should appear first in the merged \code{phenoLC}
-output.}
+\item{phenoOrder}{Character vector or semicolon-separated phenotype columns
+to place first in the merged \code{phenoLC} output.}
 
 \item{constrained}{Logical. Passed to \code{estimateLC()} when an internal saliva
 reference is used. If \code{TRUE}, estimated proportions are constrained to sum

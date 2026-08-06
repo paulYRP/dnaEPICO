@@ -112,12 +112,10 @@ logging was disabled.}
 See \linkS4class{dnaEPICO_preprocessingPheno} for a class-level overview.
 }
 \description{
-Read the phenotype table and the preprocessed beta, M-value, and copy-number
-matrices; align them by sample identifier; split them by timepoint; prepare
-combined longitudinal objects for a selected modeling scale; and build Clock
-Foundation export tables. The
-function returns a structured in-memory result, while files are
-written only when \code{saveOutputs = TRUE}.
+Align the phenotype table with preprocessed beta, M-value, and copy-number
+matrices, split the data by timepoint, prepare longitudinal objects for the
+selected modeling scale, and build Clock Foundation export tables. The
+function writes files only when \code{saveOutputs = TRUE}.
 }
 \examples{
 tmp <- tempdir()

@@ -23,9 +23,7 @@ cell type.
 }
 \description{
 Estimate cell-type proportions with the saliva reference panels bundled in
-\code{dnaEPICO}. This function keeps the original \code{estimateLC()} interface used by
-the package while using the internal reference files distributed in
-\code{inst/extdata}.
+\code{dnaEPICO}.
 }
 \examples{
 ref_file <- system.file("extdata", "saliva.txt", package = "dnaEPICO")

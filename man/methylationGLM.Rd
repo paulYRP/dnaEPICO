@@ -67,8 +67,8 @@ model.}
 \item{covariates}{Character. Comma-separated covariate variables included in
 each GLM.}
 
-\item{factorVars}{Character. Comma-separated variables that should be treated
-as factors before modeling.}
+\item{factorVars}{Character. Comma-separated variables to convert to factors
+before modeling.}
 
 \item{scaleVars}{Character vector, comma-separated variable names, or \code{NULL}.
 Numeric fixed-effect variables to centre and divide by their sample standard
@@ -169,15 +169,14 @@ only the model outputs and annotated workbook.}
 the active graphics device.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.
-The default is \code{FALSE}, so the function is quiet unless requested.}
+The default is \code{FALSE}.}
 
 \item{logs}{Logical. If \code{TRUE}, write the same progress messages to
 \code{file.path(outputLogs, 'log_methylationGLM.txt')}.}
 
 \item{saveOutputs}{Logical. If \code{TRUE}, write compact phenotype summaries,
-text summaries, significant-CpG tables, annotated results, and TIFF plots to
-the requested output directories. The default is \code{FALSE}, so the function
-returns in-memory results without writing files.}
+text summaries, significant-CpG tables, annotated results, and TIFF plots.
+The default is \code{FALSE}.}
 
 \item{resumeFromSummary}{Logical. If \code{TRUE} and \code{saveOutputs = TRUE}, reuse a
 complete phenotype summary when its input file and model configuration
@@ -217,15 +216,10 @@ internal response-column name.}
 See \linkS4class{dnaEPICO_methylationGLM} for a class-level overview.
 }
 \description{
-\code{methylationGLM()} is the high-level coordinator for the methylation GLM
-stage of the \code{dnaEPICO} workflow. It prepares the merged
-phenotype-plus-methylation
-input, optionally creates exploratory plots, fits one Gaussian GLM per CpG
-for
-each requested phenotype, extracts CpG-level summaries, optionally collects
-significant CpG coefficient tables, generates diagnostic plots, annotates the
-combined summary table, and optionally writes analysis outputs to disk. By
-default, the function runs quietly and returns its results in memory.
+\code{methylationGLM()} prepares phenotype-plus-methylation data, fits one
+Gaussian GLM per CpG and phenotype, summarizes and annotates the results, and
+creates optional coefficient tables and diagnostic plots. It writes outputs
+only when \code{saveOutputs = TRUE}.
 Numeric CpG columns are passed to \code{glm2::glm2()} without a separate
 methylation-domain filter. Native model messages, warnings, and errors are
 recorded in one phenotype-specific \code{Model.Message} field. Annotated outputs

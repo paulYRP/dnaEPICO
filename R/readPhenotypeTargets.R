@@ -13,8 +13,7 @@
 #' @param SampleID Character. Name of the column containing sample identifiers
 #'   that will later be used to name methylation-array samples.
 #' @param verbose Logical. If `TRUE`, emit progress and preview messages with
-#'   `message()`. The default is `FALSE`, so the function is quiet unless the
-#'   user explicitly requests messages.
+#'   `message()`. The default is `FALSE`.
 #' @param logs Logical. If `TRUE`, write the same progress messages to a log
 #'   file. The default is `FALSE`.
 #' @param log_dir Character or `NULL`. Directory where the log file should be
@@ -124,7 +123,7 @@ readPhenotypeTargets <- function(
 
     if (!is.na(nSamples) && nSamples < nrow(targets)) {
         targets <- targets[seq_len(nSamples), , drop = FALSE]
-        subset_line <- paste("Subsetting to", nSamples, "samples for testing.")
+        subset_line <- paste("Using the first", nSamples, "samples.")
     } else {
         subset_line <- paste("Using all", nrow(targets), "samples.")
     }

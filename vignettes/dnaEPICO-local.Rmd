@@ -40,10 +40,9 @@ can_run_sva <- requireNamespace("minfiData", quietly = TRUE)
 # Introduction
 
 This vignette demonstrates the local, interactive use of `dnaEPICO`. In this
-mode, the main functions return structured in-memory result objects that can be
-inspected directly in the R session. This is the recommended route when you are
-checking inputs, reviewing quality-control outputs, or learning the structure of
-the package results before moving to larger analyses.
+mode, the main functions return structured in-memory result objects for direct
+inspection in the R session. Use this route to check inputs, review
+quality-control outputs, or examine result structures before larger analyses.
 
 The examples below focus on the first three workflow stages:
 
@@ -51,8 +50,8 @@ The examples below focus on the first three workflow stages:
 2. `svaEnmix()`
 3. `preprocessingPheno()`
 
-All examples use `saveOutputs = FALSE`, which keeps the workflow in memory and
-avoids writing file outputs.
+All examples use `saveOutputs = FALSE`, which returns results in memory without
+writing output files.
 
 # Citation
 
@@ -74,19 +73,18 @@ This citation guidance is adapted from the vignettes and user guides of
 
 `r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for
 high-dimensional genomic data, with a focus on Illumina DNA methylation arrays.
-To read this vignette, we assume that you are already familiar with the general
-DNA methylation workflow. If not, we recommend first reading
+This vignette assumes familiarity with a general DNA methylation workflow. For
+an introduction, see
 [this tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html),
-which provides a practical introduction to the main concepts and analysis steps.
+which covers the main concepts and analysis steps.
 
 Preprocessing and quality control are performed using established Bioconductor
 tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and
 `r Biocpkg("wateRmelon")`. Users are expected to have basic familiarity with R,
 Bioconductor workflows, and Illumina IDAT file structures.
 
-If you are asking yourself the question "Where do I start using
-Bioconductor?", you might be interested in
-[this post](https://www.bioconductor.org/install/).
+For an introduction to Bioconductor, see the
+[installation guide](https://www.bioconductor.org/install/).
 
 ## Probe-exclusion reference files
 
@@ -104,16 +102,15 @@ The lists of excluded probes depend on the Illumina methylation-array platform.
 
 # Installation
 
-The `r Biocpkg("dnaEPICO")` package depends on `r Biocpkg("minfi")`,
-`r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`, among others. Install
-dependencies with BiocManager:
+Install the development version of `r Biocpkg("dnaEPICO")` and its dependencies
+with BiocManager:
 
 ```{r, eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
     install.packages("BiocManager")
 }
 
-BiocManager::install("dnaEPICO")
+BiocManager::install("paulYRP/dnaEPICO")
 
 BiocManager::valid()
 ```
@@ -449,17 +446,17 @@ variables to centre and divide by their sample standard deviations before model
 fitting. For example, `factorVars = "Sex,TreatmentGroup"` treats those variables
 as categorical and `scaleVars = "Age,PC1"` standardises `Age` and `PC1`.
 
-For GLM and LME analyses, the selected variables must be numeric, have at least
-two finite observations, and have non-zero sample variance. A variable cannot be
-listed in both `factorVars` and `scaleVars`. The applied centres and sample
-standard deviations are stored in the annotated workbook metadata.
+Variables in `scaleVars` must be numeric, contain at least two finite
+observations, and have non-zero sample variance. A variable cannot appear in
+both `factorVars` and `scaleVars`. Applied centres and sample standard
+deviations are stored in the annotated workbook metadata.
 
 The preprocessed beta, M-value, or copy-number columns are passed unchanged to
 the selected model engine. Their observed finite minima and maxima are reported
 during preprocessing. GLM, lmerTest/lme4, and nlme messages, warnings, or errors
-are stored in one `<Phenotype>_Model.Message` column. An annotated workbook row
-is written when at least one requested p-value is returned; workbook metadata
-counts model attempts with and without p-values.
+are stored in one `<Phenotype>_Model.Message` column. A CpG is included in the
+annotated workbook when at least one coefficient or omnibus p-value is returned;
+workbook metadata counts model attempts with and without p-values.
 
 Longitudinal lmerTest/lme4 analyses use a participant-level random intercept,
 `(1 | personVar)`. Set `omnibusTest = TRUE` to obtain one joint F test per CpG.
@@ -471,9 +468,8 @@ backend does not currently support this option.
 
 # Summary
 
-In interactive local use, the most important habit is to inspect the returned
-objects after each step. In practice, the following checks are enough to
-confirm that the workflow is behaving as expected:
+In interactive use, inspect the returned object after each step. Useful checks
+include:
 
 - `class(result)` to confirm which function produced the object
 - `names(result)` to see the main return elements
@@ -508,14 +504,9 @@ sessionInfo()
 
 ## Asking for help
 
-As package developers, we try to explain clearly how to use our packages and in
-which order to use the functions. But `R` and `Bioconductor` have a steep
-learning curve, so it is critical to learn where to ask for help. We would like
-to highlight the [Bioconductor support site](https://support.bioconductor.org/)
-as the main resource for getting help. Please remember to use the `dnaEPICO`
-tag and check the
-[older posts](https://support.bioconductor.org/tag/dnaEPICO/). If you want to
-receive help, please provide a small reproducible example and your session
-information so the source of the problem can be tracked efficiently.
+Use the [Bioconductor support site](https://support.bioconductor.org/) for
+package questions. Add the `dnaEPICO` tag, review
+[previous posts](https://support.bioconductor.org/tag/dnaEPICO/), and include a
+small reproducible example with session information.
 
 # References

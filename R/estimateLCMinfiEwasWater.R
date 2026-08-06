@@ -12,9 +12,8 @@
 #'   references supported through `estimateLC()` are `'saliva'` and
 #'   `'salivaEPIC'`. Other references are passed to
 #'   `ENmix::estimateCellProp()`.
-#' @param phenoOrder Character vector or semicolon-separated string describing
-#'   the phenotype columns that should appear first in the merged `phenoLC`
-#'   output.
+#' @param phenoOrder Character vector or semicolon-separated phenotype columns
+#'   to place first in the merged `phenoLC` output.
 #' @param constrained Logical. Passed to `estimateLC()` when an internal saliva
 #'   reference is used. If `TRUE`, estimated proportions are constrained to sum
 #'   to one.

@@ -7,17 +7,15 @@ Authors@R: person("Paul", "Ruiz", role = c("aut", "cre"),
             comment = c(ORCID = "0009-0007-6714-3566"))
 Description:
     A modular and reproducible workflow for preprocessing and analysing
-    Illumina DNA methylation array data from the EPICv2, EPIC, and
-    450K platforms. The package integrates quality control, probe
-    filtering, cell-type deconvolution, phenotype preparation,
-    CpG-wise generalised linear models with optional term-level omnibus
-    F tests and longitudinal mixed-effects models using 'lmerTest'/'lme4'
-    or 'nlme', including optional 'nlme' residual correlation structures,
-    and automated report generation.
-    It builds on established Bioconductor
-    infrastructure and wraps commonly used tools including 'minfi',
-    'ENmix', and 'wateRmelon', with support for both local execution
-    and high-performance computing workflows.
+    Illumina DNA methylation array data from the EPICv2, EPIC, and 450K
+    platforms.
+    It supports quality control, probe filtering, cell-type deconvolution,
+    phenotype preparation, CpG-wise generalised linear models with optional
+    term-level omnibus F tests, longitudinal mixed-effects models using
+    'lmerTest'/'lme4' or 'nlme', optional 'nlme' residual correlation
+    structures, and automated reports. The workflow uses established
+    Bioconductor tools, including 'minfi', 'ENmix', and 'wateRmelon', and runs
+    locally or in high-performance computing environments.
 License: AGPL-3 + file LICENSE
 URL: https://github.com/paulYRP/dnaEPICO
 BugReports: https://github.com/paulYRP/dnaEPICO/issues

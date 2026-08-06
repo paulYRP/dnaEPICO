@@ -44,11 +44,10 @@ can_run_lme <- can_run_glm && requireNamespace("lmerTest", quietly = TRUE)
 
 # Introduction
 
-This vignette describes the file-based route in `dnaEPICO`. In this mode, the
-same main functions still return structured result objects, but they also
-write files to disk when `saveOutputs = TRUE`. This route is appropriate when
-you want a reproducible folder structure, Makefile-driven execution, or a
-pipeline that can be resumed on a local workstation or an HPC system.
+This vignette describes the file-based `dnaEPICO` workflow. Functions return
+structured objects and write files when `saveOutputs = TRUE`. Use this workflow
+for reproducible directories, Make execution, and resumable analyses on local
+or HPC systems.
 
 # Citation
 
@@ -74,10 +73,10 @@ This citation guidance is adapted from the vignettes and user guides of
 
 `r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for
 high-dimensional genomic data, with a focus on Illumina DNA methylation arrays.
-To read this vignette, we assume that you are already familiar with the general
-DNA methylation workflow. If not, we recommend first reading
+This vignette assumes familiarity with a general DNA methylation workflow. For
+an introduction, see
 [this tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html),
-which provides a practical introduction to the main concepts and analysis steps.
+which covers the main concepts and analysis steps.
 
 Preprocessing and quality control are performed using established Bioconductor
 tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and
@@ -87,9 +86,8 @@ generalised linear models and longitudinal mixed-effects models fitted with
 within-participant residual correlation. Users are expected to have basic
 familiarity with R, command-line execution, and Illumina IDAT file structures.
 
-If you are asking yourself the question "Where do I start using
-Bioconductor?", you might be interested in
-[this blog post](https://www.bioconductor.org/install/).
+For an introduction to Bioconductor, see the
+[installation guide](https://www.bioconductor.org/install/).
 
 ## Probe-exclusion reference files
 
@@ -107,16 +105,15 @@ The lists of excluded probes depend on the Illumina methylation-array platform.
 
 # Installation
 
-The `r Biocpkg("dnaEPICO")` package depends on `r Biocpkg("minfi")`,
-`r Biocpkg("ENmix")`, and `r Biocpkg("wateRmelon")`, among others. Install
-dependencies with BiocManager:
+Install the development version of `r Biocpkg("dnaEPICO")` and its dependencies
+with BiocManager:
 
 ```{r, eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
     install.packages("BiocManager")
 }
 
-BiocManager::install("dnaEPICO")
+BiocManager::install("paulYRP/dnaEPICO")
 
 BiocManager::valid()
 ```
@@ -526,10 +523,9 @@ names(glmPipelineResult$savedFiles)
 
 The returned `savedFiles` object records the groups of outputs written by the
 GLM step. `names(glmPipelineResult$savedFiles)` includes compact phenotype
-summary files, significant-CpG exports, summary
-text files, and the annotated results workbook. This is the object to inspect when
-you want to confirm which modeling outputs were written and how they are
-grouped.
+summary files, significant-CpG exports, summary text files, and the annotated
+results workbook. Inspect this object to identify the written modeling outputs
+and their groups.
 
 Arguments:
 
@@ -637,10 +633,9 @@ names(lmePipelineResult$savedFiles)
 
 The returned `savedFiles` object records the groups of outputs written by the
 LME step. `names(lmePipelineResult$savedFiles)` includes compact phenotype
-summary files, summary text files, significant
-interaction exports, and the annotated longitudinal results table. This is the
-object to inspect when you want to confirm which longitudinal modeling outputs
-were written and how they are grouped.
+summary files, summary text files, significant interaction exports, and the
+annotated longitudinal results table. Inspect this object to identify the
+written longitudinal modeling outputs and their groups.
 
 Arguments:
 
@@ -718,7 +713,7 @@ be passed directly.
 
 When running this section from an R session, `dnamReport()` still needs the
 Quarto command line interface because the function renders the `.qmd` files into
-the final website. You can check whether R can find Quarto with:
+the final website. Check whether R can find Quarto with:
 
 ```{r quarto-check-r, eval = FALSE}
 Sys.which("quarto")
@@ -863,8 +858,8 @@ $$
 \varepsilon
 $$
 
-If `interactionTerm` is supplied, the same framework is extended by adding the
-requested interaction to the fixed-effect portion of the model.
+If `interactionTerm` is supplied, the fixed effects include its main effect and
+its interaction with the phenotype.
 
 ## Longitudinal mixed-effects structure
 
@@ -877,8 +872,9 @@ $$
 \text{Methylation}_{CpG_i} =\;&
 \beta_0 +
 \beta_1 \cdot \text{Phenotype} +
-\beta_2 \cdot (\text{Phenotype} \times \text{Interaction}) +
-\sum_{k = 1}^{K} \beta_{k + 2} \cdot \text{Covariate}_k +
+\beta_2 \cdot \text{Interaction} +
+\beta_3 \cdot (\text{Phenotype} \times \text{Interaction}) +
+\sum_{k = 1}^{K} \beta_{k + 3} \cdot \text{Covariate}_k +
 \beta_{\text{PRS}} \cdot \text{PRS} +
 b_{\text{person}} +
 \varepsilon
@@ -902,12 +898,9 @@ Common arguments in this longitudinal stage are:
 
 # Makefile use
 
-In a project directory, the Makefile route is simpler than calling each
-function by hand. A minimal project layout looks like this:
-
 The workflow requires GNU Make 4.3 or later and `Rscript` on the system path.
-Quarto is required when a report target is requested. The exported rules use
-relative project paths, including when the project directory contains spaces.
+Report targets also require Quarto. The exported rules use relative paths and
+support project directories containing spaces. A minimal layout is:
 
 ```text
 my_project/
@@ -933,7 +926,7 @@ RESULTS_DIR = results
 FIGURES_DIR = figures
 ```
 
-With that structure in place, a typical sequence of commands looks like this:
+A typical command sequence is:
 
 ```bash
 make step1 MODEL=model1
@@ -947,21 +940,21 @@ make status MODEL=model1
 make clean MODEL=model1
 ```
 
-These targets correspond to the grouped outputs defined in the exported rules:
+The targets run these workflow stages:
 
 - `make step1 MODEL=model1` runs preprocessing only.
 - `make step2 MODEL=model1` runs the SVA step using the files written by Step 1.
-- `make step3 MODEL=model1` runs phenotype preparation after Step 2 has safely
-    appended PC columns to `phenoLC.csv`.
-- `make f3 MODEL=model1` runs preprocessing, SVA, phenotype preparation, and a
-    report containing only those sections.
-- `make f4 MODEL=model1` runs the same route, adds the GLM step, and generates a
-    report containing the preprocessing and GLM sections.
-- `make f3lme MODEL=model1` runs the same route, adds the longitudinal LME step,
-    and generates a report containing the preprocessing and LME sections.
-- `make all MODEL=model1` runs the full pipeline, including both modeling steps and the report.
-- `make status MODEL=model1` checks which expected output files are already present.
-- `make clean MODEL=model1` removes the files generated for the selected model while keeping the shared raw input area.
+- `make step3 MODEL=model1` runs phenotype preparation after Step 2 appends
+    surrogate-variable columns to `phenoLC.csv`.
+- `make f3 MODEL=model1` runs Steps 1-3 and generates a preprocessing report.
+- `make f4 MODEL=model1` runs Steps 1-4 and generates a report with
+    preprocessing and GLM sections.
+- `make f3lme MODEL=model1` runs Steps 1-3 and LME, then generates a report with
+    preprocessing and LME sections.
+- `make all MODEL=model1` runs Steps 1-5 and generates the complete report.
+- `make status MODEL=model1` reports available outputs.
+- `make clean MODEL=model1` removes outputs for the selected model while
+    preserving shared raw inputs.
 
 If several models are declared in `MODELS`, the grouped multi-model targets can
 be used instead:
@@ -973,14 +966,14 @@ make f3lme_models
 make models
 ```
 
-These grouped targets loop over every model listed in `MODELS`:
+These targets dispatch every model listed in `MODELS`:
 
 - `make f3_models` runs the `f3` route for each declared model.
 - `make f4_models` runs the `f4` route for each declared model.
 - `make f3lme_models` runs the `f3lme` route for each declared model.
 - `make models` runs the full `all` pipeline for each declared model.
 
-Two maintenance targets are also useful during routine work:
+Status and cleanup targets are available for routine use:
 
 ```bash
 make status MODEL=model1
@@ -988,15 +981,11 @@ make clean MODEL=model1
 make clean_models
 ```
 
-- `make status MODEL=model1` reports which expected outputs are already present for one model.
-- `make clean MODEL=model1` removes the generated outputs for one model.
-- `make clean_models` removes the generated outputs for every model listed in
-    `MODELS`.
+`status` reports available outputs, `clean` removes one model, and
+`clean_models` removes every model listed in `MODELS`. Cleanup preserves the
+shared raw input directory.
 
-The exact target names and variables depend on the Makefile settings extracted
-for the project. In practice, `saveOutputs = TRUE` is what makes the individual
-steps compatible with this route because later steps consume the files written
-by earlier ones. Step 2 creates
+Each step writes outputs consumed by downstream targets. Step 2 creates
 `data/<model>/svaEnmix/.sva_complete` only after the updated `phenoLC.csv` has
 been validated and installed. Downstream targets depend on both files, so Make
 reruns SVA when Step 1 replaces `phenoLC.csv` and skips SVA when the completed
@@ -1050,9 +1039,8 @@ export QUARTO_BIN=/full/path/to/quarto
 
 # Full exported Makefile
 
-The full Makefile exported by `extractMake()` is shown below. This is the
-template that should be adapted for a project before running the pipeline in the
-target analysis environment.
+The full Makefile exported by `extractMake()` is shown below. Adapt this template
+for the project before running the pipeline in the target analysis environment.
 
 ```{r makefile-template-full, echo = FALSE, results = "asis"}
 makefile_lines <- readLines(makefilePath, warn = FALSE)
@@ -1111,7 +1099,7 @@ These parameters are shared across multiple workflow steps.
 - `SEP_TYPE`: optional separator used when reading text files; `NULL` uses the
     default comma separator.
 - `SAMPLE_ID`: phenotype column used to align samples.
-- `N_SAMPLES`: optional sample subset for testing; `NA` uses all samples.
+- `N_SAMPLES`: maximum number of phenotype rows; `NA` uses all rows.
 - `ARRAY_TYPE` and `ANNOTATION_VERSION`: array platform and annotation build.
 - `IDAT_FORCE`: whether `minfi::read.metharray.exp()` should force reading
     selected IDAT files with different internal array sizes; the default is
@@ -1213,8 +1201,8 @@ phenotype-methylation data.
 - `GLM_LIBS`: GLM implementation used by `methylationGLM()`.
 - `INTERACTION_GLM`: optional interaction term added to the fixed-effect part
     of the GLM; `NULL` omits the interaction.
-- `GLM_OMNIBUS_TEST`: whether one joint Wald F test is reported for each CpG's
-    phenotype or phenotype-by-interaction term.
+- `GLM_OMNIBUS_TEST`: whether one joint Wald F test is reported for the
+    phenotype or phenotype-by-interaction term at each CpG.
 - `SUMMARY_RESIDUAL_SD`: whether residual standard deviations are reported in
     summaries.
 - `SAVE_SIGNIFICANT_CPGS`: whether tables of significant CpGs are exported.
@@ -1275,21 +1263,20 @@ user-specified tuning value rather than applying a filter.
 - `include $(DNAPIPE_MK)` imports the actual pipeline rules after the user
     configuration has been defined.
 
-This separation is what allows the template Makefile to stay compact while the
-package keeps the rule implementation in one maintained location.
+This keeps the template compact while the package maintains the rules in one
+location.
 
 # Summary
 
-The file-based route is the correct choice when you need:
+Use the file-based workflow when you need:
 
 - a reproducible folder structure,
 - files that can be reused by later workflow stages,
 - Makefile execution, or
 - repeated analyses across one or more models.
 
-The interactive route and the file-based route are therefore complementary:
-local use is best for understanding the returned objects, while pipeline use is
-best for reproducible multi-step execution.
+The interactive workflow supports direct inspection of returned objects; the
+file-based workflow supports reproducible multi-step execution.
 
 # Basics
 
@@ -1314,14 +1301,9 @@ sessionInfo()
 
 ## Asking for help
 
-As package developers, we try to explain clearly how to use our packages and in
-which order to use the functions. But `R` and `Bioconductor` have a steep
-learning curve, so it is critical to learn where to ask for help. We would like
-to highlight the [Bioconductor support site](https://support.bioconductor.org/)
-as the main resource for getting help. Please remember to use the `dnaEPICO`
-tag and check the
-[older posts](https://support.bioconductor.org/tag/dnaEPICO/). If you want to
-receive help, please provide a small reproducible example and your session
-information so the source of the problem can be tracked efficiently.
+Use the [Bioconductor support site](https://support.bioconductor.org/) for
+package questions. Add the `dnaEPICO` tag, review
+[previous posts](https://support.bioconductor.org/tag/dnaEPICO/), and include a
+small reproducible example with session information.
 
 # References

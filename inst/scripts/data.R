@@ -1,11 +1,7 @@
 # Data Description
 
-# Purpose:
-#   Document how external and internal data files used by the dnaEPICO
-# package were obtained, prepared, and stored for reproducibility.
-#
-# This script is for documentation and reproducibility purposes only.
-# It is NOT executed during package installation.
+# Documents the origin and preparation of data files supplied with dnaEPICO.
+# This script is not run during package installation.
 
 # -----------------------------------------------------------
 # Data sources
@@ -14,10 +10,8 @@
 # 1. Probe-exclusion list:
 #   12864_2024_10027_MOESM8_ESM.csv
 #
-# This file was obtained from the supplementary material of the
-# corresponding publication and is included for probe filtering
-# demonstration purposes. The file size was reduced (<100 MB) to
-# comply with package distribution requirements.
+# This supplementary file is used to demonstrate probe filtering. Its size was
+# reduced to less than 100 MB for package distribution.
 #
 # Source URL:
 #   https://link.springer.com/article/10.1186/s12864-024-10027-5
@@ -28,9 +22,8 @@
 #   saliva.txt
 #   salivaEPIC.txt
 #
-# These reference coefficient matrices are used by the function
-# `estimateLC()` to estimate cell type proportions from DNA
-# methylation beta values using the Houseman algorithm.
+# `estimateLC()` uses these coefficient matrices to estimate cell-type
+# proportions from DNA methylation beta values with the Houseman algorithm.
 #
 # The reference data originate from the ewastools pipeline:
 #
@@ -51,28 +44,20 @@
 # Make/ directory
 # -----------------------------------------------------------
 
-# The `make/` directory contains workflow orchestration files used to
-# run the complete dnaEPICO analysis pipeline in a reproducible and
-# automated manner. These files are not executed during package
-# installation and are not required for normal package usage.
+# The `make/` directory contains the exported workflow configuration and rules.
+# These files are not run during package installation.
 #
 # Files in the `make/` directory include:
 #
-#   - Makefile rules that define parameters between preprocessing,
-# modelling, and reporting steps
-#   - Makefile model pipeline configuration variables and models shared
-# across scripts
-#
-# These files allow users and developers to reproduce the full analysis
-# performed by dnaEPICO outside of the package runtime environment,
-# ensuring transparency and methodological reproducibility.
+#   - Rules for preprocessing, modelling, and reporting steps
+#   - Model-specific configuration variables
 
 # -----------------------------------------------------------
 # dnaEPICO logo/report graphics
 # -----------------------------------------------------------
 
 # dnaEPICO.svg is the packaged logo used by `dnamReport()`.
-# dnaEPICORM.svg is the logo used in Readme and vignette files.
+# dnaEPICORM.svg is the logo used in README and vignette files.
 # dnaEPICO.gif is a rasterized version of the logo used in the package manual.
 # cpg-viewer.js renders paged CpG result tables in the report.
 

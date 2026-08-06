@@ -10,8 +10,8 @@ NEW FEATURES
       covariate, factor, and scaling variables for GLM and LME analyses.
 
     o [05-08-2026] Added modelSections to dnamReport() for preprocessing-only,
-      GLM-only, LME-only, or complete model reporting while retaining the
-      complete report as the backward-compatible default.
+      GLM-only, LME-only, or complete reports. The complete report remains the
+      default.
 
 CHANGES IN VERSION 0.99.36
 ------------------------
@@ -22,8 +22,8 @@ NEW FEATURES
       bounded response-block parallelism, memory-aware workers, and resumable
       compact phenotype summaries instead of genome-wide full-model RDS files.
 
-    o [23-07-2026] Recorded conditions in one Model.Message column, and
-      reporting unavailable results through workbook metadata.
+    o [23-07-2026] Recorded conditions in one Model.Message column and reported
+      unavailable results through workbook metadata.
 
     o [22-07-2026] Added lmerTest omnibus F tests for complete
       phenotype main effects or phenotype-by-interaction terms, with
@@ -73,7 +73,7 @@ NEW FEATURES
 
     o [05-06-2026] Added configurable cross-reactive probe ID detection. 
 
-    o [30-05-2026] Added a overview vignette with visual summaries of the main
+    o [30-05-2026] Added an overview vignette with visual summaries of the main
       dnaEPICO functions.
 
     o [23-05-2026] Added a Quarto dashboard report workflow for dnamReport(). 
@@ -81,4 +81,4 @@ NEW FEATURES
     o [14-04-2026] Introduced a modular and reproducible pipeline for preprocessing
       Illumina DNA methylation array data (EPICv2, EPIC and 450K). 
 
-    o [18-02-2026] Initial Bioconductor submission of the dnaEPICO package. 
+    o [18-02-2026] Started development of the dnaEPICO package.

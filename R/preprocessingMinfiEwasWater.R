@@ -1,9 +1,8 @@
 #' Convenience preprocessing pipeline for Illumina methylation arrays
 #'
-#' Run the `dnaEPICO` preprocessing workflow as a convenience wrapper around the
-#' smaller minfi/ENmix/wateRmelon helper functions in this package. The wrapper
-#' returns a structured result object containing the in-memory outputs from each
-#' stage. Files are written only when `saveOutputs = TRUE`.
+#' Run the `dnaEPICO` preprocessing workflow with the package's
+#' minfi/ENmix/wateRmelon helper functions. The function returns the output from
+#' each stage and writes files only when `saveOutputs = TRUE`.
 #'
 #' @param phenoFile Character. Path to the phenotype CSV file.
 #' @param idatFolder Character. Directory containing the IDAT files.
@@ -72,8 +71,8 @@
 #' @param lcRef Character. Reference panel used for cell composition estimation.
 #'   `'saliva'` and `'salivaEPIC'` use `estimateLC()`. Other values are passed
 #'   to `ENmix::estimateCellProp()`.
-#' @param phenoOrder Character vector or semicolon-separated string describing
-#'   which phenotype columns should appear first in the merged `phenoLC` table.
+#' @param phenoOrder Character vector or semicolon-separated phenotype columns
+#'   to place first in the merged `phenoLC` table.
 #' @param lcPhenoDir Character. Directory used for the saved `phenoLC.csv` file
 #'   when `saveOutputs = TRUE`.
 #' @param display Logical. If `TRUE`, draw plots on the active graphics device.
@@ -97,7 +96,7 @@
 #'   predicted sex labels, mismatch summaries, plotting data, and the sample IDs
 #'   removed when `removeSexMismatch = TRUE`.}
 #'   \item{normData}{Object returned by [normalizeMinfiEwasWater()] containing
-#' the requested normalized objects and metadata on the methods that were run.}
+#'   the selected normalized objects and method metadata.}
 #'   \item{filterData}{Object returned by [filterProbesMinfiEwasWater()]
 #'   containing the probe-filtered methylation objects at each filtering stage.}
 #'   \item{metricsData}{Object returned by [extractMetricsMinfiEwasWater()]

@@ -1,9 +1,7 @@
 #' Estimate saliva cell proportions from DNA methylation beta values
 #'
 #' Estimate cell-type proportions with the saliva reference panels bundled in
-#' `dnaEPICO`. This function keeps the original `estimateLC()` interface used by
-#' the package while using the internal reference files distributed in
-#' `inst/extdata`.
+#' `dnaEPICO`.
 #'
 #' @param meth Numeric matrix of beta values with CpGs in rows and samples in
 #'   columns. Row names must contain probe identifiers compatible with the
@@ -153,11 +151,16 @@ estimateLCFromBetaDnaEpico <- function(meth, ref, constrained) {
             return("epicv2")
         }
 
-        stop(label, " is (partly) invalid!")
+        stop(label, " contain unsupported or mixed probe identifiers.",
+            call. = FALSE
+        )
     }
 
-    query_type <- detect_probe_id_type(rownames(coefs), "Query")
-    row_type <- detect_probe_id_type(rownames(meth), "Input row names")
+    query_type <- detect_probe_id_type(
+        rownames(coefs),
+        "Reference probe identifiers"
+    )
+    row_type <- detect_probe_id_type(rownames(meth), "meth row names")
 
     if (identical(query_type, row_type)) {
         markers <- match(rownames(coefs), rownames(meth))
@@ -185,7 +188,10 @@ estimateLCFromBetaDnaEpico <- function(meth, ref, constrained) {
             locus_means
         }, numeric(J)))
     } else if (query_type == "epicv2" && row_type == "legacy") {
-        stop("Query contains EPICv2 probe IDs but dataset is of legacy type")
+        stop(
+            "The reference uses EPICv2 probe IDs, but meth uses legacy probe IDs.",
+            call. = FALSE
+        )
     } else {
         stop("Unsupported probe identifier combination.", call. = FALSE)
     }

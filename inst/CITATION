@@ -1,5 +1,4 @@
-citHeader(
-  "dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data, generated as part of 10.3390/epigenomes9040039")
+citHeader("To cite dnaEPICO, use:")
 
 bibentry(
   bibtype = "Article",
@@ -16,5 +15,5 @@ bibentry(
     )
   ),
   year = "2026",
-  url = "https://bioconductor.org/packages/dnaEPICO"
+  url = "https://github.com/paulYRP/dnaEPICO"
 )

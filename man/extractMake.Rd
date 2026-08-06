@@ -2,13 +2,12 @@
 % Please edit documentation in R/extractMake.R
 \name{extractMake}
 \alias{extractMake}
-\title{Copy dnaEPICO Makefile to a user directory}
+\title{Copy the dnaEPICO Makefile to a user directory}
 \usage{
 extractMake(destDir, overwrite = FALSE)
 }
 \arguments{
-\item{destDir}{Character. Destination directory where the Makefile
-will be copied.}
+\item{destDir}{Character. Destination directory for the Makefile.}
 
 \item{overwrite}{Logical. Whether to overwrite an existing \code{Makefile} in
 \code{destDir}. The default is \code{FALSE}.}
@@ -17,8 +16,7 @@ will be copied.}
 Character scalar containing the path to the copied \code{Makefile}.
 }
 \description{
-Copies the example Makefile pipeline shipped with dnaEPICO to a
-user-specified directory for local execution or modification.
+Copy the example Makefile supplied with \code{dnaEPICO} to a user directory.
 }
 \details{
 The exported workflow requires GNU Make 4.3 or later and \code{Rscript} on the

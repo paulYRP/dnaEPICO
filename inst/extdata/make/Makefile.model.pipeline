@@ -4,7 +4,7 @@
 MAKEFLAGS += --output-sync
 
 # ===============================================
-# MODELS SELECTION PARALLEL RUN
+# MODEL SELECTION
 # ===============================================
 # Single model
 MODEL ?= model1
@@ -52,7 +52,7 @@ SUMMARY_DIR = summary
 ENMIX_DIR = enmix
 SVA_DIR = sva
 QC_DIR = qc
-# Modify the following with the path of your folder in HPC or Local
+# Optional R library path for local or HPC environments
 R_DIR = NULL
 
 # ===============================================
@@ -214,7 +214,7 @@ endif
 endif
 
 # ===============================================
-# INCLUDE PIPELINE FROM dnaEPICO
+# LOAD dnaEPICO PIPELINE RULES
 # ===============================================
 DNAPIPE_EMPTY :=
 DNAPIPE_SPACE := $(DNAPIPE_EMPTY) $(DNAPIPE_EMPTY)

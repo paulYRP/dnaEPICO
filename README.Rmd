@@ -22,65 +22,50 @@ output: github_document
 
 dnaEPICO provides a **modular and reproducible pipeline** for preprocessing and statistically analysing Illumina DNA methylation array data from the EPICv2, EPIC, and 450K platforms.
 
-The package supports CpG-wise generalised linear models and longitudinal mixed-effects models using lmerTest/lme4 or nlme. It also integrates preprocessing, quality control, phenotype preparation, and automated report generation for local and High-Performance Computing (HPC) environments through a **GNU Make-based workflow**.
+The package supports CpG-wise generalised linear models and longitudinal mixed-effects models using lmerTest/lme4 or nlme. It also integrates preprocessing, quality control, phenotype preparation, and automated reporting for local and high-performance computing (HPC) environments through a **GNU Make-based workflow**.
 
-For lmerTest/lme4 analyses, optional omnibus F tests jointly evaluate complete phenotype main effects or phenotype-by-interaction terms while retaining the participant-level random-intercept model.
+Optional omnibus F tests jointly evaluate complete phenotype main effects or phenotype-by-interaction terms in GLM and lmerTest/lme4 analyses.
 
-## Installation instructions
+## Installation
 
-Get the latest stable `R` release from [CRAN](http://cran.r-project.org/). Then install `dnaEPICO` from [Bioconductor](http://bioconductor.org/) using the following code:
+Install a current `R` release from [CRAN](https://cran.r-project.org/), then install the development version of `dnaEPICO` from GitHub:
 
 ```{r 'install', eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
     install.packages("BiocManager")
 }
 
-BiocManager::install("dnaEPICO")
-```
-
-And the development version from [GitHub](https://github.com/paulYRP/dnaEPICO) with:
-
-```{r 'install_dev', eval = FALSE}
 BiocManager::install("paulYRP/dnaEPICO")
 ```
 
-Alternatively, install directly from GitHub:
-
-```{r, eval= FALSE, echo= TRUE}
-install.packages('devtools')
-devtools::install_github('paulYRP/dnaEPICO')
-```
-
-## Articles:
+## Articles
 - [**A Pilot Epigenome-Wide Study of Posttraumatic Growth: Identifying Novel Candidates for Future Research**](https://www.mdpi.com/2075-4655/9/4/39)
 
-## Tutorials:
+## Tutorials
 - [**DNA Methylation Tutorial**](https://paulYRP.github.io/2025-cpgpneurogenomics-workshop/tutorial.html)
 - [**Getting Started**](https://github.com/paulYRP/dnaEPICO/wiki/Getting-Started)
 - [**Requirements**](https://github.com/paulYRP/dnaEPICO/wiki/Requirements)
 
 ## Citation
 
-Below is the citation output from using `citation('dnaEPICO')` in R. Please run this yourself to check for any updates on how to cite __dnaEPICO__.
+Run `citation("dnaEPICO")` to obtain the current citation:
 
 ```{r 'citation', eval = requireNamespace('dnaEPICO')}
 print(citation("dnaEPICO"), bibtex = TRUE)
 ```
 
-Please note that the `dnaEPICO` was only made possible thanks to many other R and bioinformatics software authors, which are cited either in the vignettes and/or the paper(s) describing this package.
+`dnaEPICO` builds on R and bioinformatics software cited in the vignettes and package publications.
 
 ## Code of Conduct
 
-Please note that the `dnaEPICO` project is released with a [Contributor Code of Conduct](http://bioconductor.org/about/code-of-conduct/). By contributing to this project, you agree to abide by its terms.
+The `dnaEPICO` project follows the [Bioconductor Code of Conduct](https://bioconductor.org/about/code-of-conduct/). Contributors agree to follow its terms.
 
 ## Development tools
 
-* Continuous code testing is possible thanks to [GitHub actions](https://www.tidyverse.org/blog/2020/04/usethis-1-6-0/)  through `r BiocStyle::CRANpkg('usethis')`, `r BiocStyle::CRANpkg('remotes')`, and `r BiocStyle::CRANpkg('rcmdcheck')` customized to use [Bioconductor's docker containers](https://www.bioconductor.org/help/docker/) and `r BiocStyle::Biocpkg('BiocCheck')`.
-* Code coverage assessment is possible thanks to [codecov](https://codecov.io/gh) and `r BiocStyle::CRANpkg('covr')`.
-* The [documentation website](http://paulYRP.github.io/dnaEPICO) is automatically updated thanks to `r BiocStyle::CRANpkg('pkgdown')`.
-* The code is styled automatically thanks to `r BiocStyle::CRANpkg('styler')`.
-* The documentation is formatted thanks to `r BiocStyle::CRANpkg('devtools')` and `r BiocStyle::CRANpkg('roxygen2')`.
-
-For more details, check the `dev` directory.
+* [GitHub Actions](https://github.com/paulYRP/dnaEPICO/actions) runs package checks with Bioconductor containers and `r BiocStyle::Biocpkg('BiocCheck')`.
+* [Codecov](https://codecov.io/gh/paulYRP/dnaEPICO) and `r BiocStyle::CRANpkg('covr')` report code coverage.
+* `r BiocStyle::CRANpkg('pkgdown')` builds the [documentation website](https://paulYRP.github.io/dnaEPICO).
+* `r BiocStyle::CRANpkg('styler')` formats R code.
+* `r BiocStyle::CRANpkg('devtools')` and `r BiocStyle::CRANpkg('roxygen2')` generate package documentation.
 
 This package was developed using `r BiocStyle::Biocpkg('biocthis')`.
