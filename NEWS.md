@@ -1,3 +1,18 @@
+CHANGES IN VERSION 0.99.37
+------------------------
+
+NEW FEATURES
+
+    o [05-08-2026] GLM analyses now support optional omnibus F tests for phenotype and
+      phenotype-by-interaction terms.
+
+    o [05-08-2026] The Makefile configuration now uses model-specific
+      covariate, factor, and scaling variables for GLM and LME analyses.
+
+    o [05-08-2026] Added modelSections to dnamReport() for preprocessing-only,
+      GLM-only, LME-only, or complete model reporting while retaining the
+      complete report as the backward-compatible default.
+
 CHANGES IN VERSION 0.99.36
 ------------------------
 

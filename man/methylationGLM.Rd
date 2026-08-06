@@ -22,6 +22,7 @@ methylationGLM(
   plotHeight = 1000,
   plotDPI = 150,
   interactionTerm = NULL,
+  omnibusTest = FALSE,
   libPath = NULL,
   glmLibs = "glm2",
   prsMap = NULL,
@@ -101,6 +102,11 @@ disk.}
 supplied and present in the input data, the phenotype is modeled together
 with its interaction against this variable.}
 
+\item{omnibusTest}{Logical. If \code{TRUE}, use \code{car::linearHypothesis()} to test
+the complete phenotype-by-interaction term, or the phenotype main effect
+when \code{interactionTerm = NULL}, once per CpG. One-degree-of-freedom terms
+are tested and therefore reproduce the corresponding coefficient p-value.}
+
 \item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
 to
 worker processes. By default, the current \code{.libPaths()} are used.}
@@ -125,7 +131,9 @@ when \code{saveOutputs = TRUE}.}
 CpG coefficient tables.}
 
 \item{significantCpGPval}{Numeric. P-value threshold used to collect or write
-significant CpG coefficient tables.}
+significant CpG coefficient tables. The threshold is applied to omnibus
+p-values when \code{omnibusTest = TRUE}, and to target coefficient p-values
+otherwise.}
 
 \item{saveTxtSummaries}{Logical. If \code{TRUE} and \code{saveOutputs = TRUE}, write
 tab-delimited summary tables to \code{summaryTxtDir}.}
@@ -186,7 +194,8 @@ metadata.}
 \code{\link[=plotMethylationGLMDistributions]{plotMethylationGLMDistributions()}} describing any exploratory plots that
 were generated or written.}
 \item{modelFits}{Object returned by \code{\link[=fitMethylationGLMModels]{fitMethylationGLMModels()}}
-containing compact per-phenotype coefficient and condition results.}
+containing compact per-phenotype coefficient, omnibus, and condition
+results.}
 \item{modelSummaries}{Object returned by
 \code{\link[=summarizeMethylationGLMModels]{summarizeMethylationGLMModels()}} containing the combined CpG summary
 tables used for reporting and annotation.}
@@ -220,8 +229,9 @@ default, the function runs quietly and returns its results in memory.
 Numeric CpG columns are passed to \code{glm2::glm2()} without a separate
 methylation-domain filter. Native model messages, warnings, and errors are
 recorded in one phenotype-specific \code{Model.Message} field. Annotated outputs
-contain CpGs with at least one returned p-value; aggregate availability and
-condition counts are recorded in workbook metadata.
+contain CpGs with at least one returned coefficient or omnibus p-value;
+aggregate availability and condition counts are recorded in workbook
+metadata.
 }
 \examples{
 if (requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {

@@ -319,14 +319,15 @@ factorSpecificationMethylationModels <- function(data, factorVars) {
     variables <- intersect(factorVars, colnames(data))
     lapply(stats::setNames(variables, variables), function(variable) {
         value <- data[[variable]]
+        factor_contrasts <- if (is.factor(value) && nlevels(value) > 1L) {
+            unclass(stats::contrasts(value))
+        } else {
+            NULL
+        }
         list(
             levels = levels(value),
             ordered = is.ordered(value),
-            contrasts = if (is.factor(value)) {
-                unclass(stats::contrasts(value))
-            } else {
-                NULL
-            }
+            contrasts = factor_contrasts
         )
     })
 }
@@ -335,6 +336,11 @@ buildPhenotypeSignatureMethylationModels <- function(
     analysis, engine, phenotype, formulaText, preparedData,
     modelSettings = list(), packages = character(0)
 ) {
+    formula_object <- stats::as.formula(formulaText)
+    formula_factor_vars <- intersect(
+        preparedData$factorVars,
+        all.vars(formula_object[[3L]])
+    )
     list(
         schemaVersion = 1L,
         analysis = analysis, engine = engine,
@@ -355,7 +361,7 @@ buildPhenotypeSignatureMethylationModels <- function(
         interactionTerm = preparedData$interactionTerm,
         factors = factorSpecificationMethylationModels(
             preparedData$data,
-            preparedData$factorVars
+            formula_factor_vars
         ),
         scaleVars = preparedData$scaleVars,
         scalingMetadata = preparedData$scalingMetadata,
@@ -412,8 +418,8 @@ validatePhenotypeSummaryMethylationModels <- function(
     required <- c(
         "formatVersion", "complete", "analysis", "engine", "phenotype",
         "signature", "cpgOrder", "completion", "coefficientResults",
-        "targetSummary", "modelMessages", "fitFailures", "failureCount",
-        "failureReasons", "formula", "settings", "versions"
+        "targetSummary", "omnibusTests", "modelMessages", "fitFailures",
+        "failureCount", "failureReasons", "formula", "settings", "versions"
     )
     if (!is.list(object) || !all(required %in% names(object))) {
         return(list(valid = FALSE, reason = "required fields are missing"))
@@ -441,6 +447,7 @@ validatePhenotypeSummaryMethylationModels <- function(
         return(list(valid = FALSE, reason = "coefficient results are invalid"))
     }
     if (!is.data.frame(object$targetSummary) ||
+        !is.data.frame(object$omnibusTests) ||
         !is.data.frame(object$modelMessages) ||
         nrow(object$modelMessages) != length(expected_cpgs) ||
         !identical(as.character(object$modelMessages$CpG), expected_cpgs) ||

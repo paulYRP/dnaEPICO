@@ -20,6 +20,11 @@ Character scalar containing the path to the copied \code{Makefile}.
 Copies the example Makefile pipeline shipped with dnaEPICO to a
 user-specified directory for local execution or modification.
 }
+\details{
+The exported workflow requires GNU Make 4.3 or later and \code{Rscript} on the
+system path. Quarto is also required for report targets. The rules use
+relative project paths and support project directories containing spaces.
+}
 \examples{
 tmp <- file.path(tempdir(), "dnaEPICO-make-example")
 dir.create(tmp, recursive = TRUE, showWarnings = FALSE)

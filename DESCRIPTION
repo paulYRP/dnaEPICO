@@ -1,7 +1,7 @@
 Package: dnaEPICO
 Title: dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data
-Version: 0.99.36
-Date: 2026-01-18
+Version: 0.99.37
+Date: 2026-08-05
 Authors@R: person("Paul", "Ruiz", role = c("aut", "cre"),
             email = "ruizpint@qut.edu.au",
             comment = c(ORCID = "0009-0007-6714-3566"))
@@ -10,9 +10,10 @@ Description:
     Illumina DNA methylation array data from the EPICv2, EPIC, and
     450K platforms. The package integrates quality control, probe
     filtering, cell-type deconvolution, phenotype preparation,
-    CpG-wise generalised linear models and longitudinal mixed-effects
-    models using 'lmerTest'/'lme4' or 'nlme', including optional 'nlme'
-    residual correlation structures, and automated report generation.
+    CpG-wise generalised linear models with optional term-level omnibus
+    F tests and longitudinal mixed-effects models using 'lmerTest'/'lme4'
+    or 'nlme', including optional 'nlme' residual correlation structures,
+    and automated report generation.
     It builds on established Bioconductor
     infrastructure and wraps commonly used tools including 'minfi',
     'ENmix', and 'wateRmelon', with support for both local execution
@@ -23,6 +24,7 @@ BugReports: https://github.com/paulYRP/dnaEPICO/issues
 Depends: R (>= 4.4)
 Imports:
     Biobase,
+    car,
     RColorBrewer,
     data.table,
     ggplot2,

@@ -17,8 +17,9 @@ collectSignificantCpGsMethylationGLM(
 \arguments{
 \item{modelResults}{Object returned by \code{fitMethylationGLMModels()}.}
 
-\item{pvalThreshold}{Numeric. Threshold applied to phenotype main-effect or
-interaction p-values.}
+\item{pvalThreshold}{Numeric. Threshold applied to omnibus p-values when
+omnibus testing was enabled during model fitting, or to phenotype
+main-effect or interaction coefficient p-values otherwise.}
 
 \item{interactionTerm}{Character or \code{NULL}. Optional interaction term.}
 

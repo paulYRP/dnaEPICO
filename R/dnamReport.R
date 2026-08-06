@@ -10,6 +10,40 @@ normalizePathDnamReport <- function(path) {
     gsub("\\\\", "/", normalizePath(path, winslash = "/", mustWork = FALSE))
 }
 
+#' Normalize requested model sections for dashboard reports
+#'
+#' @param modelSections Character vector containing any of `'glm'` and `'lme'`.
+#'
+#' @return A unique character vector in canonical report order.
+#'
+#' @keywords internal
+#' @noRd
+normalizeModelSectionsDnamReport <- function(modelSections) {
+    if (!is.character(modelSections)) {
+        stop("modelSections must be a character vector.", call. = FALSE)
+    }
+    if (length(modelSections) == 0L) {
+        return(character(0))
+    }
+    if (anyNA(modelSections) || any(!nzchar(trimws(modelSections)))) {
+        stop("modelSections cannot contain missing or empty values.",
+            call. = FALSE
+        )
+    }
+
+    allowed <- c("glm", "lme")
+    normalized <- unique(tolower(trimws(modelSections)))
+    invalid <- setdiff(normalized, allowed)
+    if (length(invalid) > 0L) {
+        stop("Unsupported modelSections value(s): ",
+            paste(invalid, collapse = ", "), ". Expected any of: ",
+            paste(allowed, collapse = ", "), ".",
+            call. = FALSE
+        )
+    }
+    allowed[allowed %in% normalized]
+}
+
 #' Format a report print path
 #'
 #' @param path Character path to format.
@@ -289,6 +323,11 @@ renderDnamReport <- function(
 #'   When `NULL`, the path is inferred from the Makefile output layout. Report
 #'   sidecars produced by `methylationLME()` are read from this report project's
 #'   `assets/results/lme_results` directory when available.
+#' @param modelSections Character vector containing any of `'glm'` and `'lme'`.
+#'   The report includes the corresponding model pages, logs, and summary
+#'   sections.
+#'   Use `character(0)` for a preprocessing-only report. The default preserves
+#'   the complete GLM-and-LME report.
 #' @param logTab Character. Directory containing workflow logs shown in the Logs
 #'   tab.
 #' @param verbose Logical. If `TRUE`, emit progress messages.
@@ -373,7 +412,8 @@ dnamReport <- function(
         "figures",
         "preprocessingMinfiEwasWater", "metrics"
     ), glmTab = NULL,
-    lmeTab = NULL, logTab = outputDir, verbose = FALSE, logs = FALSE,
+    lmeTab = NULL, modelSections = c("glm", "lme"),
+    logTab = outputDir, verbose = FALSE, logs = FALSE,
     projectName = "dnaEPICO", detPPath = NULL, detPThreshold = 0.01,
     cpgDetectionPath = NULL, sampleDetectionPath = NULL,
         logoPath = system.file("extdata",
@@ -388,6 +428,9 @@ dnamReport <- function(
         detPThreshold,
         "detPThreshold"
     )
+    model_sections <- normalizeModelSectionsDnamReport(modelSections)
+    include_glm <- "glm" %in% model_sections
+    include_lme <- "lme" %in% model_sections
 
     is_absolute_path <- function(path) {
         grepl("^[A-Za-z]:[/\\\\]|^/", path)
@@ -2463,7 +2506,8 @@ dnamReport <- function(
                                         batch_effect_notes,
                                     metrics_notes, glm_notes, lme_notes,
                                         logs_notes,
-                                        lme_label = "LME Analysis") {
+                                        lme_label = "LME Analysis",
+                                        model_sections = c("glm", "lme")) {
         overview <-
             sprintf("This report is generated automatically from the available datasets, figures, tables, and workflow logs for the project.")
 
@@ -2491,6 +2535,14 @@ dnamReport <- function(
             "displays the annotated linear mixed-effects model results table")
         logs_paragraph <- tab_report_paragraph(logs_notes,
             "displays workflow log files for each analysis stage")
+        model_report_sections <- c(
+            if ("glm" %in% model_sections) {
+                html_section("GLM", glm_paragraph)
+            },
+            if ("lme" %in% model_sections) {
+                html_section(sub(" Analysis$", "", lme_label), lme_paragraph)
+            }
+        )
 
         c(
             "---", "title: \"Report\"", "format:", "  html:", "    css:",
@@ -2510,8 +2562,7 @@ dnamReport <- function(
             ), html_section(
                 "Metrics",
                 metrics_paragraph
-            ), html_section("GLM", glm_paragraph),
-            html_section(sub(" Analysis$", "", lme_label), lme_paragraph),
+            ), model_report_sections,
             html_section("Logs", logs_paragraph), "</div>", "</div>",
             "</div>"
         )
@@ -2575,15 +2626,20 @@ dnamReport <- function(
         ), batch = copy_log_asset(file.path(
             logs_dir,
             "log_svaEnmix.txt"
-        ), "svaEnmix.txt"), glm = copy_first_existing_log_asset(file.path(
+        ), "svaEnmix.txt")
+    )
+    if (include_glm) {
+        log_assets$glm <- copy_first_existing_log_asset(file.path(
             logs_dir,
             "log_methylationGLM.txt"
-        ), "methylationGLM.txt"),
-        lme = copy_first_existing_log_asset(file.path(
+        ), "methylationGLM.txt")
+    }
+    if (include_lme) {
+        log_assets$lme <- copy_first_existing_log_asset(file.path(
             logs_dir,
             "log_methylationLME.txt"
         ), "methylationLME.txt")
-    )
+    }
 
     data_summary <- summarize_dataset(pheno_file)
     detection_tables <- read_detection_tables(
@@ -2668,24 +2724,53 @@ dnamReport <- function(
             if (is.null(data_summary$timepoint_col)) "" else data_summary$timepoint_col
         )
     )
-    glm_table_assets <- prepare_xlsx_table_assets(
-        data_path = glm_table_path,
-        sheet = "annotatedGLM", var_prefix = "glm_results", analysis = "glm",
-        model_log_path = file.path(logs_dir, "log_methylationGLM.txt")
-    )
-    lme_table_assets <- prepare_xlsx_table_assets(
-        data_path = lme_table_path,
-        sheet = "annotatedLME", var_prefix = "lme_results", analysis = "lme",
-        model_log_path = file.path(logs_dir, "log_methylationLME.txt")
-    )
+    unrequested_table_assets <- function(analysis) {
+        list(
+            ok = FALSE, error = "The model section was not requested.",
+            source_path = "", analysis = analysis, metadata = list(),
+            source_mode = NULL
+        )
+    }
+    glm_table_assets <- if (include_glm) {
+        prepare_xlsx_table_assets(
+            data_path = glm_table_path,
+            sheet = "annotatedGLM", var_prefix = "glm_results",
+            analysis = "glm",
+            model_log_path = file.path(logs_dir, "log_methylationGLM.txt")
+        )
+    } else {
+        unrequested_table_assets("glm")
+    }
+    lme_table_assets <- if (include_lme) {
+        prepare_xlsx_table_assets(
+            data_path = lme_table_path,
+            sheet = "annotatedLME", var_prefix = "lme_results",
+            analysis = "lme",
+            model_log_path = file.path(logs_dir, "log_methylationLME.txt")
+        )
+    } else {
+        unrequested_table_assets("lme")
+    }
     emitLogMinfiEwasWater(
         c(
             paste(
                 "GLM report table source:",
-                if (is.null(glm_table_assets$source_mode)) "unavailable" else glm_table_assets$source_mode
+                if (!include_glm) {
+                    "not requested"
+                } else if (is.null(glm_table_assets$source_mode)) {
+                    "unavailable"
+                } else {
+                    glm_table_assets$source_mode
+                }
             ),
             paste("LME report table source:",
-                if (is.null(lme_table_assets$source_mode)) "unavailable" else lme_table_assets$source_mode)
+                if (!include_lme) {
+                    "not requested"
+                } else if (is.null(lme_table_assets$source_mode)) {
+                    "unavailable"
+                } else {
+                    lme_table_assets$source_mode
+                })
         ),
         verbose = FALSE, log_path = log_path
     )
@@ -2871,6 +2956,17 @@ dnamReport <- function(
         warning("CpG viewer JavaScript was not found in the installed package.")
     }
 
+    model_navbar <- c(
+        if (include_glm) {
+            c("      - href: glm.qmd", "        text: \"GLM Analysis\"")
+        },
+        if (include_lme) {
+            c("      - href: lme.qmd", sprintf(
+                "        text: \"%s\"",
+                lme_analysis_label
+            ))
+        }
+    )
     quarto_yml <- c(
         "project:", "  type: website", "  output-dir: docs",
         "  resources:", "    - assets/", "", "website:", sprintf(
@@ -2883,11 +2979,7 @@ dnamReport <- function(
             "        text: \"Quality Control\"",
         "      - href: batch-effect.qmd", "        text: \"Batch Effect\"",
         "      - href: metrics.qmd", "        text: \"Metrics\"",
-        "      - href: glm.qmd", "        text: \"GLM Analysis\"",
-        "      - href: lme.qmd", sprintf(
-            "        text: \"%s\"",
-            lme_analysis_label
-        ), "      - href: report.qmd",
+        model_navbar, "      - href: report.qmd",
         "        text: \"Report\"", "      - href: logs.qmd",
         "        text: \"Logs\"", "    search: true",
             "  page-navigation: false",
@@ -3171,49 +3263,57 @@ dnamReport <- function(
         ))
     )
 
-    logs_page <- compose_page(
-        title = "Logs", notes = logs_notes,
-        body_classes = "qpasst-logs-page", body_lines = c(
-            "```{r}",
-            "#| echo: false", "#| include: false",
-                "render_log_block <- function(path, label) {",
-            "  if (!file.exists(path)) {",
-                "    cat('::: {.callout-warning}\\n')",
-            "    cat(sprintf('Log file not found for `%s`.\\n', label))",
-            "    cat(':::\\n')", "    return(invisible(NULL))",
-            "  }", "  lines <- readLines(path, warn = FALSE, encoding = 'UTF-8')",
-            "  if (!length(lines)) {", "    cat('::: {.callout-note}\\n')",
-            "    cat(sprintf('`%s` is empty.\\n', label))", "    cat(':::\\n')",
-            "    return(invisible(NULL))", "  }", "  cat('```text\\n')",
-            "  cat(paste(lines, collapse = '\\n'))", "  cat('\\n```\\n')",
-            "}", "```", "", "::: {.card title=\"Methylation Analysis\"}",
-            "", "Displays the methylation preprocessing log, including IDAT loading, normalisation, filtering, and cell composition estimation steps.",
-            "", "```{r}", "#| echo: false", "#| results: asis",
-            sprintf(
-                "render_log_block(%s, 'Methylation Analysis')",
-                r_string(log_assets$methylation$asset_path)
-            ),
-            "```", ":::", "", "::: {.card title=\"Data Preparation\"}",
-            "", "Displays the phenotype preparation log, including timepoint splitting and methylation matrix export steps.",
-            "", "```{r}", "#| echo: false", "#| results: asis",
-            sprintf(
-                "render_log_block(%s, 'Data Preparation')",
-                r_string(log_assets$data$asset_path)
-            ), "```",
-            ":::", "", "::: {.card title=\"Batch Effect\"}",
-            "", "Displays the hidden-effect and surrogate-variable analysis log used for batch-effect assessment.",
-            "", "```{r}", "#| echo: false", "#| results: asis",
-            sprintf("render_log_block(%s, 'Batch Effect')",
-                r_string(log_assets$batch$asset_path)),
-            "```", ":::", "", "::: {.card title=\"GLM Analysis\"}",
-            "", "Displays the generalised linear model log, including phenotype association testing and CpG annotation steps.",
+    log_render_helper <- c(
+        "```{r}", "#| echo: false", "#| include: false",
+        "render_log_block <- function(path, label) {",
+        "  if (!file.exists(path)) {",
+        "    cat('::: {.callout-warning}\\n')",
+        "    cat(sprintf('Log file not found for `%s`.\\n', label))",
+        "    cat(':::\\n')", "    return(invisible(NULL))",
+        "  }", "  lines <- readLines(path, warn = FALSE, encoding = 'UTF-8')",
+        "  if (!length(lines)) {", "    cat('::: {.callout-note}\\n')",
+        "    cat(sprintf('`%s` is empty.\\n', label))", "    cat(':::\\n')",
+        "    return(invisible(NULL))", "  }", "  cat('```text\\n')",
+        "  cat(paste(lines, collapse = '\\n'))", "  cat('\\n```\\n')",
+        "}", "```"
+    )
+    base_log_cards <- c(
+        "", "::: {.card title=\"Methylation Analysis\"}", "",
+        "Displays the methylation preprocessing log, including IDAT loading, normalisation, filtering, and cell composition estimation steps.",
+        "", "```{r}", "#| echo: false", "#| results: asis",
+        sprintf(
+            "render_log_block(%s, 'Methylation Analysis')",
+            r_string(log_assets$methylation$asset_path)
+        ), "```", ":::", "", "::: {.card title=\"Data Preparation\"}",
+        "", "Displays the phenotype preparation log, including timepoint splitting and methylation matrix export steps.",
+        "", "```{r}", "#| echo: false", "#| results: asis",
+        sprintf(
+            "render_log_block(%s, 'Data Preparation')",
+            r_string(log_assets$data$asset_path)
+        ), "```", ":::", "", "::: {.card title=\"Batch Effect\"}",
+        "", "Displays the hidden-effect and surrogate-variable analysis log used for batch-effect assessment.",
+        "", "```{r}", "#| echo: false", "#| results: asis",
+        sprintf("render_log_block(%s, 'Batch Effect')",
+            r_string(log_assets$batch$asset_path)),
+        "```", ":::"
+    )
+    glm_log_card <- if (include_glm) {
+        c(
+            "", "::: {.card title=\"GLM Analysis\"}", "",
+            "Displays the generalised linear model log, including phenotype association testing and CpG annotation steps.",
             "", "```{r}", "#| echo: false", "#| results: asis",
             sprintf("render_log_block(%s, 'GLM Analysis')",
                 r_string(log_assets$glm$asset_path)),
-            "```", ":::", "", sprintf(
-                "::: {.card title=\"%s\"}",
-                html_escape(lme_analysis_label)
-            ), "", if (has_lme_interaction) {
+            "```", ":::"
+        )
+    } else {
+        character(0)
+    }
+    lme_log_card <- if (include_lme) {
+        c(
+            "", sprintf("::: {.card title=\"%s\"}",
+                html_escape(lme_analysis_label)), "",
+            if (has_lme_interaction) {
                 sprintf(
                     "Displays the linear mixed-effects model log, including the phenotype interaction with %s and CpG annotation steps.",
                     lme_interaction_term
@@ -3226,6 +3326,15 @@ dnamReport <- function(
                 r_string(lme_analysis_label)
             ), "```", ":::"
         )
+    } else {
+        character(0)
+    }
+    logs_page <- compose_page(
+        title = "Logs", notes = logs_notes,
+        body_classes = "qpasst-logs-page",
+        body_lines = c(
+            log_render_helper, base_log_cards, glm_log_card, lme_log_card
+        )
     )
 
     report_page <- build_report_page(
@@ -3236,13 +3345,57 @@ dnamReport <- function(
             batch_effect_notes = batch_effect_notes,
         metrics_notes = metrics_notes, glm_notes = glm_notes,
         lme_notes = lme_notes, logs_notes = logs_notes,
-            lme_label = lme_analysis_label
+            lme_label = lme_analysis_label,
+        model_sections = model_sections
     )
 
     unlink(c(
         file.path(project_dir, c("data.qmd", "DNAm.html")),
         file.path(project_dir, "docs", "data.html")
     ), force = TRUE)
+    unrequested_source_files <- c(
+        if (!include_glm) file.path(project_dir, "glm.qmd"),
+        if (!include_lme) file.path(project_dir, "lme.qmd")
+    )
+    unlink(unrequested_source_files, force = TRUE)
+    remove_unrequested_rendered_assets <- function() {
+        unrequested_files <- c(
+            if (!include_glm) {
+                c(
+                    file.path(project_dir, "docs", "glm.html"),
+                    file.path(
+                        project_dir, "docs", "assets", "logs",
+                        "methylationGLM.txt"
+                    )
+                )
+            },
+            if (!include_lme) {
+                c(
+                    file.path(project_dir, "docs", "lme.html"),
+                    file.path(
+                        project_dir, "docs", "assets", "logs",
+                        "methylationLME.txt"
+                    )
+                )
+            }
+        )
+        unrequested_directories <- c(
+            if (!include_glm) {
+                file.path(
+                    project_dir, "docs", "assets", "results", "glm_results"
+                )
+            },
+            if (!include_lme) {
+                file.path(
+                    project_dir, "docs", "assets", "results", "lme_results"
+                )
+            }
+        )
+        unlink(unrequested_files, force = TRUE)
+        unlink(unrequested_directories, recursive = TRUE, force = TRUE)
+        invisible(NULL)
+    }
+    remove_unrequested_rendered_assets()
 
     write_utf8(file.path(project_dir, "_quarto.yml"), quarto_yml)
     write_utf8(file.path(assets_dir, "qpasst.css"), site_css)
@@ -3254,8 +3407,12 @@ dnamReport <- function(
         quality_control_page
     )
     write_utf8(file.path(project_dir, "batch-effect.qmd"), batch_effect_page)
-    write_utf8(file.path(project_dir, "glm.qmd"), glm_page)
-    write_utf8(file.path(project_dir, "lme.qmd"), lme_page)
+    if (include_glm) {
+        write_utf8(file.path(project_dir, "glm.qmd"), glm_page)
+    }
+    if (include_lme) {
+        write_utf8(file.path(project_dir, "lme.qmd"), lme_page)
+    }
     write_utf8(file.path(project_dir, "report.qmd"), report_page)
     write_utf8(file.path(project_dir, "logs.qmd"), logs_page)
 
@@ -3264,7 +3421,10 @@ dnamReport <- function(
     source_files <- file.path(project_dir, c(
         "_quarto.yml", "index.qmd",
         "enmix-qc.qmd", "metrics.qmd", "quality-control.qmd",
-        "batch-effect.qmd", "glm.qmd", "lme.qmd", "report.qmd",
+        "batch-effect.qmd",
+        if (include_glm) "glm.qmd",
+        if (include_lme) "lme.qmd",
+        "report.qmd",
         "logs.qmd"
     ))
 
@@ -3328,6 +3488,7 @@ dnamReport <- function(
             verbose = verbose, log_path = log_path
         )
     }
+    remove_unrequested_rendered_assets()
 
     if (!magick_available && any(grepl("\\.tiff?$", c(
         enmix_items$original_name,
@@ -3376,9 +3537,22 @@ dnamReport <- function(
             ))
         }, projectDir = project_dir, sourceFiles = source_files,
         resultTableSources = c(
-            GLM = if (is.null(glm_table_assets$source_mode)) "unavailable" else glm_table_assets$source_mode,
-            LME = if (is.null(lme_table_assets$source_mode)) "unavailable" else lme_table_assets$source_mode
+            GLM = if (!include_glm) {
+                "not_requested"
+            } else if (is.null(glm_table_assets$source_mode)) {
+                "unavailable"
+            } else {
+                glm_table_assets$source_mode
+            },
+            LME = if (!include_lme) {
+                "not_requested"
+            } else if (is.null(lme_table_assets$source_mode)) {
+                "unavailable"
+            } else {
+                lme_table_assets$source_mode
+            }
         ),
+        modelSections = model_sections,
         docsDir = file.path(project_dir, "docs"), logoPath = logo_source_path,
         errorMessage = error_message, logFile = log_path
     ), class = "dnaEPICO_dnamReport")

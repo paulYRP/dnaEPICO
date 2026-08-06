@@ -13,6 +13,7 @@ dnamReport(
   metricTab = file.path("figures", "preprocessingMinfiEwasWater", "metrics"),
   glmTab = NULL,
   lmeTab = NULL,
+  modelSections = c("glm", "lme"),
   logTab = outputDir,
   verbose = FALSE,
   logs = FALSE,
@@ -52,6 +53,12 @@ tab.
 When \code{NULL}, the path is inferred from the Makefile output layout. Report
 sidecars produced by \code{methylationLME()} are read from this report project's
 \code{assets/results/lme_results} directory when available.}
+
+\item{modelSections}{Character vector containing any of \code{'glm'} and \code{'lme'}.
+The report includes the corresponding model pages, logs, and summary
+sections.
+Use \code{character(0)} for a preprocessing-only report. The default preserves
+the complete GLM-and-LME report.}
 
 \item{logTab}{Character. Directory containing workflow logs shown in the Logs
 tab.}

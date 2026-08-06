@@ -4,14 +4,9 @@
 MAKEFLAGS += --output-sync
 
 METHYLATION_SCALE ?= beta
-SCALE_VARS ?= NULL
-SCALE_VARS_GLM ?= $(SCALE_VARS)
-SCALE_VARS_LME ?= $(SCALE_VARS)
 optional_text_arg = $(if $(filter NULL null,$(strip $(1))),NULL,$(if $(strip $(1)),'$(strip $(1))',NULL))
-COVARIATES_ARG = $(call optional_text_arg,$(COVARIATES))
-FACTOR_VARS_ARG = $(call optional_text_arg,$(FACTOR_VARS))
-SCALE_VARS_GLM_ARG = $(call optional_text_arg,$(SCALE_VARS_GLM))
-SCALE_VARS_LME_ARG = $(call optional_text_arg,$(SCALE_VARS_LME))
+MODEL_CONFIG_ERROR = The dnaEPICO Makefile configuration has changed. Please update your Makefile.
+require_model_config = $(if $(filter undefined,$(origin $(1))),$(error $(MODEL_CONFIG_ERROR)),$(if $(strip $($(1))),,$(error $(MODEL_CONFIG_ERROR))))
 LME_CORRELATION_VAR ?= NULL
 PROBE_EXCLUSION_FILE ?= $(CROSS_REACTIVE_FILE)
 REMOVE_SEX_MISMATCH ?= FALSE
@@ -86,27 +81,14 @@ models:
 	@echo "Running models in parallel: $(MODELS)"
 	@$(MAKE) -j $(words $(MODELS)) $(addprefix run-, $(MODELS))
 
-$(foreach m,$(MODELS),$(eval run-$(m):; \
-	@echo ">>> Starting full pipeline for: $(m)"; \
-	$(MAKE) -j1 all MODEL=$(m); \
-	@echo "<<< Finished full pipeline for: $(m)" \
-))
+run-%: FORCE
+	@echo ">>> Starting full pipeline for: $*"
+	@$(MAKE) -j1 all MODEL=$*
+	@echo "<<< Finished full pipeline for: $*"
 
 default: all
 
-all: \
-	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
-	$(SVA_MARKER) \
-	$(PHENO_LC) \
-	$(TIMEPOINT_PHENO_TARGETS) \
-	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
-	$(COMBINED_PHENO_TARGET) \
-	$(COMBINED_PHENO_METHYLATION) \
-	$(GLM_OUTPUTS) \
-	$(LME_OUTPUTS) \
-	$(STEP6)/$(MODEL)/docs/index.html
+all: report-all
 	
 # ===============================================
 # Group target: first3 (Steps 1 to 3)
@@ -123,7 +105,7 @@ FIRST3 = \
 	$(COMBINED_PHENO_TARGET) \
 	$(COMBINED_PHENO_METHYLATION)
 
-f3: $(FIRST3) $(STEP6)/$(MODEL)/docs/index.html
+f3: report-f3
 
 # ===============================================
 # Run f3 (Steps 1 to 3) for all models in parallel
@@ -132,11 +114,10 @@ f3_models:
 	@echo "Running f3 (Steps 1â€“3) in parallel: $(MODELS)"
 	@$(MAKE) -j $(words $(MODELS)) $(addprefix runf3-, $(MODELS))
 
-$(foreach m,$(MODELS),$(eval runf3-$(m):;  \
-	@echo ">>> Starting f3 for: $(m)"; \
-	$(MAKE) -j1 f3 MODEL=$(m); \
-	@echo "<<< Finished f3 for: $(m)" \
-))
+runf3-%: FORCE
+	@echo ">>> Starting f3 for: $*"
+	@$(MAKE) -j1 f3 MODEL=$*
+	@echo "<<< Finished f3 for: $*"
 
 # ===============================================
 # Group target: f4 (Steps 1 to 4)
@@ -154,7 +135,7 @@ FIRST4 = \
 	$(COMBINED_PHENO_METHYLATION) \
 	$(GLM_OUTPUTS)
 
-f4: $(FIRST4) $(STEP6)/$(MODEL)/docs/index.html
+f4: report-f4
 
 # ===============================================
 # Run f4 (Steps 1 to 4 only) for all models in parallel
@@ -163,11 +144,10 @@ f4_models:
 	@echo "Running f4 (Steps 1â€“4) in parallel: $(MODELS)"
 	@$(MAKE) -j $(words $(MODELS)) $(addprefix runf4-, $(MODELS))
 
-$(foreach m,$(MODELS),$(eval runf4-$(m):; \
-	@echo ">>> Starting f4 for: $(m)"; \
-	$(MAKE) -j1 f4 MODEL=$(m); \
-	@echo "<<< Finished f4 for: $(m)" \
-))
+runf4-%: FORCE
+	@echo ">>> Starting f4 for: $*"
+	@$(MAKE) -j1 f4 MODEL=$*
+	@echo "<<< Finished f4 for: $*"
 
 # ===============================================
 # Group target: f3lme (Steps 1 to 3 + LME)
@@ -185,7 +165,7 @@ F3LME = \
 	$(COMBINED_PHENO_METHYLATION) \
 	$(LME_OUTPUTS)
 
-f3lme: $(F3LME) $(STEP6)/$(MODEL)/docs/index.html
+f3lme: report-f3lme
 
 # ===============================================
 # Run f3lme (Steps 1 to 3 + LME) for all models in parallel
@@ -195,16 +175,15 @@ f3lme_models:
 	@echo "Running f3lme (Steps 1â€“3 + LME) in parallel: $(MODELS)"
 	@$(MAKE) -j $(words $(MODELS)) $(addprefix runf3lme-, $(MODELS))
 
-$(foreach m,$(MODELS),$(eval runf3lme-$(m):; \
-	@echo ">>> Starting f3lme for: $(m)"; \
-	$(MAKE) -j1 f3lme MODEL=$(m); \
-	@echo "<<< Finished f3lme for: $(m)" \
-))
+runf3lme-%: FORCE
+	@echo ">>> Starting f3lme for: $*"
+	@$(MAKE) -j1 f3lme MODEL=$*
+	@echo "<<< Finished f3lme for: $*"
 
 # =================================================================================================================================
 # Step 1: Minfi Preprocessing
 # =================================================================================================================================
-MODEL_LOG_DIR = $(abspath $(LOGS_DIR)/$(MODEL))
+MODEL_LOG_DIR = $(LOGS_DIR)/$(MODEL)
 STEP1_PRIMARY = $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData
 STEP1_DERIVED = \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
@@ -265,7 +244,7 @@ $(STEP1_PRIMARY): $(PHENO_FILE)
 	  saveOutputs = TRUE ))"
 
 $(STEP1_DERIVED): $(STEP1_PRIMARY)
-	@test -e "$@" || { echo "Step 1 did not create expected output: $@"; exit 1; }
+	@Rscript -e "target <- commandArgs(trailingOnly = TRUE)[[1L]]; if (!file.exists(target)) stop('Step 1 did not create expected output: ', target, call. = FALSE)" "$@"
 
 # =================================================================================================================================
 # Step 2: Surrogate Variable Analysis
@@ -343,21 +322,25 @@ $(STEP3_PRIMARY): $(SVA_MARKER) $(PHENO_LC) \
 	  saveOutputs = TRUE ))"  
 
 $(STEP3_DERIVED): $(STEP3_PRIMARY)
-	@test -e "$@" || { echo "Step 3 did not create expected output: $@"; exit 1; }
+	@Rscript -e "target <- commandArgs(trailingOnly = TRUE)[[1L]]; if (!file.exists(target)) stop('Step 3 did not create expected output: ', target, call. = FALSE)" "$@"
 	  
 # =================================================================================================================================
 # Step 4: methylationGLM
 # =================================================================================================================================
-$(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION)
+.PHONY: validate-glm-config
+validate-glm-config:
+	@Rscript -e "invisible(NULL)" $(call require_model_config,COVARIATES_GLM) $(call require_model_config,FACTOR_VARS_GLM) $(call require_model_config,SCALE_VARS_GLM) $(call require_model_config,GLM_OMNIBUS_TEST)
+
+$(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION) | validate-glm-config
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationGLM( \
 	  inputPheno = '$(GLM_PHENO_METHYLATION)', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
 	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP4)/', \
 	  phenotypes = '$(PHENOTYPES_GLM)', \
-	  covariates = $(COVARIATES_ARG), \
-	  factorVars = $(FACTOR_VARS_ARG), \
-	  scaleVars = $(SCALE_VARS_GLM_ARG), \
+	  covariates = $(call optional_text_arg,$(COVARIATES_GLM)), \
+	  factorVars = $(call optional_text_arg,$(FACTOR_VARS_GLM)), \
+	  scaleVars = $(call optional_text_arg,$(SCALE_VARS_GLM)), \
 	  cpgPrefix = '$(CPG_PREFIX)', \
 	  cpgLimit = $(CPG_LIMIT), \
 	  methylationScale = '$(METHYLATION_SCALE)', \
@@ -366,6 +349,7 @@ $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION)
 	  plotHeight = $(TIFF_HEIGHT), \
 	  plotDPI = $(TIFF_RES), \
 	  interactionTerm = $(INTERACTION_GLM_ARG), \
+	  omnibusTest = $(GLM_OMNIBUS_TEST), \
 	  libPath = $(R_DIR_ARG), \
 	  glmLibs = '$(GLM_LIBS)', \
 	  prsMap = $(PRS_MAP_ARG), \
@@ -390,7 +374,11 @@ $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION)
 # =================================================================================================================================
 # Step 5: methylationLME
 # =================================================================================================================================
-$(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION)
+.PHONY: validate-lme-config
+validate-lme-config:
+	@Rscript -e "invisible(NULL)" $(call require_model_config,COVARIATES_LME) $(call require_model_config,FACTOR_VARS_LME) $(call require_model_config,SCALE_VARS_LME)
+
+$(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION) | validate-lme-config
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationLME( \
 	  inputPheno = '$(COMBINED_PHENO_METHYLATION)', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
@@ -399,9 +387,9 @@ $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION)
 	  personVar = '$(PERSON_VAR)', \
 	  timeVar = '$(TIME_VAR)', \
 	  phenotypes = '$(PHENOTYPES_LME)', \
-	  covariates = $(COVARIATES_ARG), \
-	  factorVars = $(FACTOR_VARS_ARG), \
-	  scaleVars = $(SCALE_VARS_LME_ARG), \
+	  covariates = $(call optional_text_arg,$(COVARIATES_LME)), \
+	  factorVars = $(call optional_text_arg,$(FACTOR_VARS_LME)), \
+	  scaleVars = $(call optional_text_arg,$(SCALE_VARS_LME)), \
 	  lmeLibs = '$(LME_LIBS)', \
 	  correlationStructure = '$(LME_CORRELATION_STRUCTURE)', \
 	  correlationVar = $(LME_CORRELATION_VAR_ARG), \
@@ -437,16 +425,18 @@ $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION)
 # =================================================================================================================================
 # Step 6: Final Report
 # =================================================================================================================================
-REPORT_INPUTS = \
-	$(GLM_PHENO_METHYLATION) \
-	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData \
-	$(SVA_MARKER) \
-	$(PHENO_LC) \
-	$(GLM_OUTPUTS) \
-	$(LME_OUTPUTS)
+report-f3: REPORT_MODEL_SECTIONS_ARG = character(0)
+report-f4: REPORT_MODEL_SECTIONS_ARG = 'glm'
+report-f3lme: REPORT_MODEL_SECTIONS_ARG = 'lme'
+report-all: REPORT_MODEL_SECTIONS_ARG = c('glm','lme')
 
-$(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
-	mkdir -p "$(STEP6)/$(MODEL)" "$(MODEL_LOG_DIR)"
+report-f3: $(FIRST3)
+report-f4: $(FIRST4)
+report-f3lme: $(F3LME)
+report-all: $(FIRST4) $(LME_OUTPUTS)
+
+report-f3 report-f4 report-f3lme report-all:
+	@Rscript -e "dirs <- commandArgs(trailingOnly = TRUE); ok <- vapply(dirs, dir.create, logical(1), recursive = TRUE, showWarnings = FALSE); if (!all(ok | dir.exists(dirs))) stop('Could not create report directories.', call. = FALSE)" "$(STEP6)/$(MODEL)" "$(MODEL_LOG_DIR)"
 	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); result <- dnamReport( \
 	  outputDir = '$(STEP6)/$(MODEL)', \
 	  phenoTab = '$(PHENO_LC)', \
@@ -456,6 +446,7 @@ $(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
 	  metricTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)', \
 	  glmTab = '$(DATA_DIR)/$(MODEL)/$(STEP4)/annotatedGLM.xlsx', \
 	  lmeTab = '$(DATA_DIR)/$(MODEL)/$(STEP5)/annotatedLME.xlsx', \
+	  modelSections = $(REPORT_MODEL_SECTIONS_ARG), \
 	  detPPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(QC_DIR)/detP_RGSet.RData', \
 	  detPThreshold = '$(PVAL_THRESHOLD)', \
 	  verbose = FALSE, \
@@ -471,44 +462,18 @@ $(STEP6)/$(MODEL)/docs/index.html: $(REPORT_INPUTS)
 # =================================================================================================================================
 clean_models:
 	@echo "===== Cleaning all models ====="
-	@for m in $(MODELS); do \
-	  echo "Cleaning model $$m ..."; \
-	  rm -rf \
-	    $(DATA_DIR)/$$m \
-	    $(RDATA_DIR)/$$m \
-	    $(STEP6)/$$m \
-	    $(LOGS_DIR)/$$m \
-		$(FIGURES_DIR)/$$m \
-	    $(RESULTS_DIR)/$$m; \
-	done
-	@rmdir $(RDATA_DIR) $(STEP6) $(LOGS_DIR) $(FIGURES_DIR) $(RESULTS_DIR) 2>/dev/null || true
+	@$(MAKE) -j1 $(addprefix clean-model-,$(MODELS))
 	@echo "Clean completed for all models. Kept $(DATA_DIR)/$(STEP1)/."
+
+clean-model-%: FORCE
+	@$(MAKE) -j1 clean MODEL=$*
 
 clean:
 ifeq ($(MODEL),all)
-	@echo "===== Cleaning all models ====="
-	@for m in $(MODELS); do \
-	  echo "Cleaning model $$m ..."; \
-	  rm -rf \
-	    $(DATA_DIR)/$$m \
-	    $(RDATA_DIR)/$$m \
-	    $(STEP6)/$$m \
-	    $(LOGS_DIR)/$$m \
-		$(FIGURES_DIR)/$$m \
-	    $(RESULTS_DIR)/$$m; \
-	done
-	@rmdir $(RDATA_DIR) $(STEP6) $(LOGS_DIR) $(FIGURES_DIR) $(RESULTS_DIR) 2>/dev/null || true
-	@echo "Clean completed for all models. Kept $(DATA_DIR)/$(STEP1)/."
+	@$(MAKE) -j1 clean_models
 else
 	@echo "Cleaning outputs for: $(MODEL)"
-	rm -rf \
-		$(DATA_DIR)/$(MODEL) \
-		$(RDATA_DIR)/$(MODEL) \
-		$(STEP6)/$(MODEL) \
-		$(LOGS_DIR)/$(MODEL) \
-		$(FIGURES_DIR)/$(MODEL) \
-		$(RESULTS_DIR)/$(MODEL)
-	@rmdir $(RDATA_DIR) $(STEP6) $(LOGS_DIR) $(FIGURES_DIR) $(RESULTS_DIR) 2>/dev/null || true
+	@Rscript -e "args <- commandArgs(trailingOnly = TRUE); model <- args[[1L]]; roots <- args[-1L]; if (!nzchar(model) || model %in% c('.', '..') || !identical(basename(model), model)) stop('MODEL must be a single safe directory name.', call. = FALSE); unlink(file.path(roots, model), recursive = TRUE, force = TRUE)" "$(MODEL)" "$(DATA_DIR)" "$(RDATA_DIR)" "$(STEP6)" "$(LOGS_DIR)" "$(FIGURES_DIR)" "$(RESULTS_DIR)"
 	@echo "Clean completed for: $(MODEL)"
 endif
 
@@ -517,13 +482,17 @@ endif
 # =================================================================================================================================
 status:
 	@echo "===== Pipeline Status ====="
-	@test -e "$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData" && echo "[OK] Step 1: preprocessingMinfiEwasWater done" || echo "[MISSING] Step 1: preprocessingMinfiEwasWater output"
-	@test -e "$(SVA_MARKER)" && test -e "$(PHENO_LC)" && echo "[OK] Step 2: SVA done" || echo "[MISSING] Step 2: SVA output"
-	@test -e "$(COMBINED_PHENO_TARGET)" && echo "[OK] Step 3: preprocessingPheno done" || echo "[MISSING] Step 3: preprocessingPheno output"
-	@test -e "$(GLM_WORKBOOK)" && test -e "$(GLM_REPORT_ASSET_DIR)/annotatedGLM.tsv.gz" && echo "[OK] Step 4: methylationGLM done" || echo "[MISSING] Step 4: methylationGLM output"
-	@test -e "$(LME_WORKBOOK)" && test -e "$(LME_REPORT_ASSET_DIR)/annotatedLME.tsv.gz" && echo "[OK] Step 5: methylationLME done" || echo "[MISSING] Step 5: methylationLME output"
-	@test -e "$(STEP6)/$(MODEL)/docs/index.html" && echo "[OK] Step 6: Report generated" || echo "[MISSING] Step 6: Report output"
+	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 1: preprocessingMinfiEwasWater done\n' else '[MISSING] Step 1: preprocessingMinfiEwasWater output\n')" "$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 2: SVA done\n' else '[MISSING] Step 2: SVA output\n')" "$(SVA_MARKER)" "$(PHENO_LC)"
+	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 3: preprocessingPheno done\n' else '[MISSING] Step 3: preprocessingPheno output\n')" "$(COMBINED_PHENO_TARGET)"
+	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 4: methylationGLM done\n' else '[MISSING] Step 4: methylationGLM output\n')" "$(GLM_WORKBOOK)" "$(GLM_REPORT_ASSET_DIR)/annotatedGLM.tsv.gz"
+	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 5: methylationLME done\n' else '[MISSING] Step 5: methylationLME output\n')" "$(LME_WORKBOOK)" "$(LME_REPORT_ASSET_DIR)/annotatedLME.tsv.gz"
+	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 6: Report generated\n' else '[MISSING] Step 6: Report output\n')" "$(STEP6)/$(MODEL)/docs/index.html"
 	@echo "============================"
 
-.PHONY: all clean clean_models status models step1 step2 step3 f3 f4 f3lme f3_models f4_models f3lme_models
+.PHONY: all clean clean_models status models step1 step2 step3 f3 f4 f3lme \
+	f3_models f4_models f3lme_models report-f3 report-f4 report-f3lme report-all \
+	validate-glm-config validate-lme-config FORCE
+
+FORCE:
 

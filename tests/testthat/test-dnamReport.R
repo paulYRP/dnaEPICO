@@ -470,6 +470,128 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     expect_false(any(grepl("\\$preparedReport|\\$figureInventory|\\$renderResult", printed)))
 })
 
+test_that("dnamReport limits model pages to the requested workflow scope", {
+    tmp <- withr::local_tempdir()
+    example_dirs <- create_dnam_report_example(tmp)
+    project_dir <- example_dirs$outputDir
+    docs_dir <- file.path(project_dir, "docs")
+    dir.create(file.path(docs_dir, "assets", "results", "glm_results"),
+        recursive = TRUE
+    )
+    dir.create(file.path(docs_dir, "assets", "results", "lme_results"),
+        recursive = TRUE
+    )
+    writeLines("stale", file.path(project_dir, "glm.qmd"))
+    writeLines("stale", file.path(project_dir, "lme.qmd"))
+    writeLines("stale", file.path(docs_dir, "glm.html"))
+    writeLines("stale", file.path(docs_dir, "lme.html"))
+    writeLines("stale", file.path(
+        docs_dir, "assets", "results", "glm_results", "stale.txt"
+    ))
+    writeLines("stale", file.path(
+        docs_dir, "assets", "results", "lme_results", "stale.txt"
+    ))
+    glm_sidecar <- file.path(
+        project_dir, "assets", "results", "glm_results", "annotatedGLM.tsv.gz"
+    )
+    lme_sidecar <- file.path(
+        project_dir, "assets", "results", "lme_results", "annotatedLME.tsv.gz"
+    )
+    expect_true(file.exists(glm_sidecar))
+    expect_true(file.exists(lme_sidecar))
+
+    preprocessing_report <- dnamReport(
+        outputDir = project_dir,
+        phenoTab = example_dirs$phenoTab,
+        enmixTab = example_dirs$qcDir,
+        qcTab = example_dirs$preprocessingDir,
+        svaTab = example_dirs$svaDir,
+        metricTab = example_dirs$postprocessingDir,
+        glmTab = example_dirs$glmTablePath,
+        lmeTab = example_dirs$lmeTablePath,
+        modelSections = character(0),
+        verbose = FALSE, logs = FALSE, logTab = example_dirs$logDir
+    )
+
+    quarto_yml <- readLines(file.path(project_dir, "_quarto.yml"), warn = FALSE)
+    logs_qmd <- readLines(file.path(project_dir, "logs.qmd"), warn = FALSE)
+    report_qmd <- readLines(file.path(project_dir, "report.qmd"), warn = FALSE)
+    expect_identical(preprocessing_report$modelSections, character(0))
+    expect_identical(
+        unname(preprocessing_report$resultTableSources),
+        c("not_requested", "not_requested")
+    )
+    expect_false(file.exists(file.path(project_dir, "glm.qmd")))
+    expect_false(file.exists(file.path(project_dir, "lme.qmd")))
+    expect_false(file.exists(file.path(docs_dir, "glm.html")))
+    expect_false(file.exists(file.path(docs_dir, "lme.html")))
+    expect_false(dir.exists(file.path(
+        docs_dir, "assets", "results", "glm_results"
+    )))
+    expect_false(dir.exists(file.path(
+        docs_dir, "assets", "results", "lme_results"
+    )))
+    expect_false(any(grepl("href: glm.qmd", quarto_yml, fixed = TRUE)))
+    expect_false(any(grepl("href: lme.qmd", quarto_yml, fixed = TRUE)))
+    expect_false(any(grepl("MethylationGLM|GLM Analysis", logs_qmd)))
+    expect_false(any(grepl("MethylationLME|LME Analysis", logs_qmd)))
+    expect_false(any(grepl("<h3>GLM</h3>", report_qmd, fixed = TRUE)))
+    expect_false(any(grepl("<h3>LME</h3>", report_qmd, fixed = TRUE)))
+    expect_true(file.exists(glm_sidecar))
+    expect_true(file.exists(lme_sidecar))
+
+    glm_report <- dnamReport(
+        outputDir = project_dir,
+        phenoTab = example_dirs$phenoTab,
+        enmixTab = example_dirs$qcDir,
+        qcTab = example_dirs$preprocessingDir,
+        svaTab = example_dirs$svaDir,
+        metricTab = example_dirs$postprocessingDir,
+        glmTab = example_dirs$glmTablePath,
+        lmeTab = example_dirs$lmeTablePath,
+        modelSections = "glm",
+        verbose = FALSE, logs = FALSE, logTab = example_dirs$logDir
+    )
+    expect_identical(glm_report$modelSections, "glm")
+    expect_true(file.exists(file.path(project_dir, "glm.qmd")))
+    expect_false(file.exists(file.path(project_dir, "lme.qmd")))
+
+    lme_report <- dnamReport(
+        outputDir = project_dir,
+        phenoTab = example_dirs$phenoTab,
+        enmixTab = example_dirs$qcDir,
+        qcTab = example_dirs$preprocessingDir,
+        svaTab = example_dirs$svaDir,
+        metricTab = example_dirs$postprocessingDir,
+        glmTab = example_dirs$glmTablePath,
+        lmeTab = example_dirs$lmeTablePath,
+        modelSections = "lme",
+        verbose = FALSE, logs = FALSE, logTab = example_dirs$logDir
+    )
+    expect_identical(lme_report$modelSections, "lme")
+    expect_false(file.exists(file.path(project_dir, "glm.qmd")))
+    expect_true(file.exists(file.path(project_dir, "lme.qmd")))
+})
+
+test_that("dnamReport validates requested model sections", {
+    expect_identical(
+        dnaEPICO:::normalizeModelSectionsDnamReport(c("LME", "glm", "glm")),
+        c("glm", "lme")
+    )
+    expect_identical(
+        dnaEPICO:::normalizeModelSectionsDnamReport(character(0)),
+        character(0)
+    )
+    expect_error(
+        dnaEPICO:::normalizeModelSectionsDnamReport("unsupported"),
+        "Unsupported modelSections"
+    )
+    expect_error(
+        dnaEPICO:::normalizeModelSectionsDnamReport(NA_character_),
+        "cannot contain missing"
+    )
+})
+
 test_that("dnamReport labels and describes nlme reports from workbook metadata", {
     tmp <- withr::local_tempdir()
     example_dirs <- create_dnam_report_example(tmp)

@@ -9,6 +9,7 @@ summarizeMethylationGLMModels(
   preparedData,
   summaryResidualSD = TRUE,
   summaryPval = NA,
+  padjmethod = "fdr",
   nCores = 1L,
   libPath = NULL,
   glmLibs = "glm2",
@@ -29,6 +30,9 @@ to each CpG summary row.}
 
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value filter applied to the
 returned summary tables. \code{NA} keeps all rows.}
+
+\item{padjmethod}{Character. Adjustment method passed to \code{stats::p.adjust()}
+for omnibus p-values across CpGs within each phenotype and tested term.}
 
 \item{nCores}{Integer. Number of worker processes to use while extracting
 summary rows.}

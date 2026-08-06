@@ -7,6 +7,7 @@ check/
 pkgdown/
 docs/
 packageTEST/
+gencodev50/
 
 # ---- R / IDE files ----
 .Rhistory

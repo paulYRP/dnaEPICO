@@ -555,6 +555,175 @@ buildCoefficientTermMapMethylationModels <- function(
     stats::setNames(mapped_terms, colnames(design))
 }
 
+validateOmnibusConfigurationMethylationGLM <- function(omnibusTest = FALSE) {
+    omnibus_test <- validateLogicalScalarDnaEpico(
+        omnibusTest,
+        "omnibusTest"
+    )
+    if (isTRUE(omnibus_test) &&
+        !requireNamespace("car", quietly = TRUE)) {
+        stop(
+            "omnibusTest = TRUE requires the package 'car'.",
+            call. = FALSE
+        )
+    }
+    omnibus_test
+}
+
+resolveOmnibusTargetTermMethylationGLM <- function(
+    formulaText, data, phenotype, interactionTerm = NULL
+) {
+    terms_object <- stats::terms(
+        stats::as.formula(formulaText),
+        data = data
+    )
+    term_labels <- attr(stats::delete.response(terms_object), "term.labels")
+    target_variables <- if (!is.null(interactionTerm) &&
+        nzchar(interactionTerm)) {
+        c(phenotype, interactionTerm)
+    } else {
+        phenotype
+    }
+
+    matches_target <- vapply(term_labels, function(term_label) {
+        term_variables <- all.vars(stats::as.formula(paste("~", term_label)))
+        length(term_variables) == length(target_variables) &&
+            setequal(term_variables, target_variables)
+    }, logical(1))
+    matched_terms <- term_labels[matches_target]
+    if (length(matched_terms) != 1L) {
+        target_label <- if (length(target_variables) == 1L) {
+            target_variables
+        } else {
+            paste(target_variables, collapse = ":")
+        }
+        stop(
+            "Could not identify one fixed-effect model term for omnibus testing: ",
+            target_label, ".",
+            call. = FALSE
+        )
+    }
+
+    unname(matched_terms[[1L]])
+}
+
+emptyOmnibusResultMethylationGLM <- function(
+    term, status = "not_estimable", reason = NA_character_
+) {
+    list(
+        term = term, method = "car::linearHypothesis Wald F",
+        fValue = NA_real_, numeratorDf = NA_real_,
+        denominatorDf = NA_real_, pValue = NA_real_,
+        status = status, reason = reason, modelMessage = NA_character_,
+        rhs = 0
+    )
+}
+
+computeOmnibusTestMethylationGLM <- function(
+    fit, coefficientTerms, omnibusTerm
+) {
+    result <- emptyOmnibusResultMethylationGLM(term = omnibusTerm)
+
+    captured <- captureModelConditionsDnaEpico({
+        fixed_effects <- stats::coef(fit)
+        fixed_names <- names(fixed_effects)
+        mapped_terms <- coefficientTerms[fixed_names]
+        selected <- which(!is.na(mapped_terms) & mapped_terms == omnibusTerm)
+        if (length(selected) == 0L) {
+            stop(
+                "The omnibus model term has no estimable coefficients.",
+                call. = FALSE
+            )
+        }
+
+        contrast <- matrix(
+            0,
+            nrow = length(selected), ncol = length(fixed_effects),
+            dimnames = list(fixed_names[selected], fixed_names)
+        )
+        contrast[cbind(seq_along(selected), selected)] <- 1
+
+        test <- car::linearHypothesis(
+            model = fit, hypothesis.matrix = contrast, rhs = 0,
+            test = "F", singular.ok = FALSE
+        )
+        required <- c("Res.Df", "Df", "F", "Pr(>F)")
+        if (!all(required %in% colnames(test)) || nrow(test) < 1L) {
+            stop(
+                "The omnibus test did not return the expected F-test statistics.",
+                call. = FALSE
+            )
+        }
+        tested_row <- nrow(test)
+        values <- unlist(
+            test[tested_row, required, drop = TRUE],
+            use.names = FALSE
+        )
+        if (any(!is.finite(values))) {
+            stop(
+                "The omnibus test returned missing or non-finite statistics.",
+                call. = FALSE
+            )
+        }
+
+        list(
+            fValue = unname(test[["F"]][[tested_row]]),
+            numeratorDf = unname(test[["Df"]][[tested_row]]),
+            denominatorDf = unname(test[["Res.Df"]][[tested_row]]),
+            pValue = unname(test[["Pr(>F)"]][[tested_row]])
+        )
+    })
+    result$modelMessage <- captured$modelMessage
+    if (!is.null(captured$error)) {
+        result$reason <- conditionMessage(captured$error)
+        result
+    } else {
+        result[names(captured$value)] <- captured$value
+        result$status <- "tested"
+        result$reason <- NA_character_
+        result
+    }
+}
+
+collectOmnibusTestsMethylationGLM <- function(fits, phenotype) {
+    rows <- lapply(names(fits), function(cpg) {
+        fit <- fits[[cpg]]
+        if (is.null(fit) || inherits(
+            fit,
+            "dnaEPICO_methylationGLM_fit_error"
+        ) || is.null(fit$omnibus)) {
+            return(NULL)
+        }
+        omnibus <- fit$omnibus
+        data.frame(
+            Phenotype = phenotype, CpG = cpg,
+            Omnibus.Term = as.character(omnibus$term),
+            Omnibus.F.Value = as.numeric(omnibus$fValue),
+            Omnibus.Num.DF = as.numeric(omnibus$numeratorDf),
+            Omnibus.Den.DF = as.numeric(omnibus$denominatorDf),
+            Omnibus.P.Value = as.numeric(omnibus$pValue),
+            Omnibus.Method = as.character(omnibus$method),
+            Omnibus.Status = as.character(omnibus$status),
+            Omnibus.Reason = as.character(omnibus$reason),
+            stringsAsFactors = FALSE, check.names = FALSE
+        )
+    })
+    rows <- Filter(Negate(is.null), rows)
+    if (length(rows) == 0L) {
+        return(data.frame(
+            Phenotype = character(0), CpG = character(0),
+            Omnibus.Term = character(0), Omnibus.F.Value = numeric(0),
+            Omnibus.Num.DF = numeric(0), Omnibus.Den.DF = numeric(0),
+            Omnibus.P.Value = numeric(0), Omnibus.Method = character(0),
+            Omnibus.Status = character(0), Omnibus.Reason = character(0),
+            stringsAsFactors = FALSE, check.names = FALSE
+        ))
+    }
+    result <- do.call(rbind, rows)
+    rownames(result) <- NULL
+    result
+}
+
 #' Validate a fixed-effect model matrix before fitting CpGs
 #'
 #' @keywords internal
@@ -1072,6 +1241,7 @@ filterSummaryByPvalueMethylationGLM <- function(
 fitCpGModelMethylationGLM <- function(
     cpg, cpgValues, modelData,
     formulaText, responseVar = "beta", retainModel = TRUE,
+    omnibusTest = FALSE, omnibusTerm = NULL,
     formulaObject = NULL, coefficientTerms = NULL
 ) {
     captured <- captureModelConditionsDnaEpico({
@@ -1099,6 +1269,13 @@ fitCpGModelMethylationGLM <- function(
             } else {
                 coefficientTerms
             }
+            omnibus_result <- NULL
+            if (isTRUE(omnibusTest)) {
+                omnibus_result <- computeOmnibusTestMethylationGLM(
+                    fit = fit, coefficientTerms = coefficient_terms,
+                    omnibusTerm = omnibusTerm
+                )
+            }
             residuals <- stats::residuals(fit)
             residual_sd <- if (fit$df.residual > 0L) {
                 sqrt(sum(residuals^2, na.rm = TRUE) / fit$df.residual)
@@ -1109,7 +1286,7 @@ fitCpGModelMethylationGLM <- function(
             result <- list(
                 coef = coef_table,
                 residualSD = residual_sd, coefficientTerms = coefficient_terms,
-                pValueAvailable = FALSE
+                omnibus = omnibus_result, pValueAvailable = FALSE
             )
             if (isTRUE(retainModel)) {
                 result$residuals <- residuals
@@ -1125,13 +1302,21 @@ fitCpGModelMethylationGLM <- function(
             modelMessage = captured$modelMessage
         ))
     }
-    captured$value$modelMessage <- captured$modelMessage
+    captured$value$modelMessage <- combineModelMessagesDnaEpico(
+        captured$modelMessage,
+        if (!is.null(captured$value$omnibus)) {
+            captured$value$omnibus$modelMessage
+        } else {
+            NULL
+        }
+    )
     captured$value
 }
 
 fitMethylationGLMBatch <- function(
     cpgBatch, data, modelData,
     formulaText, phenotype, interactionTerm = NULL, responseVar = "beta",
+    omnibusTest = FALSE, omnibusTerm = NULL,
     formulaObject = NULL, coefficientTerms = NULL
 ) {
     fits <- vector("list", length(cpgBatch))
@@ -1145,6 +1330,7 @@ fitMethylationGLMBatch <- function(
             cpgValues = cpgResponseMethylationModels(data, cpg),
             modelData = modelData, formulaText = formulaText,
             responseVar = responseVar, retainModel = FALSE,
+            omnibusTest = omnibusTest, omnibusTerm = omnibusTerm,
             formulaObject = formulaObject,
             coefficientTerms = coefficientTerms
         )
@@ -1157,6 +1343,9 @@ fitMethylationGLMBatch <- function(
         p_value_available <- !is.null(summary_row) &&
             "Pr(>|t|)" %in% colnames(summary_row) &&
             any(is.finite(summary_row[["Pr(>|t|)"]]))
+        omnibus_p_available <- !is.null(model_obj$omnibus) &&
+            is.finite(model_obj$omnibus$pValue)
+        p_value_available <- p_value_available || omnibus_p_available
         model_obj$pValueAvailable <- p_value_available
         if (!is.null(summary_row)) {
             summary_row$Model.Message <- modelMessageDnaEpico(model_obj)
@@ -1181,6 +1370,10 @@ fitMethylationGLMBatch <- function(
                 includeResidualSD = TRUE
             ),
         summaries = summary_df,
+        omnibusTests = collectOmnibusTestsMethylationGLM(
+            fits = fits,
+            phenotype = phenotype
+        ),
         modelMessages = collectBatchModelMessagesMethylationModels(
             fits,
             phenotype
@@ -1393,7 +1586,7 @@ buildAnnotatedWorkbookDictionaryMethylationGLM <- function(
             return("Raw p-value for the joint null hypothesis that all estimable coefficients in the tested fixed-effect term equal zero")
         }
         if (grepl("_Omnibus_Method$", column)) {
-            return("Denominator degrees-of-freedom method used for the omnibus F test")
+            return("Method used for the omnibus F test")
         }
         if (pvalue_columns[[index]]) {
             return(modelDescription)
@@ -1730,9 +1923,55 @@ buildModelWorkbookMetadataDnaEpico <- function(
         )
         metadata <- rbind(metadata, lme_rows)
     } else {
+        omnibus_tables <- modelSummaries$omnibusTests
+        omnibus_rows <- if (is.list(omnibus_tables)) {
+            Filter(function(table) {
+                is.data.frame(table) && nrow(table) > 0L
+            }, omnibus_tables)
+        } else {
+            list()
+        }
+        omnibus_data <- if (length(omnibus_rows) > 0L) {
+            do.call(rbind, omnibus_rows)
+        } else {
+            data.frame()
+        }
+        omnibus_tested <- if ("Omnibus.Status" %in%
+            colnames(omnibus_data)) {
+            sum(omnibus_data$Omnibus.Status == "tested", na.rm = TRUE)
+        } else {
+            0L
+        }
+        omnibus_unavailable <- if ("Omnibus.Status" %in%
+            colnames(omnibus_data)) {
+            sum(omnibus_data$Omnibus.Status != "tested", na.rm = TRUE)
+        } else {
+            0L
+        }
+        car_version <- tryCatch(
+            as.character(utils::packageVersion("car")),
+            error = function(error) "unavailable"
+        )
         glm_rows <- data.frame(
-            Key = "libraries",
-            Value = modelSettingTextDnaEpico(settings$glmLibs),
+            Key = c(
+                "libraries", "omnibus_test", "omnibus_target",
+                "omnibus_method", "omnibus_rhs", "omnibus_joint",
+                "omnibus_tested_count", "omnibus_unavailable_count",
+                "p_adjust_method", "p_adjust_scope", "car_version"
+            ),
+            Value = c(
+                modelSettingTextDnaEpico(settings$glmLibs),
+                modelSettingTextDnaEpico(settings$omnibusTest),
+                modelSettingTextDnaEpico(modelResults$omnibusTargets),
+                modelSettingTextDnaEpico(settings$omnibusMethod),
+                modelSettingTextDnaEpico(settings$omnibusRhs),
+                modelSettingTextDnaEpico(settings$omnibusJoint),
+                as.character(omnibus_tested),
+                as.character(omnibus_unavailable),
+                modelSettingTextDnaEpico(modelSummaries$settings$padjmethod),
+                "within each phenotype and omnibus term across valid CpGs",
+                car_version
+            ),
             stringsAsFactors = FALSE, check.names = FALSE
         )
         metadata <- rbind(metadata, glm_rows)
@@ -2505,6 +2744,9 @@ plotMethylationGLMDistributions <- function(
 #'   to worker processes.
 #' @param glmLibs Character vector or comma-separated string of package names to
 #'   check on worker processes. The default is `'glm2'`.
+#' @param omnibusTest Logical. If `TRUE`, use `car::linearHypothesis()` to test
+#'   the complete phenotype-by-interaction term, or the phenotype main effect
+#'   when no interaction is specified, once per CpG.
 #' @param summaryDir Character or `NULL`. Directory used for one complete
 #'   compact summary per phenotype. `NULL` disables disk persistence.
 #' @param resumeFromSummary Logical. If `TRUE`, reuse a complete summary in
@@ -2539,7 +2781,8 @@ plotMethylationGLMDistributions <- function(
 fitMethylationGLMModels <- function(
     preparedData, nCores = 1L,
     libPath = NULL, glmLibs = "glm2", summaryDir = NULL,
-    resumeFromSummary = TRUE, verbose = FALSE, logs = FALSE,
+    omnibusTest = FALSE, resumeFromSummary = TRUE,
+    verbose = FALSE, logs = FALSE,
     log_dir = NULL, log_file = "log_methylationGLM.txt"
 ) {
     resumeFromSummary <- validateLogicalScalarDnaEpico(
@@ -2559,6 +2802,11 @@ fitMethylationGLMModels <- function(
     if (length(glm_lib_list) == 0L) {
         glm_lib_list <- "glm2"
     }
+    omnibus_test <- validateOmnibusConfigurationMethylationGLM(omnibusTest)
+    required_glm_lib_list <- unique(c(
+        glm_lib_list,
+        if (isTRUE(omnibus_test)) "car" else character(0)
+    ))
 
     analysis_data <- preparedData$data
     model_data <- if (!is.null(preparedData$modelData)) {
@@ -2580,6 +2828,7 @@ fitMethylationGLMModels <- function(
     phenotype_fit_failures <- list()
     resumed_phenotypes <- character(0)
     fitted_phenotypes <- character(0)
+    omnibus_tests <- list()
     formulas <- stats::setNames(
         character(length(preparedData$phenotypes)),
         preparedData$phenotypes
@@ -2589,6 +2838,10 @@ fitMethylationGLMModels <- function(
         preparedData$phenotypes
     )
     failure_reasons <- list()
+    omnibus_targets <- stats::setNames(
+        character(length(preparedData$phenotypes)),
+        preparedData$phenotypes
+    )
     parallel_plan <- resolveParallelPlanMethylationModels(
         engine = "glm2",
         nCores = n_cores, nCpGs = length(cpg_columns),
@@ -2643,13 +2896,26 @@ fitMethylationGLMModels <- function(
             formulaText = formula_text,
             data = base_model_data
         )
+        omnibus_target <- NULL
+        if (isTRUE(omnibus_test)) {
+            omnibus_target <- resolveOmnibusTargetTermMethylationGLM(
+                formulaText = formula_text, data = base_model_data,
+                phenotype = phenotype,
+                interactionTerm = preparedData$interactionTerm
+            )
+            omnibus_targets[[phenotype]] <- omnibus_target
+        }
         signature <- buildPhenotypeSignatureMethylationModels(
             analysis = "glm", engine = "glm2", phenotype = phenotype,
             formulaText = formula_text, preparedData = preparedData,
             modelSettings = list(
-                family = "gaussian", link = "identity"
+                family = "gaussian", link = "identity",
+                omnibusTest = omnibus_test,
+                omnibusTerm = omnibus_target,
+                omnibusMethod = "car::linearHypothesis Wald F",
+                omnibusRhs = 0, omnibusJoint = TRUE
             ),
-            packages = glm_lib_list
+            packages = required_glm_lib_list
         )
         summary_path <- if (is.null(summaryDir)) {
             NULL
@@ -2674,6 +2940,7 @@ fitMethylationGLMModels <- function(
             ))
             summary_cache[[phenotype]] <- artifact$targetSummary
             coefficient_results[[phenotype]] <- artifact$coefficientResults
+            omnibus_tests[[phenotype]] <- artifact$omnibusTests
             phenotype_model_messages[[phenotype]] <- artifact$modelMessages
             phenotype_fit_failures[[phenotype]] <- artifact$fitFailures
             formulas[[phenotype]] <- artifact$formula
@@ -2717,6 +2984,8 @@ fitMethylationGLMModels <- function(
                     formulaText = formula_text, phenotype = phenotype,
                     interactionTerm = preparedData$interactionTerm,
                     responseVar = preparedData$internalResponseColumn,
+                    omnibusTest = omnibus_test,
+                    omnibusTerm = omnibus_target,
                     formulaObject = shared_formula,
                     coefficientTerms = shared_coefficient_terms
                 )
@@ -2755,7 +3024,7 @@ fitMethylationGLMModels <- function(
             )
             parallel::clusterExport(psock_cluster,
                 varlist = c(
-                    "libPath", "glm_lib_list",
+                    "libPath", "required_glm_lib_list",
                     "validateWorkerPackagesMethylationModels",
                     "newMethylationFitErrorDnaEpico",
                     "captureModelConditionsDnaEpico",
@@ -2763,6 +3032,8 @@ fitMethylationGLMModels <- function(
                     "fitMethylationGLMBatch", "fitCpGModelMethylationGLM",
                     "buildCoefficientTermMapMethylationModels",
                     "removeRandomInterceptMethylationModels",
+                    "computeOmnibusTestMethylationGLM",
+                    "emptyOmnibusResultMethylationGLM",
                     "summarizeCpGFitMethylationGLM",
                     "findCoefficientRowsMethylationGLM",
                     "escapeRegexMethylationGLM",
@@ -2771,14 +3042,15 @@ fitMethylationGLMModels <- function(
                     "collectBatchModelMessagesMethylationModels",
                     "collectBatchFitFailuresMethylationModels",
                     "emptyModelMessagesDnaEpico",
-                    "emptyFitFailuresMethylationModels"
+                    "emptyFitFailuresMethylationModels",
+                    "collectOmnibusTestsMethylationGLM"
                 ),
                 envir = environment()
             )
             parallel::clusterEvalQ(psock_cluster,
                 validateWorkerPackagesMethylationModels(
                     libPath = libPath,
-                    packages = glm_lib_list
+                    packages = required_glm_lib_list
                 ))
         }
         batch_worker <- fitMethylationGLMBatch
@@ -2794,7 +3066,7 @@ fitMethylationGLMModels <- function(
                     function(batch) {
                         validateWorkerPackagesMethylationModels(
                             libPath = libPath,
-                            packages = glm_lib_list
+                            packages = required_glm_lib_list
                         )
                         batch_worker(
                             cpgBatch = batch, data = analysis_data,
@@ -2803,6 +3075,8 @@ fitMethylationGLMModels <- function(
                             phenotype = phenotype,
                             interactionTerm = resolved_interaction,
                             responseVar = response_var,
+                            omnibusTest = omnibus_test,
+                            omnibusTerm = omnibus_target,
                             formulaObject = shared_formula,
                             coefficientTerms = shared_coefficient_terms
                         )
@@ -2815,7 +3089,8 @@ fitMethylationGLMModels <- function(
                     "base_model_data", "shared_formula",
                     "shared_coefficient_terms",
                     "formula_text", "phenotype", "resolved_interaction",
-                    "response_var", "batch_worker"
+                    "response_var", "omnibus_test", "omnibus_target",
+                    "batch_worker"
                 ), envir = environment())
                 batch_results <- vector("list", length(cpg_batches))
                 cluster_size <- min(worker_count, length(cpg_batches))
@@ -2844,6 +3119,8 @@ fitMethylationGLMModels <- function(
                                 phenotype = phenotype,
                                 interactionTerm = resolved_interaction,
                                 responseVar = response_var,
+                                omnibusTest = omnibus_test,
+                                omnibusTerm = omnibus_target,
                                 formulaObject = shared_formula,
                                 coefficientTerms = shared_coefficient_terms
                             )
@@ -2857,7 +3134,7 @@ fitMethylationGLMModels <- function(
         } else {
             validateWorkerPackagesMethylationModels(
                 libPath = libPath,
-                packages = glm_lib_list
+                packages = required_glm_lib_list
             )
             batch_results <- lapply(cpg_batches, function(batch) {
                 batch_worker(
@@ -2867,6 +3144,8 @@ fitMethylationGLMModels <- function(
                     phenotype = phenotype,
                     interactionTerm = resolved_interaction,
                     responseVar = response_var,
+                    omnibusTest = omnibus_test,
+                    omnibusTerm = omnibus_target,
                     formulaObject = shared_formula,
                     coefficientTerms = shared_coefficient_terms
                 )
@@ -2881,6 +3160,13 @@ fitMethylationGLMModels <- function(
         combined_summaries <- combineBatchTablesMethylationModels(
             batchResults = batch_results, field = "summaries",
             empty = data.frame()
+        )
+        phenotype_omnibus <- combineBatchTablesMethylationModels(
+            batchResults = batch_results, field = "omnibusTests",
+            empty = collectOmnibusTestsMethylationGLM(
+                fits = list(),
+                phenotype = phenotype
+            )
         )
         phenotype_summary_cache <- filterSummaryByPvalueMethylationGLM(
             summaryDf = combined_summaries,
@@ -2910,6 +3196,7 @@ fitMethylationGLMModels <- function(
         ))
         summary_cache[[phenotype]] <- phenotype_summary_cache
         coefficient_results[[phenotype]] <- phenotype_coefficients
+        omnibus_tests[[phenotype]] <- phenotype_omnibus
         phenotype_model_messages[[phenotype]] <- phenotype_messages
         phenotype_fit_failures[[phenotype]] <- phenotype_failures
         formulas[[phenotype]] <- formula_text
@@ -2923,7 +3210,8 @@ fitMethylationGLMModels <- function(
             signature = signature, cpgOrder = cpg_columns,
             coefficientResults = phenotype_coefficients,
             targetSummary = phenotype_summary_cache,
-            omnibusTests = NULL, modelMessages = phenotype_messages,
+            omnibusTests = phenotype_omnibus,
+            modelMessages = phenotype_messages,
             fitFailures = phenotype_failures,
             failureCount = failure_counts[[phenotype]],
             failureReasons = error_counts, formulaText = formula_text,
@@ -2941,7 +3229,11 @@ fitMethylationGLMModels <- function(
                     levels
                 ),
                 scaleVars = preparedData$scaleVars,
-                scalingMetadata = preparedData$scalingMetadata
+                scalingMetadata = preparedData$scalingMetadata,
+                omnibusTest = omnibus_test,
+                omnibusTerm = omnibus_target,
+                omnibusMethod = "car::linearHypothesis Wald F",
+                omnibusRhs = 0, omnibusJoint = TRUE
             )
         )
         phenotype_summaries[[phenotype]] <- artifact
@@ -2961,6 +3253,14 @@ fitMethylationGLMModels <- function(
                 paste("CpGs attempted:              ", length(cpg_columns)),
                 paste("CpGs without p-values:       ",
                     failure_counts[[phenotype]]),
+                paste("Omnibus tests requested:     ",
+                    isTRUE(omnibus_test)),
+                paste("Omnibus target term:         ",
+                    if (is.null(omnibus_target)) "None" else omnibus_target),
+                paste("Successful omnibus tests:    ",
+                    sum(phenotype_omnibus$Omnibus.Status == "tested")),
+                paste("Unavailable omnibus tests:   ",
+                    sum(phenotype_omnibus$Omnibus.Status != "tested")),
                 paste("Top fit errors:               ",
                     formatFitErrorsMethylationModels(error_counts)),
                 paste("Parallel backend:            ", backend),
@@ -3035,6 +3335,7 @@ fitMethylationGLMModels <- function(
             summaryFiles = summary_files,
             resumedPhenotypes = resumed_phenotypes,
             fittedPhenotypes = fitted_phenotypes,
+            omnibusTests = omnibus_tests, omnibusTargets = omnibus_targets,
             formulas = formulas, phenotypes = names(fits),
                 failureCounts = failure_counts,
             failureReasons = failure_reasons, fitFailures = fit_failures,
@@ -3060,6 +3361,9 @@ fitMethylationGLMModels <- function(
                 responseLabel = preparedData$responseLabel,
                     internalResponseColumn = preparedData$internalResponseColumn,
                 interactionTerm = preparedData$interactionTerm,
+                omnibusTest = omnibus_test,
+                omnibusMethod = "car::linearHypothesis Wald F",
+                omnibusRhs = 0, omnibusJoint = TRUE,
                     phenotypes = preparedData$phenotypes,
                 covariates = preparedData$covariates,
                     factorVars = preparedData$factorVars,
@@ -3076,6 +3380,40 @@ fitMethylationGLMModels <- function(
     )
 }
 
+summarizeOmnibusTestsMethylationGLM <- function(
+    modelResults, padjmethod = "fdr"
+) {
+    adjustment_method <- validatePAdjustmentMethodMethylationModels(
+        padjmethod
+    )
+    omnibus_tables <- modelResults$omnibusTests
+    if (!is.list(omnibus_tables)) {
+        omnibus_tables <- list()
+    }
+
+    phenotype_names <- modelResults$phenotypes
+    if (is.null(phenotype_names)) {
+        phenotype_names <- names(modelResults$fits)
+    }
+    summaries <- lapply(phenotype_names, function(phenotype) {
+        table <- omnibus_tables[[phenotype]]
+        if (!is.data.frame(table) || nrow(table) == 0L) {
+            return(data.frame())
+        }
+
+        table$Omnibus.Adjusted.P.Value <- NA_real_
+        valid <- table$Omnibus.Status == "tested" &
+            is.finite(table$Omnibus.P.Value)
+        table$Omnibus.Adjusted.P.Value[valid] <- stats::p.adjust(
+            table$Omnibus.P.Value[valid],
+            method = adjustment_method
+        )
+        table
+    })
+    names(summaries) <- phenotype_names
+    summaries
+}
+
 #' Summarize CpG-wise Gaussian GLM results for one-timepoint analyses
 #'
 #' @param modelResults Object returned by `fitMethylationGLMModels()`.
@@ -3084,6 +3422,8 @@ fitMethylationGLMModels <- function(
 #'   to each CpG summary row.
 #' @param summaryPval Numeric or `NA`. Optional p-value filter applied to the
 #'   returned summary tables. `NA` keeps all rows.
+#' @param padjmethod Character. Adjustment method passed to `stats::p.adjust()`
+#'   for omnibus p-values across CpGs within each phenotype and tested term.
 #' @param nCores Integer. Number of worker processes to use while extracting
 #'   summary rows.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded
@@ -3125,7 +3465,7 @@ fitMethylationGLMModels <- function(
 #' @export
 summarizeMethylationGLMModels <- function(
     modelResults, preparedData,
-    summaryResidualSD = TRUE, summaryPval = NA,
+    summaryResidualSD = TRUE, summaryPval = NA, padjmethod = "fdr",
     nCores = 1L, libPath = NULL, glmLibs = "glm2", chunkSize = NULL,
     verbose = FALSE, logs = FALSE, log_dir = NULL,
         log_file = "log_methylationGLM.txt"
@@ -3150,6 +3490,9 @@ summarizeMethylationGLMModels <- function(
         allowNA = TRUE
     )
     chunk_size <- normalizeChunkSizeMethylationGLM(chunkSize)
+    adjustment_method <- validatePAdjustmentMethodMethylationModels(
+        padjmethod
+    )
     n_cores <- validatePositiveIntegerMethylationModels(
         nCores,
         "nCores"
@@ -3314,8 +3657,13 @@ summarizeMethylationGLMModels <- function(
         )
     }
 
+    omnibus_summaries <- summarizeOmnibusTestsMethylationGLM(
+        modelResults = modelResults, padjmethod = adjustment_method
+    )
+
     structure(list(
         summaries = summaries, diagnosticSummaries = diagnostic_summaries,
+        omnibusTests = omnibus_summaries,
         phenotypes = names(summaries), fitFailures = modelResults$fitFailures,
         modelMessages = if (!is.null(modelResults$modelMessages)) {
             modelResults$modelMessages
@@ -3325,7 +3673,9 @@ summarizeMethylationGLMModels <- function(
         settings = list(
             summaryResidualSD = isTRUE(summaryResidualSD),
             summaryPval = p_value_filter,
-            chunkSize = chunk_size
+            padjmethod = adjustment_method,
+            chunkSize = chunk_size,
+            interactionTerm = preparedData$interactionTerm
         )
     ), class = "dnaEPICO_methylationGLM_summaries")
 }
@@ -3333,8 +3683,9 @@ summarizeMethylationGLMModels <- function(
 #' Collect significant CpG coefficient tables from fitted one-timepoint GLMs
 #'
 #' @param modelResults Object returned by `fitMethylationGLMModels()`.
-#' @param pvalThreshold Numeric. Threshold applied to phenotype main-effect or
-#'   interaction p-values.
+#' @param pvalThreshold Numeric. Threshold applied to omnibus p-values when
+#'   omnibus testing was enabled during model fitting, or to phenotype
+#'   main-effect or interaction coefficient p-values otherwise.
 #' @param interactionTerm Character or `NULL`. Optional interaction term.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
@@ -3379,6 +3730,57 @@ collectSignificantCpGsMethylationGLM <- function(
     for (phenotype in phenotype_names) {
         fit_list <- modelResults$fits[[phenotype]]
         phenotype_hits <- list()
+        use_omnibus <- isTRUE(modelResults$settings$omnibusTest)
+        if (isTRUE(use_omnibus) && !optionalTermMatchesMethylationModels(
+            requested = interactionTerm,
+            cached = modelResults$settings$interactionTerm
+        )) {
+            stop(
+                "interactionTerm does not match the term used for the fitted omnibus tests.",
+                call. = FALSE
+            )
+        }
+        if (isTRUE(use_omnibus)) {
+            omnibus_table <- modelResults$omnibusTests[[phenotype]]
+            if (is.data.frame(omnibus_table) && nrow(omnibus_table) > 0L) {
+                hit_cpgs <- omnibus_table$CpG[
+                    omnibus_table$Omnibus.Status == "tested" &
+                        is.finite(omnibus_table$Omnibus.P.Value) &
+                        omnibus_table$Omnibus.P.Value < threshold
+                ]
+                for (cpg in unique(hit_cpgs)) {
+                    coefficient_table <-
+                        coefficientTableFromCompactMethylationModels(
+                            modelResults$coefficientResults[[phenotype]],
+                            cpg
+                        )
+                    if (!is.null(coefficient_table)) {
+                        phenotype_hits[[cpg]] <- coefficient_table
+                    } else if (!is.null(fit_list[[cpg]]) &&
+                        !is.null(fit_list[[cpg]]$coef)) {
+                        phenotype_hits[[cpg]] <-
+                            as.data.frame(fit_list[[cpg]]$coef)
+                    }
+                }
+            } else {
+                for (cpg in names(fit_list)) {
+                    model_obj <- fit_list[[cpg]]
+                    if (is.null(model_obj) ||
+                        is.null(model_obj$omnibus) ||
+                        !identical(model_obj$omnibus$status, "tested") ||
+                        !is.finite(model_obj$omnibus$pValue) ||
+                        model_obj$omnibus$pValue >= threshold) {
+                        next
+                    }
+                    if (!is.null(model_obj$coef)) {
+                        phenotype_hits[[cpg]] <-
+                            as.data.frame(model_obj$coef)
+                    }
+                }
+            }
+            retained[[phenotype]] <- phenotype_hits
+            next
+        }
         if (!is.null(modelResults$summaryCache) &&
             !is.null(modelResults$summaryCache[[phenotype]]) &&
             optionalTermMatchesMethylationModels(
@@ -3674,6 +4076,47 @@ buildAnnotationModelMessagesDnaEpico <- function(modelMessages) {
     }
 }
 
+buildAnnotationOmnibusTablesMethylationGLM <- function(modelSummaries) {
+    omnibus_tables <- modelSummaries$omnibusTests
+    if (!is.list(omnibus_tables) || length(omnibus_tables) == 0L) {
+        return(list())
+    }
+    interaction_term <- modelSummaries$settings$interactionTerm
+
+    tables <- lapply(names(omnibus_tables), function(phenotype) {
+        table <- omnibus_tables[[phenotype]]
+        required <- c(
+            "CpG", "Omnibus.F.Value", "Omnibus.Num.DF",
+            "Omnibus.Den.DF", "Omnibus.P.Value",
+            "Omnibus.Adjusted.P.Value", "Omnibus.Method"
+        )
+        if (!is.data.frame(table) || nrow(table) == 0L ||
+            !all(required %in% colnames(table))) {
+            return(NULL)
+        }
+
+        prefix_parts <- phenotype
+        if (!is.null(interaction_term) && nzchar(interaction_term)) {
+            prefix_parts <- c(prefix_parts, interaction_term)
+        }
+        prefix <- paste(gsub("`", "", prefix_parts, fixed = TRUE),
+            collapse = "_"
+        )
+        result <- table[, required, drop = FALSE]
+        colnames(result) <- c(
+            "CpG", paste0(prefix, "_Omnibus_F.Value"),
+            paste0(prefix, "_Omnibus_Num.DF"),
+            paste0(prefix, "_Omnibus_Den.DF"),
+            paste0(prefix, "_Omnibus_P.Value"),
+            paste0(prefix, "_Omnibus_Adjusted.P.Value"),
+            paste0(prefix, "_Omnibus_Method")
+        )
+        result
+    })
+    names(tables) <- names(omnibus_tables)
+    Filter(Negate(is.null), tables)
+}
+
 #' Annotate one-timepoint GLM summary tables with array annotation metadata
 #'
 #' @param modelSummaries Object returned by `summarizeMethylationGLMModels()`
@@ -3797,6 +4240,15 @@ annotateMethylationGLMSummaries <- function(
                 all = TRUE
             )
         }, merged_summary_list)
+    }
+    omnibus_tables <- buildAnnotationOmnibusTablesMethylationGLM(
+        modelSummaries
+    )
+    for (omnibus_table in omnibus_tables) {
+        merged_summary <- merge(
+            merged_summary, omnibus_table,
+            by = "CpG", all = TRUE
+        )
     }
     p_value_columns <- grep("P\\.Value$|P\\.value$", names(merged_summary),
         value = TRUE

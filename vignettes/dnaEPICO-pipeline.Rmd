@@ -821,6 +821,14 @@ where $\text{Methylation}_{CpG_i}$ is the methylation value at CpG $i$,
 $\beta_0$ is the intercept, the phenotype term is the variable of interest, and
 the remaining fixed effects represent the listed covariates.
 
+Setting `omnibusTest = TRUE` adds one joint Wald F test per CpG using
+`car::linearHypothesis()`. Without an interaction, the complete phenotype term
+is tested. With an interaction, the complete phenotype-by-interaction term is
+tested. One-degree-of-freedom terms, including a numeric phenotype entered as
+one linear term, are also tested and reproduce the corresponding coefficient
+p-value. Omnibus p-values are adjusted across valid CpGs within each phenotype
+and tested term using `padjmethod`.
+
 If no polygenic risk score is included, a model can be read schematically as:
 
 $$
@@ -897,6 +905,10 @@ Common arguments in this longitudinal stage are:
 In a project directory, the Makefile route is simpler than calling each
 function by hand. A minimal project layout looks like this:
 
+The workflow requires GNU Make 4.3 or later and `Rscript` on the system path.
+Quarto is required when a report target is requested. The exported rules use
+relative project paths, including when the project directory contains spaces.
+
 ```text
 my_project/
     Makefile
@@ -914,7 +926,7 @@ phenotype path, and directory variables match the project. A minimal example is:
 ```make
 MODEL = model1
 PHENO_FILE = metadata/pheno_model1.csv
-LOGS_DIR := $(abspath logs)
+LOGS_DIR = logs
 DATA_DIR = data
 RDATA_DIR = rData
 RESULTS_DIR = results
@@ -941,9 +953,12 @@ These targets correspond to the grouped outputs defined in the exported rules:
 - `make step2 MODEL=model1` runs the SVA step using the files written by Step 1.
 - `make step3 MODEL=model1` runs phenotype preparation after Step 2 has safely
     appended PC columns to `phenoLC.csv`.
-- `make f3 MODEL=model1` runs preprocessing, SVA, phenotype preparation, and the report target defined by the current rules.
-- `make f4 MODEL=model1` runs the same route, adds the GLM step, and refreshes the report target.
-- `make f3lme MODEL=model1` runs the same route, adds the longitudinal LME step, and refreshes the report target.
+- `make f3 MODEL=model1` runs preprocessing, SVA, phenotype preparation, and a
+    report containing only those sections.
+- `make f4 MODEL=model1` runs the same route, adds the GLM step, and generates a
+    report containing the preprocessing and GLM sections.
+- `make f3lme MODEL=model1` runs the same route, adds the longitudinal LME step,
+    and generates a report containing the preprocessing and LME sections.
 - `make all MODEL=model1` runs the full pipeline, including both modeling steps and the report.
 - `make status MODEL=model1` checks which expected output files are already present.
 - `make clean MODEL=model1` removes the files generated for the selected model while keeping the shared raw input area.
@@ -997,9 +1012,10 @@ refreshes the report automatically after the required pipeline outputs are
 available.
 
 For example, the `f3` route builds the report from the Data, ENmix QC, Quality
-Control, Batch Effect, Metrics, Report, and Logs inputs. The `f4`, `f3lme`, and
-`all` routes additionally make the GLM and LME tables available when the
-corresponding model outputs exist.
+Control, Batch Effect, Metrics, Report, and Logs inputs. The `f4` route adds only
+the GLM page and GLM log, the `f3lme` route adds only the LME page and LME log,
+and `all` includes both modeling sections. Each report contains the model
+sections defined by its route.
 
 The report target reads the same types of outputs generated in the examples
 above, organised under the Makefile project layout: the phenotype table in
@@ -1079,8 +1095,8 @@ Makefile.
 - `METRICS_DIR`, `IDAT_DIR`, `OBJ_DIR`, `MERGE_DIR`, `MODEL_DIR`, `CPG_DIR`,
     `SUMMARY_DIR`, `ENMIX_DIR`, `SVA_DIR`, and `QC_DIR` define the subdirectory
     names used by the rules file.
-- `R_DIR` optionally points to a custom R library path on shared systems. When
-    set to `NULL`, the default library path is used.
+- `R_DIR` optionally points to a custom R library path on shared systems. Its
+    default value is `NULL`, which uses the default library path.
 
 These variables control where files are written and how paths are composed
 across all stages of the pipeline.
@@ -1113,16 +1129,15 @@ These parameters are shared across multiple workflow steps.
     continue to use beta values.
 - `PHENO_ORDER`: desired order of key phenotype columns in exported tables.
 
-### Step 4 and Step 5 shared modeling parameters
+### Step 4 and Step 5 modeling parameters
 
-- `COVARIATES`: comma-separated adjustment variables included in each model.
-- `FACTOR_VARS`: variables that should be treated as categorical before model
-    fitting.
-- `SCALE_VARS`: numeric fixed-effect variables to centre and divide by their
-    sample standard deviations; `NULL` leaves selected model predictors on their
-    original scales.
-- `SCALE_VARS_GLM` and `SCALE_VARS_LME`: optional engine-specific selections;
-    each inherits `SCALE_VARS` unless it is overridden.
+- `COVARIATES_GLM` and `COVARIATES_LME`: comma-separated adjustment variables
+    included in the GLM and LME analyses, respectively.
+- `FACTOR_VARS_GLM` and `FACTOR_VARS_LME`: variables treated as categorical in
+    the GLM and LME analyses, respectively.
+- `SCALE_VARS_GLM` and `SCALE_VARS_LME`: numeric fixed-effect variables centred
+    and divided by their sample standard deviations in the corresponding
+    analysis; `NULL` keeps the variables on their original scales.
 - `CPG_PREFIX`: prefix used to identify CpG columns.
 - `CPG_LIMIT`: optional cap on the number of CpGs processed; `NA` uses all.
 - `PRS_MAP`: optional mapping from phenotype names to PRS variables; `NULL`
@@ -1198,14 +1213,17 @@ phenotype-methylation data.
 - `GLM_LIBS`: GLM implementation used by `methylationGLM()`.
 - `INTERACTION_GLM`: optional interaction term added to the fixed-effect part
     of the GLM; `NULL` omits the interaction.
+- `GLM_OMNIBUS_TEST`: whether one joint Wald F test is reported for each CpG's
+    phenotype or phenotype-by-interaction term.
 - `SUMMARY_RESIDUAL_SD`: whether residual standard deviations are reported in
     summaries.
 - `SAVE_SIGNIFICANT_CPGS`: whether tables of significant CpGs are exported.
 - `SIGNIFICANT_CPG_PVAL`: p-value threshold used for those significant-CpG
     exports.
-- Annotated GLM rows require at least one returned coefficient p-value. Native
-    glm2 conditions are written to the phenotype-specific `Model.Message`
-    column and aggregate availability counts are written to metadata.
+- Annotated GLM rows require at least one returned coefficient or omnibus
+    p-value. Native glm2 and omnibus-test conditions are written to the
+    phenotype-specific `Model.Message` column and aggregate availability counts
+    are written to metadata.
 
 ## Step 5 parameters
 
@@ -1235,11 +1253,11 @@ phenotype-methylation data.
 
 ## Argument normalisation
 
-- `COVARIATES_ARG`, `FACTOR_VARS_ARG`, `SCALE_VARS_GLM_ARG`,
-    `SCALE_VARS_LME_ARG`, `PRS_MAP_ARG`, `SEP_TYPE_ARG`, `R_DIR_ARG`,
-    `PROBE_EXCLUSION_ID_COLUMN_ARG`, `INTERACTION_GLM_ARG`, and
-    `INTERACTION_LME_ARG` convert Makefile string values into arguments that can
-    be passed safely to R.
+- The GLM and LME covariate, factor, and scaling variables are converted
+    directly with `optional_text_arg`. `PRS_MAP_ARG`, `SEP_TYPE_ARG`,
+    `R_DIR_ARG`, `PROBE_EXCLUSION_ID_COLUMN_ARG`, `INTERACTION_GLM_ARG`, and
+    `INTERACTION_LME_ARG` provide the same conversion for other Makefile
+    settings.
 
 This section is especially important for values such as `NULL`, because it
 prevents the literal string `"NULL"` from being interpreted as a real model

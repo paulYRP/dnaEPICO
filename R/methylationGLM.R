@@ -37,6 +37,10 @@
 #' @param interactionTerm Character or `NULL`. Optional interaction term. When
 #'   supplied and present in the input data, the phenotype is modeled together
 #'   with its interaction against this variable.
+#' @param omnibusTest Logical. If `TRUE`, use `car::linearHypothesis()` to test
+#'   the complete phenotype-by-interaction term, or the phenotype main effect
+#'   when `interactionTerm = NULL`, once per CpG. One-degree-of-freedom terms
+#'   are tested and therefore reproduce the corresponding coefficient p-value.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded
 #' to
 #'   worker processes. By default, the current `.libPaths()` are used.
@@ -54,7 +58,9 @@
 #' @param significantCpGDir Character. Directory used for optional significant
 #'   CpG coefficient tables.
 #' @param significantCpGPval Numeric. P-value threshold used to collect or write
-#'   significant CpG coefficient tables.
+#'   significant CpG coefficient tables. The threshold is applied to omnibus
+#'   p-values when `omnibusTest = TRUE`, and to target coefficient p-values
+#'   otherwise.
 #' @param saveTxtSummaries Logical. If `TRUE` and `saveOutputs = TRUE`, write
 #'   tab-delimited summary tables to `summaryTxtDir`.
 #' @param chunkSize Integer or `NULL`. Number of CpGs processed per summary
@@ -100,7 +106,8 @@
 #'   [plotMethylationGLMDistributions()] describing any exploratory plots that
 #'   were generated or written.}
 #'   \item{modelFits}{Object returned by [fitMethylationGLMModels()]
-#'   containing compact per-phenotype coefficient and condition results.}
+#'   containing compact per-phenotype coefficient, omnibus, and condition
+#'   results.}
 #'   \item{modelSummaries}{Object returned by
 #'   [summarizeMethylationGLMModels()] containing the combined CpG summary
 #'   tables used for reporting and annotation.}
@@ -134,8 +141,9 @@
 #' Numeric CpG columns are passed to `glm2::glm2()` without a separate
 #' methylation-domain filter. Native model messages, warnings, and errors are
 #' recorded in one phenotype-specific `Model.Message` field. Annotated outputs
-#' contain CpGs with at least one returned p-value; aggregate availability and
-#' condition counts are recorded in workbook metadata.
+#' contain CpGs with at least one returned coefficient or omnibus p-value;
+#' aggregate availability and condition counts are recorded in workbook
+#' metadata.
 #'
 #' @examples
 #' if (requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
@@ -184,7 +192,8 @@ methylationGLM <- function(
     factorVars = "Sex,Ethnicity,TraumaDefinition", scaleVars = NULL,
     cpgPrefix = "cg", cpgLimit = NA, methylationScale = "beta",
     nCores = 32, plotWidth = 2000, plotHeight = 1000, plotDPI = 150,
-    interactionTerm = NULL, libPath = NULL, glmLibs = "glm2",
+    interactionTerm = NULL, omnibusTest = FALSE,
+    libPath = NULL, glmLibs = "glm2",
     prsMap = NULL, summaryPval = NA, summaryResidualSD = TRUE,
     saveSignificantCpGs = FALSE,
     significantCpGDir = "preliminaryResults/cpgs/methylationGLM",
@@ -205,6 +214,7 @@ methylationGLM <- function(
         resumeFromSummary,
         "resumeFromSummary"
     )
+    omnibusTest <- validateOmnibusConfigurationMethylationGLM(omnibusTest)
     cpgLimit <- normalizeOptionalNumericMethylationGLM(cpgLimit)
     summaryPval <- normalizeOptionalNumericMethylationGLM(summaryPval)
     chunkSize <- normalizeChunkSizeMethylationGLM(chunkSize)
@@ -263,6 +273,7 @@ methylationGLM <- function(
             paste("Number of cores:           ", as.integer(nCores)),
             paste("Interaction term:          ",
                 if (is.null(interactionTerm)) "None" else interactionTerm),
+            paste("Omnibus test:             ", omnibusTest),
             paste("GLM libraries:             ", glmLibs), paste(
                 "PRS mapping:               ",
                 if (is.null(prsMap)) "None" else prsMap
@@ -313,6 +324,7 @@ methylationGLM <- function(
         modelFits <- fitMethylationGLMModels(
             preparedData = preparedData,
             nCores = nCores, libPath = libPath, glmLibs = glmLibs,
+            omnibusTest = omnibusTest,
             summaryDir = if (isTRUE(saveOutputs)) outputRData else NULL,
             resumeFromSummary = resumeFromSummary,
             verbose = verbose, logs = logs, log_dir = outputLogs,
@@ -322,7 +334,7 @@ methylationGLM <- function(
         modelSummaries <- summarizeMethylationGLMModels(
             modelResults = modelFits,
             preparedData = preparedData, summaryResidualSD = summaryResidualSD,
-            summaryPval = summaryPval,
+            summaryPval = summaryPval, padjmethod = padjmethod,
             nCores = nCores, libPath = libPath, glmLibs = glmLibs,
             chunkSize = chunkSize, verbose = verbose, logs = logs,
             log_dir = outputLogs, log_file = log_file
@@ -403,8 +415,9 @@ methylationGLM <- function(
                         methylationLabel = methylationLabel,
                     methylationObjectPrefix = methylationObjectPrefix,
                     internalResponseColumn = responseColumn,
-                        scaleVars = preparedData$scaleVars,
+                    scaleVars = preparedData$scaleVars,
                     scalingMetadata = preparedData$scalingMetadata,
+                    omnibusTest = omnibusTest,
                     reportAssetsDir = reportAssetsDir
                 )
             ),

@@ -10,6 +10,7 @@ fitMethylationGLMModels(
   libPath = NULL,
   glmLibs = "glm2",
   summaryDir = NULL,
+  omnibusTest = FALSE,
   resumeFromSummary = TRUE,
   verbose = FALSE,
   logs = FALSE,
@@ -32,6 +33,10 @@ check on worker processes. The default is \code{'glm2'}.}
 
 \item{summaryDir}{Character or \code{NULL}. Directory used for one complete
 compact summary per phenotype. \code{NULL} disables disk persistence.}
+
+\item{omnibusTest}{Logical. If \code{TRUE}, use \code{car::linearHypothesis()} to test
+the complete phenotype-by-interaction term, or the phenotype main effect
+when no interaction is specified, once per CpG.}
 
 \item{resumeFromSummary}{Logical. If \code{TRUE}, reuse a complete summary in
 \code{summaryDir} when it was generated from the same input file and model

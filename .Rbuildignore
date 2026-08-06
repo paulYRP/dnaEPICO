@@ -16,3 +16,4 @@
 ^packageTEST$
 ^tests/testthat/_snaps$
 ^tests/testthat/preliminaryResults$
+^gencodev50$

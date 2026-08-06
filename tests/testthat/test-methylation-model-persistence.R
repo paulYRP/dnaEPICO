@@ -64,6 +64,40 @@ test_that("GLM phenotype summaries are complete and resumable", {
     )
 })
 
+test_that("GLM signatures ignore one-level factors outside the formula", {
+    tmp <- withr::local_tempdir()
+    phenoBT1 <- data.frame(
+        status = factor(rep(c("Control", "Case"), each = 4)),
+        Timepoint = factor(rep("1", 8)),
+        cg00000029 = c(0.20, 0.21, 0.19, 0.22, 0.40, 0.41, 0.39, 0.42),
+        check.names = FALSE
+    )
+    input <- file.path(tmp, "phenoBT1.RData")
+    save(phenoBT1, file = input)
+    prepared <- prepareMethylationGLMData(
+        inputPheno = input, phenotypes = "status",
+        covariates = character(0), factorVars = "status,Timepoint",
+        logs = FALSE
+    )
+    summary_dir <- file.path(tmp, "summaries")
+
+    expect_error(
+        result <- fitMethylationGLMModels(
+            preparedData = prepared, nCores = 1,
+            summaryDir = summary_dir, logs = FALSE
+        ),
+        NA
+    )
+    artifact <- readRDS(result$summaryFiles$status)
+
+    expect_identical(names(artifact$signature$factors), "status")
+    expect_false("Timepoint" %in% names(artifact$signature$factors))
+    expect_false(inherits(
+        result$fits$status[["cg00000029"]],
+        "dnaEPICO_methylationGLM_fit_error"
+    ))
+})
+
 test_that("an unreadable phenotype summary refits the complete phenotype", {
     tmp <- withr::local_tempdir()
     phenoBT1 <- data.frame(
