@@ -104,18 +104,17 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
 </h2>
 <p>This vignette demonstrates the local, interactive use of
 <code>dnaEPICO</code>. In this mode, the main functions return
-structured in-memory result objects that can be inspected directly in
-the R session. This is the recommended route when you are checking
-inputs, reviewing quality-control outputs, or learning the structure of
-the package results before moving to larger analyses.</p>
+structured in-memory result objects for direct inspection in the R
+session. Use this route to check inputs, review quality-control outputs,
+or examine result structures before larger analyses.</p>
 <p>The examples below focus on the first three workflow stages:</p>
 <ol style="list-style-type: decimal">
 <li><code><a href="../reference/preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater()</a></code></li>
 <li><code><a href="../reference/svaEnmix.html">svaEnmix()</a></code></li>
 <li><code><a href="../reference/preprocessingPheno.html">preprocessingPheno()</a></code></li>
 </ol>
-<p>All examples use <code>saveOutputs = FALSE</code>, which keeps the
-workflow in memory and avoids writing file outputs.</p>
+<p>All examples use <code>saveOutputs = FALSE</code>, which returns
+results in memory without writing output files.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
@@ -140,19 +139,17 @@ Niu, and Taylor (2021)</span>.</li>
 </h2>
 <p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
 is built on core Bioconductor infrastructure for high-dimensional
-genomic data, with a focus on Illumina DNA methylation arrays. To read
-this vignette, we assume that you are already familiar with the general
-DNA methylation workflow. If not, we recommend first reading <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link">this
-tutorial</a>, which provides a practical introduction to the main
-concepts and analysis steps.</p>
+genomic data, with a focus on Illumina DNA methylation arrays. This
+vignette assumes familiarity with a general DNA methylation workflow.
+For an introduction, see <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link">this
+tutorial</a>, which covers the main concepts and analysis steps.</p>
 <p>Preprocessing and quality control are performed using established
 Bioconductor tools, including <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
 <em><a href="https://bioconductor.org/packages/3.20/ENmix" class="external-link">ENmix</a></em>, and
 <em><a href="https://bioconductor.org/packages/3.20/wateRmelon" class="external-link">wateRmelon</a></em>.
 Users are expected to have basic familiarity with R, Bioconductor
 workflows, and Illumina IDAT file structures.</p>
-<p>If you are asking yourself the question “Where do I start using
-Bioconductor?”, you might be interested in <a href="https://www.bioconductor.org/install/" class="external-link">this post</a>.</p>
+<p>For an introduction to Bioconductor, see the <a href="https://www.bioconductor.org/install/" class="external-link">installation guide</a>.</p>
 <div class="section level3">
 <h3 id="probe-exclusion-reference-files">Probe-exclusion reference files<a class="anchor" aria-label="anchor" href="#probe-exclusion-reference-files"></a>
 </h3>
@@ -193,17 +190,14 @@ retained unless explicitly enabled.</p></li>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>The <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
-package depends on <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
-<em><a href="https://bioconductor.org/packages/3.20/ENmix" class="external-link">ENmix</a></em>, and
-<em><a href="https://bioconductor.org/packages/3.20/wateRmelon" class="external-link">wateRmelon</a></em>,
-among others. Install dependencies with BiocManager:</p>
+<p>Install the development version of <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
+and its dependencies with BiocManager:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"dnaEPICO"</span><span class="op">)</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"paulYRP/dnaEPICO"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/valid.html" class="external-link">valid</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -232,7 +226,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpZAKjrW/dnaEPICO-idat-example-40c37e591cdd"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpGOQwaN/dnaEPICO-idat-example-2af249063c80"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -516,7 +510,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpZAKjrW/dnaEPICO-preprocessingPheno-example-40c3214b5d94"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpGOQwaN/dnaEPICO-preprocessingPheno-example-2af21ce4043b"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -648,18 +642,19 @@ fitting. For example, <code>factorVars = "Sex,TreatmentGroup"</code>
 treats those variables as categorical and
 <code>scaleVars = "Age,PC1"</code> standardises <code>Age</code> and
 <code>PC1</code>.</p>
-<p>For GLM and LME analyses, the selected variables must be numeric,
-have at least two finite observations, and have non-zero sample
-variance. A variable cannot be listed in both <code>factorVars</code>
-and <code>scaleVars</code>. The applied centres and sample standard
-deviations are stored in the annotated workbook metadata.</p>
+<p>Variables in <code>scaleVars</code> must be numeric, contain at least
+two finite observations, and have non-zero sample variance. A variable
+cannot appear in both <code>factorVars</code> and
+<code>scaleVars</code>. Applied centres and sample standard deviations
+are stored in the annotated workbook metadata.</p>
 <p>The preprocessed beta, M-value, or copy-number columns are passed
 unchanged to the selected model engine. Their observed finite minima and
 maxima are reported during preprocessing. GLM, lmerTest/lme4, and nlme
 messages, warnings, or errors are stored in one
-<code>&lt;Phenotype&gt;_Model.Message</code> column. An annotated
-workbook row is written when at least one requested p-value is returned;
-workbook metadata counts model attempts with and without p-values.</p>
+<code>&lt;Phenotype&gt;_Model.Message</code> column. A CpG is included
+in the annotated workbook when at least one coefficient or omnibus
+p-value is returned; workbook metadata counts model attempts with and
+without p-values.</p>
 <p>Longitudinal lmerTest/lme4 analyses use a participant-level random
 intercept, <code>(1 | personVar)</code>. Set
 <code>omnibusTest = TRUE</code> to obtain one joint F test per CpG. When
@@ -674,9 +669,8 @@ installed. The nlme backend does not currently support this option.</p>
 <div class="section level2">
 <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
 </h2>
-<p>In interactive local use, the most important habit is to inspect the
-returned objects after each step. In practice, the following checks are
-enough to confirm that the workflow is behaving as expected:</p>
+<p>In interactive use, inspect the returned object after each step.
+Useful checks include:</p>
 <ul>
 <li>
 <code>class(result)</code> to confirm which function produced the
@@ -699,9 +693,9 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-08-06 02:36:37 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-08-06 04:49:33 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 53.846 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 51.31 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -819,15 +813,11 @@ how phenotype-specific PRS terms are added through
 <div class="section level3">
 <h3 id="asking-for-help">Asking for help<a class="anchor" aria-label="anchor" href="#asking-for-help"></a>
 </h3>
-<p>As package developers, we try to explain clearly how to use our
-packages and in which order to use the functions. But <code>R</code> and
-<code>Bioconductor</code> have a steep learning curve, so it is critical
-to learn where to ask for help. We would like to highlight the <a href="https://support.bioconductor.org/" class="external-link">Bioconductor support site</a>
-as the main resource for getting help. Please remember to use the
-<code>dnaEPICO</code> tag and check the <a href="https://support.bioconductor.org/tag/dnaEPICO/" class="external-link">older posts</a>.
-If you want to receive help, please provide a small reproducible example
-and your session information so the source of the problem can be tracked
-efficiently.</p>
+<p>Use the <a href="https://support.bioconductor.org/" class="external-link">Bioconductor
+support site</a> for package questions. Add the <code>dnaEPICO</code>
+tag, review <a href="https://support.bioconductor.org/tag/dnaEPICO/" class="external-link">previous
+posts</a>, and include a small reproducible example with session
+information.</p>
 </div>
 </div>
 <div class="section level2">

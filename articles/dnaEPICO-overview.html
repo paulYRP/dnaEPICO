@@ -102,13 +102,12 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>This vignette provides a visual overview of the main <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
-functions roles. It shows how the major functions organise their inputs,
-internal processing stages, and outputs.</p>
-<p>The diagrams are intended as orientation maps. They are useful when
-deciding which function to run and checking how outputs move between
-stages. For detailed arguments and executable examples, use the
-local-use and pipeline-use vignettes.</p>
+<p>This vignette shows the roles, inputs, processing stages, and outputs
+of the main <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
+functions.</p>
+<p>Use the diagrams to choose a function and follow outputs between
+stages. See the local-use and pipeline-use vignettes for arguments and
+executable examples.</p>
 <p>Read each overview as follows:</p>
 <ul>
 <li>The arrows show the expected flow from inputs to derived objects and
@@ -127,11 +126,10 @@ file-based pipeline, depending on the value of
 </h2>
 <p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
 is built on core Bioconductor infrastructure for high-dimensional
-genomic data, with a focus on Illumina DNA methylation arrays. To read
-this vignette, we assume that you are already familiar with the general
-DNA methylation pipeline. If not, we recommend first reading <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link">this
-tutorial</a>, which provides a practical introduction to the main
-concepts and analysis steps.</p>
+genomic data, with a focus on Illumina DNA methylation arrays. This
+vignette assumes familiarity with a general DNA methylation workflow.
+For an introduction, see <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link">this
+tutorial</a>, which covers the main concepts and analysis steps.</p>
 <p>Preprocessing and quality control are performed using established
 Bioconductor tools, including <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
 <em><a href="https://bioconductor.org/packages/3.20/ENmix" class="external-link">ENmix</a></em>, and
@@ -141,8 +139,7 @@ including generalised linear models and linear mixed-effects models.
 Users are expected to have basic familiarity with R, Bioconductor
 pipelines, command-line execution, and Illumina IDAT file
 structures.</p>
-<p>If you are asking yourself the question “Where do I start using
-Bioconductor?”, you might be interested in <a href="https://www.bioconductor.org/install/" class="external-link">this blog post</a>.</p>
+<p>For an introduction to Bioconductor, see the <a href="https://www.bioconductor.org/install/" class="external-link">installation guide</a>.</p>
 <div class="section level3">
 <h3 id="probe-exclusion-reference-files">Probe-exclusion reference files<a class="anchor" aria-label="anchor" href="#probe-exclusion-reference-files"></a>
 </h3>
@@ -289,11 +286,9 @@ function openOverviewFullscreen(figureId) {
 <div class="section level2">
 <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a>
 </h2>
-<p>The sections below describe the role of each main function in the
-package <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>.
-They are ordered according to the analysis path: preprocessing,
-surrogate-variable estimation, phenotype preparation, cross-sectional
-modelling, longitudinal modelling, and report generation.</p>
+<p>The main functions follow the analysis path from preprocessing and
+surrogate-variable estimation through phenotype preparation, modelling,
+and report generation.</p>
 <div class="section level3">
 <h3 id="preprocessingminfiewaswater">preprocessingMinfiEwasWater()<a class="anchor" aria-label="anchor" href="#preprocessingminfiewaswater"></a>
 </h3>
@@ -426,9 +421,9 @@ covariates.</p>
 <li>Inputs: a phenotype-methylation table, phenotype variables,
 covariates, categorical and scaled-variable selections, optional PRS
 mappings, and annotation settings.</li>
-<li>Processing tasks: model preparation, CpG-GLM model fitting,
-diagnostic plotting, result summarisation, multiple-testing adjustment,
-and annotation.</li>
+<li>Processing tasks: model preparation, CpG-GLM fitting, coefficient
+and optional omnibus testing, diagnostic plotting, multiple-testing
+adjustment, summarisation, and annotation.</li>
 <li>Outputs: compact phenotype summaries, summary tables, diagnostic
 figures, significant-CpG exports, and annotated workbooks. Native glm2
 conditions are stored in <code>&lt;Phenotype&gt;_Model.Message</code>;
@@ -544,12 +539,12 @@ Full screen
 <div class="section level2">
 <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
 </h2>
-<p>The preprocessing function create quality-controlled methylation data
-and analysis-ready phenotype tables. The modelling functions fit
+<p>The preprocessing functions create quality-controlled methylation
+data and analysis-ready phenotype tables. The modelling functions fit
 cross-sectional and longitudinal association models. The report function
 gathers the resulting tables, figures, and logs into a browsable
 output.</p>
-<p>In practice, the main functions are:</p>
+<p>The main workflow is:</p>
 <ul>
 <li>run <code><a href="../reference/preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater()</a></code> to prepare
 methylation objects and QC outputs,</li>
@@ -566,9 +561,9 @@ for association testing, and</li>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-08-06 02:36:40 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-08-06 04:49:36 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 0.552 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 0.532 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -609,15 +604,11 @@ for association testing, and</li>
 <div class="section level3">
 <h3 id="asking-for-help">Asking for help<a class="anchor" aria-label="anchor" href="#asking-for-help"></a>
 </h3>
-<p>As package developers, we try to explain clearly how to use our
-packages and in which order to use the functions. But <code>R</code> and
-<code>Bioconductor</code> have a steep learning curve, so it is critical
-to learn where to ask for help. We would like to highlight the <a href="https://support.bioconductor.org/" class="external-link">Bioconductor support site</a>
-as the main resource for getting help. Please remember to use the
-<code>dnaEPICO</code> tag and check the <a href="https://support.bioconductor.org/tag/dnaEPICO/" class="external-link">older posts</a>.
-If you want to receive help, please provide a small reproducible example
-and your session information so the source of the problem can be tracked
-efficiently.</p>
+<p>Use the <a href="https://support.bioconductor.org/" class="external-link">Bioconductor
+support site</a> for package questions. Add the <code>dnaEPICO</code>
+tag, review <a href="https://support.bioconductor.org/tag/dnaEPICO/" class="external-link">previous
+posts</a>, and include a small reproducible example with session
+information.</p>
 </div>
 </div>
   </div>

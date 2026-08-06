@@ -102,13 +102,11 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>This vignette describes the file-based route in
-<code>dnaEPICO</code>. In this mode, the same main functions still
-return structured result objects, but they also write files to disk when
-<code>saveOutputs = TRUE</code>. This route is appropriate when you want
-a reproducible folder structure, Makefile-driven execution, or a
-pipeline that can be resumed on a local workstation or an HPC
-system.</p>
+<p>This vignette describes the file-based <code>dnaEPICO</code>
+workflow. Functions return structured objects and write files when
+<code>saveOutputs = TRUE</code>. Use this workflow for reproducible
+directories, Make execution, and resumable analyses on local or HPC
+systems.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
@@ -134,11 +132,10 @@ et al. (2015)</span>.</li>
 </h2>
 <p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
 is built on core Bioconductor infrastructure for high-dimensional
-genomic data, with a focus on Illumina DNA methylation arrays. To read
-this vignette, we assume that you are already familiar with the general
-DNA methylation workflow. If not, we recommend first reading <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link">this
-tutorial</a>, which provides a practical introduction to the main
-concepts and analysis steps.</p>
+genomic data, with a focus on Illumina DNA methylation arrays. This
+vignette assumes familiarity with a general DNA methylation workflow.
+For an introduction, see <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link">this
+tutorial</a>, which covers the main concepts and analysis steps.</p>
 <p>Preprocessing and quality control are performed using established
 Bioconductor tools, including <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
 <em><a href="https://bioconductor.org/packages/3.20/ENmix" class="external-link">ENmix</a></em>, and
@@ -149,8 +146,7 @@ and longitudinal mixed-effects models fitted with
 <code>nlme</code> engine can include AR1 or CAR1 within-participant
 residual correlation. Users are expected to have basic familiarity with
 R, command-line execution, and Illumina IDAT file structures.</p>
-<p>If you are asking yourself the question “Where do I start using
-Bioconductor?”, you might be interested in <a href="https://www.bioconductor.org/install/" class="external-link">this blog post</a>.</p>
+<p>For an introduction to Bioconductor, see the <a href="https://www.bioconductor.org/install/" class="external-link">installation guide</a>.</p>
 <div class="section level3">
 <h3 id="probe-exclusion-reference-files">Probe-exclusion reference files<a class="anchor" aria-label="anchor" href="#probe-exclusion-reference-files"></a>
 </h3>
@@ -191,17 +187,14 @@ retained unless explicitly enabled.</p></li>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>The <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
-package depends on <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
-<em><a href="https://bioconductor.org/packages/3.20/ENmix" class="external-link">ENmix</a></em>, and
-<em><a href="https://bioconductor.org/packages/3.20/wateRmelon" class="external-link">wateRmelon</a></em>,
-among others. Install dependencies with BiocManager:</p>
+<p>Install the development version of <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
+and its dependencies with BiocManager:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"dnaEPICO"</span><span class="op">)</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"paulYRP/dnaEPICO"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/valid.html" class="external-link">valid</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -252,7 +245,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpbTRaNc/dnaEPICO-idat-example-412f1c009335"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpw2Lik2/dnaEPICO-idat-example-2b5e3c2c9ee9"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -537,7 +530,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpbTRaNc/dnaEPICO-preprocessingPheno-example-412ffa164be"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpw2Lik2/dnaEPICO-preprocessingPheno-example-2b5e6376ec9e"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -663,7 +656,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpbTRaNc/dnaEPICO-glm-example-412f17654f3f"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpw2Lik2/dnaEPICO-glm-example-2b5e2926f467"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -715,9 +708,8 @@ produced during helper construction: <code>preparedData</code>,
 outputs written by the GLM step.
 <code>names(glmPipelineResult$savedFiles)</code> includes compact
 phenotype summary files, significant-CpG exports, summary text files,
-and the annotated results workbook. This is the object to inspect when
-you want to confirm which modeling outputs were written and how they are
-grouped.</p>
+and the annotated results workbook. Inspect this object to identify the
+written modeling outputs and their groups.</p>
 <p>Arguments:</p>
 <ul>
 <li>
@@ -791,7 +783,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpbTRaNc/dnaEPICO-lme-example-412f5d25ec7c"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpw2Lik2/dnaEPICO-lme-example-2b5e568fd2c"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -856,9 +848,9 @@ in-memory objects used to build that example: <code>preparedData</code>,
 outputs written by the LME step.
 <code>names(lmePipelineResult$savedFiles)</code> includes compact
 phenotype summary files, summary text files, significant interaction
-exports, and the annotated longitudinal results table. This is the
-object to inspect when you want to confirm which longitudinal modeling
-outputs were written and how they are grouped.</p>
+exports, and the annotated longitudinal results table. Inspect this
+object to identify the written longitudinal modeling outputs and their
+groups.</p>
 <p>Arguments:</p>
 <ul>
 <li>
@@ -961,7 +953,7 @@ outputs can be passed directly.</p>
 <p>When running this section from an R session,
 <code><a href="../reference/dnamReport.html">dnamReport()</a></code> still needs the Quarto command line interface
 because the function renders the <code>.qmd</code> files into the final
-website. You can check whether R can find Quarto with:</p>
+website. Check whether R can find Quarto with:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.which.html" class="external-link">Sys.which</a></span><span class="op">(</span><span class="st">"quarto"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/system2.html" class="external-link">system2</a></span><span class="op">(</span><span class="st">"quarto"</span>, <span class="st">"--version"</span><span class="op">)</span></span></code></pre></div>
@@ -1100,9 +1092,8 @@ is appended only for the matching phenotype. For example, the mapping
 \beta_{\text{PRS}} \cdot \text{PRS} +
 \varepsilon
 </annotation></semantics></math></p>
-<p>If <code>interactionTerm</code> is supplied, the same framework is
-extended by adding the requested interaction to the fixed-effect portion
-of the model.</p>
+<p>If <code>interactionTerm</code> is supplied, the fixed effects
+include its main effect and its interaction with the phenotype.</p>
 </div>
 <div class="section level3">
 <h3 id="longitudinal-mixed-effects-structure">Longitudinal mixed-effects structure<a class="anchor" aria-label="anchor" href="#longitudinal-mixed-effects-structure"></a>
@@ -1110,13 +1101,14 @@ of the model.</p>
 <p>The longitudinal function <code><a href="../reference/methylationLME.html">methylationLME()</a></code> follows the
 same file-based pattern, but uses a mixed-effects model with a
 participant-level random intercept. In schematic form:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">Phenotype</mtext><mo>×</mo><mtext mathvariant="normal">Interaction</mtext><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>2</mn></mrow></msub><mo>⋅</mo><msub><mtext mathvariant="normal">Covariate</mtext><mi>k</mi></msub><mo>+</mo><msub><mi>β</mi><mtext mathvariant="normal">PRS</mtext></msub><mo>⋅</mo><mtext mathvariant="normal">PRS</mtext><mo>+</mo><msub><mi>b</mi><mtext mathvariant="normal">person</mtext></msub><mo>+</mo><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Interaction</mtext><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>⋅</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">Phenotype</mtext><mo>×</mo><mtext mathvariant="normal">Interaction</mtext><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>β</mi><mrow><mi>k</mi><mo>+</mo><mn>3</mn></mrow></msub><mo>⋅</mo><msub><mtext mathvariant="normal">Covariate</mtext><mi>k</mi></msub><mo>+</mo><msub><mi>β</mi><mtext mathvariant="normal">PRS</mtext></msub><mo>⋅</mo><mtext mathvariant="normal">PRS</mtext><mo>+</mo><msub><mi>b</mi><mtext mathvariant="normal">person</mtext></msub><mo>+</mo><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
 \begin{aligned}
 \text{Methylation}_{CpG_i} =\;&amp;
 \beta_0 +
 \beta_1 \cdot \text{Phenotype} +
-\beta_2 \cdot (\text{Phenotype} \times \text{Interaction}) +
-\sum_{k = 1}^{K} \beta_{k + 2} \cdot \text{Covariate}_k +
+\beta_2 \cdot \text{Interaction} +
+\beta_3 \cdot (\text{Phenotype} \times \text{Interaction}) +
+\sum_{k = 1}^{K} \beta_{k + 3} \cdot \text{Covariate}_k +
 \beta_{\text{PRS}} \cdot \text{PRS} +
 b_{\text{person}} +
 \varepsilon
@@ -1155,12 +1147,10 @@ annotated summaries</li>
 <div class="section level2">
 <h2 id="makefile-use">Makefile use<a class="anchor" aria-label="anchor" href="#makefile-use"></a>
 </h2>
-<p>In a project directory, the Makefile route is simpler than calling
-each function by hand. A minimal project layout looks like this:</p>
 <p>The workflow requires GNU Make 4.3 or later and <code>Rscript</code>
-on the system path. Quarto is required when a report target is
-requested. The exported rules use relative project paths, including when
-the project directory contains spaces.</p>
+on the system path. Report targets also require Quarto. The exported
+rules use relative paths and support project directories containing
+spaces. A minimal layout is:</p>
 <pre class="text"><code>my_project/
     Makefile
     metadata/
@@ -1179,8 +1169,7 @@ minimal example is:</p>
 <span><span class="va">RDATA_DIR</span> <span class="op">=</span> <span class="va">rData</span></span>
 <span><span class="va">RESULTS_DIR</span> <span class="op">=</span> <span class="va">results</span></span>
 <span><span class="va">FIGURES_DIR</span> <span class="op">=</span> <span class="va">figures</span></span></code></pre>
-<p>With that structure in place, a typical sequence of commands looks
-like this:</p>
+<p>A typical command sequence is:</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">make</span> step1 MODEL=model1</span>
 <span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="fu">make</span> step2 MODEL=model1</span>
 <span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">make</span> step3 MODEL=model1</span>
@@ -1190,8 +1179,7 @@ like this:</p>
 <span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="fu">make</span> all MODEL=model1</span>
 <span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="fu">make</span> status MODEL=model1</span>
 <span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="fu">make</span> clean MODEL=model1</span></code></pre></div>
-<p>These targets correspond to the grouped outputs defined in the
-exported rules:</p>
+<p>The targets run these workflow stages:</p>
 <ul>
 <li>
 <code>make step1 MODEL=model1</code> runs preprocessing only.</li>
@@ -1200,28 +1188,26 @@ exported rules:</p>
 files written by Step 1.</li>
 <li>
 <code>make step3 MODEL=model1</code> runs phenotype preparation
-after Step 2 has safely appended PC columns to
+after Step 2 appends surrogate-variable columns to
 <code>phenoLC.csv</code>.</li>
 <li>
-<code>make f3 MODEL=model1</code> runs preprocessing, SVA, phenotype
-preparation, and a report containing only those sections.</li>
+<code>make f3 MODEL=model1</code> runs Steps 1-3 and generates a
+preprocessing report.</li>
 <li>
-<code>make f4 MODEL=model1</code> runs the same route, adds the GLM
-step, and generates a report containing the preprocessing and GLM
-sections.</li>
+<code>make f4 MODEL=model1</code> runs Steps 1-4 and generates a
+report with preprocessing and GLM sections.</li>
 <li>
-<code>make f3lme MODEL=model1</code> runs the same route, adds the
-longitudinal LME step, and generates a report containing the
-preprocessing and LME sections.</li>
+<code>make f3lme MODEL=model1</code> runs Steps 1-3 and LME, then
+generates a report with preprocessing and LME sections.</li>
 <li>
-<code>make all MODEL=model1</code> runs the full pipeline, including
-both modeling steps and the report.</li>
+<code>make all MODEL=model1</code> runs Steps 1-5 and generates the
+complete report.</li>
 <li>
-<code>make status MODEL=model1</code> checks which expected output
-files are already present.</li>
+<code>make status MODEL=model1</code> reports available
+outputs.</li>
 <li>
-<code>make clean MODEL=model1</code> removes the files generated for
-the selected model while keeping the shared raw input area.</li>
+<code>make clean MODEL=model1</code> removes outputs for the
+selected model while preserving shared raw inputs.</li>
 </ul>
 <p>If several models are declared in <code>MODELS</code>, the grouped
 multi-model targets can be used instead:</p>
@@ -1229,8 +1215,7 @@ multi-model targets can be used instead:</p>
 <span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="fu">make</span> f4_models</span>
 <span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">make</span> f3lme_models</span>
 <span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="fu">make</span> models</span></code></pre></div>
-<p>These grouped targets loop over every model listed in
-<code>MODELS</code>:</p>
+<p>These targets dispatch every model listed in <code>MODELS</code>:</p>
 <ul>
 <li>
 <code>make f3_models</code> runs the <code>f3</code> route for each
@@ -1245,30 +1230,20 @@ each declared model.</li>
 <code>make models</code> runs the full <code>all</code> pipeline for
 each declared model.</li>
 </ul>
-<p>Two maintenance targets are also useful during routine work:</p>
+<p>Status and cleanup targets are available for routine use:</p>
 <div class="sourceCode" id="cb22"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">make</span> status MODEL=model1</span>
 <span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="fu">make</span> clean MODEL=model1</span>
 <span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="fu">make</span> clean_models</span></code></pre></div>
-<ul>
-<li>
-<code>make status MODEL=model1</code> reports which expected outputs
-are already present for one model.</li>
-<li>
-<code>make clean MODEL=model1</code> removes the generated outputs
-for one model.</li>
-<li>
-<code>make clean_models</code> removes the generated outputs for
-every model listed in <code>MODELS</code>.</li>
-</ul>
-<p>The exact target names and variables depend on the Makefile settings
-extracted for the project. In practice, <code>saveOutputs = TRUE</code>
-is what makes the individual steps compatible with this route because
-later steps consume the files written by earlier ones. Step 2 creates
-<code>data/&lt;model&gt;/svaEnmix/.sva_complete</code> only after the
-updated <code>phenoLC.csv</code> has been validated and installed.
-Downstream targets depend on both files, so Make reruns SVA when Step 1
-replaces <code>phenoLC.csv</code> and skips SVA when the completed
-inputs are unchanged.</p>
+<p><code>status</code> reports available outputs, <code>clean</code>
+removes one model, and <code>clean_models</code> removes every model
+listed in <code>MODELS</code>. Cleanup preserves the shared raw input
+directory.</p>
+<p>Each step writes outputs consumed by downstream targets. Step 2
+creates <code>data/&lt;model&gt;/svaEnmix/.sva_complete</code> only
+after the updated <code>phenoLC.csv</code> has been validated and
+installed. Downstream targets depend on both files, so Make reruns SVA
+when Step 1 replaces <code>phenoLC.csv</code> and skips SVA when the
+completed inputs are unchanged.</p>
 <div class="section level3">
 <h3 id="report-generation">Report generation<a class="anchor" aria-label="anchor" href="#report-generation"></a>
 </h3>
@@ -1310,15 +1285,15 @@ executable path before running <code>make</code>:</p>
 <h2 id="full-exported-makefile">Full exported Makefile<a class="anchor" aria-label="anchor" href="#full-exported-makefile"></a>
 </h2>
 <p>The full Makefile exported by <code><a href="../reference/extractMake.html">extractMake()</a></code> is shown
-below. This is the template that should be adapted for a project before
-running the pipeline in the target analysis environment.</p>
+below. Adapt this template for the project before running the pipeline
+in the target analysis environment.</p>
 <pre class="make"><code># ===============================================
 # USER CONFIGURATION
 # ===============================================
 MAKEFLAGS += --output-sync
 
 # ===============================================
-# MODELS SELECTION PARALLEL RUN
+# MODEL SELECTION
 # ===============================================
 # Single model
 MODEL ?= model1
@@ -1366,7 +1341,7 @@ SUMMARY_DIR = summary
 ENMIX_DIR = enmix
 SVA_DIR = sva
 QC_DIR = qc
-# Modify the following with the path of your folder in HPC or Local
+# Optional R library path for local or HPC environments
 R_DIR = NULL
 
 # ===============================================
@@ -1528,7 +1503,7 @@ endif
 endif
 
 # ===============================================
-# INCLUDE PIPELINE FROM dnaEPICO
+# LOAD dnaEPICO PIPELINE RULES
 # ===============================================
 DNAPIPE_EMPTY :=
 DNAPIPE_SPACE := $(DNAPIPE_EMPTY) $(DNAPIPE_EMPTY)
@@ -1622,8 +1597,8 @@ files; <code>NULL</code> uses the default comma separator.</li>
 <li>
 <code>SAMPLE_ID</code>: phenotype column used to align samples.</li>
 <li>
-<code>N_SAMPLES</code>: optional sample subset for testing;
-<code>NA</code> uses all samples.</li>
+<code>N_SAMPLES</code>: maximum number of phenotype rows;
+<code>NA</code> uses all rows.</li>
 <li>
 <code>ARRAY_TYPE</code> and <code>ANNOTATION_VERSION</code>: array
 platform and annotation build.</li>
@@ -1822,7 +1797,8 @@ fixed-effect part of the GLM; <code>NULL</code> omits the
 interaction.</li>
 <li>
 <code>GLM_OMNIBUS_TEST</code>: whether one joint Wald F test is
-reported for each CpG’s phenotype or phenotype-by-interaction term.</li>
+reported for the phenotype or phenotype-by-interaction term at each
+CpG.</li>
 <li>
 <code>SUMMARY_RESIDUAL_SD</code>: whether residual standard
 deviations are reported in summaries.</li>
@@ -1917,32 +1893,31 @@ filter.</p>
 <code>include $(DNAPIPE_MK)</code> imports the actual pipeline rules
 after the user configuration has been defined.</li>
 </ul>
-<p>This separation is what allows the template Makefile to stay compact
-while the package keeps the rule implementation in one maintained
-location.</p>
+<p>This keeps the template compact while the package maintains the rules
+in one location.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
 </h2>
-<p>The file-based route is the correct choice when you need:</p>
+<p>Use the file-based workflow when you need:</p>
 <ul>
 <li>a reproducible folder structure,</li>
 <li>files that can be reused by later workflow stages,</li>
 <li>Makefile execution, or</li>
 <li>repeated analyses across one or more models.</li>
 </ul>
-<p>The interactive route and the file-based route are therefore
-complementary: local use is best for understanding the returned objects,
-while pipeline use is best for reproducible multi-step execution.</p>
+<p>The interactive workflow supports direct inspection of returned
+objects; the file-based workflow supports reproducible multi-step
+execution.</p>
 </div>
 <div class="section level2">
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-08-06 02:38:30 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-08-06 04:51:15 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.796 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.628 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -2071,15 +2046,11 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <div class="section level3">
 <h3 id="asking-for-help">Asking for help<a class="anchor" aria-label="anchor" href="#asking-for-help"></a>
 </h3>
-<p>As package developers, we try to explain clearly how to use our
-packages and in which order to use the functions. But <code>R</code> and
-<code>Bioconductor</code> have a steep learning curve, so it is critical
-to learn where to ask for help. We would like to highlight the <a href="https://support.bioconductor.org/" class="external-link">Bioconductor support site</a>
-as the main resource for getting help. Please remember to use the
-<code>dnaEPICO</code> tag and check the <a href="https://support.bioconductor.org/tag/dnaEPICO/" class="external-link">older posts</a>.
-If you want to receive help, please provide a small reproducible example
-and your session information so the source of the problem can be tracked
-efficiently.</p>
+<p>Use the <a href="https://support.bioconductor.org/" class="external-link">Bioconductor
+support site</a> for package questions. Add the <code>dnaEPICO</code>
+tag, review <a href="https://support.bioconductor.org/tag/dnaEPICO/" class="external-link">previous
+posts</a>, and include a small reproducible example with session
+information.</p>
 </div>
 </div>
 <div class="section level2">
