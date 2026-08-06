@@ -18,7 +18,7 @@ results produced by fitMethylationGLMModels()."><!-- mathjax --><script src="htt
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.36</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.37</span>
       </span>
     </div>
 
@@ -76,6 +76,7 @@ results produced by <code><a href="fitMethylationGLMModels.html">fitMethylationG
 <span>  <span class="va">preparedData</span>,</span>
 <span>  summaryResidualSD <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  summaryPval <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  padjmethod <span class="op">=</span> <span class="st">"fdr"</span>,</span>
 <span>  nCores <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  libPath <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  glmLibs <span class="op">=</span> <span class="st">"glm2"</span>,</span>
@@ -107,6 +108,11 @@ to each CpG summary row.</p></dd>
 <dt id="arg-summarypval">summaryPval<a class="anchor" aria-label="anchor" href="#arg-summarypval"></a></dt>
 <dd><p>Numeric or <code>NA</code>. Optional p-value filter applied to the
 returned summary tables. <code>NA</code> keeps all rows.</p></dd>
+
+
+<dt id="arg-padjmethod">padjmethod<a class="anchor" aria-label="anchor" href="#arg-padjmethod"></a></dt>
+<dd><p>Character. Adjustment method passed to <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code>
+for omnibus p-values across CpGs within each phenotype and tested term.</p></dd>
 
 
 <dt id="arg-ncores">nCores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>

@@ -19,7 +19,7 @@ compact numerical results and discarded before the next batch is returned."><!--
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.36</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.37</span>
       </span>
     </div>
 
@@ -79,6 +79,7 @@ compact numerical results and discarded before the next batch is returned.</p>
 <span>  libPath <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  glmLibs <span class="op">=</span> <span class="st">"glm2"</span>,</span>
 <span>  summaryDir <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  omnibusTest <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  resumeFromSummary <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -114,6 +115,12 @@ check on worker processes. The default is <code>'glm2'</code>.</p></dd>
 <dt id="arg-summarydir">summaryDir<a class="anchor" aria-label="anchor" href="#arg-summarydir"></a></dt>
 <dd><p>Character or <code>NULL</code>. Directory used for one complete
 compact summary per phenotype. <code>NULL</code> disables disk persistence.</p></dd>
+
+
+<dt id="arg-omnibustest">omnibusTest<a class="anchor" aria-label="anchor" href="#arg-omnibustest"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, use <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html" class="external-link">car::linearHypothesis()</a></code> to test
+the complete phenotype-by-interaction term, or the phenotype main effect
+when no interaction is specified, once per CpG.</p></dd>
 
 
 <dt id="arg-resumefromsummary">resumeFromSummary<a class="anchor" aria-label="anchor" href="#arg-resumefromsummary"></a></dt>

@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.36</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.37</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@
 Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpint@qut.edu.au" class="email">ruizpint@qut.edu.au</a>
       </address>
                   
-            <h4 data-toc-skip class="date">2026-07-23</h4>
+            <h4 data-toc-skip class="date">2026-08-06</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-pipeline.Rmd" class="external-link"><code>vignettes/dnaEPICO-pipeline.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-pipeline.Rmd</code></div>
@@ -252,7 +252,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp3iVJki/dnaEPICO-idat-example-264b3e4eb496"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpbTRaNc/dnaEPICO-idat-example-412f1c009335"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -537,7 +537,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp3iVJki/dnaEPICO-preprocessingPheno-example-264b62b41352"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpbTRaNc/dnaEPICO-preprocessingPheno-example-412ffa164be"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -663,7 +663,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp3iVJki/dnaEPICO-glm-example-264b4b8745de"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpbTRaNc/dnaEPICO-glm-example-412f17654f3f"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -791,7 +791,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmp3iVJki/dnaEPICO-lme-example-264b567d6db7"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpbTRaNc/dnaEPICO-lme-example-412f5d25ec7c"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -1059,6 +1059,14 @@ is the methylation value at CpG
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math>
 is the intercept, the phenotype term is the variable of interest, and
 the remaining fixed effects represent the listed covariates.</p>
+<p>Setting <code>omnibusTest = TRUE</code> adds one joint Wald F test
+per CpG using <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html" class="external-link">car::linearHypothesis()</a></code>. Without an
+interaction, the complete phenotype term is tested. With an interaction,
+the complete phenotype-by-interaction term is tested.
+One-degree-of-freedom terms, including a numeric phenotype entered as
+one linear term, are also tested and reproduce the corresponding
+coefficient p-value. Omnibus p-values are adjusted across valid CpGs
+within each phenotype and tested term using <code>padjmethod</code>.</p>
 <p>If no polygenic risk score is included, a model can be read
 schematically as:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mtext mathvariant="normal">Methylation</mtext><mrow><mi>C</mi><mi>p</mi><msub><mi>G</mi><mi>i</mi></msub></mrow></msub><mo>=</mo><mspace width="0.278em"></mspace></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Phenotype</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Age</mtext><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Sex</mtext><mo>+</mo><msub><mi>β</mi><mn>4</mn></msub><mo>⋅</mo><mtext mathvariant="normal">Ethnicity</mtext></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd><mtd columnalign="left" style="text-align: left"><mi>+</mi><mi>ε</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
@@ -1149,6 +1157,10 @@ annotated summaries</li>
 </h2>
 <p>In a project directory, the Makefile route is simpler than calling
 each function by hand. A minimal project layout looks like this:</p>
+<p>The workflow requires GNU Make 4.3 or later and <code>Rscript</code>
+on the system path. Quarto is required when a report target is
+requested. The exported rules use relative project paths, including when
+the project directory contains spaces.</p>
 <pre class="text"><code>my_project/
     Makefile
     metadata/
@@ -1160,13 +1172,13 @@ each function by hand. A minimal project layout looks like this:</p>
 <p>The exported template should then be edited so that at least the
 model name, phenotype path, and directory variables match the project. A
 minimal example is:</p>
-<pre class="make"><code>MODEL = model1
-PHENO_FILE = metadata/pheno_model1.csv
-LOGS_DIR := $(abspath logs)
-DATA_DIR = data
-RDATA_DIR = rData
-RESULTS_DIR = results
-FIGURES_DIR = figures</code></pre>
+<pre class="make"><code><span><span class="va">MODEL</span> <span class="op">=</span> <span class="va">model1</span></span>
+<span><span class="va">PHENO_FILE</span> <span class="op">=</span> <span class="va">metadata</span><span class="op">/</span><span class="va">pheno_model1.csv</span></span>
+<span><span class="va">LOGS_DIR</span> <span class="op">=</span> <span class="va">logs</span></span>
+<span><span class="va">DATA_DIR</span> <span class="op">=</span> <span class="va">data</span></span>
+<span><span class="va">RDATA_DIR</span> <span class="op">=</span> <span class="va">rData</span></span>
+<span><span class="va">RESULTS_DIR</span> <span class="op">=</span> <span class="va">results</span></span>
+<span><span class="va">FIGURES_DIR</span> <span class="op">=</span> <span class="va">figures</span></span></code></pre>
 <p>With that structure in place, a typical sequence of commands looks
 like this:</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">make</span> step1 MODEL=model1</span>
@@ -1192,13 +1204,15 @@ after Step 2 has safely appended PC columns to
 <code>phenoLC.csv</code>.</li>
 <li>
 <code>make f3 MODEL=model1</code> runs preprocessing, SVA, phenotype
-preparation, and the report target defined by the current rules.</li>
+preparation, and a report containing only those sections.</li>
 <li>
 <code>make f4 MODEL=model1</code> runs the same route, adds the GLM
-step, and refreshes the report target.</li>
+step, and generates a report containing the preprocessing and GLM
+sections.</li>
 <li>
 <code>make f3lme MODEL=model1</code> runs the same route, adds the
-longitudinal LME step, and refreshes the report target.</li>
+longitudinal LME step, and generates a report containing the
+preprocessing and LME sections.</li>
 <li>
 <code>make all MODEL=model1</code> runs the full pipeline, including
 both modeling steps and the report.</li>
@@ -1267,9 +1281,10 @@ on it, so Make refreshes the report automatically after the required
 pipeline outputs are available.</p>
 <p>For example, the <code>f3</code> route builds the report from the
 Data, ENmix QC, Quality Control, Batch Effect, Metrics, Report, and Logs
-inputs. The <code>f4</code>, <code>f3lme</code>, and <code>all</code>
-routes additionally make the GLM and LME tables available when the
-corresponding model outputs exist.</p>
+inputs. The <code>f4</code> route adds only the GLM page and GLM log,
+the <code>f3lme</code> route adds only the LME page and LME log, and
+<code>all</code> includes both modeling sections. Each report contains
+the model sections defined by its route.</p>
 <p>The report target reads the same types of outputs generated in the
 examples above, organised under the Makefile project layout: the
 phenotype table in <code>data/</code>, quality-control and metric
@@ -1351,7 +1366,8 @@ SUMMARY_DIR = summary
 ENMIX_DIR = enmix
 SVA_DIR = sva
 QC_DIR = qc
-R_DIR = ~/R/x86_64-pc-linux-gnu-library/4.4
+# Modify the following with the path of your folder in HPC or Local
+R_DIR = NULL
 
 # ===============================================
 # GLOBAL PARAMETERS
@@ -1377,11 +1393,12 @@ METHYLATION_SCALE = beta
 PHENO_ORDER = $(SAMPLE_ID);$(TIME_VAR);$(SEX_COLUMN);PredSex;$(BASENAME_COLUMN);$(SENTRIX_ID_COLUMN);$(SENTRIX_POSITION_COLUMN)
 
 # STEP 4-5 PARAMETERS
-COVARIATES = Sex
-FACTOR_VARS = Sex,TreatmentGroup
-SCALE_VARS = NULL
-SCALE_VARS_GLM = $(SCALE_VARS)
-SCALE_VARS_LME = $(SCALE_VARS)
+COVARIATES_GLM = Sex
+COVARIATES_LME = Sex
+FACTOR_VARS_GLM = Sex,TreatmentGroup
+FACTOR_VARS_LME = Sex,TreatmentGroup
+SCALE_VARS_GLM = NULL
+SCALE_VARS_LME = NULL
 CPG_PREFIX = cg
 CPG_LIMIT = NA
 PRS_MAP = NULL
@@ -1433,6 +1450,7 @@ COMBINE_TIMEPOINTS = 1,2
 PHENOTYPES_GLM = TreatmentGroup
 GLM_LIBS = glm2
 INTERACTION_GLM = NULL
+GLM_OMNIBUS_TEST = FALSE
 SUMMARY_RESIDUAL_SD = TRUE
 SAVE_SIGNIFICANT_CPGS = TRUE
 SIGNIFICANT_CPG_PVAL = 0.1
@@ -1581,8 +1599,8 @@ of the major pipeline stages.</li>
 names used by the rules file.</li>
 <li>
 <code>R_DIR</code> optionally points to a custom R library path on
-shared systems. When set to <code>NULL</code>, the default library path
-is used.</li>
+shared systems. Its default value is <code>NULL</code>, which uses the
+default library path.</li>
 </ul>
 <p>These variables control where files are written and how paths are
 composed across all stages of the pipeline.</p>
@@ -1641,23 +1659,22 @@ exported tables.</li>
 </ul>
 </div>
 <div class="section level4">
-<h4 id="step-4-and-step-5-shared-modeling-parameters">Step 4 and Step 5 shared modeling parameters<a class="anchor" aria-label="anchor" href="#step-4-and-step-5-shared-modeling-parameters"></a>
+<h4 id="step-4-and-step-5-modeling-parameters">Step 4 and Step 5 modeling parameters<a class="anchor" aria-label="anchor" href="#step-4-and-step-5-modeling-parameters"></a>
 </h4>
 <ul>
 <li>
-<code>COVARIATES</code>: comma-separated adjustment variables
-included in each model.</li>
+<code>COVARIATES_GLM</code> and <code>COVARIATES_LME</code>:
+comma-separated adjustment variables included in the GLM and LME
+analyses, respectively.</li>
 <li>
-<code>FACTOR_VARS</code>: variables that should be treated as
-categorical before model fitting.</li>
+<code>FACTOR_VARS_GLM</code> and <code>FACTOR_VARS_LME</code>:
+variables treated as categorical in the GLM and LME analyses,
+respectively.</li>
 <li>
-<code>SCALE_VARS</code>: numeric fixed-effect variables to centre
-and divide by their sample standard deviations; <code>NULL</code> leaves
-selected model predictors on their original scales.</li>
-<li>
-<code>SCALE_VARS_GLM</code> and <code>SCALE_VARS_LME</code>:
-optional engine-specific selections; each inherits
-<code>SCALE_VARS</code> unless it is overridden.</li>
+<code>SCALE_VARS_GLM</code> and <code>SCALE_VARS_LME</code>: numeric
+fixed-effect variables centred and divided by their sample standard
+deviations in the corresponding analysis; <code>NULL</code> keeps the
+variables on their original scales.</li>
 <li>
 <code>CPG_PREFIX</code>: prefix used to identify CpG columns.</li>
 <li>
@@ -1804,6 +1821,9 @@ that will be modelled one at a time by
 fixed-effect part of the GLM; <code>NULL</code> omits the
 interaction.</li>
 <li>
+<code>GLM_OMNIBUS_TEST</code>: whether one joint Wald F test is
+reported for each CpG’s phenotype or phenotype-by-interaction term.</li>
+<li>
 <code>SUMMARY_RESIDUAL_SD</code>: whether residual standard
 deviations are reported in summaries.</li>
 <li>
@@ -1812,10 +1832,10 @@ CpGs are exported.</li>
 <li>
 <code>SIGNIFICANT_CPG_PVAL</code>: p-value threshold used for those
 significant-CpG exports.</li>
-<li>Annotated GLM rows require at least one returned coefficient
-p-value. Native glm2 conditions are written to the phenotype-specific
-<code>Model.Message</code> column and aggregate availability counts are
-written to metadata.</li>
+<li>Annotated GLM rows require at least one returned coefficient or
+omnibus p-value. Native glm2 and omnibus-test conditions are written to
+the phenotype-specific <code>Model.Message</code> column and aggregate
+availability counts are written to metadata.</li>
 </ul>
 </div>
 <div class="section level3">
@@ -1867,14 +1887,12 @@ availability counts are written to metadata.</li>
 <h3 id="argument-normalisation">Argument normalisation<a class="anchor" aria-label="anchor" href="#argument-normalisation"></a>
 </h3>
 <ul>
-<li>
-<code>COVARIATES_ARG</code>, <code>FACTOR_VARS_ARG</code>,
-<code>SCALE_VARS_GLM_ARG</code>, <code>SCALE_VARS_LME_ARG</code>,
+<li>The GLM and LME covariate, factor, and scaling variables are
+converted directly with <code>optional_text_arg</code>.
 <code>PRS_MAP_ARG</code>, <code>SEP_TYPE_ARG</code>,
 <code>R_DIR_ARG</code>, <code>PROBE_EXCLUSION_ID_COLUMN_ARG</code>,
 <code>INTERACTION_GLM_ARG</code>, and <code>INTERACTION_LME_ARG</code>
-convert Makefile string values into arguments that can be passed safely
-to R.</li>
+provide the same conversion for other Makefile settings.</li>
 </ul>
 <p>This section is especially important for values such as
 <code>NULL</code>, because it prevents the literal string
@@ -1922,9 +1940,9 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-07-23 12:43:08 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-08-06 02:38:30 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.763 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.796 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1968,12 +1986,12 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
 <span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
 <span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.36                                  </span></span>
+<span><span class="co">#&gt; [19] dnaEPICO_0.99.37                                  </span></span>
 <span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;   [1] splines_4.4.2             BiocIO_1.16.0            </span></span>
-<span><span class="co">#&gt;   [3] filelock_1.0.3            bitops_1.0-9             </span></span>
+<span><span class="co">#&gt;   [3] filelock_1.0.3            bitops_1.1-0             </span></span>
 <span><span class="co">#&gt;   [5] tibble_3.3.1              preprocessCore_1.68.0    </span></span>
 <span><span class="co">#&gt;   [7] XML_3.99-0.23             lifecycle_1.0.5          </span></span>
 <span><span class="co">#&gt;   [9] Rdpack_2.6.6              doParallel_1.0.17        </span></span>
@@ -1983,7 +2001,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt;  [17] limma_3.62.2              sass_0.4.10              </span></span>
 <span><span class="co">#&gt;  [19] rmarkdown_2.31            jquerylib_0.1.4          </span></span>
 <span><span class="co">#&gt;  [21] yaml_2.3.12               otel_0.2.0               </span></span>
-<span><span class="co">#&gt;  [23] zip_3.0.1                 doRNG_1.8.6.3            </span></span>
+<span><span class="co">#&gt;  [23] zip_3.0.2                 doRNG_1.8.6.3            </span></span>
 <span><span class="co">#&gt;  [25] askpass_1.2.1             DBI_1.3.0                </span></span>
 <span><span class="co">#&gt;  [27] minqa_1.2.8               RColorBrewer_1.1-3       </span></span>
 <span><span class="co">#&gt;  [29] abind_1.4-8               zlibbioc_1.52.0          </span></span>
@@ -2033,7 +2051,7 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt; [117] grid_4.4.2                reshape_0.8.10           </span></span>
 <span><span class="co">#&gt; [119] vctrs_0.7.3               gplots_3.3.0             </span></span>
 <span><span class="co">#&gt; [121] ENmix_1.42.2              dbplyr_2.6.0             </span></span>
-<span><span class="co">#&gt; [123] xtable_1.8-8              cluster_2.1.8.2          </span></span>
+<span><span class="co">#&gt; [123] xtable_1.8-8              cluster_2.1.8.3          </span></span>
 <span><span class="co">#&gt; [125] evaluate_1.0.5            readr_2.2.0              </span></span>
 <span><span class="co">#&gt; [127] GenomicFeatures_1.58.0    cli_3.6.6                </span></span>
 <span><span class="co">#&gt; [129] compiler_4.4.2            Rsamtools_2.22.0         </span></span>
@@ -2041,14 +2059,14 @@ while pipeline use is best for reproducible multi-step execution.</p>
 <span><span class="co">#&gt; [133] rngtools_1.5.2            labeling_0.4.3           </span></span>
 <span><span class="co">#&gt; [135] nor1mix_1.3-3             mclust_6.1.3             </span></span>
 <span><span class="co">#&gt; [137] plyr_1.8.9                fs_2.1.0                 </span></span>
-<span><span class="co">#&gt; [139] stringi_1.8.7             BiocParallel_1.40.2      </span></span>
-<span><span class="co">#&gt; [141] lmerTest_3.2-1            Matrix_1.7-5             </span></span>
+<span><span class="co">#&gt; [139] stringi_1.8.9             BiocParallel_1.40.2      </span></span>
+<span><span class="co">#&gt; [141] lmerTest_3.2-1            Matrix_1.7-6             </span></span>
 <span><span class="co">#&gt; [143] ExperimentHub_2.14.0      hms_1.1.4                </span></span>
 <span><span class="co">#&gt; [145] sparseMatrixStats_1.18.0  bit64_4.8.2              </span></span>
 <span><span class="co">#&gt; [147] ggplot2_4.0.3             Rhdf5lib_1.28.0          </span></span>
 <span><span class="co">#&gt; [149] KEGGREST_1.46.0           statmod_1.5.2            </span></span>
 <span><span class="co">#&gt; [151] AnnotationHub_3.14.0      rbibutils_2.4.1          </span></span>
-<span><span class="co">#&gt; [153] memoise_2.0.1             bslib_0.11.0             </span></span>
+<span><span class="co">#&gt; [153] memoise_2.0.1             bslib_0.12.0             </span></span>
 <span><span class="co">#&gt; [155] bit_4.6.0</span></span></code></pre>
 <div class="section level3">
 <h3 id="asking-for-help">Asking for help<a class="anchor" aria-label="anchor" href="#asking-for-help"></a>

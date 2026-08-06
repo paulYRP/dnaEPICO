@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dnaEPICO</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.36</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.37</span>
       </span>
     </div>
 
@@ -78,6 +78,7 @@
 <span>  metricTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"figures"</span>, <span class="st">"preprocessingMinfiEwasWater"</span>, <span class="st">"metrics"</span><span class="op">)</span>,</span>
 <span>  glmTab <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  lmeTab <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  modelSections <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"glm"</span>, <span class="st">"lme"</span><span class="op">)</span>,</span>
 <span>  logTab <span class="op">=</span> <span class="va">outputDir</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -136,6 +137,14 @@ tab.
 When <code>NULL</code>, the path is inferred from the Makefile output layout. Report
 sidecars produced by <code><a href="methylationLME.html">methylationLME()</a></code> are read from this report project's
 <code>assets/results/lme_results</code> directory when available.</p></dd>
+
+
+<dt id="arg-modelsections">modelSections<a class="anchor" aria-label="anchor" href="#arg-modelsections"></a></dt>
+<dd><p>Character vector containing any of <code>'glm'</code> and <code>'lme'</code>.
+The report includes the corresponding model pages, logs, and summary
+sections.
+Use <code>character(0)</code> for a preprocessing-only report. The default preserves
+the complete GLM-and-LME report.</p></dd>
 
 
 <dt id="arg-logtab">logTab<a class="anchor" aria-label="anchor" href="#arg-logtab"></a></dt>
