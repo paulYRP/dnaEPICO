@@ -345,7 +345,7 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     expect_false(any(grepl("DT::datatable", data_qmd, fixed = TRUE)))
     expect_false(any(grepl("htmlwidget", data_qmd, fixed = TRUE)))
     expect_true(any(grepl(
-        "Table 1. Generalised Linear Model Results and Genomic Annotation of CpG Sites by Phenotype(s)",
+        "Table 1. Generalised Linear Model Results and CpG Annotation by Phenotype",
         glm_qmd,
         fixed = TRUE
     )))
@@ -357,13 +357,13 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     expect_false(any(grepl("DT::datatable", glm_qmd, fixed = TRUE)))
     expect_false(any(grepl("openxlsx::read.xlsx", glm_qmd, fixed = TRUE)))
     expect_true(any(grepl(
-        "Table 1. Linear Mixed-Effects Model Results and Genomic Annotation of CpG Sites by Phenotype(s)",
+        "Table 1. Linear Mixed-Effects Model Results and CpG Annotation by Phenotype",
         lme_qmd,
         fixed = TRUE
     )))
     expect_false(any(grepl("paged viewer", lme_qmd, fixed = TRUE)))
     expect_true(any(grepl("`lmerTest::lmer()`", lme_qmd, fixed = TRUE)))
-    expect_true(any(grepl("No phenotype-by-time interaction was fitted", lme_qmd, fixed = TRUE)))
+    expect_true(any(grepl("No interaction was fitted", lme_qmd, fixed = TRUE)))
     expect_true(any(grepl("The recorded model formula is", lme_qmd, fixed = TRUE)))
     expect_true(any(grepl("data-result-key=\"lme_results\"", lme_qmd, fixed = TRUE)))
     expect_false(any(grepl("DT::datatable", lme_qmd, fixed = TRUE)))
@@ -395,9 +395,21 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     logs_qmd <- readLines(file.path(result$projectDir, "logs.qmd"), warn = FALSE)
     expect_true(any(grepl("`ENmix` produces control plots", enmix_qmd, fixed = TRUE)))
     expect_true(any(grepl("`Figure 1`", metrics_qmd, fixed = TRUE)))
-    expect_true(any(grepl("Displays the methylation preprocessing log", logs_qmd, fixed = TRUE)))
-    expect_true(any(grepl("Displays the phenotype preparation log", logs_qmd, fixed = TRUE)))
-    expect_true(any(grepl("Displays the hidden-effect and surrogate-variable analysis log", logs_qmd, fixed = TRUE)))
+    expect_true(any(grepl(
+        "`Methylation Analysis` was not found.",
+        logs_qmd,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        "`Data Preparation` was not found.",
+        logs_qmd,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        "`Batch Effect` was not found.",
+        logs_qmd,
+        fixed = TRUE
+    )))
     expect_true(any(grepl('::: {.card title="GLM Analysis"}', logs_qmd, fixed = TRUE)))
     expect_true(any(grepl("methylationGLM.txt", logs_qmd, fixed = TRUE)))
     expect_true(any(grepl('::: {.card title="LME Analysis"}', logs_qmd, fixed = TRUE)))
