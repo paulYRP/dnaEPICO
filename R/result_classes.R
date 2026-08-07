@@ -66,10 +66,11 @@ NULL
 #' \describe{
 #'   \item{pheno}{Phenotype table read from `phenoFile`.}
 #'   \item{metricsData}{Object returned by [loadMetricsPreprocessingPheno()].}
-#' \item{timepointData}{Object returned by
-#' [splitTimepointsPreprocessingPheno()].}
-#' \item{combinedData}{Object returned by
-#' [combineTimepointsPreprocessingPheno()].}
+#'   \item{timepointData}{Object returned by
+#'   [splitTimepointsPreprocessingPheno()].}
+#'   \item{combinedData}{Object returned by
+#'   [combineTimepointsPreprocessingPheno()], or `NULL` when the combined
+#'   object was skipped.}
 #'   \item{clockFoundation}{Object returned by
 #'   [buildClockFoundationInputsPreprocessingPheno()].}
 #'   \item{savedFiles}{Object returned by [writePreprocessingPhenoOutputs()]

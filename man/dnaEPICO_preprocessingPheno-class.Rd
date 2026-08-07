@@ -19,7 +19,8 @@ exported files.
 \item{timepointData}{Object returned by
 \code{\link[=splitTimepointsPreprocessingPheno]{splitTimepointsPreprocessingPheno()}}.}
 \item{combinedData}{Object returned by
-\code{\link[=combineTimepointsPreprocessingPheno]{combineTimepointsPreprocessingPheno()}}.}
+\code{\link[=combineTimepointsPreprocessingPheno]{combineTimepointsPreprocessingPheno()}}, or \code{NULL} when the combined
+object was skipped.}
 \item{clockFoundation}{Object returned by
 \code{\link[=buildClockFoundationInputsPreprocessingPheno]{buildClockFoundationInputsPreprocessingPheno()}}.}
 \item{savedFiles}{Object returned by \code{\link[=writePreprocessingPhenoOutputs]{writePreprocessingPhenoOutputs()}}

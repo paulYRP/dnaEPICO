@@ -51,6 +51,7 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         fixed = TRUE
     )))
     expect_true(any(grepl("Makefile.rules.pipeline", makefile, fixed = TRUE)))
+    expect_false(any(grepl("ARGUMENT NORMALISATION", makefile, fixed = TRUE)))
     expect_true(any(grepl(
         "DNAPIPE_MK := $(subst $(DNAPIPE_SPACE),\\ ,$(DNAPIPE_MK_RAW))",
         makefile,
@@ -69,10 +70,10 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         fixed = TRUE
     )))
     expect_true(any(grepl("$(STEP1_DERIVED): $(STEP1_PRIMARY)", rules, fixed = TRUE)))
+    expect_true(any(grepl("STEP3_OUTPUTS = $(sort", rules, fixed = TRUE)))
     expect_true(any(grepl(
-        "STEP3_PRIMARY = $(COMBINED_PHENO_METHYLATION)",
-        rules,
-        fixed = TRUE
+        "STEP3_DERIVED = $(filter-out $(STEP3_PRIMARY),$(STEP3_OUTPUTS))",
+        rules, fixed = TRUE
     )))
     expect_true(any(grepl("$(STEP3_DERIVED): $(STEP3_PRIMARY)", rules, fixed = TRUE)))
     expect_true(any(grepl("dir.create", rules, fixed = TRUE)))
@@ -138,6 +139,20 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         "\t  factorVars = $(call optional_text_arg,$(FACTOR_VARS_LME)), \\",
         "\t  scaleVars = $(call optional_text_arg,$(SCALE_VARS_LME)), \\"
     ) %in% rules))
+    expect_true(all(c(
+        "SEP_TYPE_ARG ?= $(call optional_text_arg,$(SEP_TYPE))",
+        "PRS_MAP_ARG ?= $(call optional_text_arg,$(PRS_MAP))",
+        "R_DIR_ARG ?= $(call optional_text_arg,$(R_DIR))",
+        "PROBE_EXCLUSION_ID_COLUMN_ARG ?= $(call optional_text_arg,$(PROBE_EXCLUSION_ID_COLUMN))",
+        "INTERACTION_GLM_ARG ?= $(call optional_text_arg,$(INTERACTION_GLM))",
+        "INTERACTION_LME_ARG ?= $(call optional_text_arg,$(INTERACTION_LME))",
+        "LME_CORRELATION_VAR_ARG ?= $(call optional_text_arg,$(LME_CORRELATION_VAR))",
+        "COMBINE_TIMEPOINTS_ARG ?= $(call optional_text_arg,$(COMBINE_TIMEPOINTS))"
+    ) %in% rules))
+    expect_true(any(grepl(
+        "combineTimepoints = $(COMBINE_TIMEPOINTS_ARG)",
+        rules, fixed = TRUE
+    )))
     expect_false(any(grepl(
         "(COVARIATES|FACTOR_VARS|SCALE_VARS_(GLM|LME))_ARG",
         rules
@@ -299,7 +314,8 @@ test_that("model-specific Make configuration validation is explicit", {
     lme_config <- c(
         "COVARIATES_LME = NULL",
         "FACTOR_VARS_LME = NULL",
-        "SCALE_VARS_LME = NULL"
+        "SCALE_VARS_LME = NULL",
+        "COMBINED_PHENO_METHYLATION = phenoBT1T2.RData"
     )
 
     expect_identical(run_make(glm_config, "validate-glm-config")$status, 0L)
@@ -331,6 +347,18 @@ test_that("model-specific Make configuration validation is explicit", {
     expect_identical(run_make(character(0), "f3")$status, 0L)
     expect_gt(run_make(glm_config, "validate-lme-config")$status, 0L)
     expect_gt(run_make(lme_config, "validate-glm-config")$status, 0L)
+
+    no_combination <- run_make(c(
+        "COVARIATES_LME = NULL",
+        "FACTOR_VARS_LME = NULL",
+        "SCALE_VARS_LME = NULL",
+        "COMBINED_PHENO_METHYLATION ="
+    ), "validate-lme-config")
+    expect_gt(no_combination$status, 0L)
+    expect_match(
+        paste(no_combination$output, collapse = "\n"),
+        "COMBINE_TIMEPOINTS must contain at least one timepoint"
+    )
 })
 
 test_that("the exported Makefile runs from a project path containing spaces", {

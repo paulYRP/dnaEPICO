@@ -156,64 +156,6 @@ SAVE_SIGNIFICANT_INTERACTIONS = TRUE
 SIGNIFICANT_INTERACTION_PVAL = 0.1
 
 # ===============================================
-# ARGUMENT NORMALISATION
-# ===============================================
-
-ifeq ($(PRS_MAP),NULL)
-  PRS_MAP_ARG = NULL
-else
-  PRS_MAP_ARG = '$(PRS_MAP)'
-endif
-
-ifeq ($(strip $(SEP_TYPE)),)
-  SEP_TYPE_ARG = NULL
-else
-ifeq ($(strip $(SEP_TYPE)),NULL)
-  SEP_TYPE_ARG = NULL
-else
-  SEP_TYPE_ARG = '$(SEP_TYPE)'
-endif
-endif
-
-ifeq ($(R_DIR),NULL)
-  R_DIR_ARG = NULL
-else
-  R_DIR_ARG = '$(R_DIR)'
-endif
-
-ifeq ($(strip $(PROBE_EXCLUSION_ID_COLUMN)),)
-  PROBE_EXCLUSION_ID_COLUMN_ARG = NULL
-else
-ifeq ($(strip $(PROBE_EXCLUSION_ID_COLUMN)),NULL)
-  PROBE_EXCLUSION_ID_COLUMN_ARG = NULL
-else
-  PROBE_EXCLUSION_ID_COLUMN_ARG = '$(PROBE_EXCLUSION_ID_COLUMN)'
-endif
-endif
-
-ifeq ($(INTERACTION_GLM),NULL)
-  INTERACTION_GLM_ARG = NULL
-else
-  INTERACTION_GLM_ARG = '$(INTERACTION_GLM)'
-endif
-
-ifeq ($(INTERACTION_LME),NULL)
-  INTERACTION_LME_ARG = NULL
-else
-  INTERACTION_LME_ARG = '$(INTERACTION_LME)'
-endif
-
-ifeq ($(strip $(LME_CORRELATION_VAR)),)
-  LME_CORRELATION_VAR_ARG = NULL
-else
-ifeq ($(strip $(LME_CORRELATION_VAR)),NULL)
-  LME_CORRELATION_VAR_ARG = NULL
-else
-  LME_CORRELATION_VAR_ARG = '$(LME_CORRELATION_VAR)'
-endif
-endif
-
-# ===============================================
 # LOAD dnaEPICO PIPELINE RULES
 # ===============================================
 DNAPIPE_EMPTY :=

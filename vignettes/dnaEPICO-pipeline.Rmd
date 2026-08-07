@@ -1186,7 +1186,7 @@ phenotype file.
 
 - `TIMEPOINTS`: comma-separated timepoints exported separately.
 - `COMBINE_TIMEPOINTS`: comma-separated timepoints combined into the
-    longitudinal object.
+    longitudinal object, or `NULL` to skip the combined object.
 - `METHYLATION_SCALE`: methylation metric used for the merged GLM/LME input.
     `Beta` writes `phenoB*`, `M` writes `phenoM*`, and `CN` writes `phenoCN*`;
     scale input is case-insensitive.
@@ -1239,23 +1239,13 @@ phenotype-methylation data.
     phenotype-specific `Model.Message` column and aggregate availability counts
     are written to metadata.
 
-## Argument normalisation
+## Template convention 
 
-- The GLM and LME covariate, factor, and scaling variables are converted
-    directly with `optional_text_arg`. `PRS_MAP_ARG`, `SEP_TYPE_ARG`,
-    `R_DIR_ARG`, `PROBE_EXCLUSION_ID_COLUMN_ARG`, `INTERACTION_GLM_ARG`, and
-    `INTERACTION_LME_ARG` provide the same conversion for other Makefile
-    settings.
-
-This section is especially important for values such as `NULL`, because it
-prevents the literal string `"NULL"` from being interpreted as a real model
-value inside the main functions.
-
-The template convention is therefore: use `NA` for optional numeric limits or
-filters where the meaning is "use all" or "keep all", and use `NULL` when an
-optional separator, variable, path, mapping, or model term should be absent.
-`CHUNK_SIZE` uses `NULL` for automatic chunking because it disables a
-user-specified tuning value rather than applying a filter.
+The template uses `NA` for optional numeric limits or filters where the meaning 
+is "use all" or "keep all", and use `NULL` when an optional separator, variable, 
+path, mapping, or model term should be absent. `CHUNK_SIZE` uses `NULL` for 
+automatic chunking because it disables a user-specified tuning value rather than 
+applying a filter.
 
 ## Include pipeline from dnaEPICO
 

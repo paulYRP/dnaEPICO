@@ -895,36 +895,42 @@ writePreprocessingPhenoOutputs <- function(
         timepoint_paths[[tp]] <- tp_paths
     }
 
-    combined_pheno_path <- file.path(outputPheno, paste0(
-        "pheno",
-        preprocessingData$combinedData$suffix, ".csv"
-    ))
-    combined_merge_path <- file.path(outputRDataMerge, paste0(
-        methylation_prefix,
-        preprocessingData$combinedData$suffix, ".RData"
-    ))
-    combined_merge_object_name <- paste0(
-        methylation_prefix,
-        preprocessingData$combinedData$suffix
-    )
-    combined_merge_data <-
-        if (!is.null(preprocessingData$combinedData$phenoMethylation)) {
-        preprocessingData$combinedData$phenoMethylation
-    } else {
-        preprocessingData$combinedData[[methylation_prefix]]
+    combined_pheno_path <- NULL
+    combined_merge_path <- NULL
+    if (!is.null(preprocessingData$combinedData)) {
+        combined_pheno_path <- file.path(outputPheno, paste0(
+            "pheno",
+            preprocessingData$combinedData$suffix, ".csv"
+        ))
+        combined_merge_path <- file.path(outputRDataMerge, paste0(
+            methylation_prefix,
+            preprocessingData$combinedData$suffix, ".RData"
+        ))
+        combined_merge_object_name <- paste0(
+            methylation_prefix,
+            preprocessingData$combinedData$suffix
+        )
+        combined_merge_data <- if (!is.null(
+            preprocessingData$combinedData$phenoMethylation
+        )) {
+            preprocessingData$combinedData$phenoMethylation
+        } else {
+            preprocessingData$combinedData[[methylation_prefix]]
+        }
+
+        utils::write.csv(preprocessingData$combinedData$pheno,
+            file = combined_pheno_path,
+            row.names = FALSE
+        )
+        saveNamedObjectMinfiEwasWater(
+            combined_merge_data, combined_merge_object_name,
+            combined_merge_path
+        )
     }
     beta_csv_path <- file.path(outputDir, "beta.csv")
     zip_path <- file.path(outputDir, "beta.zip")
     pheno_cf_path <- file.path(outputDir, "phenoCF.csv")
 
-    utils::write.csv(preprocessingData$combinedData$pheno,
-        file = combined_pheno_path,
-        row.names = FALSE
-    )
-    saveNamedObjectMinfiEwasWater(
-        combined_merge_data, combined_merge_object_name,
-        combined_merge_path
-    )
     utils::write.csv(preprocessingData$clockFoundation$betaCSV,
         file = beta_csv_path, row.names = FALSE
     )
@@ -948,13 +954,21 @@ writePreprocessingPhenoOutputs <- function(
                 outputPheno
             ), paste("RData metrics dir:        ", outputRData),
             paste("RData merge dir:          ", outputRDataMerge),
-            paste("Clock Foundation dir:     ", outputDir), paste(
-                "Saved combined phenotype: ",
-                combined_pheno_path
-            ), paste("Saved combined ", methylation_prefix,
-                ": ", combined_merge_path,
-                sep = ""
-            ), paste(
+            paste("Clock Foundation dir:     ", outputDir),
+            if (is.null(combined_pheno_path)) {
+                "Saved combined phenotype: disabled"
+            } else {
+                paste("Saved combined phenotype: ", combined_pheno_path)
+            },
+            if (is.null(combined_merge_path)) {
+                paste("Saved combined ", methylation_prefix,
+                    ": disabled", sep = ""
+                )
+            } else {
+                paste("Saved combined ", methylation_prefix,
+                    ": ", combined_merge_path, sep = ""
+                )
+            }, paste(
                 "Saved beta CSV:           ",
                 beta_csv_path
             ), if (is.null(beta_zip_path)) {
@@ -980,7 +994,7 @@ writePreprocessingPhenoOutputs <- function(
         m = "combinedPhenoM",
         cn = "combinedPhenoCN"
     )
-    output_paths[[combined_key]] <- combined_merge_path
+    output_paths[combined_key] <- list(combined_merge_path)
 
     structure(output_paths, class = "dnaEPICO_preprocessingPheno_paths")
 }

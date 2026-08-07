@@ -55,7 +55,7 @@ retain and split into separate in-memory subsets.}
 
 \item{combineTimepoints}{Character vector or comma-separated string of
 timepoints to combine into the longitudinal phenotype-plus-methylation
-object.}
+object, or \code{NULL} to skip the combined object.}
 
 \item{methylationScale}{Character. Methylation metric to use in merged
 modeling tables. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, in any combination
@@ -100,7 +100,8 @@ containing the beta-value, M-value, and copy-number matrices loaded from
 containing per-timepoint phenotype tables and methylation matrices.}
 \item{combinedData}{Object returned by
 \code{\link[=combineTimepointsPreprocessingPheno]{combineTimepointsPreprocessingPheno()}} containing the merged longitudinal
-phenotype-plus-methylation object and the timepoint combination metadata.}
+phenotype-plus-methylation object and the timepoint combination metadata,
+or \code{NULL} when \code{combineTimepoints = NULL}.}
 \item{clockFoundation}{Object returned by
 \code{\link[=buildClockFoundationInputsPreprocessingPheno]{buildClockFoundationInputsPreprocessingPheno()}} containing the beta table
 and phenotype table prepared for Clock Foundation export.}
@@ -113,9 +114,9 @@ See \linkS4class{dnaEPICO_preprocessingPheno} for a class-level overview.
 }
 \description{
 Align the phenotype table with preprocessed beta, M-value, and copy-number
-matrices, split the data by timepoint, prepare longitudinal objects for the
-selected modeling scale, and build Clock Foundation export tables. The
-function writes files only when \code{saveOutputs = TRUE}.
+matrices, split the data by timepoint, optionally prepare longitudinal
+objects for the selected modeling scale, and build Clock Foundation export
+tables. The function writes files only when \code{saveOutputs = TRUE}.
 }
 \examples{
 tmp <- tempdir()

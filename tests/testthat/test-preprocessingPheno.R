@@ -124,6 +124,59 @@ test_that("preprocessingPheno can write legacy outputs and logs on request", {
     expect_true(file.exists(file.path(tmp, "clockFoundation", "phenoCF.csv")))
 })
 
+test_that("preprocessingPheno skips combined outputs when requested", {
+    tmp <- withr::local_tempdir()
+    example_data <- create_preprocessing_pheno_example(tmp)
+
+    result <- preprocessingPheno(
+        phenoFile = example_data$phenoFile,
+        betaPath = example_data$betaPath,
+        mPath = example_data$mPath,
+        cnPath = example_data$cnPath,
+        SampleID = "Sample_Name",
+        timeVar = "Timepoint",
+        timepoints = "1,2",
+        combineTimepoints = NULL,
+        outputPheno = file.path(tmp, "data", "preprocessingPheno"),
+        outputRData = file.path(tmp, "rData", "preprocessingPheno", "metrics"),
+        outputRDataMerge = file.path(tmp, "rData", "preprocessingPheno", "mergeData"),
+        sexColumn = "Sex",
+        outputLogs = file.path(tmp, "logs"),
+        outputDir = file.path(tmp, "clockFoundation"),
+        saveOutputs = TRUE
+    )
+
+    expect_true("combinedData" %in% names(result))
+    expect_null(result$combinedData)
+    expect_identical(result$timepointData$timepoints, c("1", "2"))
+    expect_true(file.exists(file.path(
+        tmp, "data", "preprocessingPheno", "phenoT1.csv"
+    )))
+    expect_true(file.exists(file.path(
+        tmp, "data", "preprocessingPheno", "phenoT2.csv"
+    )))
+    expect_true(file.exists(file.path(
+        tmp, "rData", "preprocessingPheno", "mergeData", "phenoBT1.RData"
+    )))
+    expect_true(file.exists(file.path(
+        tmp, "rData", "preprocessingPheno", "mergeData", "phenoBT2.RData"
+    )))
+    expect_false(file.exists(file.path(
+        tmp, "data", "preprocessingPheno", "phenoT1T2.csv"
+    )))
+    expect_false(file.exists(file.path(
+        tmp, "rData", "preprocessingPheno", "mergeData", "phenoBT1T2.RData"
+    )))
+    expect_true(all(c(
+        "combinedPheno", "combinedPhenoMethylation", "combinedPhenoB"
+    ) %in% names(result$savedFiles)))
+    expect_null(result$savedFiles$combinedPheno)
+    expect_null(result$savedFiles$combinedPhenoMethylation)
+    expect_null(result$savedFiles$combinedPhenoB)
+    expect_true(file.exists(file.path(tmp, "clockFoundation", "beta.csv")))
+    expect_true(file.exists(file.path(tmp, "clockFoundation", "phenoCF.csv")))
+})
+
 test_that("preprocessingPheno selects M and CN modeling scales without changing Clock Foundation beta", {
     tmp <- withr::local_tempdir()
     example_data <- create_preprocessing_pheno_example(tmp)

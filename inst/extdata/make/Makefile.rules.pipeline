@@ -16,15 +16,22 @@ EPICV2_MANIFEST_CH_WGBS_EVIDENCE ?= TRUE
 EPICV2_MANIFEST_CH_BLAT ?= TRUE
 EPICV2_MANIFEST_MISSING_POS ?= TRUE
 EPICV2_MANIFEST_MISMATCH_POS ?= FALSE
-SEP_TYPE_ARG ?= '$(SEP_TYPE)'
-PROBE_EXCLUSION_ID_COLUMN_ARG ?= '$(PROBE_EXCLUSION_ID_COLUMN)'
+SEP_TYPE_ARG ?= $(call optional_text_arg,$(SEP_TYPE))
+PRS_MAP_ARG ?= $(call optional_text_arg,$(PRS_MAP))
+R_DIR_ARG ?= $(call optional_text_arg,$(R_DIR))
+PROBE_EXCLUSION_ID_COLUMN_ARG ?= $(call optional_text_arg,$(PROBE_EXCLUSION_ID_COLUMN))
+INTERACTION_GLM_ARG ?= $(call optional_text_arg,$(INTERACTION_GLM))
+INTERACTION_LME_ARG ?= $(call optional_text_arg,$(INTERACTION_LME))
+LME_CORRELATION_VAR_ARG ?= $(call optional_text_arg,$(LME_CORRELATION_VAR))
+COMBINE_TIMEPOINTS_ARG ?= $(call optional_text_arg,$(COMBINE_TIMEPOINTS))
 empty :=
 space := $(empty) $(empty)
 comma := ,
 TIMEPOINT_LIST = $(strip $(subst $(comma), ,$(TIMEPOINTS)))
-COMBINE_TIMEPOINT_LIST = $(strip $(subst $(comma), ,$(COMBINE_TIMEPOINTS)))
+COMBINE_TIMEPOINTS_ENABLED = $(strip $(filter-out NULL null,$(COMBINE_TIMEPOINTS)))
+COMBINE_TIMEPOINT_LIST = $(if $(COMBINE_TIMEPOINTS_ENABLED),$(strip $(subst $(comma), ,$(COMBINE_TIMEPOINTS))),)
 TIMEPOINT_SUFFIXES = $(addprefix T,$(TIMEPOINT_LIST))
-COMBINED_TIMEPOINT_SUFFIX = T$(subst $(space),T,$(COMBINE_TIMEPOINT_LIST))
+COMBINED_TIMEPOINT_SUFFIX = $(if $(COMBINE_TIMEPOINT_LIST),T$(subst $(space),T,$(COMBINE_TIMEPOINT_LIST)),)
 GLM_TIMEPOINT ?= $(firstword $(TIMEPOINT_LIST))
 GLM_TIMEPOINT_SUFFIX = T$(GLM_TIMEPOINT)
 ifeq ($(METHYLATION_SCALE),beta)
@@ -38,22 +45,13 @@ $(error METHYLATION_SCALE must be one of beta, m, cn)
 endif
 TIMEPOINT_PHENO_TARGETS = $(addprefix $(DATA_DIR)/$(MODEL)/$(STEP3)/pheno,$(addsuffix .csv,$(TIMEPOINT_SUFFIXES)))
 TIMEPOINT_PHENO_METHYLATION_TARGETS = $(addprefix $(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/$(PHENO_METHYLATION_PREFIX),$(addsuffix .RData,$(TIMEPOINT_SUFFIXES)))
-COMBINED_PHENO_TARGET = $(DATA_DIR)/$(MODEL)/$(STEP3)/pheno$(COMBINED_TIMEPOINT_SUFFIX).csv
+COMBINED_PHENO_TARGET = $(if $(COMBINED_TIMEPOINT_SUFFIX),$(DATA_DIR)/$(MODEL)/$(STEP3)/pheno$(COMBINED_TIMEPOINT_SUFFIX).csv,)
 GLM_PHENO_METHYLATION = $(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/$(PHENO_METHYLATION_PREFIX)$(GLM_TIMEPOINT_SUFFIX).RData
-COMBINED_PHENO_METHYLATION = $(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/$(PHENO_METHYLATION_PREFIX)$(COMBINED_TIMEPOINT_SUFFIX).RData
+COMBINED_PHENO_METHYLATION = $(if $(COMBINED_TIMEPOINT_SUFFIX),$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(MERGE_DIR)/$(PHENO_METHYLATION_PREFIX)$(COMBINED_TIMEPOINT_SUFFIX).RData,)
 ifneq ($(strip $(SEED)),)
 SET_SEED_EXPR = set.seed($(SEED));
 else
 SET_SEED_EXPR =
-endif
-ifeq ($(strip $(LME_CORRELATION_VAR)),)
-LME_CORRELATION_VAR_ARG = NULL
-else
-ifeq ($(strip $(LME_CORRELATION_VAR)),NULL)
-LME_CORRELATION_VAR_ARG = NULL
-else
-LME_CORRELATION_VAR_ARG = '$(LME_CORRELATION_VAR)'
-endif
 endif
 PHENO_LC = $(DATA_DIR)/$(MODEL)/$(STEP1)/phenoLC.csv
 SVA_MARKER = $(DATA_DIR)/$(MODEL)/$(STEP2)/.sva_complete
@@ -100,10 +98,7 @@ FIRST3 = \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(SVA_MARKER) \
 	$(PHENO_LC) \
-	$(TIMEPOINT_PHENO_TARGETS) \
-	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
-	$(COMBINED_PHENO_TARGET) \
-	$(COMBINED_PHENO_METHYLATION)
+	$(STEP3_OUTPUTS)
 
 f3: report-f3
 
@@ -129,10 +124,7 @@ FIRST4 = \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(SVA_MARKER) \
 	$(PHENO_LC) \
-	$(TIMEPOINT_PHENO_TARGETS) \
-	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
-	$(COMBINED_PHENO_TARGET) \
-	$(COMBINED_PHENO_METHYLATION) \
+	$(STEP3_OUTPUTS) \
 	$(GLM_OUTPUTS)
 
 f4: report-f4
@@ -159,10 +151,7 @@ F3LME = \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(SVA_MARKER) \
 	$(PHENO_LC) \
-	$(TIMEPOINT_PHENO_TARGETS) \
-	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
-	$(COMBINED_PHENO_TARGET) \
-	$(COMBINED_PHENO_METHYLATION) \
+	$(STEP3_OUTPUTS) \
 	$(LME_OUTPUTS)
 
 f3lme: report-f3lme
@@ -282,20 +271,17 @@ $(SVA_MARKER): $(PHENO_LC) $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData
 # =================================================================================================================================
 # Step 3: Prepare phenotype and methylation data
 # =================================================================================================================================
-STEP3_PRIMARY = $(COMBINED_PHENO_METHYLATION)
-STEP3_DERIVED = \
+STEP3_PRIMARY = $(if $(COMBINED_PHENO_METHYLATION),$(COMBINED_PHENO_METHYLATION),$(firstword $(TIMEPOINT_PHENO_METHYLATION_TARGETS)))
+STEP3_OUTPUTS = $(sort \
 	$(TIMEPOINT_PHENO_TARGETS) \
 	$(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
-	$(COMBINED_PHENO_TARGET)
+	$(COMBINED_PHENO_TARGET) \
+	$(COMBINED_PHENO_METHYLATION))
+STEP3_DERIVED = $(filter-out $(STEP3_PRIMARY),$(STEP3_OUTPUTS))
 
 step3:
 	@echo "Running Step 3 for $(MODEL)"
-	@$(MAKE) -j1 \
-	  $(TIMEPOINT_PHENO_TARGETS) \
-	  $(TIMEPOINT_PHENO_METHYLATION_TARGETS) \
-	  $(COMBINED_PHENO_TARGET) \
-	  $(COMBINED_PHENO_METHYLATION) \
-	  MODEL=$(MODEL)
+	@$(MAKE) -j1 $(STEP3_OUTPUTS) MODEL=$(MODEL)
 
 $(STEP3_PRIMARY): $(SVA_MARKER) $(PHENO_LC) \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
@@ -310,7 +296,7 @@ $(STEP3_PRIMARY): $(SVA_MARKER) $(PHENO_LC) \
 	  SampleID = '$(SAMPLE_ID)', \
 	  timeVar = '$(TIME_VAR)', \
 	  timepoints = '$(TIMEPOINTS)', \
-	  combineTimepoints = '$(COMBINE_TIMEPOINTS)', \
+	  combineTimepoints = $(COMBINE_TIMEPOINTS_ARG), \
 	  methylationScale = '$(METHYLATION_SCALE)', \
 	  outputPheno = '$(DATA_DIR)/$(MODEL)/$(STEP3)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP3)/$(METRICS_DIR)', \
@@ -376,6 +362,7 @@ $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION) | validate-glm-config
 # =================================================================================================================================
 .PHONY: validate-lme-config
 validate-lme-config:
+	@Rscript -e "if (!$(if $(COMBINED_PHENO_METHYLATION),TRUE,FALSE)) stop('COMBINE_TIMEPOINTS must contain at least one timepoint.', call. = FALSE)"
 	@Rscript -e "invisible(NULL)" $(call require_model_config,COVARIATES_LME) $(call require_model_config,FACTOR_VARS_LME) $(call require_model_config,SCALE_VARS_LME)
 
 $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION) | validate-lme-config

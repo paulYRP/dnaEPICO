@@ -1,9 +1,9 @@
 #' Prepare phenotype and methylation matrices for downstream modeling
 #'
 #' Align the phenotype table with preprocessed beta, M-value, and copy-number
-#' matrices, split the data by timepoint, prepare longitudinal objects for the
-#' selected modeling scale, and build Clock Foundation export tables. The
-#' function writes files only when `saveOutputs = TRUE`.
+#' matrices, split the data by timepoint, optionally prepare longitudinal
+#' objects for the selected modeling scale, and build Clock Foundation export
+#' tables. The function writes files only when `saveOutputs = TRUE`.
 #'
 #' @param phenoFile Character. Path to the phenotype CSV file.
 #' @param sepType Character or `NULL`. Field separator used in `phenoFile`. Use
@@ -23,7 +23,7 @@
 #'   retain and split into separate in-memory subsets.
 #' @param combineTimepoints Character vector or comma-separated string of
 #'   timepoints to combine into the longitudinal phenotype-plus-methylation
-#'   object.
+#'   object, or `NULL` to skip the combined object.
 #' @param methylationScale Character. Methylation metric to use in merged
 #'   modeling tables. One of `'Beta'`, `'M'`, or `'CN'`, in any combination
 #'   of upper- and lower-case letters. The default is `'beta'`. Beta values
@@ -57,7 +57,8 @@
 #'   containing per-timepoint phenotype tables and methylation matrices.}
 #'   \item{combinedData}{Object returned by
 #'   [combineTimepointsPreprocessingPheno()] containing the merged longitudinal
-#'   phenotype-plus-methylation object and the timepoint combination metadata.}
+#'   phenotype-plus-methylation object and the timepoint combination metadata,
+#'   or `NULL` when `combineTimepoints = NULL`.}
 #'   \item{clockFoundation}{Object returned by
 #'   [buildClockFoundationInputsPreprocessingPheno()] containing the beta table
 #'   and phenotype table prepared for Clock Foundation export.}
@@ -161,7 +162,11 @@ preprocessingPheno <- function(
                 timepoints
             ), paste(
                 "Combine timepoints:       ",
-                combineTimepoints
+                if (is.null(combineTimepoints)) {
+                    "disabled"
+                } else {
+                    paste(combineTimepoints, collapse = ", ")
+                }
             ), paste(
                 "Merged modeling object:   ",
                 methylationObjectPrefix, "*"
@@ -202,13 +207,17 @@ preprocessingPheno <- function(
             verbose = verbose, logs = logs, log_dir = outputLogs,
             log_file = log_file
         )
-        combinedData <- combineTimepointsPreprocessingPheno(
-            timepointData = timepointData,
-            combineTimepoints = combineTimepoints,
+        combinedData <- if (is.null(combineTimepoints)) {
+            NULL
+        } else {
+            combineTimepointsPreprocessingPheno(
+                timepointData = timepointData,
+                combineTimepoints = combineTimepoints,
                 methylationScale = methylationScale,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
+                verbose = verbose, logs = logs, log_dir = outputLogs,
+                log_file = log_file
+            )
+        }
         clockFoundation <- buildClockFoundationInputsPreprocessingPheno(
             beta = metricsData$beta,
             pheno = pheno, SampleID = SampleID, sexColumn = sexColumn,
