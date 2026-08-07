@@ -90,7 +90,7 @@
 Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpint@qut.edu.au" class="email">ruizpint@qut.edu.au</a>
       </address>
                   
-            <h4 data-toc-skip class="date">2026-08-06</h4>
+            <h4 data-toc-skip class="date">2026-08-07</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-pipeline.Rmd" class="external-link"><code>vignettes/dnaEPICO-pipeline.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-pipeline.Rmd</code></div>
@@ -245,7 +245,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpw2Lik2/dnaEPICO-idat-example-2b5e3c2c9ee9"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpwk0pOk/dnaEPICO-idat-example-2bb06de7cccb"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
@@ -530,7 +530,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpw2Lik2/dnaEPICO-preprocessingPheno-example-2b5e6376ec9e"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpwk0pOk/dnaEPICO-preprocessingPheno-example-2bb07354c4d7"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -656,7 +656,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpw2Lik2/dnaEPICO-glm-example-2b5e2926f467"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpwk0pOk/dnaEPICO-glm-example-2bb07e22a874"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -783,7 +783,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpw2Lik2/dnaEPICO-lme-example-2b5e568fd2c"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpwk0pOk/dnaEPICO-lme-example-2bb0380d8bb1"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -1445,64 +1445,6 @@ SAVE_SIGNIFICANT_INTERACTIONS = TRUE
 SIGNIFICANT_INTERACTION_PVAL = 0.1
 
 # ===============================================
-# ARGUMENT NORMALISATION
-# ===============================================
-
-ifeq ($(PRS_MAP),NULL)
-  PRS_MAP_ARG = NULL
-else
-  PRS_MAP_ARG = '$(PRS_MAP)'
-endif
-
-ifeq ($(strip $(SEP_TYPE)),)
-  SEP_TYPE_ARG = NULL
-else
-ifeq ($(strip $(SEP_TYPE)),NULL)
-  SEP_TYPE_ARG = NULL
-else
-  SEP_TYPE_ARG = '$(SEP_TYPE)'
-endif
-endif
-
-ifeq ($(R_DIR),NULL)
-  R_DIR_ARG = NULL
-else
-  R_DIR_ARG = '$(R_DIR)'
-endif
-
-ifeq ($(strip $(PROBE_EXCLUSION_ID_COLUMN)),)
-  PROBE_EXCLUSION_ID_COLUMN_ARG = NULL
-else
-ifeq ($(strip $(PROBE_EXCLUSION_ID_COLUMN)),NULL)
-  PROBE_EXCLUSION_ID_COLUMN_ARG = NULL
-else
-  PROBE_EXCLUSION_ID_COLUMN_ARG = '$(PROBE_EXCLUSION_ID_COLUMN)'
-endif
-endif
-
-ifeq ($(INTERACTION_GLM),NULL)
-  INTERACTION_GLM_ARG = NULL
-else
-  INTERACTION_GLM_ARG = '$(INTERACTION_GLM)'
-endif
-
-ifeq ($(INTERACTION_LME),NULL)
-  INTERACTION_LME_ARG = NULL
-else
-  INTERACTION_LME_ARG = '$(INTERACTION_LME)'
-endif
-
-ifeq ($(strip $(LME_CORRELATION_VAR)),)
-  LME_CORRELATION_VAR_ARG = NULL
-else
-ifeq ($(strip $(LME_CORRELATION_VAR)),NULL)
-  LME_CORRELATION_VAR_ARG = NULL
-else
-  LME_CORRELATION_VAR_ARG = '$(LME_CORRELATION_VAR)'
-endif
-endif
-
-# ===============================================
 # LOAD dnaEPICO PIPELINE RULES
 # ===============================================
 DNAPIPE_EMPTY :=
@@ -1770,7 +1712,8 @@ file.</p>
 separately.</li>
 <li>
 <code>COMBINE_TIMEPOINTS</code>: comma-separated timepoints combined
-into the longitudinal object.</li>
+into the longitudinal object, or <code>NULL</code> to skip the combined
+object.</li>
 <li>
 <code>METHYLATION_SCALE</code>: methylation metric used for the
 merged GLM/LME input. <code>Beta</code> writes <code>phenoB*</code>,
@@ -1860,27 +1803,14 @@ availability counts are written to metadata.</li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="argument-normalisation">Argument normalisation<a class="anchor" aria-label="anchor" href="#argument-normalisation"></a>
+<h3 id="template-convention">Template convention<a class="anchor" aria-label="anchor" href="#template-convention"></a>
 </h3>
-<ul>
-<li>The GLM and LME covariate, factor, and scaling variables are
-converted directly with <code>optional_text_arg</code>.
-<code>PRS_MAP_ARG</code>, <code>SEP_TYPE_ARG</code>,
-<code>R_DIR_ARG</code>, <code>PROBE_EXCLUSION_ID_COLUMN_ARG</code>,
-<code>INTERACTION_GLM_ARG</code>, and <code>INTERACTION_LME_ARG</code>
-provide the same conversion for other Makefile settings.</li>
-</ul>
-<p>This section is especially important for values such as
-<code>NULL</code>, because it prevents the literal string
-<code>"NULL"</code> from being interpreted as a real model value inside
-the main functions.</p>
-<p>The template convention is therefore: use <code>NA</code> for
-optional numeric limits or filters where the meaning is “use all” or
-“keep all”, and use <code>NULL</code> when an optional separator,
-variable, path, mapping, or model term should be absent.
-<code>CHUNK_SIZE</code> uses <code>NULL</code> for automatic chunking
-because it disables a user-specified tuning value rather than applying a
-filter.</p>
+<p>The template uses <code>NA</code> for optional numeric limits or
+filters where the meaning is “use all” or “keep all”, and use
+<code>NULL</code> when an optional separator, variable, path, mapping,
+or model term should be absent. <code>CHUNK_SIZE</code> uses
+<code>NULL</code> for automatic chunking because it disables a
+user-specified tuning value rather than applying a filter.</p>
 </div>
 <div class="section level3">
 <h3 id="include-pipeline-from-dnaepico">Include pipeline from dnaEPICO<a class="anchor" aria-label="anchor" href="#include-pipeline-from-dnaepico"></a>
@@ -1915,9 +1845,9 @@ execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-08-06 04:51:15 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-08-07 04:19:42 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.628 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.611 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
