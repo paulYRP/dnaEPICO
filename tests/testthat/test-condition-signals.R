@@ -73,6 +73,7 @@ test_that("condition signals do not construct messages with paste", {
             use.names = FALSE
         )
     }), use.names = FALSE)
+    failures <- as.character(failures)
 
     expect_identical(failures, character(0))
 })
