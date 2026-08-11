@@ -92,7 +92,9 @@ return all normalized objects together in a single result object.</p>
 
 <dt id="arg-sexcolumn">sexColumn<a class="anchor" aria-label="anchor" href="#arg-sexcolumn"></a></dt>
 <dd><p>Character. Name of the phenotype column used as the optional
-sex covariate for normalization methods that support it.</p></dd>
+sex covariate for normalization methods that support it. Missing or
+unsupported values use <code>PredSex</code> when available, and each substitution is
+recorded in the returned <code>sexResolution</code> table.</p></dd>
 
 
 <dt id="arg-normmethods">normMethods<a class="anchor" aria-label="anchor" href="#arg-normmethods"></a></dt>
@@ -121,7 +123,8 @@ normalization methods. Supported values are <code>'adjustedfunnorm'</code>,
     <div id="value">
     <h2>Value</h2>
     <p>A list with class <code>'dnaEPICO_minfiEwasWater_norm'</code> containing the
-requested normalized objects and the first method as <code>primary</code>.</p>
+requested normalized objects, the first method as <code>primary</code>, and a
+<code>sexResolution</code> audit table describing reported-sex and <code>PredSex</code> use.</p>
     </div>
 
     <div id="ref-examples">

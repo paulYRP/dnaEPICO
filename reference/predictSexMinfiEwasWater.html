@@ -126,8 +126,9 @@ sex.</p></dd>
     <div id="value">
     <h2>Value</h2>
     <p>A list with class <code>'dnaEPICO_minfiEwasWater_sex'</code> containing the sex
-prediction result, aligned phenotype data, plotting data, and mismatch
-table.</p>
+prediction result, aligned phenotype data, plotting data, mismatch table,
+and a <code>sexResolution</code> audit showing where <code>PredSex</code> would replace an
+unusable reported value during sex-aware normalization.</p>
     </div>
 
     <div id="ref-examples">
@@ -145,9 +146,9 @@ table.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "pSex"                "targets"             "sexPlotData"        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "mismatches"          "reportedSexOriginal" "reportedSexCode"    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "reportedSexLabel"    "predictedSexCode"    "predictedSexLabel"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "unknownReportedSex"  "unknownPredictedSex" "nanConverted"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "removedSampleIDs"    "removeSexMismatch"   "SampleID"           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "sexColumn"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "unknownReportedSex"  "unknownPredictedSex" "normalizationSex"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "sexResolution"       "nanConverted"        "removedSampleIDs"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "removeSexMismatch"   "SampleID"            "sexColumn"          </span>
 </code></pre></div>
     </div>
   </div>

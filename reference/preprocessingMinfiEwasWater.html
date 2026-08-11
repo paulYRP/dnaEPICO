@@ -217,7 +217,9 @@ normalization methods. Supported values are <code>'adjustedfunnorm'</code>,
 
 <dt id="arg-sexcolumn">sexColumn<a class="anchor" aria-label="anchor" href="#arg-sexcolumn"></a></dt>
 <dd><p>Character. Name of the phenotype column containing reported
-sex.</p></dd>
+sex. Sex-aware normalization methods use <code>PredSex</code> when this column is
+missing, blank, unknown, unsupported, or otherwise not coded as female or
+male. Every substitution is recorded without overwriting this column.</p></dd>
 
 
 <dt id="arg-removesexmismatch">removeSexMismatch<a class="anchor" aria-label="anchor" href="#arg-removesexmismatch"></a></dt>
@@ -337,12 +339,14 @@ containing detection P values, QC summaries, and failed-sample tracking.</p></dd
 
 <dt>sexData</dt>
 <dd><p>Object returned by <code><a href="predictSexMinfiEwasWater.html">predictSexMinfiEwasWater()</a></code> containing
-predicted sex labels, mismatch summaries, plotting data, and the sample IDs
-removed when <code>removeSexMismatch = TRUE</code>.</p></dd>
+predicted sex labels, mismatch summaries, normalization-sex provenance,
+plotting data, and the sample IDs removed when
+<code>removeSexMismatch = TRUE</code>.</p></dd>
 
 <dt>normData</dt>
 <dd><p>Object returned by <code><a href="normalizeMinfiEwasWater.html">normalizeMinfiEwasWater()</a></code> containing
-the selected normalized objects and method metadata.</p></dd>
+the selected normalized objects, method metadata, and the reported-sex or
+<code>PredSex</code> value used for each sample.</p></dd>
 
 <dt>filterData</dt>
 <dd><p>Object returned by <code><a href="filterProbesMinfiEwasWater.html">filterProbesMinfiEwasWater()</a></code>

@@ -175,7 +175,9 @@ phenotype-plus-methylation <code>.RData</code> files when <code>saveOutputs = TR
 
 <dt id="arg-sexcolumn">sexColumn<a class="anchor" aria-label="anchor" href="#arg-sexcolumn"></a></dt>
 <dd><p>Character. Name of the phenotype sex column used when
-building Clock Foundation exports.</p></dd>
+building Clock Foundation exports. Values are preserved as supplied,
+including missing, blank, unknown, or other character values; <code>PredSex</code> is
+not substituted.</p></dd>
 
 
 <dt id="arg-outputlogs">outputLogs<a class="anchor" aria-label="anchor" href="#arg-outputlogs"></a></dt>
@@ -226,7 +228,8 @@ or <code>NULL</code> when <code>combineTimepoints = NULL</code>.</p></dd>
 <dt>clockFoundation</dt>
 <dd><p>Object returned by
 <code><a href="buildClockFoundationInputsPreprocessingPheno.html">buildClockFoundationInputsPreprocessingPheno()</a></code> containing the beta table
-and phenotype table prepared for Clock Foundation export.</p></dd>
+and phenotype table prepared for Clock Foundation export, with the sex
+column preserved as supplied.</p></dd>
 
 <dt>savedFiles</dt>
 <dd><p>Object returned by <code><a href="writePreprocessingPhenoOutputs.html">writePreprocessingPhenoOutputs()</a></code> when
