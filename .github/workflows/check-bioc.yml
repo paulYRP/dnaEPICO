@@ -94,6 +94,16 @@ jobs:
         if: runner.os != 'Linux'
         uses: r-lib/actions/setup-pandoc@v2
 
+      ## The Quarto setup action reads release metadata with jq. Install it
+      ## inside the Linux Bioconductor container before invoking the action.
+      ## Install the TinyTeX prerequisites here as well so the package index
+      ## only needs to be refreshed once.
+      - name: Install Linux CI system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq libtext-unidecode-perl texinfo texinfo-lib
+
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
@@ -205,14 +215,6 @@ jobs:
           ## Install BiocGenerics
           BiocManager::install("BiocGenerics")
         shell: Rscript {0}
-
-      ## In the Bioconductor Linux container, setup-tinytex can fail before
-      ## refreshing package indexes, leaving texinfo unavailable.
-      - name: Install texinfo for TinyTeX
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libtext-unidecode-perl texinfo texinfo-lib
 
       ## Keep TeX available across runners for the report path, but use the
       ## maintained r-lib action instead of calling tinytex::install_tinytex()
