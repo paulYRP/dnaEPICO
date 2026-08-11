@@ -17,6 +17,7 @@ lmeInputLogLinesDnaEpico <- function(config) {
             }
         ),
         paste("Person ID variable:             ", config$personVar),
+        paste("Sample identifier source:       ", config$SampleID),
         paste("Time variable:                  ", config$timeVar),
         paste("Phenotypes:                     ", config$phenotypes),
         paste("Covariates:                     ", config$covariates),
@@ -111,6 +112,7 @@ logMethylationLMEStartDnaEpico <- function(config) {
 prepareMethylationLMEWorkflowDnaEpico <- function(config) {
     prepareMethylationLMEData(
         inputPheno = config$inputPheno, personVar = config$personVar,
+        SampleID = config$SampleID,
         timeVar = config$timeVar, phenotypes = config$phenotypes,
         covariates = config$covariates, factorVars = config$factorVars,
         scaleVars = config$scaleVars, prsMap = config$prsMap,
@@ -254,6 +256,7 @@ newMethylationLMEResultDnaEpico <- function(stages, config, savedFiles) {
             internalResponseColumn = config$responseColumn,
             scaleVars = stages$preparedData$scaleVars,
             scalingMetadata = stages$preparedData$scalingMetadata,
+            personVar = config$personVar, SampleID = config$SampleID,
             timeVar = config$timeVar, omnibusTest = config$omnibusTest,
             omnibusDdf = config$omnibusDdf,
             vennDPhenotypes = config$vennDPhenotypes,
@@ -294,6 +297,7 @@ runMethylationLMEWorkflowDnaEpico <- function(config) {
 }
 
 normalizeMethylationLMEConfigDnaEpico <- function(config) {
+    config <- normalizeLmeIdentifierConfigDnaEpico(config)
     config$resumeFromSummary <- validateLogicalScalarDnaEpico(
         config$resumeFromSummary, "resumeFromSummary"
     )
@@ -356,8 +360,11 @@ normalizeMethylationLMEConfigDnaEpico <- function(config) {
 #' @param outputPlots Character. Directory used for optional TIFF diagnostic
 #' plots.
 #' @param personVar Character. Subject identifier variable used for the random
-#'   intercept. When this column is missing, it is derived from `SID` using the
-#'   package's existing sample naming convention.
+#'   intercept. When this column is missing, it is derived from `SampleID` using
+#'   the package's terminal `A`/`B` visit naming convention.
+#' @param SampleID Character. Name of the sample identifier column used to
+#'   derive `personVar` when the subject identifier column is missing. The
+#'   default, `"SID"`, preserves the package's earlier behavior.
 #' @param timeVar Character. Name of the longitudinal time variable used for
 #'   timepoint summaries and preprocessing checks.
 #' @param phenotypes Character vector or comma-separated phenotype variables to
@@ -587,8 +594,7 @@ methylationLME <- function(
     vennDPhenotypes = NULL, vennDLabels = NULL,
     vennDOmnibusPhenotypes = NULL, vennDOmnibusLabels = NULL,
     saveSignificantInteractions = TRUE,
-    significantInteractionDir =
-        "preliminaryResults/cpgs/methylationLME",
+    significantInteractionDir = "preliminaryResults/cpgs/methylationLME",
     significantInteractionPval = 0.05, saveTxtSummaries = TRUE,
     chunkSize = NULL,
     summaryTxtDir = "preliminaryResults/summary/methylationLME",
@@ -602,7 +608,8 @@ methylationLME <- function(
     ),
     gencodeHub = FALSE, annotatedLMEOut = "data/methylationLME",
     reportAssetsDir = NULL, display = FALSE, verbose = FALSE,
-    logs = FALSE, saveOutputs = FALSE, resumeFromSummary = TRUE
+    logs = FALSE, saveOutputs = FALSE, resumeFromSummary = TRUE,
+    SampleID = "SID"
 ) {
     config <- normalizeMethylationLMEConfigDnaEpico(
         as.list(environment(), all.names = TRUE)

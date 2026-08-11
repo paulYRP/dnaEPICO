@@ -3,6 +3,10 @@ CHANGES IN VERSION 0.99.37
 
 NEW FEATURES
 
+    o [11-08-2026] methylationLME() now derives a missing participant variable
+      from the sample identifier column configured by SAMPLE_ID, while
+      preserving the existing SID default and the original sample IDs.
+
     o [09-08-2026] Added GENCODEHub annotation through AnnotationHub and
       rebuilt the Quarto report dashboard with contextual figure and
       workbook notes.

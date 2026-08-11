@@ -1,52 +1,127 @@
+#' Validate a required LME column-name argument
+#'
+#' @param value Character. Candidate column name.
+#' @param name Character. Argument name used in errors.
+#'
+#' @return A non-empty character scalar.
+#'
+#' @keywords internal
+#' @noRd
+validateColumnNameMethylationLME <- function(value, name) {
+    if (!is.character(value) || length(value) != 1L || is.na(value)) {
+        stop(name, " must be one column name.", call. = FALSE)
+    }
+    value <- trimws(value)
+    if (!nzchar(value)) {
+        stop(name, " must be one column name.", call. = FALSE)
+    }
+    value
+}
+
+#' Normalize configured LME identifier column names
+#'
+#' @param config List containing `personVar`, `SampleID`, and `timeVar`.
+#'
+#' @return The configuration with validated identifier column names.
+#'
+#' @keywords internal
+#' @noRd
+normalizeLmeIdentifierConfigDnaEpico <- function(config) {
+    config$personVar <- validateColumnNameMethylationLME(
+        config$personVar, "personVar"
+    )
+    config$SampleID <- validateColumnNameMethylationLME(
+        config$SampleID, "SampleID"
+    )
+    config$timeVar <- validateColumnNameMethylationLME(
+        config$timeVar, "timeVar"
+    )
+    config
+}
+
+#' Derive and validate person identifiers from configured sample identifiers
+#'
+#' @param data Data frame containing sample and time identifiers.
+#' @param personVar Character. Target subject identifier column name.
+#' @param sampleIdVar Character. Configured sample identifier column name.
+#' @param timeVar Character. Longitudinal time column name.
+#'
+#' @return Character vector containing derived person identifiers.
+#'
+#' @keywords internal
+#' @noRd
+derivePersonValuesMethylationLME <- function(
+    data, personVar, sampleIdVar, timeVar
+) {
+    if (!(sampleIdVar %in% colnames(data))) {
+        stop("Column '", personVar,
+            "' was not found and cannot be derived because the ",
+            "configured sample identifier column '", sampleIdVar,
+            "' is missing.", call. = FALSE)
+    }
+    sample_ids <- validateSampleIdentifiersDnaEpico(
+        data[[sampleIdVar]], paste0("inputPheno$", sampleIdVar)
+    )
+    if (any(!grepl("[AB]$", sample_ids))) {
+        stop("Cannot safely derive '", personVar,
+            "' from configured sample identifier column '", sampleIdVar,
+            "': every value must end in A or B. ",
+            "Supply an explicit subject identifier column.", call. = FALSE)
+    }
+    person_values <- sub("[AB]$", "", sample_ids)
+    if (any(!nzchar(person_values))) {
+        stop("Derived subject identifiers cannot be empty.", call. = FALSE)
+    }
+    if (!(timeVar %in% colnames(data))) {
+        stop("Cannot validate derived subject identifiers because timeVar ",
+            "column '", timeVar, "' is missing.", call. = FALSE)
+    }
+    time_values <- as.character(data[[timeVar]])
+    if (anyNA(time_values) || any(!nzchar(trimws(time_values)))) {
+        stop("timeVar contains missing or blank visit identifiers.",
+            call. = FALSE)
+    }
+    if (anyDuplicated(paste(person_values, time_values, sep = "\r"))) {
+        stop("Configured sample identifier column '", sampleIdVar,
+            "' contains duplicate subject/timepoint combinations.",
+            call. = FALSE)
+    }
+    person_values
+}
+
 #' Ensure a person identifier column exists for longitudinal LME analyses
 #'
 #' @param data Data frame containing the longitudinal phenotype-plus-beta data.
 #' @param personVar Character. Name of the subject identifier column.
-#' @param sidVar Character. Name of the fallback sample identifier column used
-#' to
-#'   derive `personVar` when it is missing.
+#' @param sampleIdVar Character. Name of the configured sample identifier column
+#'   used to derive `personVar` when it is missing.
+#' @param timeVar Character. Name of the longitudinal time column used to
+#'   validate derived subject/visit combinations.
 #'
 #' @return A list containing the updated data frame, whether `personVar` was
-#'   created, an optional SID-to-person preview, and counts per person.
+#'   created, an optional sample-to-person preview, and counts per person.
 #'
 #' @description
-#' Internal helper that derives a subject identifier from `SID` when the
-#' requested `personVar` column is not present.
+#' Internal helper that derives a subject identifier from the configured sample
+#' identifier column when the requested `personVar` column is not present.
 #'
 #' @keywords internal
 #' @noRd
 ensurePersonColumnMethylationLME <- function(data, personVar = "person",
-    sidVar = "SID") {
+    sampleIdVar = "SID", timeVar = "Timepoint") {
+    personVar <- validateColumnNameMethylationLME(personVar, "personVar")
+    sampleIdVar <- validateColumnNameMethylationLME(sampleIdVar, "SampleID")
+    timeVar <- validateColumnNameMethylationLME(timeVar, "timeVar")
     person_created <- FALSE
     mapping_preview <- NULL
     if (!(personVar %in% colnames(data))) {
-        if (!(sidVar %in% colnames(data))) {
-            stop("Column '", personVar,
-            "' was not found and cannot be created because '",
-                sidVar, "' is missing.", call. = FALSE)
-        }
-        sid_values <- validateSampleIdentifiersDnaEpico(data[[sidVar]],
-            paste0("inputPheno$", sidVar))
-        if (any(!grepl("[AB]$", sid_values))) {
-            stop("Cannot safely derive '", personVar, "' from '",
-                sidVar, "': every SID must end in A or B. ",
-            "Supply an explicit subject identifier column.",
-                call. = FALSE)
-        }
-        person_values <- sub("[AB]$", "", sid_values)
-        visit_values <- sub("^.*([AB])$", "\\1", sid_values)
-        if (any(!nzchar(person_values))) {
-            stop("Derived subject identifiers cannot be empty.",
-                call. = FALSE)
-        }
-        if (anyDuplicated(paste(person_values, visit_values, sep = "\r"))) {
-            stop("SID contains duplicate subject/visit identifiers.",
-                call. = FALSE)
-        }
+        person_values <- derivePersonValuesMethylationLME(
+            data, personVar, sampleIdVar, timeVar
+        )
         data[[personVar]] <- person_values
         person_created <- TRUE
         mapping_preview <- utils::head(data[order(data[[personVar]],
-            data[[sidVar]]), c(sidVar, personVar), drop = FALSE],
+            data[[sampleIdVar]]), c(sampleIdVar, personVar), drop = FALSE],
             20L) }
     person_values <- as.character(data[[personVar]])
     if (anyNA(person_values) || any(!nzchar(trimws(person_values)))) {
@@ -61,9 +136,10 @@ ensurePersonColumnMethylationLME <- function(data, personVar = "person",
         stop("At least one subject must have repeated observations for ",
             "mixed-effects modeling.", call. = FALSE)
     }
-    list(data = data, personCreated = person_created, mappingPreview =
-        mapping_preview,
-        personCounts = person_counts)
+    list(data = data, personCreated = person_created,
+        personSourceVar = if (person_created) sampleIdVar else personVar,
+        derivationRule = if (person_created) "remove terminal A/B" else NULL,
+        mappingPreview = mapping_preview, personCounts = person_counts)
 }
 
 #' Build a mixed-effects formula for methylationLME helpers
@@ -966,6 +1042,7 @@ summarizeTimepointsMethylationLME <- function(
 }
 
 normalizeLmePreparationConfigDnaEpico <- function(config) {
+    config <- normalizeLmeIdentifierConfigDnaEpico(config)
     config$phenotypeList <- unique(splitOptionMinfiEwasWater(
     config$phenotypes,
     sep = ","
@@ -1141,7 +1218,9 @@ logPreparedLmeDataDnaEpico <- function(config,
             "Data dimensions:                  ",
             paste(dim(data), collapse = " x ")),
         paste("Person variable:                  ",
-            config$personVar), paste("Time variable:                    ",
+            config$personVar),
+        paste("Sample identifier source:         ", config$SampleID),
+        paste("Time variable:                    ",
             config$timeVar), paste("Phenotypes:                       ",
             paste(config$phenotypeList, collapse = ", ")),
         paste("Covariates:                       ",
@@ -1152,7 +1231,7 @@ logPreparedLmeDataDnaEpico <- function(config,
         paste("CpG columns retained:             ",
             length(columns$cpgColumns)),
         if (isTRUE(personData$personCreated)) {
-            paste("Created person variable from SID: ",
+            paste0("Created person variable from ", config$SampleID, ": ",
                 config$personVar)
         } else {
             paste("Person variable already present:  ",
@@ -1160,8 +1239,13 @@ logPreparedLmeDataDnaEpico <- function(config,
         }, paste("Values observed in", config$timeVar,
             ":"), previewLinesMinfiEwasWater(table(data[[config$timeVar]],
             useNA = "ifany")))
+    if (isTRUE(personData$personCreated)) {
+        lines <- c(lines, paste("Person derivation rule:            ",
+            personData$derivationRule))
+    }
     if (!is.null(personData$mappingPreview)) {
-        lines <- c(lines, "Example mapping of SID to person ID:",
+        lines <- c(lines, paste("Example mapping of", config$SampleID,
+            "to person ID:"),
             previewLinesMinfiEwasWater(personData$mappingPreview))
     }
     lines <- c(lines, "Summary statistics for phenotype scores by timepoint:",
@@ -1178,7 +1262,8 @@ newPreparedMethylationLMEDataDnaEpico <- function(
     data = columns$data, modelData = columns$scaling$data,
     inputPheno = config$inputPheno,
     inputIdentity = inputIdentityMethylationModels(config$inputPheno),
-    personVar = config$personVar, timeVar = config$timeVar,
+    personVar = config$personVar, SampleID = config$SampleID,
+    personSourceVar = personData$personSourceVar, timeVar = config$timeVar,
     phenotypes = config$phenotypeList, covariates = config$covariateList,
     factorVars = config$factorList,
     scaleVars = columns$scaling$scaleVars,
@@ -1204,6 +1289,9 @@ newPreparedMethylationLMEDataDnaEpico <- function(
 #' @param inputPheno Character. Path to the merged longitudinal phenotype-plus-
 #'   methylation object created by `preprocessingPheno()`.
 #' @param personVar Character. Name of the subject identifier column.
+#' @param SampleID Character. Name of the sample identifier column used to
+#'   derive `personVar` when it is absent. Values must end in `A` or `B` for
+#'   automatic derivation. The default is `"SID"`.
 #' @param timeVar Character. Name of the time variable.
 #' @param phenotypes Character vector or comma-separated string of phenotype
 #'   variables to model.
@@ -1260,7 +1348,8 @@ prepareMethylationLMEData <- function(
     timeVar = "Timepoint", phenotypes, covariates, factorVars,
     scaleVars = NULL, prsMap = NULL, cpgPrefix = "cg", cpgLimit = NA,
     methylationScale = "beta", interactionTerm = NULL, verbose = FALSE,
-    logs = FALSE, log_dir = NULL, log_file = "log_methylationLME.txt"
+    logs = FALSE, log_dir = NULL, log_file = "log_methylationLME.txt",
+    SampleID = "SID"
 ) {
     config <- normalizeLmePreparationConfigDnaEpico(
     as.list(environment(), all.names = TRUE)
@@ -1270,7 +1359,8 @@ prepareMethylationLMEData <- function(
     stop("At least one phenotype must be supplied.", call. = FALSE)
     }
     person_data <- ensurePersonColumnMethylationLME(
-    data = analysis_data, personVar = config$personVar
+    data = analysis_data, personVar = config$personVar,
+    sampleIdVar = config$SampleID, timeVar = config$timeVar
     )
     analysis_data <- person_data$data
     variables <- validateLmeModelVariablesDnaEpico(analysis_data, config)

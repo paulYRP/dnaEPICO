@@ -2,8 +2,7 @@
 inst/doc
 .httr-oauth
 .quarto
-dev/*
-!dev/build_gift.R
+dev/
 check/
 pkgdown/
 docs/

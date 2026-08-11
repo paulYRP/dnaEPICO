@@ -394,6 +394,7 @@ $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION) | validate-lme-config
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP5)/$(MODEL_DIR)', \
 	  outputPlots = '$(FIGURES_DIR)/$(MODEL)/$(STEP5)', \
 	  personVar = '$(PERSON_VAR)', \
+	  SampleID = '$(SAMPLE_ID)', \
 	  timeVar = '$(TIME_VAR)', \
 	  phenotypes = '$(PHENOTYPES_LME)', \
 	  covariates = $(call optional_text_arg,$(COVARIATES_LME)), \

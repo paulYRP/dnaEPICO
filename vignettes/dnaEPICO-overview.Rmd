@@ -415,6 +415,8 @@ repeated-measures designs with a participant-level random intercept and
 timepoint-related fixed effects. For lmerTest/lme4 models, an optional omnibus
 F test jointly evaluates all estimable coefficients for a phenotype main
 effect or phenotype-by-interaction term.
+If the participant column is absent, the configured `SampleID` column can be
+used to derive it from identifiers ending in the supported `A`/`B` visit code.
 
 Its role is to model methylation change across repeated observations:
 

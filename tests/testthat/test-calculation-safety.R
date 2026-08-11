@@ -249,14 +249,59 @@ test_that("phenotype-only GLM and LME formulas contain no empty term", {
 })
 
 test_that("longitudinal subject derivation accepts only explicit A/B visits", {
-    valid <- data.frame(SID = c("P1A", "P1B", "P2A", "P2B"))
+    valid <- data.frame(
+        SID = c("P1A", "P1B", "P2A", "P2B"),
+        Timepoint = c(1, 2, 1, 2)
+    )
     derived <- dnaEPICO:::ensurePersonColumnMethylationLME(valid)
     expect_identical(derived$data$person, c("P1", "P1", "P2", "P2"))
 
-    invalid <- data.frame(SID = c("P1_visit1", "P1_visit2", "P2_visit1"))
+    configured <- valid
+    names(configured)[names(configured) == "SID"] <- "UID"
+    configured_derived <- dnaEPICO:::ensurePersonColumnMethylationLME(
+        configured, sampleIdVar = "UID"
+    )
+    expect_identical(
+        configured_derived$data$person,
+        c("P1", "P1", "P2", "P2")
+    )
+    expect_identical(configured_derived$data$UID, configured$UID)
+
+    existing <- data.frame(
+        person = c("P1", "P1", "P2", "P2"),
+        Timepoint = c(1, 2, 1, 2)
+    )
+    retained <- dnaEPICO:::ensurePersonColumnMethylationLME(
+        existing, sampleIdVar = "not_present"
+    )
+    expect_false(retained$personCreated)
+    expect_identical(retained$data$person, existing$person)
+
+    invalid <- data.frame(
+        SID = c("P1_visit1", "P1_visit2", "P2_visit1"),
+        Timepoint = c(1, 2, 1)
+    )
     expect_error(
         dnaEPICO:::ensurePersonColumnMethylationLME(invalid),
         "Supply an explicit subject identifier"
+    )
+
+    expect_error(
+        dnaEPICO:::ensurePersonColumnMethylationLME(
+            configured, sampleIdVar = "Barcode"
+        ),
+        "configured sample identifier column 'Barcode' is missing"
+    )
+
+    duplicate_visit <- data.frame(
+        UID = c("P1A", "P1B", "P2A", "P2B"),
+        Timepoint = c(1, 1, 1, 2)
+    )
+    expect_error(
+        dnaEPICO:::ensurePersonColumnMethylationLME(
+            duplicate_visit, sampleIdVar = "UID"
+        ),
+        "duplicate subject/timepoint combinations"
     )
 })
 

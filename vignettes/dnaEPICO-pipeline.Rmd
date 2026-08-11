@@ -631,6 +631,7 @@ lmePipelineResult <- methylationLME(
     outputRData = file.path(lme_inputs$tempDir, "rData", "models"),
     outputPlots = file.path(lme_inputs$tempDir, "figures"),
     personVar = "person",
+    SampleID = "Sample_Name",
     timeVar = "Timepoint",
     phenotypes = "score",
     covariates = "sex",
@@ -681,6 +682,9 @@ Arguments:
 
 - `inputPheno` points to the combined longitudinal phenotype-plus-beta object.
 - `personVar` defines the participant identifier used for the random effect.
+- `SampleID` identifies the sample-level column used to derive `personVar` when
+    that participant column is absent. Automatic derivation removes a terminal
+    `A` or `B`; other identifier formats require an explicit participant column.
 - `timeVar` defines the repeated-measures time variable used for longitudinal
     summaries and preprocessing checks.
 - `phenotypes`, `covariates`, and optional `interactionTerm` define the
@@ -933,6 +937,8 @@ Common arguments in this longitudinal stage are:
 
 - `inputPheno` for the combined longitudinal phenotype-plus-beta object
 - `personVar` for the participant identifier used in the random effect
+- `SampleID` for the configured sample identifier used only when `personVar`
+    must be derived
 - `timeVar` for repeated-measures summaries and preprocessing checks
 - `phenotypes`, `covariates`, and optional `interactionTerm` for the
     fixed-effect

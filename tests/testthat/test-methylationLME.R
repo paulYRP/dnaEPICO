@@ -1,4 +1,5 @@
-create_methylation_lme_example <- function(path, include_person = TRUE) {
+create_methylation_lme_example <- function(path, include_person = TRUE,
+    sample_id_var = "SID") {
     phenoBT1T2 <- data.frame(
         SID = c("P1A", "P1B", "P2A", "P2B", "P3A", "P3B", "P4A", "P4B"),
         Timepoint = factor(c("1", "2", "1", "2", "1", "2", "1", "2")),
@@ -8,6 +9,7 @@ create_methylation_lme_example <- function(path, include_person = TRUE) {
         cg00000108 = c(0.50, 0.53, 0.55, 0.57, 0.48, 0.49, 0.60, 0.61),
         check.names = FALSE
     )
+    names(phenoBT1T2)[names(phenoBT1T2) == "SID"] <- sample_id_var
 
     if (isTRUE(include_person)) {
         phenoBT1T2$person <- c(1, 1, 2, 2, 3, 3, 4, 4)
@@ -43,7 +45,6 @@ create_methylation_lme_ar1_example <- function(path) {
                 stats::rnorm(24, 0, 0.005),
         check.names = FALSE
     )
-
     input_path <- file.path(path, "phenoMT1T2T3.RData")
     save(pheno, file = input_path)
 
@@ -203,6 +204,35 @@ test_that("methylationLME returns in-memory results quietly by default", {
     expect_equal(result$runSettings$analysisLabel, "methylationLME")
     expect_equal(result$runSettings$internalResponseColumn, "beta")
     expect_false(dir.exists(file.path(tmp, "figures", "methylationLME")))
+})
+
+test_that("configured sample identifiers derive longitudinal person IDs", {
+    tmp <- withr::local_tempdir()
+    example_data <- create_methylation_lme_example(
+        tmp, include_person = FALSE, sample_id_var = "UID"
+    )
+
+    prepared <- prepareMethylationLMEData(
+        inputPheno = example_data$inputPheno,
+        personVar = "person",
+        timeVar = "Timepoint",
+        phenotypes = "score",
+        covariates = "sex",
+        factorVars = "sex",
+        cpgLimit = 1,
+        SampleID = "UID",
+        logs = FALSE
+    )
+
+    expect_identical(
+        prepared$data$person,
+        c("P1", "P1", "P2", "P2", "P3", "P3", "P4", "P4")
+    )
+    expect_identical(prepared$data$UID, example_data$phenoBT1T2$UID)
+    expect_identical(prepared$SampleID, "UID")
+    expect_identical(prepared$personSourceVar, "UID")
+    expect_true(prepared$personCreated)
+    expect_named(prepared$personMappingPreview, c("UID", "person"))
 })
 
 test_that("methylationLME updates the internal response column for copy-number runs", {

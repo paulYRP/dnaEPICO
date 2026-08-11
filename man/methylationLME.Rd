@@ -56,7 +56,8 @@ methylationLME(
   verbose = FALSE,
   logs = FALSE,
   saveOutputs = FALSE,
-  resumeFromSummary = TRUE
+  resumeFromSummary = TRUE,
+  SampleID = "SID"
 )
 }
 \arguments{
@@ -74,8 +75,8 @@ phenotype summaries.}
 plots.}
 
 \item{personVar}{Character. Subject identifier variable used for the random
-intercept. When this column is missing, it is derived from \code{SID} using the
-package's existing sample naming convention.}
+intercept. When this column is missing, it is derived from \code{SampleID} using
+the package's terminal \code{A}/\code{B} visit naming convention.}
 
 \item{timeVar}{Character. Name of the longitudinal time variable used for
 timepoint summaries and preprocessing checks.}
@@ -230,6 +231,10 @@ TIFF plots. The default is \code{FALSE}.}
 complete phenotype summary when its input file and model configuration
 match the current analysis. If processing stops before a phenotype summary
 is complete, that phenotype is fitted again from its first CpG.}
+
+\item{SampleID}{Character. Name of the sample identifier column used to
+derive \code{personVar} when the subject identifier column is missing. The
+default, \code{"SID"}, preserves the package's earlier behavior.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationLME'}.

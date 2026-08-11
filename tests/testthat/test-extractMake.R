@@ -250,6 +250,14 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         rules,
         fixed = TRUE
     )))
+    person_argument <- which(grepl(
+        "personVar = '$(PERSON_VAR)'", rules, fixed = TRUE
+    ))
+    expect_length(person_argument, 1L)
+    expect_identical(
+        rules[[person_argument + 1L]],
+        "\t  SampleID = '$(SAMPLE_ID)', \\"
+    )
     expect_true(any(grepl(
         "reportAssetsDir = '$(GLM_REPORT_ASSET_DIR)'",
         rules,

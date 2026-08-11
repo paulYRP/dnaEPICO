@@ -112,8 +112,9 @@ test_that("revised scalar and collapsed condition messages retain their text", {
             ensurePersonColumnMethylationLME(data.frame(SID = c("P1", "P2")))
         ),
         paste0(
-            "Cannot safely derive 'person' from 'SID': every SID must end in ",
-            "A or B. Supply an explicit subject identifier column."
+            "Cannot safely derive 'person' from configured sample identifier ",
+            "column 'SID': every value must end in A or B. Supply an explicit ",
+            "subject identifier column."
         )
     )
 

@@ -21,7 +21,8 @@ prepareMethylationLMEData(
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
-  log_file = "log_methylationLME.txt"
+  log_file = "log_methylationLME.txt",
+  SampleID = "SID"
 )
 }
 \arguments{
@@ -66,6 +67,10 @@ columns. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, case-insensitively.}
 \code{logs = TRUE}.}
 
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
+
+\item{SampleID}{Character. Name of the sample identifier column used to
+derive \code{personVar} when it is absent. Values must end in \code{A} or \code{B} for
+automatic derivation. The default is \code{"SID"}.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationLME_data'} containing
