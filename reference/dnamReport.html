@@ -87,7 +87,7 @@
 <span>  detPThreshold <span class="op">=</span> <span class="fl">0.01</span>,</span>
 <span>  cpgDetectionPath <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sampleDetectionPath <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  logoPath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"dnaEPICO.svg"</span>, package <span class="op">=</span> <span class="st">"dnaEPICO"</span><span class="op">)</span>,</span>
+<span>  logoPath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"dnaEPICORM.svg"</span>, package <span class="op">=</span> <span class="st">"dnaEPICO"</span><span class="op">)</span>,</span>
 <span>  imagePattern <span class="op">=</span> <span class="st">"\\.(png|jpg|jpeg|gif|webp|svg|tif|tiff)$"</span>,</span>
 <span>  recursive <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -127,16 +127,16 @@ figures.</p></dd>
 <dd><p>Character or <code>NULL</code>. XLSX workbook shown in the GLM Analysis
 tab.
 When <code>NULL</code>, the path is inferred from the Makefile output layout. Report
-sidecars produced by <code><a href="methylationGLM.html">methylationGLM()</a></code> are read from this report project's
-<code>assets/results/glm_results</code> directory when available.</p></dd>
+sidecars produced by <code><a href="methylationGLM.html">methylationGLM()</a></code> are read from this report
+project's <code>assets/results/glm_results</code> directory when available.</p></dd>
 
 
 <dt id="arg-lmetab">lmeTab<a class="anchor" aria-label="anchor" href="#arg-lmetab"></a></dt>
 <dd><p>Character or <code>NULL</code>. XLSX workbook shown in the LME Analysis
 tab.
 When <code>NULL</code>, the path is inferred from the Makefile output layout. Report
-sidecars produced by <code><a href="methylationLME.html">methylationLME()</a></code> are read from this report project's
-<code>assets/results/lme_results</code> directory when available.</p></dd>
+sidecars produced by <code><a href="methylationLME.html">methylationLME()</a></code> are read from this report
+project's <code>assets/results/lme_results</code> directory when available.</p></dd>
 
 
 <dt id="arg-modelsections">modelSections<a class="anchor" aria-label="anchor" href="#arg-modelsections"></a></dt>
@@ -148,8 +148,8 @@ the complete GLM-and-LME report.</p></dd>
 
 
 <dt id="arg-logtab">logTab<a class="anchor" aria-label="anchor" href="#arg-logtab"></a></dt>
-<dd><p>Character. Directory containing workflow logs shown in the Logs
-tab.</p></dd>
+<dd><p>Character. Directory containing workflow logs shown in the
+Logs tab.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -186,8 +186,8 @@ detection summary CSV.</p></dd>
 
 
 <dt id="arg-logopath">logoPath<a class="anchor" aria-label="anchor" href="#arg-logopath"></a></dt>
-<dd><p>Character. Path to the navbar logo. Defaults to the packaged
-<code>inst/extdata/dnaEPICO.svg</code> asset.</p></dd>
+<dd><p>Character. Path to the navigation-panel logo. Defaults to
+the packaged <code>inst/extdata/dnaEPICORM.svg</code> asset.</p></dd>
 
 
 <dt id="arg-imagepattern">imagePattern<a class="anchor" aria-label="anchor" href="#arg-imagepattern"></a></dt>
@@ -203,54 +203,60 @@ files inside the section directories.</p></dd>
     <h2>Value</h2>
     <p>A list with class <code>'dnaEPICO_dnamReport'</code>.</p>
     </div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>The Quarto command-line interface is required to render the website. It is
+not required to install or load <code>dnaEPICO</code>, or to use the package's
+preprocessing and statistical-modeling functions.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">report_root</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"dnaepico-dnam-report"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pheno_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="va">report_root</span>,</span></span>
-<span class="r-in"><span>    <span class="st">"data"</span>,</span></span>
-<span class="r-in"><span>    <span class="st">"model1"</span>,</span></span>
-<span class="r-in"><span>    <span class="st">"preprocessingMinfiEwasWater"</span>,</span></span>
-<span class="r-in"><span>    <span class="st">"phenoLC.csv"</span></span></span>
+<span class="r-in"><span>  <span class="va">report_root</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"data"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"model1"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"preprocessingMinfiEwasWater"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"phenoLC.csv"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">dirname</a></span><span class="op">(</span><span class="va">pheno_file</span><span class="op">)</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>        UID <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample1"</span>, <span class="st">"sample2"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>        Timepoint <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>        Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"M"</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="op">)</span>,</span></span>
-<span class="r-in"><span>    <span class="va">pheno_file</span>,</span></span>
-<span class="r-in"><span>    row.names <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    UID <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample1"</span>, <span class="st">"sample2"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    Timepoint <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"M"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="va">pheno_file</span>,</span></span>
+<span class="r-in"><span>  row.names <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">dnamReport</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">report_root</span>, <span class="st">"reports"</span>, <span class="st">"model1"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    phenoTab <span class="op">=</span> <span class="va">pheno_file</span>,</span></span>
-<span class="r-in"><span>    enmixTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>        <span class="va">report_root</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"figures"</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"model1"</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"preprocessingMinfiEwasWater"</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"enmix"</span></span></span>
-<span class="r-in"><span>    <span class="op">)</span>,</span></span>
-<span class="r-in"><span>    qcTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>        <span class="va">report_root</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"figures"</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"model1"</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"preprocessingMinfiEwasWater"</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"qc"</span></span></span>
-<span class="r-in"><span>    <span class="op">)</span>,</span></span>
-<span class="r-in"><span>    svaTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">report_root</span>, <span class="st">"figures"</span>, <span class="st">"model1"</span>, <span class="st">"svaEnmix"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    metricTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>        <span class="va">report_root</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"figures"</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"model1"</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"preprocessingMinfiEwasWater"</span>,</span></span>
-<span class="r-in"><span>        <span class="st">"metrics"</span></span></span>
-<span class="r-in"><span>    <span class="op">)</span>,</span></span>
-<span class="r-in"><span>    logTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">report_root</span>, <span class="st">"logs"</span>, <span class="st">"model1"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">report_root</span>, <span class="st">"reports"</span>, <span class="st">"model1"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  phenoTab <span class="op">=</span> <span class="va">pheno_file</span>,</span></span>
+<span class="r-in"><span>  enmixTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">report_root</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"figures"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"model1"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"preprocessingMinfiEwasWater"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"enmix"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  qcTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">report_root</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"figures"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"model1"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"preprocessingMinfiEwasWater"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"qc"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  svaTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">report_root</span>, <span class="st">"figures"</span>, <span class="st">"model1"</span>, <span class="st">"svaEnmix"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  metricTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">report_root</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"figures"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"model1"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"preprocessingMinfiEwasWater"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"metrics"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  logTab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">report_root</span>, <span class="st">"logs"</span>, <span class="st">"model1"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">result</span><span class="op">$</span><span class="va">status</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rendered"</span>
@@ -265,7 +271,7 @@ files inside the section directories.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Paul Ruiz.</p>
+  <p></p><p>Developed by Paul Ruiz Pinto.</p>
 </div>
 
 <div class="pkgdown">

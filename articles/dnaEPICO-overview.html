@@ -90,7 +90,7 @@
 Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpint@qut.edu.au" class="email">ruizpint@qut.edu.au</a>
       </address>
                   
-            <h4 data-toc-skip class="date">2026-08-07</h4>
+            <h4 data-toc-skip class="date">2026-08-11</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-overview.Rmd" class="external-link"><code>vignettes/dnaEPICO-overview.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-overview.Rmd</code></div>
@@ -103,7 +103,7 @@ Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpi
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>This vignette shows the roles, inputs, processing stages, and outputs
-of the main <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
+of the main <em><a href="https://bioconductor.org/packages/3.24/dnaEPICO" class="external-link">dnaEPICO</a></em>
 functions.</p>
 <p>Use the diagrams to choose a function and follow outputs between
 stages. See the local-use and pipeline-use vignettes for arguments and
@@ -124,16 +124,16 @@ file-based pipeline, depending on the value of
 <div class="section level2">
 <h2 id="required-knowledge">Required knowledge<a class="anchor" aria-label="anchor" href="#required-knowledge"></a>
 </h2>
-<p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.24/dnaEPICO" class="external-link">dnaEPICO</a></em>
 is built on core Bioconductor infrastructure for high-dimensional
 genomic data, with a focus on Illumina DNA methylation arrays. This
 vignette assumes familiarity with a general DNA methylation workflow.
-For an introduction, see <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link">this
-tutorial</a>, which covers the main concepts and analysis steps.</p>
+For an introduction, see this tutorial: <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link uri">https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html</a>.
+It covers the main concepts and analysis steps.</p>
 <p>Preprocessing and quality control are performed using established
-Bioconductor tools, including <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
-<em><a href="https://bioconductor.org/packages/3.20/ENmix" class="external-link">ENmix</a></em>, and
-<em><a href="https://bioconductor.org/packages/3.20/wateRmelon" class="external-link">wateRmelon</a></em>.
+Bioconductor tools, including <em><a href="https://bioconductor.org/packages/3.24/minfi" class="external-link">minfi</a></em>,
+<em><a href="https://bioconductor.org/packages/3.24/ENmix" class="external-link">ENmix</a></em>, and
+<em><a href="https://bioconductor.org/packages/3.24/wateRmelon" class="external-link">wateRmelon</a></em>.
 Downstream statistical modelling relies on base R and CRAN frameworks,
 including generalised linear models and linear mixed-effects models.
 Users are expected to have basic familiarity with R, Bioconductor
@@ -147,17 +147,18 @@ structures.</p>
 platform.</p>
 <ul>
 <li><p>For <strong>Illumina HumanMethylationEPIC v2.0</strong>, use the
-cross-reactive probe-exclusion file from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323" class="external-link">Peters
-et al. (2024)</a>.</p></li>
+cross-reactive probe-exclusion file from <a href="https://doi.org/10.1186/s12864-024-10027-5" class="external-link">Peters et
+al. (2024)</a>.</p></li>
 <li><p>For <strong>Illumina MethylationEPIC</strong>, also known as the
-<strong>850k array</strong>, use the probe-exclusion resources from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334" class="external-link">Pidsley
-et al. (2016)</a>. The supplementary files commonly used together are <a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM1_ESM.csv" class="external-link">13059_2016_1066_MOESM1_ESM.csv</a>,
-<a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM4_ESM.csv" class="external-link">13059_2016_1066_MOESM4_ESM.csv</a>,
-<a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM5_ESM.csv" class="external-link">13059_2016_1066_MOESM5_ESM.csv</a>,
-and <a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM6_ESM.csv" class="external-link">13059_2016_1066_MOESM6_ESM.csv</a>.</p></li>
+<strong>850k array</strong>, use the probe-exclusion resources from <a href="https://doi.org/10.1186/s13059-016-1066-1" class="external-link">Pidsley et
+al. (2016)</a>. The supporting files commonly used together are
+<code>13059_2016_1066_MOESM1_ESM.csv</code>,
+<code>13059_2016_1066_MOESM4_ESM.csv</code>,
+<code>13059_2016_1066_MOESM5_ESM.csv</code>, and
+<code>13059_2016_1066_MOESM6_ESM.csv</code>.</p></li>
 <li><p>For <strong>Illumina HumanMethylation450k</strong>, use the
-cross-reactive and polymorphic probe resources from <a href="https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205" class="external-link">Chen
-et al. (2013)</a>.</p></li>
+cross-reactive and polymorphic probe resources from <a href="https://doi.org/10.4161/epi.23470" class="external-link">Chen et
+al. (2013)</a>.</p></li>
 <li><p>Multiple probe-exclusion files can be supplied as a
 semicolon-separated value in <code>probeExclusionPath</code>.
 <code>dnaEPICO</code> reads probe IDs from each file, uses
@@ -168,7 +169,7 @@ unique union of all probe IDs is then used to filter the normalised
 object.</p></li>
 <li><p>For <strong>EPICv2</strong>, setting
 <code>useEpicV2Manifest = TRUE</code> also retrieves the expanded Peters
-et al. manifest from AnnotationHub resource <a href="https://bioconductor.org/packages/release/data/annotation/vignettes/EPICv2manifest/inst/doc/EPICv2manifest.html" class="external-link">AH116484</a>.
+et al. manifest from AnnotationHub resource <a href="https://bioconductor.org/packages/EPICv2manifest" class="external-link">AH116484</a>.
 Probes flagged in selected manifest columns are added to the same
 exclusion set. By default, probes flagged by
 <code>CH_WGBS_evidence</code>, <code>CH_BLAT</code>, or
@@ -428,7 +429,9 @@ adjustment, summarisation, and annotation.</li>
 figures, significant-CpG exports, and annotated workbooks. Native glm2
 conditions are stored in <code>&lt;Phenotype&gt;_Model.Message</code>;
 CpGs without a returned p-value remain in the compact summary and are
-counted in workbook metadata.</li>
+counted in workbook metadata. GRCh38 analyses can optionally append
+release-aware GENCODE gene-body and nearest-TSS annotations through
+AnnotationHub.</li>
 </ul>
 <div id="methylationGLM_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -474,7 +477,9 @@ diagnostic figures, significant-interaction exports, and annotated
 longitudinal workbooks. Native lmerTest/lme4 or nlme conditions are
 stored in <code>&lt;Phenotype&gt;_Model.Message</code>; CpGs without a
 returned coefficient or omnibus p-value remain in the compact summary
-and are counted in workbook metadata.</li>
+and are counted in workbook metadata. The same optional AnnotationHub
+annotation is supported by both the lmerTest/lme4 and nlme engines for
+GRCh38 results.</li>
 </ul>
 <div id="methylationLME_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -511,8 +516,10 @@ metric figures, model annotation tables, detection P-value data, and
 logs.</li>
 <li>Processing tasks: input validation, report file preparation, Quarto
 rendering, and post-processing.</li>
-<li>Outputs: a rendered report site with organised tabs for data,
-preprocessing, modelling, logs, and supporting diagnostics.</li>
+<li>Outputs: a responsive dark report site with persistent navigation, a
+wide central table or figure panel, contextual notes and controls, and
+organised tabs for data, preprocessing, modelling, logs, and supporting
+diagnostics.</li>
 </ul>
 <div id="dnamReport_pipeline_overview" class="overview-figure" data-scale="1">
 <div class="overview-controls">
@@ -561,13 +568,13 @@ for association testing, and</li>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-08-07 04:18:04 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-08-11 05:38:35 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 0.601 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 0.603 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
-<pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
+<pre><code><span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
-<span><span class="co">#&gt; Running under: Ubuntu 24.04.1 LTS</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 24.04.4 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
 <span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
@@ -588,19 +595,19 @@ for association testing, and</li>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dnaEPICO_0.99.37 BiocStyle_2.34.0</span></span>
+<span><span class="co">#&gt; [1] dnaEPICO_0.99.37 BiocStyle_2.41.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] cli_3.6.6           knitr_1.51          rlang_1.3.0        </span></span>
 <span><span class="co">#&gt;  [4] xfun_0.60           otel_0.2.0          textshaping_1.0.5  </span></span>
-<span><span class="co">#&gt;  [7] jsonlite_2.0.0      htmltools_0.5.9     ragg_1.5.2         </span></span>
-<span><span class="co">#&gt; [10] sass_0.4.10         rmarkdown_2.31      evaluate_1.0.5     </span></span>
-<span><span class="co">#&gt; [13] jquerylib_0.1.4     fastmap_1.2.0       yaml_2.3.12        </span></span>
-<span><span class="co">#&gt; [16] lifecycle_1.0.5     bookdown_0.47       BiocManager_1.30.27</span></span>
-<span><span class="co">#&gt; [19] compiler_4.4.2      fs_2.1.0            htmlwidgets_1.6.4  </span></span>
-<span><span class="co">#&gt; [22] systemfonts_1.3.2   digest_0.6.39       R6_2.6.1           </span></span>
-<span><span class="co">#&gt; [25] bslib_0.12.0        tools_4.4.2         pkgdown_2.2.1      </span></span>
-<span><span class="co">#&gt; [28] cachem_1.1.0        desc_1.4.3</span></span></code></pre>
+<span><span class="co">#&gt;  [7] data.table_1.18.4   jsonlite_2.0.0      htmltools_0.5.9    </span></span>
+<span><span class="co">#&gt; [10] ragg_1.5.2          sass_0.4.10         rmarkdown_2.31     </span></span>
+<span><span class="co">#&gt; [13] evaluate_1.0.5      jquerylib_0.1.4     fastmap_1.2.0      </span></span>
+<span><span class="co">#&gt; [16] yaml_2.3.12         lifecycle_1.0.5     bookdown_0.47      </span></span>
+<span><span class="co">#&gt; [19] BiocManager_1.30.27 compiler_4.6.1      fs_2.1.0           </span></span>
+<span><span class="co">#&gt; [22] htmlwidgets_1.6.4   systemfonts_1.3.2   digest_0.6.39      </span></span>
+<span><span class="co">#&gt; [25] R6_2.6.1            bslib_0.12.0        tools_4.6.1        </span></span>
+<span><span class="co">#&gt; [28] pkgdown_2.2.1       cachem_1.1.0        desc_1.4.3</span></span></code></pre>
 <div class="section level3">
 <h3 id="asking-for-help">Asking for help<a class="anchor" aria-label="anchor" href="#asking-for-help"></a>
 </h3>
@@ -623,7 +630,7 @@ information.</p>
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Paul Ruiz.</p>
+<p>Developed by Paul Ruiz Pinto.</p>
 </div>
 
 <div class="pkgdown">

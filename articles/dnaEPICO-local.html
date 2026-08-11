@@ -90,7 +90,7 @@
 Technology<br><a class="author_email" href="mailto:#"></a><a href="mailto:ruizpint@qut.edu.au" class="email">ruizpint@qut.edu.au</a>
       </address>
                   
-            <h4 data-toc-skip class="date">2026-08-07</h4>
+            <h4 data-toc-skip class="date">2026-08-11</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/paulYRP/dnaEPICO/blob/devel/vignettes/dnaEPICO-local.Rmd" class="external-link"><code>vignettes/dnaEPICO-local.Rmd</code></a></small>
       <div class="hidden name"><code>dnaEPICO-local.Rmd</code></div>
@@ -119,34 +119,36 @@ results in memory without writing output files.</p>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<p>The <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
+<p>The <em><a href="https://bioconductor.org/packages/3.24/dnaEPICO" class="external-link">dnaEPICO</a></em>
 package uses methods from several external packages. Because no single
 manuscript describes all components, the guidance below explains how to
 cite <code>dnaEPICO</code> depending on the functions you use.</p>
 <p>This citation guidance is adapted from the vignettes and user guides
 of <a href="https://github.com/hansenlab/minfi/blob/devel/vignettes/minfi.Rmd" class="external-link">minfi</a>,
 <a href="https://github.com/xuz1/ENmix/blob/master/vignettes/ENmix.Rmd" class="external-link">ENmix</a>,
-and <a href="https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/references.bib" class="external-link">wateRmelon</a>.</p>
+and <a href="https://github.com/schalkwyk/wateRmelon" class="external-link">wateRmelon</a>.</p>
 <ul>
 <li>If you use <code><a href="../reference/preprocessingMinfiEwasWater.html">preprocessingMinfiEwasWater()</a></code>, please cite
-<span class="citation">Aryee et al. (2014)</span>; <span class="citation">Fortin, Triche Jr., and Hansen (2017)</span>; <span class="citation">Xu, Niu, and Taylor (2021)</span>; <span class="citation">Pidsley et al. (2013)</span>; <span class="citation">Murat et al. (2020)</span>; <span class="citation">Maksimovic, Gordon, and Oshlack (2012)</span>; <span class="citation">Fortin et al. (2014)</span>; <span class="citation">Triche et al. (2013)</span>; <span class="citation">Touleimat and Tost (2012)</span>.</li>
-<li>If you use <code><a href="../reference/svaEnmix.html">svaEnmix()</a></code>, please cite <span class="citation">Aryee et al. (2014)</span>; <span class="citation">Xu,
-Niu, and Taylor (2021)</span>.</li>
+<span class="citation">Aryee et al. (2014)</span>; <span class="citation">Fortin et al. (2017)</span>; <span class="citation">Xu
+et al. (2021)</span>; <span class="citation">Pidsley et al.
+(2013)</span>; <span class="citation">Murat et al. (2020)</span>; <span class="citation">Maksimovic et al. (2012)</span>; <span class="citation">Fortin et al. (2014)</span>; <span class="citation">Triche et al. (2013)</span>; <span class="citation">Touleimat and Tost (2012)</span>.</li>
+<li>If you use <code><a href="../reference/svaEnmix.html">svaEnmix()</a></code>, please cite <span class="citation">Aryee et al. (2014)</span>; <span class="citation">Xu
+et al. (2021)</span>.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="required-knowledge">Required knowledge<a class="anchor" aria-label="anchor" href="#required-knowledge"></a>
 </h2>
-<p><em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.24/dnaEPICO" class="external-link">dnaEPICO</a></em>
 is built on core Bioconductor infrastructure for high-dimensional
 genomic data, with a focus on Illumina DNA methylation arrays. This
 vignette assumes familiarity with a general DNA methylation workflow.
-For an introduction, see <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link">this
-tutorial</a>, which covers the main concepts and analysis steps.</p>
+For an introduction, see this tutorial: <a href="https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html" class="external-link uri">https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html</a>.
+It covers the main concepts and analysis steps.</p>
 <p>Preprocessing and quality control are performed using established
-Bioconductor tools, including <em><a href="https://bioconductor.org/packages/3.20/minfi" class="external-link">minfi</a></em>,
-<em><a href="https://bioconductor.org/packages/3.20/ENmix" class="external-link">ENmix</a></em>, and
-<em><a href="https://bioconductor.org/packages/3.20/wateRmelon" class="external-link">wateRmelon</a></em>.
+Bioconductor tools, including <em><a href="https://bioconductor.org/packages/3.24/minfi" class="external-link">minfi</a></em>,
+<em><a href="https://bioconductor.org/packages/3.24/ENmix" class="external-link">ENmix</a></em>, and
+<em><a href="https://bioconductor.org/packages/3.24/wateRmelon" class="external-link">wateRmelon</a></em>.
 Users are expected to have basic familiarity with R, Bioconductor
 workflows, and Illumina IDAT file structures.</p>
 <p>For an introduction to Bioconductor, see the <a href="https://www.bioconductor.org/install/" class="external-link">installation guide</a>.</p>
@@ -157,17 +159,18 @@ workflows, and Illumina IDAT file structures.</p>
 platform.</p>
 <ul>
 <li><p>For <strong>Illumina HumanMethylationEPIC v2.0</strong>, use the
-cross-reactive probe-exclusion file from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323" class="external-link">Peters
-et al. (2024)</a>.</p></li>
+cross-reactive probe-exclusion file from <a href="https://doi.org/10.1186/s12864-024-10027-5" class="external-link">Peters et
+al. (2024)</a>.</p></li>
 <li><p>For <strong>Illumina MethylationEPIC</strong>, also known as the
-<strong>850k array</strong>, use the probe-exclusion resources from <a href="https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334" class="external-link">Pidsley
-et al. (2016)</a>. The supplementary files commonly used together are <a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM1_ESM.csv" class="external-link">13059_2016_1066_MOESM1_ESM.csv</a>,
-<a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM4_ESM.csv" class="external-link">13059_2016_1066_MOESM4_ESM.csv</a>,
-<a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM5_ESM.csv" class="external-link">13059_2016_1066_MOESM5_ESM.csv</a>,
-and <a href="https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM6_ESM.csv" class="external-link">13059_2016_1066_MOESM6_ESM.csv</a>.</p></li>
+<strong>850k array</strong>, use the probe-exclusion resources from <a href="https://doi.org/10.1186/s13059-016-1066-1" class="external-link">Pidsley et
+al. (2016)</a>. The supporting files commonly used together are
+<code>13059_2016_1066_MOESM1_ESM.csv</code>,
+<code>13059_2016_1066_MOESM4_ESM.csv</code>,
+<code>13059_2016_1066_MOESM5_ESM.csv</code>, and
+<code>13059_2016_1066_MOESM6_ESM.csv</code>.</p></li>
 <li><p>For <strong>Illumina HumanMethylation450k</strong>, use the
-cross-reactive and polymorphic probe resources from <a href="https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205" class="external-link">Chen
-et al. (2013)</a>.</p></li>
+cross-reactive and polymorphic probe resources from <a href="https://doi.org/10.4161/epi.23470" class="external-link">Chen et
+al. (2013)</a>.</p></li>
 <li><p>Multiple probe-exclusion files can be supplied as a
 semicolon-separated value in <code>probeExclusionPath</code>.
 <code>dnaEPICO</code> reads probe IDs from each file, uses
@@ -178,7 +181,7 @@ unique union of all probe IDs is then used to filter the normalised
 object.</p></li>
 <li><p>For <strong>EPICv2</strong>, setting
 <code>useEpicV2Manifest = TRUE</code> also retrieves the expanded Peters
-et al. manifest from AnnotationHub resource <a href="https://bioconductor.org/packages/release/data/annotation/vignettes/EPICv2manifest/inst/doc/EPICv2manifest.html" class="external-link">AH116484</a>.
+et al. manifest from AnnotationHub resource <a href="https://bioconductor.org/packages/EPICv2manifest" class="external-link">AH116484</a>.
 Probes flagged in selected manifest columns are added to the same
 exclusion set. By default, probes flagged by
 <code>CH_WGBS_evidence</code>, <code>CH_BLAT</code>, or
@@ -190,7 +193,7 @@ retained unless explicitly enabled.</p></li>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Install the development version of <em><a href="https://bioconductor.org/packages/3.20/dnaEPICO" class="external-link">dnaEPICO</a></em>
+<p>Install the development version of <em><a href="https://bioconductor.org/packages/3.24/dnaEPICO" class="external-link">dnaEPICO</a></em>
 and its dependencies with BiocManager:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -226,10 +229,16 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpEspmzv/dnaEPICO-idat-example-2b445ec6a09b"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpPJV1Nf/dnaEPICO-idat-example-3b1c512478e3"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span></span>
+<span>        <span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">idatFolder</span>,</span>
+<span>        full.names <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>    <span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fl">4</span></span>
+<span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "5723646052_R02C02_Grn.idat" "5723646052_R02C02_Red.idat"</span></span>
 <span><span class="co">#&gt; [3] "5723646052_R04C01_Grn.idat" "5723646052_R04C01_Red.idat"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">probeExclusionPath</span><span class="op">)</span></span>
@@ -510,7 +519,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpEspmzv/dnaEPICO-preprocessingPheno-example-2b441d184dcd"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpPJV1Nf/dnaEPICO-preprocessingPheno-example-3b1c7b32af53"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -693,13 +702,13 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-08-07 04:18:01 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-08-11 05:38:31 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 48.761 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
-<pre><code><span><span class="co">#&gt; R version 4.4.2 (2024-10-31)</span></span>
+<pre><code><span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
-<span><span class="co">#&gt; Running under: Ubuntu 24.04.1 LTS</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 24.04.4 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
 <span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
@@ -723,93 +732,97 @@ how phenotype-specific PRS terms are added through
 <span><span class="co">#&gt; other attached packages:</span></span>
 <span><span class="co">#&gt;  [1] IlluminaHumanMethylation450kanno.ilmn12.hg19_0.6.1</span></span>
 <span><span class="co">#&gt;  [2] IlluminaHumanMethylation450kmanifest_0.4.0        </span></span>
-<span><span class="co">#&gt;  [3] minfi_1.52.1                                      </span></span>
-<span><span class="co">#&gt;  [4] bumphunter_1.48.0                                 </span></span>
+<span><span class="co">#&gt;  [3] minfi_1.59.1                                      </span></span>
+<span><span class="co">#&gt;  [4] bumphunter_1.55.1                                 </span></span>
 <span><span class="co">#&gt;  [5] locfit_1.5-9.12                                   </span></span>
 <span><span class="co">#&gt;  [6] iterators_1.0.14                                  </span></span>
 <span><span class="co">#&gt;  [7] foreach_1.5.2                                     </span></span>
-<span><span class="co">#&gt;  [8] Biostrings_2.74.1                                 </span></span>
-<span><span class="co">#&gt;  [9] XVector_0.46.0                                    </span></span>
-<span><span class="co">#&gt; [10] SummarizedExperiment_1.36.0                       </span></span>
-<span><span class="co">#&gt; [11] Biobase_2.66.0                                    </span></span>
-<span><span class="co">#&gt; [12] MatrixGenerics_1.18.1                             </span></span>
+<span><span class="co">#&gt;  [8] Biostrings_2.81.6                                 </span></span>
+<span><span class="co">#&gt;  [9] XVector_0.53.0                                    </span></span>
+<span><span class="co">#&gt; [10] SummarizedExperiment_1.43.0                       </span></span>
+<span><span class="co">#&gt; [11] Biobase_2.73.2                                    </span></span>
+<span><span class="co">#&gt; [12] MatrixGenerics_1.25.0                             </span></span>
 <span><span class="co">#&gt; [13] matrixStats_1.5.0                                 </span></span>
-<span><span class="co">#&gt; [14] GenomicRanges_1.58.0                              </span></span>
-<span><span class="co">#&gt; [15] GenomeInfoDb_1.42.3                               </span></span>
-<span><span class="co">#&gt; [16] IRanges_2.40.1                                    </span></span>
-<span><span class="co">#&gt; [17] S4Vectors_0.44.0                                  </span></span>
-<span><span class="co">#&gt; [18] BiocGenerics_0.52.0                               </span></span>
-<span><span class="co">#&gt; [19] dnaEPICO_0.99.37                                  </span></span>
-<span><span class="co">#&gt; [20] BiocStyle_2.34.0                                  </span></span>
+<span><span class="co">#&gt; [14] GenomicRanges_1.65.1                              </span></span>
+<span><span class="co">#&gt; [15] Seqinfo_1.3.0                                     </span></span>
+<span><span class="co">#&gt; [16] IRanges_2.47.2                                    </span></span>
+<span><span class="co">#&gt; [17] S4Vectors_0.51.6                                  </span></span>
+<span><span class="co">#&gt; [18] BiocGenerics_0.59.11                              </span></span>
+<span><span class="co">#&gt; [19] generics_0.1.4                                    </span></span>
+<span><span class="co">#&gt; [20] dnaEPICO_0.99.37                                  </span></span>
+<span><span class="co">#&gt; [21] BiocStyle_2.41.0                                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] RColorBrewer_1.1-3        jsonlite_2.0.0           </span></span>
-<span><span class="co">#&gt;   [3] magrittr_2.0.5            GenomicFeatures_1.58.0   </span></span>
-<span><span class="co">#&gt;   [5] rmarkdown_2.31            fs_2.1.0                 </span></span>
-<span><span class="co">#&gt;   [7] BiocIO_1.16.0             zlibbioc_1.52.0          </span></span>
-<span><span class="co">#&gt;   [9] ragg_1.5.2                vctrs_0.7.3              </span></span>
-<span><span class="co">#&gt;  [11] multtest_2.62.0           memoise_2.0.1            </span></span>
-<span><span class="co">#&gt;  [13] Rsamtools_2.22.0          DelayedMatrixStats_1.28.1</span></span>
-<span><span class="co">#&gt;  [15] ENmix_1.42.2              RCurl_1.98-1.19          </span></span>
-<span><span class="co">#&gt;  [17] askpass_1.2.1             htmltools_0.5.9          </span></span>
-<span><span class="co">#&gt;  [19] S4Arrays_1.6.0            AnnotationHub_3.14.0     </span></span>
-<span><span class="co">#&gt;  [21] dynamicTreeCut_1.63-1     curl_7.1.0               </span></span>
-<span><span class="co">#&gt;  [23] Rhdf5lib_1.28.0           RPMM_1.25                </span></span>
-<span><span class="co">#&gt;  [25] SparseArray_1.6.2         rhdf5_2.50.2             </span></span>
-<span><span class="co">#&gt;  [27] sass_0.4.10               KernSmooth_2.23-26       </span></span>
-<span><span class="co">#&gt;  [29] nor1mix_1.3-3             bslib_0.12.0             </span></span>
-<span><span class="co">#&gt;  [31] htmlwidgets_1.6.4         desc_1.4.3               </span></span>
-<span><span class="co">#&gt;  [33] plyr_1.8.9                impute_1.80.0            </span></span>
-<span><span class="co">#&gt;  [35] cachem_1.1.0              GenomicAlignments_1.42.0 </span></span>
-<span><span class="co">#&gt;  [37] lifecycle_1.0.5           pkgconfig_2.0.3          </span></span>
-<span><span class="co">#&gt;  [39] Matrix_1.7-6              R6_2.6.1                 </span></span>
-<span><span class="co">#&gt;  [41] fastmap_1.2.0             GenomeInfoDbData_1.2.13  </span></span>
-<span><span class="co">#&gt;  [43] digest_0.6.39             siggenes_1.80.0          </span></span>
-<span><span class="co">#&gt;  [45] reshape_0.8.10            minfiData_0.52.0         </span></span>
-<span><span class="co">#&gt;  [47] AnnotationDbi_1.68.0      irlba_2.3.7              </span></span>
-<span><span class="co">#&gt;  [49] ExperimentHub_2.14.0      geneplotter_1.84.0       </span></span>
-<span><span class="co">#&gt;  [51] textshaping_1.0.5         RSQLite_3.53.3           </span></span>
-<span><span class="co">#&gt;  [53] base64_2.0.2              filelock_1.0.3           </span></span>
-<span><span class="co">#&gt;  [55] httr_1.4.8                abind_1.4-8              </span></span>
-<span><span class="co">#&gt;  [57] compiler_4.4.2            beanplot_1.3.1           </span></span>
-<span><span class="co">#&gt;  [59] rngtools_1.5.2            doParallel_1.0.17        </span></span>
-<span><span class="co">#&gt;  [61] bit64_4.8.2               BiocParallel_1.40.2      </span></span>
-<span><span class="co">#&gt;  [63] DBI_1.3.0                 gplots_3.3.0             </span></span>
-<span><span class="co">#&gt;  [65] HDF5Array_1.34.0          MASS_7.3-66              </span></span>
-<span><span class="co">#&gt;  [67] openssl_2.4.2             rappdirs_0.3.4           </span></span>
-<span><span class="co">#&gt;  [69] DelayedArray_0.32.0       rjson_0.2.23             </span></span>
-<span><span class="co">#&gt;  [71] caTools_1.18.4            gtools_3.9.5             </span></span>
-<span><span class="co">#&gt;  [73] tools_4.4.2               otel_0.2.0               </span></span>
-<span><span class="co">#&gt;  [75] rentrez_1.2.4             glue_1.8.1               </span></span>
-<span><span class="co">#&gt;  [77] quadprog_1.5-8            restfulr_0.0.17          </span></span>
-<span><span class="co">#&gt;  [79] nlme_3.1-170              rhdf5filters_1.18.1      </span></span>
-<span><span class="co">#&gt;  [81] grid_4.4.2                cluster_2.1.8.3          </span></span>
-<span><span class="co">#&gt;  [83] generics_0.1.4            tzdb_0.5.0               </span></span>
-<span><span class="co">#&gt;  [85] preprocessCore_1.68.0     tidyr_1.3.2              </span></span>
-<span><span class="co">#&gt;  [87] data.table_1.18.4         hms_1.1.4                </span></span>
-<span><span class="co">#&gt;  [89] xml2_1.6.0                BiocVersion_3.20.0       </span></span>
-<span><span class="co">#&gt;  [91] pillar_1.11.1             limma_3.62.2             </span></span>
-<span><span class="co">#&gt;  [93] genefilter_1.88.0         splines_4.4.2            </span></span>
-<span><span class="co">#&gt;  [95] dplyr_1.2.1               BiocFileCache_2.14.0     </span></span>
-<span><span class="co">#&gt;  [97] lattice_0.22-9            survival_3.8-9           </span></span>
-<span><span class="co">#&gt;  [99] rtracklayer_1.66.0        bit_4.6.0                </span></span>
-<span><span class="co">#&gt; [101] GEOquery_2.74.0           annotate_1.84.0          </span></span>
-<span><span class="co">#&gt; [103] tidyselect_1.2.1          knitr_1.51               </span></span>
-<span><span class="co">#&gt; [105] bookdown_0.47             xfun_0.60                </span></span>
-<span><span class="co">#&gt; [107] scrime_1.3.7              statmod_1.5.2            </span></span>
-<span><span class="co">#&gt; [109] UCSC.utils_1.2.0          yaml_2.3.12              </span></span>
-<span><span class="co">#&gt; [111] evaluate_1.0.5            codetools_0.2-20         </span></span>
-<span><span class="co">#&gt; [113] tibble_3.3.1              BiocManager_1.30.27      </span></span>
-<span><span class="co">#&gt; [115] cli_3.6.6                 xtable_1.8-8             </span></span>
-<span><span class="co">#&gt; [117] systemfonts_1.3.2         jquerylib_0.1.4          </span></span>
-<span><span class="co">#&gt; [119] Rcpp_1.1.2                dbplyr_2.6.0             </span></span>
-<span><span class="co">#&gt; [121] png_0.1-9                 XML_3.99-0.23            </span></span>
-<span><span class="co">#&gt; [123] pkgdown_2.2.1             readr_2.2.0              </span></span>
-<span><span class="co">#&gt; [125] blob_1.3.0                mclust_6.1.3             </span></span>
-<span><span class="co">#&gt; [127] doRNG_1.8.6.3             sparseMatrixStats_1.18.0 </span></span>
-<span><span class="co">#&gt; [129] bitops_1.1-0              illuminaio_0.48.0        </span></span>
-<span><span class="co">#&gt; [131] purrr_1.2.2               crayon_1.5.3             </span></span>
-<span><span class="co">#&gt; [133] rlang_1.3.0               KEGGREST_1.46.0</span></span></code></pre>
+<span><span class="co">#&gt;   [1] splines_4.6.1             BiocIO_1.23.3            </span></span>
+<span><span class="co">#&gt;   [3] bitops_1.1-0              filelock_1.0.3           </span></span>
+<span><span class="co">#&gt;   [5] tibble_3.3.1              preprocessCore_1.75.0    </span></span>
+<span><span class="co">#&gt;   [7] XML_3.99-0.23             lifecycle_1.0.5          </span></span>
+<span><span class="co">#&gt;   [9] httr2_1.3.0               doParallel_1.0.17        </span></span>
+<span><span class="co">#&gt;  [11] lattice_0.22-9            MASS_7.3-66              </span></span>
+<span><span class="co">#&gt;  [13] base64_2.0.2              scrime_1.3.7             </span></span>
+<span><span class="co">#&gt;  [15] magrittr_2.0.5            limma_3.69.2             </span></span>
+<span><span class="co">#&gt;  [17] sass_0.4.10               rmarkdown_2.31           </span></span>
+<span><span class="co">#&gt;  [19] jquerylib_0.1.4           yaml_2.3.12              </span></span>
+<span><span class="co">#&gt;  [21] otel_0.2.0                doRNG_1.8.6.3            </span></span>
+<span><span class="co">#&gt;  [23] askpass_1.2.1             DBI_1.3.0                </span></span>
+<span><span class="co">#&gt;  [25] RColorBrewer_1.1-3        abind_1.4-8              </span></span>
+<span><span class="co">#&gt;  [27] quadprog_1.5-8            purrr_1.2.2              </span></span>
+<span><span class="co">#&gt;  [29] RCurl_1.98-1.19           rappdirs_0.3.4           </span></span>
+<span><span class="co">#&gt;  [31] ggrepel_0.9.8             irlba_2.3.7              </span></span>
+<span><span class="co">#&gt;  [33] rentrez_1.2.4             genefilter_1.95.0        </span></span>
+<span><span class="co">#&gt;  [35] annotate_1.91.0           pkgdown_2.2.1            </span></span>
+<span><span class="co">#&gt;  [37] DelayedMatrixStats_1.35.0 codetools_0.2-20         </span></span>
+<span><span class="co">#&gt;  [39] DelayedArray_0.39.4       xml2_1.6.0               </span></span>
+<span><span class="co">#&gt;  [41] tidyselect_1.2.1          farver_2.1.2             </span></span>
+<span><span class="co">#&gt;  [43] beanplot_1.3.1            BiocFileCache_3.3.0      </span></span>
+<span><span class="co">#&gt;  [45] dynamicTreeCut_1.63-1     illuminaio_0.55.0        </span></span>
+<span><span class="co">#&gt;  [47] GenomicAlignments_1.49.1  jsonlite_2.0.0           </span></span>
+<span><span class="co">#&gt;  [49] multtest_2.69.0           survival_3.8-9           </span></span>
+<span><span class="co">#&gt;  [51] systemfonts_1.3.2         tools_4.6.1              </span></span>
+<span><span class="co">#&gt;  [53] ragg_1.5.2                Rcpp_1.1.2               </span></span>
+<span><span class="co">#&gt;  [55] glue_1.8.1                SparseArray_1.13.2       </span></span>
+<span><span class="co">#&gt;  [57] BiocBaseUtils_1.15.1      xfun_0.60                </span></span>
+<span><span class="co">#&gt;  [59] dplyr_1.2.1               HDF5Array_1.41.1         </span></span>
+<span><span class="co">#&gt;  [61] BiocManager_1.30.27       fastmap_1.2.0            </span></span>
+<span><span class="co">#&gt;  [63] rhdf5filters_1.25.4       openssl_2.4.2            </span></span>
+<span><span class="co">#&gt;  [65] caTools_1.18.4            digest_0.6.39            </span></span>
+<span><span class="co">#&gt;  [67] R6_2.6.1                  textshaping_1.0.5        </span></span>
+<span><span class="co">#&gt;  [69] RPMM_1.25                 gtools_3.9.5             </span></span>
+<span><span class="co">#&gt;  [71] RSQLite_3.53.3            cigarillo_1.3.1          </span></span>
+<span><span class="co">#&gt;  [73] h5mread_1.5.0             minfiData_0.59.0         </span></span>
+<span><span class="co">#&gt;  [75] tidyr_1.3.2               data.table_1.18.4        </span></span>
+<span><span class="co">#&gt;  [77] rtracklayer_1.73.0        httr_1.4.8               </span></span>
+<span><span class="co">#&gt;  [79] htmlwidgets_1.6.4         S4Arrays_1.13.0          </span></span>
+<span><span class="co">#&gt;  [81] pkgconfig_2.0.3           gtable_0.3.6             </span></span>
+<span><span class="co">#&gt;  [83] blob_1.3.0                S7_0.2.2                 </span></span>
+<span><span class="co">#&gt;  [85] siggenes_1.87.0           impute_1.87.0            </span></span>
+<span><span class="co">#&gt;  [87] htmltools_0.5.9           bookdown_0.47            </span></span>
+<span><span class="co">#&gt;  [89] geneplotter_1.91.0        scales_1.4.0             </span></span>
+<span><span class="co">#&gt;  [91] png_0.1-9                 knitr_1.51               </span></span>
+<span><span class="co">#&gt;  [93] tzdb_0.5.0                rjson_0.2.23             </span></span>
+<span><span class="co">#&gt;  [95] nlme_3.1-170              curl_7.1.0               </span></span>
+<span><span class="co">#&gt;  [97] cachem_1.1.0              rhdf5_2.57.9             </span></span>
+<span><span class="co">#&gt;  [99] KernSmooth_2.23-26        BiocVersion_3.24.0       </span></span>
+<span><span class="co">#&gt; [101] AnnotationDbi_1.75.2      restfulr_0.0.17          </span></span>
+<span><span class="co">#&gt; [103] desc_1.4.3                GEOquery_2.81.28         </span></span>
+<span><span class="co">#&gt; [105] pillar_1.11.1             grid_4.6.1               </span></span>
+<span><span class="co">#&gt; [107] reshape_0.8.10            vctrs_0.7.3              </span></span>
+<span><span class="co">#&gt; [109] gplots_3.3.0              ENmix_1.49.3             </span></span>
+<span><span class="co">#&gt; [111] dbplyr_2.6.0              xtable_1.8-8             </span></span>
+<span><span class="co">#&gt; [113] cluster_2.1.8.3           evaluate_1.0.5           </span></span>
+<span><span class="co">#&gt; [115] readr_2.2.0               GenomicFeatures_1.65.0   </span></span>
+<span><span class="co">#&gt; [117] cli_3.6.6                 compiler_4.6.1           </span></span>
+<span><span class="co">#&gt; [119] Rsamtools_2.29.0          rlang_1.3.0              </span></span>
+<span><span class="co">#&gt; [121] crayon_1.5.3              rngtools_1.5.2           </span></span>
+<span><span class="co">#&gt; [123] nor1mix_1.3-3             mclust_6.1.3             </span></span>
+<span><span class="co">#&gt; [125] plyr_1.8.9                fs_2.1.0                 </span></span>
+<span><span class="co">#&gt; [127] BiocParallel_1.47.0       Matrix_1.7-6             </span></span>
+<span><span class="co">#&gt; [129] ExperimentHub_3.3.0       hms_1.1.4                </span></span>
+<span><span class="co">#&gt; [131] sparseMatrixStats_1.25.0  bit64_4.8.2              </span></span>
+<span><span class="co">#&gt; [133] ggplot2_4.0.3             Rhdf5lib_2.1.0           </span></span>
+<span><span class="co">#&gt; [135] KEGGREST_1.53.6           statmod_1.5.2            </span></span>
+<span><span class="co">#&gt; [137] AnnotationHub_4.3.2       memoise_2.0.1            </span></span>
+<span><span class="co">#&gt; [139] bslib_0.12.0              bit_4.6.0</span></span></code></pre>
 <div class="section level3">
 <h3 id="asking-for-help">Asking for help<a class="anchor" aria-label="anchor" href="#asking-for-help"></a>
 </h3>
@@ -823,20 +836,18 @@ information.</p>
 <div class="section level2">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-minfi" class="csl-entry">
-Aryee, Martin J, Andrew E Jaffe, Hector Corrada Bravo, Christine
-Ladd-Acosta, Andrew P Feinberg, Kasper D Hansen, and Rafael A Irizarry.
-2014. <span>“<span class="nocase">Minfi: a flexible and comprehensive
+Aryee, Martin J, Andrew E Jaffe, Hector Corrada Bravo, et al. 2014.
+<span>“<span class="nocase">Minfi: a flexible and comprehensive
 Bioconductor package for the analysis of Infinium DNA methylation
 microarrays</span>.”</span> <em>Bioinformatics</em> 30 (10): 1363–69. <a href="https://doi.org/10.1093/bioinformatics/btu049" class="external-link">https://doi.org/10.1093/bioinformatics/btu049</a>.
 </div>
 <div id="ref-funnorm" class="csl-entry">
-Fortin, Jean-Philippe, Aurélie Labbe, Mathieu Lemire, Brent W Zanke,
-Thomas J Hudson, Elana J Frtig, Celia MT Greenwood, and Kasper D Hansen.
-2014. <span>“<span class="nocase">Functional normalization of 450k
-methylation array data improves replication in large cancer
-studies</span>.”</span> <em>Genome Biology</em> 15 (11): 503. <a href="https://doi.org/10.1186/s13059-014-0503-2" class="external-link">https://doi.org/10.1186/s13059-014-0503-2</a>.
+Fortin, Jean-Philippe, Aurélie Labbe, Mathieu Lemire, et al. 2014.
+<span>“<span class="nocase">Functional normalization of 450k methylation
+array data improves replication in large cancer studies</span>.”</span>
+<em>Genome Biology</em> 15 (11): 503. <a href="https://doi.org/10.1186/s13059-014-0503-2" class="external-link">https://doi.org/10.1186/s13059-014-0503-2</a>.
 </div>
 <div id="ref-minfiEPIC" class="csl-entry">
 Fortin, Jean-Philippe, Timothy Triche Jr., and Kasper D Hansen. 2017.
@@ -864,9 +875,9 @@ data</span>.”</span> <em>BMC Genomics</em> 14: 293. <a href="https://doi.org/1
 </div>
 <div id="ref-quantile" class="csl-entry">
 Touleimat, Nizar, and Jörg Tost. 2012. <span>“Complete Pipeline for
-Infinium() <span>Human</span> <span>Methylation</span> <span>450K</span>
-<span>BeadChip</span> Data Processing Using Subset Quantile
-Normalization for Accurate <span>DNA</span> Methylation
+Infinium(®) <span>Human</span> <span>Methylation</span>
+<span>450K</span> <span>BeadChip</span> Data Processing Using Subset
+Quantile Normalization for Accurate <span>DNA</span> Methylation
 Estimation.”</span> <em>Epigenomics</em> 4 (3): 325–41. <a href="https://doi.org/10.2217/epi.12.21" class="external-link">https://doi.org/10.2217/epi.12.21</a>.
 </div>
 <div id="ref-noob" class="csl-entry">
@@ -894,7 +905,7 @@ pipelines</span>.”</span> <em>Clinical Epigenetics</em> 13 (1): 216. <a href="
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Paul Ruiz.</p>
+<p>Developed by Paul Ruiz Pinto.</p>
 </div>
 
 <div class="pkgdown">

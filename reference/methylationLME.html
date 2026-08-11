@@ -96,7 +96,8 @@ in workbook metadata.</p>
 <span>  timeVar <span class="op">=</span> <span class="st">"Timepoint"</span>,</span>
 <span>  phenotypes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DASS_Depression"</span>, <span class="st">"DASS_Anxiety"</span>, <span class="st">"DASS_Stress"</span>, <span class="st">"PCL5_TotalScore"</span>,</span>
 <span>    <span class="st">"MHCSF_TotalScore"</span>, <span class="st">"BRS_TotalScore"</span><span class="op">)</span>,</span>
-<span>  covariates <span class="op">=</span> <span class="st">"Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells"</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,"</span>,</span>
+<span>    <span class="st">"Epithelial.cells"</span><span class="op">)</span>,</span>
 <span>  factorVars <span class="op">=</span> <span class="st">"Sex,Ethnicity,TraumaDefinition"</span>,</span>
 <span>  scaleVars <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  lmeLibs <span class="op">=</span> <span class="st">"lme4,lmerTest"</span>,</span>
@@ -115,6 +116,10 @@ in workbook metadata.</p>
 <span>  interactionTerm <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  omnibusTest <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  omnibusDdf <span class="op">=</span> <span class="st">"Satterthwaite"</span>,</span>
+<span>  vennDPhenotypes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  vennDLabels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  vennDOmnibusPhenotypes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  vennDOmnibusLabels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  saveSignificantInteractions <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  significantInteractionDir <span class="op">=</span> <span class="st">"preliminaryResults/cpgs/methylationLME"</span>,</span>
 <span>  significantInteractionPval <span class="op">=</span> <span class="fl">0.05</span>,</span>
@@ -126,6 +131,7 @@ in workbook metadata.</p>
 <span>  annotationPackage <span class="op">=</span> <span class="st">"IlluminaHumanMethylationEPICv2anno.20a1.hg38"</span>,</span>
 <span>  annotationCols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Name"</span>, <span class="st">"chr"</span>, <span class="st">"pos"</span>, <span class="st">"UCSC_RefGene_Group"</span>, <span class="st">"UCSC_RefGene_Name"</span>,</span>
 <span>    <span class="st">"Relation_to_Island"</span>, <span class="st">"GencodeV41_Group"</span><span class="op">)</span>,</span>
+<span>  gencodeHub <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  annotatedLMEOut <span class="op">=</span> <span class="st">"data/methylationLME"</span>,</span>
 <span>  reportAssetsDir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  display <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -284,6 +290,28 @@ the lmerTest/lme4 engine.</p></dd>
 omnibus F test. One of <code>'Satterthwaite'</code> or <code>'Kenward-Roger'</code>.</p></dd>
 
 
+<dt id="arg-venndphenotypes">vennDPhenotypes<a class="anchor" aria-label="anchor" href="#arg-venndphenotypes"></a></dt>
+<dd><p>Character vector, comma-separated phenotype names, or
+<code>NULL</code>. Selected phenotypes are expanded to all coefficient p-value
+columns for model-level Venn diagrams and workbook tables.</p></dd>
+
+
+<dt id="arg-venndlabels">vennDLabels<a class="anchor" aria-label="anchor" href="#arg-venndlabels"></a></dt>
+<dd><p>Character vector, comma-separated display labels, or
+<code>NULL</code>. Labels follow the resolved coefficient order and preserve case.</p></dd>
+
+
+<dt id="arg-venndomnibusphenotypes">vennDOmnibusPhenotypes<a class="anchor" aria-label="anchor" href="#arg-venndomnibusphenotypes"></a></dt>
+<dd><p>Character vector, comma-separated phenotype
+names, or <code>NULL</code>. These use only omnibus p-value columns and require
+<code>omnibusTest = TRUE</code>.</p></dd>
+
+
+<dt id="arg-venndomnibuslabels">vennDOmnibusLabels<a class="anchor" aria-label="anchor" href="#arg-venndomnibuslabels"></a></dt>
+<dd><p>Character vector, comma-separated display labels,
+or <code>NULL</code>, supplied in the resolved omnibus phenotype order.</p></dd>
+
+
 <dt id="arg-savesignificantinteractions">saveSignificantInteractions<a class="anchor" aria-label="anchor" href="#arg-savesignificantinteractions"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, collect coefficient
 tables for CpGs passing <code>significantInteractionPval</code> in the returned object
@@ -339,6 +367,12 @@ to append to the combined LME summary table. Available columns depend on
 the selected annotation package.</p></dd>
 
 
+<dt id="arg-gencodehub">gencodeHub<a class="anchor" aria-label="anchor" href="#arg-gencodehub"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, append release-aware GENCODE gene-body
+and nearest-TSS annotations obtained through AnnotationHub. The selected
+array annotation must use GRCh38 coordinates.</p></dd>
+
+
 <dt id="arg-annotatedlmeout">annotatedLMEOut<a class="anchor" aria-label="anchor" href="#arg-annotatedlmeout"></a></dt>
 <dd><p>Character. Directory used for the optional annotated
 LME
@@ -387,6 +421,15 @@ containing the merged longitudinal phenotype-plus-methylation analysis table
 and
 modeling metadata.</p></dd>
 
+<dt>distributionPlots</dt>
+<dd><p>Distributions of the model variables,
+longitudinal observation counts, time values, and numeric phenotype
+trajectories.</p></dd>
+
+<dt>designPlots</dt>
+<dd><p>Missingness and numeric-correlation plots for the
+variables used in the model.</p></dd>
+
 <dt>modelFits</dt>
 <dd><p>Object returned by <code><a href="fitMethylationLMEModels.html">fitMethylationLMEModels()</a></code>
 containing compact per-phenotype coefficient, omnibus, and condition
@@ -412,6 +455,14 @@ objects and any written TIFF files.</p></dd>
 <code><a href="annotateMethylationLMESummaries.html">annotateMethylationLMESummaries()</a></code> containing the annotated combined
 summary table.</p></dd>
 
+<dt>manhattanPlots</dt>
+<dd><p>Versioned circular and rectangular Manhattan plots
+for every raw p-value column in the annotated results.</p></dd>
+
+<dt>vennDPlots</dt>
+<dd><p>Requested coefficient and omnibus model-level Venn plots,
+worksheet tables, and label mappings.</p></dd>
+
 <dt>savedFiles</dt>
 <dd><p>Object returned by
 <code><a href="writeMethylationLMEOutputs.html">writeMethylationLMEOutputs()</a></code> when <code>saveOutputs = TRUE</code>, otherwise
@@ -433,7 +484,10 @@ internal response-column name, and longitudinal time variable.</p></dd>
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"IlluminaHumanMethylation450kanno.ilmn12.hg19"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        <span class="st">"IlluminaHumanMethylation450kanno.ilmn12.hg19"</span>,</span></span>
+<span class="r-in"><span>        quietly <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
 <span class="r-in"><span>        <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"lmerTest"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>    <span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span></span>
@@ -480,7 +534,7 @@ internal response-column name, and longitudinal time variable.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Paul Ruiz.</p>
+  <p></p><p>Developed by Paul Ruiz Pinto.</p>
 </div>
 
 <div class="pkgdown">

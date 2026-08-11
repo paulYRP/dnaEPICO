@@ -140,13 +140,13 @@ containing the paths written to disk.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">dnaEPICO</span><span class="fu">:::</span><span class="fu">examplePreprocessingPhenoStateDnaEpico</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">output_paths</span> <span class="op">&lt;-</span> <span class="fu">writePreprocessingPhenoOutputs</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    preprocessingData <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">preprocessingData</span>,</span></span>
-<span class="r-in"><span>    outputPheno <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"pheno"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    outputRData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"metrics"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    outputRDataMerge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"merge"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"clock"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
-<span class="r-in"><span>    logs <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span>  preprocessingData <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">preprocessingData</span>,</span></span>
+<span class="r-in"><span>  outputPheno <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"pheno"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  outputRData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"metrics"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  outputRDataMerge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"merge"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"clock"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  logs <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">output_paths</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "timepoints"               "combinedPheno"           </span>
@@ -165,7 +165,7 @@ containing the paths written to disk.</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Paul Ruiz.</p>
+  <p></p><p>Developed by Paul Ruiz Pinto.</p>
 </div>
 
 <div class="pkgdown">

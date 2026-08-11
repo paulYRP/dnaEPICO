@@ -94,7 +94,8 @@ metadata.</p>
 <span>  outputPlots <span class="op">=</span> <span class="st">"figures/methylationGLM"</span>,</span>
 <span>  phenotypes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DASS_Depression"</span>, <span class="st">"DASS_Anxiety"</span>, <span class="st">"DASS_Stress"</span>, <span class="st">"PCL5_TotalScore"</span>,</span>
 <span>    <span class="st">"MHCSF_TotalScore"</span>, <span class="st">"BRS_TotalScore"</span><span class="op">)</span>,</span>
-<span>  covariates <span class="op">=</span> <span class="st">"Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells"</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,"</span>,</span>
+<span>    <span class="st">"Epithelial.cells"</span><span class="op">)</span>,</span>
 <span>  factorVars <span class="op">=</span> <span class="st">"Sex,Ethnicity,TraumaDefinition"</span>,</span>
 <span>  scaleVars <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cpgPrefix <span class="op">=</span> <span class="st">"cg"</span>,</span>
@@ -106,6 +107,10 @@ metadata.</p>
 <span>  plotDPI <span class="op">=</span> <span class="fl">150</span>,</span>
 <span>  interactionTerm <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  omnibusTest <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  vennDPhenotypes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  vennDLabels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  vennDOmnibusPhenotypes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  vennDOmnibusLabels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  libPath <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  glmLibs <span class="op">=</span> <span class="st">"glm2"</span>,</span>
 <span>  prsMap <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -122,6 +127,7 @@ metadata.</p>
 <span>  annotationPackage <span class="op">=</span> <span class="st">"IlluminaHumanMethylationEPICv2anno.20a1.hg38"</span>,</span>
 <span>  annotationCols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Name"</span>, <span class="st">"chr"</span>, <span class="st">"pos"</span>, <span class="st">"UCSC_RefGene_Group"</span>, <span class="st">"UCSC_RefGene_Name"</span>,</span>
 <span>    <span class="st">"Relation_to_Island"</span>, <span class="st">"GencodeV41_Group"</span><span class="op">)</span>,</span>
+<span>  gencodeHub <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  annotatedGLMOut <span class="op">=</span> <span class="st">"data/methylationGLM"</span>,</span>
 <span>  reportAssetsDir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  display <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -228,6 +234,28 @@ when <code>interactionTerm = NULL</code>, once per CpG. One-degree-of-freedom te
 are tested and therefore reproduce the corresponding coefficient p-value.</p></dd>
 
 
+<dt id="arg-venndphenotypes">vennDPhenotypes<a class="anchor" aria-label="anchor" href="#arg-venndphenotypes"></a></dt>
+<dd><p>Character vector, comma-separated phenotype names, or
+<code>NULL</code>. Selected phenotypes are expanded to all coefficient p-value
+columns for model-level Venn diagrams and workbook tables.</p></dd>
+
+
+<dt id="arg-venndlabels">vennDLabels<a class="anchor" aria-label="anchor" href="#arg-venndlabels"></a></dt>
+<dd><p>Character vector, comma-separated display labels, or
+<code>NULL</code>. Labels follow the resolved coefficient order and preserve case.</p></dd>
+
+
+<dt id="arg-venndomnibusphenotypes">vennDOmnibusPhenotypes<a class="anchor" aria-label="anchor" href="#arg-venndomnibusphenotypes"></a></dt>
+<dd><p>Character vector, comma-separated phenotype
+names, or <code>NULL</code>. These use only omnibus p-value columns and require
+<code>omnibusTest = TRUE</code>.</p></dd>
+
+
+<dt id="arg-venndomnibuslabels">vennDOmnibusLabels<a class="anchor" aria-label="anchor" href="#arg-venndomnibuslabels"></a></dt>
+<dd><p>Character vector, comma-separated display labels,
+or <code>NULL</code>, supplied in the resolved omnibus phenotype order.</p></dd>
+
+
 <dt id="arg-libpath">libPath<a class="anchor" aria-label="anchor" href="#arg-libpath"></a></dt>
 <dd><p>Character vector or <code>NULL</code>. Optional library paths forwarded
 to
@@ -309,6 +337,12 @@ to append to the combined GLM summary table. Available columns depend on
 the selected annotation package.</p></dd>
 
 
+<dt id="arg-gencodehub">gencodeHub<a class="anchor" aria-label="anchor" href="#arg-gencodehub"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, append release-aware GENCODE gene-body
+and nearest-TSS annotations obtained through AnnotationHub. The selected
+array annotation must use GRCh38 coordinates.</p></dd>
+
+
 <dt id="arg-annotatedglmout">annotatedGLMOut<a class="anchor" aria-label="anchor" href="#arg-annotatedglmout"></a></dt>
 <dd><p>Character. Directory used for the optional annotated
 GLM summary XLSX workbook.</p></dd>
@@ -360,6 +394,10 @@ metadata.</p></dd>
 <code><a href="plotMethylationGLMDistributions.html">plotMethylationGLMDistributions()</a></code> describing any exploratory plots that
 were generated or written.</p></dd>
 
+<dt>designPlots</dt>
+<dd><p>Missingness and numeric-correlation plots for the
+variables used in the model.</p></dd>
+
 <dt>modelFits</dt>
 <dd><p>Object returned by <code><a href="fitMethylationGLMModels.html">fitMethylationGLMModels()</a></code>
 containing compact per-phenotype coefficient, omnibus, and condition
@@ -385,6 +423,14 @@ and any written TIFF files.</p></dd>
 <code><a href="annotateMethylationGLMSummaries.html">annotateMethylationGLMSummaries()</a></code> containing the annotated combined
 summary table.</p></dd>
 
+<dt>manhattanPlots</dt>
+<dd><p>Versioned circular and rectangular Manhattan plots
+for every raw p-value column in the annotated results.</p></dd>
+
+<dt>vennDPlots</dt>
+<dd><p>Requested coefficient and omnibus model-level Venn plots,
+worksheet tables, and label mappings.</p></dd>
+
 <dt>savedFiles</dt>
 <dd><p>Object returned by <code><a href="writeMethylationGLMOutputs.html">writeMethylationGLMOutputs()</a></code> when
 <code>saveOutputs = TRUE</code>, otherwise <code>NULL</code>.</p></dd>
@@ -404,7 +450,10 @@ internal response-column name.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"IlluminaHumanMethylation450kanno.ilmn12.hg19"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"IlluminaHumanMethylation450kanno.ilmn12.hg19"</span>,</span></span>
+<span class="r-in"><span>    quietly <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>    <span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="va">toy_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tmp</span>, <span class="st">"phenoBT1.RData"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="va">phenoBT1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
@@ -447,7 +496,7 @@ internal response-column name.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Paul Ruiz.</p>
+  <p></p><p>Developed by Paul Ruiz Pinto.</p>
 </div>
 
 <div class="pkgdown">
