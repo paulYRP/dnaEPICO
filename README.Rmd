@@ -11,6 +11,7 @@ output: github_document
 [![GitHub pulls](https://img.shields.io/github/issues-pr/paulYRP/dnaEPICO)](https://github.com/paulYRP/dnaEPICO/pulls)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![codecov](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg?token=5ZD6K3SMHB)](https://codecov.io/gh/paulYRP/dnaEPICO)
+[![DOI](https://img.shields.io/badge/DOI-10.18129%2FB9.bioc.dnaEPICO-green.svg)](https://bioconductor.org/packages/3.24/bioc/html/dnaEPICO.html)
 
 <!-- badges: end -->
 

@@ -19,7 +19,7 @@ Description:
 License: AGPL-3 + file LICENSE
 URL: https://github.com/paulYRP/dnaEPICO
 BugReports: https://github.com/paulYRP/dnaEPICO/issues
-Depends: R (>= 4.6.0)
+Depends: R (>= 4.4)
 Imports:
     AnnotationHub,
     Biobase,

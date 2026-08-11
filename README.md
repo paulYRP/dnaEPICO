@@ -12,6 +12,7 @@ pulls](https://img.shields.io/github/issues-pr/paulYRP/dnaEPICO)](https://github
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![codecov](https://codecov.io/gh/paulYRP/dnaEPICO/graph/badge.svg?token=5ZD6K3SMHB)](https://codecov.io/gh/paulYRP/dnaEPICO)
+[![DOI](https://img.shields.io/badge/DOI-10.18129%2FB9.bioc.dnaEPICO-green.svg)](https://bioconductor.org/packages/3.24/bioc/html/dnaEPICO.html)
 
 <!-- badges: end -->
 
@@ -75,7 +76,7 @@ print(citation("dnaEPICO"), bibtex = TRUE)
     ## 
     ##   Ruiz P (2026). "dnaEPICO: Analysis Pipeline for Illumina DNA
     ##   Methylation Array Data." _Epigenomes_. doi:10.3390/epigenomes9040039
-    ##   <https://doi.org/10.3390/epigenomes9040039>,
+    ##   <https://doi.org/10.3390/epigenomes9040039>.
     ##   <https://github.com/paulYRP/dnaEPICO>.
     ## 
     ## A BibTeX entry for LaTeX users is
@@ -102,7 +103,7 @@ agree to follow its terms.
 
 - [GitHub Actions](https://github.com/paulYRP/dnaEPICO/actions) runs
   package checks with Bioconductor containers and
-  *[BiocCheck](https://bioconductor.org/packages/3.20/BiocCheck)*.
+  *[BiocCheck](https://bioconductor.org/packages/3.24/BiocCheck)*.
 - [Codecov](https://codecov.io/gh/paulYRP/dnaEPICO) and
   *[covr](https://CRAN.R-project.org/package=covr)* report code
   coverage.
@@ -114,4 +115,4 @@ agree to follow its terms.
   package documentation.
 
 This package was developed using
-*[biocthis](https://bioconductor.org/packages/3.20/biocthis)*.
+*[biocthis](https://bioconductor.org/packages/3.24/biocthis)*.
