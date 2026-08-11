@@ -144,7 +144,9 @@ runPreprocessingPhenoDnaEpico <- function(config) {
 #' @param outputRDataMerge Character. Directory used for saved merged
 #'   phenotype-plus-methylation `.RData` files when `saveOutputs = TRUE`.
 #' @param sexColumn Character. Name of the phenotype sex column used when
-#'   building Clock Foundation exports.
+#'   building Clock Foundation exports. Values are preserved as supplied,
+#'   including missing, blank, unknown, or other character values; `PredSex` is
+#'   not substituted.
 #' @param outputLogs Character. Directory used for log files when `logs = TRUE`.
 #' @param outputDir Character. Directory used for Clock Foundation export files
 #'   when `saveOutputs = TRUE`.
@@ -170,7 +172,8 @@ runPreprocessingPhenoDnaEpico <- function(config) {
 #'   or `NULL` when `combineTimepoints = NULL`.}
 #'   \item{clockFoundation}{Object returned by
 #'   [buildClockFoundationInputsPreprocessingPheno()] containing the beta table
-#'   and phenotype table prepared for Clock Foundation export.}
+#'   and phenotype table prepared for Clock Foundation export, with the sex
+#'   column preserved as supplied.}
 #' \item{savedFiles}{Object returned by [writePreprocessingPhenoOutputs()] when
 #'   `saveOutputs = TRUE`, otherwise `NULL`.}
 #'   \item{logFile}{Resolved path to the optional log file, or `NULL` when

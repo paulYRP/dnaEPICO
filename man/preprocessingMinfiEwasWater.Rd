@@ -105,7 +105,9 @@ normalization methods. Supported values are \code{'adjustedfunnorm'},
 \code{'funnorm'}, \code{'illumina'}, \code{'quantile'}, and \code{'swan'}.}
 
 \item{sexColumn}{Character. Name of the phenotype column containing reported
-sex.}
+sex. Sex-aware normalization methods use \code{PredSex} when this column is
+missing, blank, unknown, unsupported, or otherwise not coded as female or
+male. Every substitution is recorded without overwriting this column.}
 
 \item{removeSexMismatch}{Logical. If \code{TRUE}, remove samples whose reported
 sex and methylation-predicted sex are both known and disagree. Missing or
@@ -178,10 +180,12 @@ raw \code{MSet}, \code{RatioSet}, and genome-mapped object derived from \code{RG
 \item{assessment}{Object returned by \code{\link[=assessSamplesMinfiEwasWater]{assessSamplesMinfiEwasWater()}}
 containing detection P values, QC summaries, and failed-sample tracking.}
 \item{sexData}{Object returned by \code{\link[=predictSexMinfiEwasWater]{predictSexMinfiEwasWater()}} containing
-predicted sex labels, mismatch summaries, plotting data, and the sample IDs
-removed when \code{removeSexMismatch = TRUE}.}
+predicted sex labels, mismatch summaries, normalization-sex provenance,
+plotting data, and the sample IDs removed when
+\code{removeSexMismatch = TRUE}.}
 \item{normData}{Object returned by \code{\link[=normalizeMinfiEwasWater]{normalizeMinfiEwasWater()}} containing
-the selected normalized objects and method metadata.}
+the selected normalized objects, method metadata, and the reported-sex or
+\code{PredSex} value used for each sample.}
 \item{filterData}{Object returned by \code{\link[=filterProbesMinfiEwasWater]{filterProbesMinfiEwasWater()}}
 containing the probe-filtered methylation objects at each filtering stage.}
 \item{metricsData}{Object returned by \code{\link[=extractMetricsMinfiEwasWater]{extractMetricsMinfiEwasWater()}}
@@ -193,7 +197,7 @@ those proportions.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when
 logging was disabled.}
 }
-See \link[=dnaEPICO_preprocessingMinfiEwasWater-class]{dnaEPICO_preprocessingMinfiEwasWater} for a class-level overview.
+See \linkS4class{dnaEPICO_preprocessingMinfiEwasWater} for a class-level overview.
 }
 \description{
 Run the \code{dnaEPICO} preprocessing workflow with the package's
@@ -243,5 +247,5 @@ if (requireNamespace("minfiData", quietly = TRUE) &&
 
 }
 \seealso{
-\link[=dnaEPICO_preprocessingMinfiEwasWater-class]{dnaEPICO_preprocessingMinfiEwasWater}
+\linkS4class{dnaEPICO_preprocessingMinfiEwasWater}
 }

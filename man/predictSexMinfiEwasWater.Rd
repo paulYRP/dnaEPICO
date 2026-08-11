@@ -36,8 +36,9 @@ sex.}
 }
 \value{
 A list with class \code{'dnaEPICO_minfiEwasWater_sex'} containing the sex
-prediction result, aligned phenotype data, plotting data, and mismatch
-table.
+prediction result, aligned phenotype data, plotting data, mismatch table,
+and a \code{sexResolution} audit showing where \code{PredSex} would replace an
+unusable reported value during sex-aware normalization.
 }
 \description{
 Predict sample sex from a genome-mapped methylation object, align the

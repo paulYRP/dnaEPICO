@@ -10,8 +10,10 @@
 #'   \item{RGSet}{Filtered `RGChannelSet` used in downstream preprocessing.}
 #'   \item{rawData}{Object returned by [buildRawMinfiEwasWater()].}
 #'   \item{assessment}{Object returned by [assessSamplesMinfiEwasWater()].}
-#'   \item{sexData}{Object returned by [predictSexMinfiEwasWater()].}
-#'   \item{normData}{Object returned by [normalizeMinfiEwasWater()].}
+#'   \item{sexData}{Object returned by [predictSexMinfiEwasWater()], including
+#'   predicted-sex values and normalization fallback provenance.}
+#'   \item{normData}{Object returned by [normalizeMinfiEwasWater()], including
+#'   the per-sample sex-resolution audit.}
 #'   \item{filterData}{Object returned by [filterProbesMinfiEwasWater()].}
 #'   \item{metricsData}{Object returned by [extractMetricsMinfiEwasWater()].}
 #'   \item{lcData}{Object returned by [estimateLCMinfiEwasWater()].}
@@ -72,7 +74,8 @@ NULL
 #'   [combineTimepointsPreprocessingPheno()], or `NULL` when the combined
 #'   object was skipped.}
 #'   \item{clockFoundation}{Object returned by
-#'   [buildClockFoundationInputsPreprocessingPheno()].}
+#'   [buildClockFoundationInputsPreprocessingPheno()], with original phenotype
+#'   sex values preserved for export.}
 #'   \item{savedFiles}{Object returned by [writePreprocessingPhenoOutputs()]
 #'   when `saveOutputs = TRUE`, otherwise `NULL`.}
 #'   \item{logFile}{Resolved path to the optional log file, or `NULL` when

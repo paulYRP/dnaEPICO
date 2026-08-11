@@ -23,7 +23,9 @@ columns.}
 
 \item{SampleID}{Character. Name of the phenotype sample identifier column.}
 
-\item{sexColumn}{Character. Name of the phenotype sex column.}
+\item{sexColumn}{Character. Name of the phenotype sex column. Its values are
+preserved as supplied, including missing, blank, unknown, or other strings;
+\code{PredSex} is not substituted.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -40,7 +42,8 @@ containing \code{betaCSV} and \code{phenoCF}.
 }
 \description{
 Prepare the beta and phenotype tables commonly exported for Clock Foundation
-style downstream workflows, without writing them to disk.
+style downstream workflows, without writing them to disk. The sex column is
+passed through without validation or recoding.
 }
 \examples{
 ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()

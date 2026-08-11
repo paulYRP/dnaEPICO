@@ -272,6 +272,36 @@ test_that("Clock Foundation input preserves numeric beta values", {
     expect_equal(result$methylationRange$Observed.Maximum, 1)
 })
 
+test_that("Clock Foundation preserves reported sex values without fallback", {
+    sample_ids <- paste0("S", seq_len(6L))
+    beta <- matrix(
+        seq(0.1, 0.6, length.out = 12L),
+        nrow = 2L,
+        dimnames = list(c("cg1", "cg2"), sample_ids)
+    )
+    pheno <- data.frame(
+        Sample_Name = rev(sample_ids),
+        Gender = c(NA, "", "Unknown", "not recorded", "F", "1"),
+        PredSex = c(0L, 1L, 0L, 1L, 1L, 0L),
+        stringsAsFactors = FALSE
+    )
+    expected <- pheno$Gender[match(sample_ids, pheno$Sample_Name)]
+    expected_prediction <- pheno$PredSex[match(sample_ids, pheno$Sample_Name)]
+
+    result <- buildClockFoundationInputsPreprocessingPheno(
+        beta = beta,
+        pheno = pheno,
+        SampleID = "Sample_Name",
+        sexColumn = "Gender",
+        verbose = FALSE,
+        logs = FALSE
+    )
+
+    expect_identical(result$phenoCF$id, sample_ids)
+    expect_identical(result$phenoCF$Gender, expected)
+    expect_identical(result$phenoCF$PredSex, expected_prediction)
+})
+
 test_that("Clock Foundation input rejects ambiguous CpG identifiers", {
     beta <- matrix(
         c(0.1, 0.2, 0.3, 0.4),

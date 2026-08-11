@@ -28,7 +28,8 @@ plotNormalizationMinfiEwasWater(
 \item{targets}{Filtered phenotype data aligned with \code{RGSet}.}
 
 \item{sexColumn}{Character. Name of the phenotype column used to colour the
-density curves.}
+density curves when \code{normData} does not contain resolved normalization sex.
+Otherwise the reported-sex/\code{PredSex} normalization vector is used.}
 
 \item{display}{Logical. If \code{TRUE}, draw the plot on the active graphics
 device.}

@@ -574,38 +574,36 @@ alignClockPhenotypePreprocessingPheno <- function(beta, pheno, SampleID) {
     pheno
 }
 
-clockPhenotypePreprocessingPheno <- function(pheno, SampleID, sexColumn) {
+clockPhenotypePreprocessingPheno <- function(pheno, SampleID) {
     colnames(pheno)[colnames(pheno) == SampleID] <- "id"
-    sex_info <- canonicalizeSexDnaEpico(pheno[[sexColumn]])
-    if (anyNA(sex_info$code)) {
-    if (length(sex_info$unknown)) {
-        unknown_text <- paste(sex_info$unknown, collapse = ", ")
-        message_template <- paste0(
-            "The Clock Foundation sex column contains missing or ",
-            "unsupported values: %s"
-        )
-        stop(sprintf(
-        message_template, unknown_text
-        ), call. = FALSE)
-    }
-    stop("The Clock Foundation sex column contains missing or ",
-        "unsupported values.",
-        call. = FALSE
-    )
-    }
-    pheno[[sexColumn]] <- ifelse(sex_info$code == 0L, "Female", "Male")
     pheno
 }
 
-clockInputLogLinesPreprocessingPheno <- function(betaCSV, phenoCF, range) {
+clockInputLogLinesPreprocessingPheno <- function(
+    betaCSV, phenoCF, range, sexColumn
+) {
     preview_rows <- seq_len(min(nrow(betaCSV), 5L))
     preview_cols <- seq_len(min(ncol(betaCSV), 5L))
+    sex_values <- phenoCF[[sexColumn]]
+    sex_text <- as.character(sex_values)
+    blank <- !is.na(sex_values) & !is.na(sex_text) &
+    !nzchar(trimws(sex_text))
+    displayed_values <- sex_text
+    displayed_values[is.na(sex_values)] <- "<NA>"
+    displayed_values[blank] <- "<blank>"
     c(
     paste("Clock Foundation beta rows:", nrow(betaCSV)),
     paste("Clock Foundation beta cols:", ncol(betaCSV)),
     paste("Clock Foundation pheno rows:", nrow(phenoCF)),
     formatMethylationRangeLogDnaEpico(range),
-    "Sex values were standardized to Female and Male.",
+    paste("Clock Foundation sex column:", sexColumn),
+    paste("Missing sex values preserved:", sum(is.na(sex_values))),
+    paste("Blank sex values preserved:", sum(blank)),
+    paste(
+        "Observed sex values preserved:",
+        paste(unique(displayed_values), collapse = ", ")
+    ),
+    "Sex values were preserved as supplied; PredSex was not substituted.",
     "Preview of Clock Foundation beta table:",
     previewLinesMinfiEwasWater(
         betaCSV[preview_rows, preview_cols, drop = FALSE]
@@ -620,7 +618,9 @@ clockInputLogLinesPreprocessingPheno <- function(betaCSV, phenoCF, range) {
 #'   columns.
 #' @param pheno Phenotype data frame aligned with the beta matrix columns.
 #' @param SampleID Character. Name of the phenotype sample identifier column.
-#' @param sexColumn Character. Name of the phenotype sex column.
+#' @param sexColumn Character. Name of the phenotype sex column. Its values are
+#'   preserved as supplied, including missing, blank, unknown, or other strings;
+#'   `PredSex` is not substituted.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
@@ -644,7 +644,8 @@ clockInputLogLinesPreprocessingPheno <- function(betaCSV, phenoCF, range) {
 #'
 #' @description
 #' Prepare the beta and phenotype tables commonly exported for Clock Foundation
-#' style downstream workflows, without writing them to disk.
+#' style downstream workflows, without writing them to disk. The sex column is
+#' passed through without validation or recoding.
 #'
 #' @export
 buildClockFoundationInputsPreprocessingPheno <- function(
@@ -663,10 +664,10 @@ buildClockFoundationInputsPreprocessingPheno <- function(
     ProbeID = rownames(beta_csv), beta_csv,
     row.names = NULL, stringsAsFactors = FALSE
     )
-    pheno_cf <- clockPhenotypePreprocessingPheno(pheno, SampleID, sexColumn)
+    pheno_cf <- clockPhenotypePreprocessingPheno(pheno, SampleID)
     emitLogMinfiEwasWater(
     clockInputLogLinesPreprocessingPheno(
-        beta_csv, pheno_cf, methylation_range
+        beta_csv, pheno_cf, methylation_range, sexColumn
     ),
     verbose = verbose, log_path = log_path
     )

@@ -25,13 +25,29 @@ test_that("sample identifiers are reordered explicitly and duplicates fail", {
 })
 
 test_that("sex labels are canonicalized without changing reported values", {
-    original <- c("Female", "M", "0", "1", "unknown", NA)
+    original <- c(
+        "Female", "M", "0", "1", "unknown", "", "  ", "N/A",
+        "not recorded", NA
+    )
     result <- dnaEPICO:::canonicalizeSexDnaEpico(original)
 
     expect_identical(result$original, original)
-    expect_identical(result$code, c(0L, 1L, 0L, 1L, NA_integer_, NA_integer_))
-    expect_identical(result$label, c("F", "M", "F", "M", NA, NA))
-    expect_identical(result$unknown, "unknown")
+    expect_identical(
+        result$code,
+        c(0L, 1L, 0L, 1L, rep(NA_integer_, 6L))
+    )
+    expect_identical(
+        result$label,
+        c("F", "M", "F", "M", rep(NA_character_, 6L))
+    )
+    expect_identical(result$unknown, c("unknown", "N/A", "not recorded"))
+    expect_identical(
+        result$status,
+        c(
+            rep("valid", 4L), "missing string", "blank", "blank",
+            "missing string", "unsupported", "NA"
+        )
+    )
     expect_identical(formals(preprocessingMinfiEwasWater)$removeSexMismatch, FALSE)
 
     expect_identical(
@@ -44,6 +60,87 @@ test_that("sex labels are canonicalized without changing reported values", {
         ),
         c("F", "M", "F")
     )
+
+    numeric_result <- dnaEPICO:::canonicalizeSexDnaEpico(c(0, 1, NaN, 2))
+    expect_identical(numeric_result$code, c(0L, 1L, NA_integer_, NA_integer_))
+    expect_identical(
+        numeric_result$status,
+        c("valid", "valid", "NaN", "unsupported")
+    )
+    expect_identical(
+        dnaEPICO:::sexMismatchDnaEpico(
+            c(0L, 1L, NA_integer_), c(0L, 0L, 1L)
+        ),
+        c(FALSE, TRUE, NA)
+    )
+})
+
+test_that("normalization sex fallback is complete and auditable", {
+    col_data <- data.frame(
+        Gender = c("Female", "Unknown", "", "not recorded", NA),
+        PredSex = c(1L, 1L, 0L, 1L, 0L),
+        row.names = paste0("S", seq_len(5L)),
+        stringsAsFactors = FALSE
+    )
+    original_gender <- col_data$Gender
+
+    result <- dnaEPICO:::normalizationSexResolutionDnaEpico(
+        col_data, "Gender"
+    )
+
+    expect_identical(result$sex, c("F", "M", "F", "M", "F"))
+    expect_identical(
+        result$audit$Source,
+        c("reported", rep("PredSex", 4L))
+    )
+    expect_identical(
+        result$audit$FallbackReason,
+        c(NA, "missing string", "blank", "unsupported", "NA")
+    )
+    expect_identical(result$audit$SampleID, paste0("S", seq_len(5L)))
+    expect_identical(col_data$Gender, original_gender)
+})
+
+test_that("sex-aware normalization stops after an unsuccessful fallback", {
+    resolution <- dnaEPICO:::normalizationSexResolutionDnaEpico(
+        data.frame(
+            Gender = c("Female", "Unknown"),
+            PredSex = c(0L, NA_integer_),
+            row.names = c("S1", "S2")
+        ),
+        "Gender"
+    )
+
+    expect_error(
+        dnaEPICO:::validateNormalizationSexResolutionDnaEpico(
+            resolution, "funnorm", "Gender"
+        ),
+        "minfi::preprocessFunnorm\\(\\).*S2"
+    )
+    expect_no_error(
+        dnaEPICO:::validateNormalizationSexResolutionDnaEpico(
+            resolution, c("illumina", "swan"), "Gender"
+        )
+    )
+})
+
+test_that("sex is passed only to normalization backends that accept it", {
+    sex <- c("F", "M")
+    sex_aware <- c("adjustedfunnorm", "funnorm", "quantile")
+    no_sex_argument <- c("illumina", "swan")
+
+    for (method in sex_aware) {
+        arguments <- dnaEPICO:::normalizationMethodArgumentsDnaEpico(
+            matrix(0, nrow = 1L, ncol = 2L), method, sex
+        )
+        expect_identical(arguments$sex, sex)
+    }
+    for (method in no_sex_argument) {
+        arguments <- dnaEPICO:::normalizationMethodArgumentsDnaEpico(
+            matrix(0, nrow = 1L, ncol = 2L), method, sex
+        )
+        expect_false("sex" %in% names(arguments))
+    }
 })
 
 test_that("sex mismatch removal keeps RGSet and phenotype rows aligned", {

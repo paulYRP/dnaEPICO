@@ -18,7 +18,9 @@ normalizeMinfiEwasWater(
 \item{sampleData}{Object returned by \code{filterSamplesMinfiEwasWater()}.}
 
 \item{sexColumn}{Character. Name of the phenotype column used as the optional
-sex covariate for normalization methods that support it.}
+sex covariate for normalization methods that support it. Missing or
+unsupported values use \code{PredSex} when available, and each substitution is
+recorded in the returned \code{sexResolution} table.}
 
 \item{normMethods}{Character vector or semicolon-separated string of
 normalization methods. Supported values are \code{'adjustedfunnorm'},
@@ -35,7 +37,8 @@ normalization methods. Supported values are \code{'adjustedfunnorm'},
 }
 \value{
 A list with class \code{'dnaEPICO_minfiEwasWater_norm'} containing the
-requested normalized objects and the first method as \code{primary}.
+requested normalized objects, the first method as \code{primary}, and a
+\code{sexResolution} audit table describing reported-sex and \code{PredSex} use.
 }
 \description{
 Apply one or more supported normalization methods to a filtered \code{RGSet} and

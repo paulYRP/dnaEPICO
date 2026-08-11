@@ -614,7 +614,9 @@ runPreprocessingWorkflowDnaEpico <- function(config) {
 #'   normalization methods. Supported values are `'adjustedfunnorm'`,
 #'   `'funnorm'`, `'illumina'`, `'quantile'`, and `'swan'`.
 #' @param sexColumn Character. Name of the phenotype column containing reported
-#'   sex.
+#'   sex. Sex-aware normalization methods use `PredSex` when this column is
+#'   missing, blank, unknown, unsupported, or otherwise not coded as female or
+#'   male. Every substitution is recorded without overwriting this column.
 #' @param removeSexMismatch Logical. If `TRUE`, remove samples whose reported
 #'   sex and methylation-predicted sex are both known and disagree. Missing or
 #'   unknown sex values are retained. The default is `FALSE`.
@@ -667,10 +669,12 @@ runPreprocessingWorkflowDnaEpico <- function(config) {
 #'   \item{assessment}{Object returned by [assessSamplesMinfiEwasWater()]
 #'   containing detection P values, QC summaries, and failed-sample tracking.}
 #'   \item{sexData}{Object returned by [predictSexMinfiEwasWater()] containing
-#'   predicted sex labels, mismatch summaries, plotting data, and the sample IDs
-#'   removed when `removeSexMismatch = TRUE`.}
+#'   predicted sex labels, mismatch summaries, normalization-sex provenance,
+#'   plotting data, and the sample IDs removed when
+#'   `removeSexMismatch = TRUE`.}
 #'   \item{normData}{Object returned by [normalizeMinfiEwasWater()] containing
-#'   the selected normalized objects and method metadata.}
+#'   the selected normalized objects, method metadata, and the reported-sex or
+#'   `PredSex` value used for each sample.}
 #'   \item{filterData}{Object returned by [filterProbesMinfiEwasWater()]
 #'   containing the probe-filtered methylation objects at each filtering stage.}
 #'   \item{metricsData}{Object returned by [extractMetricsMinfiEwasWater()]

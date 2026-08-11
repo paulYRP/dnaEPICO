@@ -420,20 +420,13 @@ filterSamplesMinfiEwasWater <- function(RGSet, targets,
             "dnaEPICO_minfiEwasWater_samples")
 }
 
-prepareSexPredictionMinfiEwasWater <- function(
-    rawData, targets, SampleID, sexColumn
-) {
-    if (!(SampleID %in% colnames(targets))) {
-    stop("SampleID column not found in targets: ", SampleID,
-        call. = FALSE
-    )
-    }
-    if (!(sexColumn %in% colnames(targets))) {
-    stop("sexColumn not found in targets: ", sexColumn, call. = FALSE)
-    }
+#' Prepare and sanitize the minfi predicted-sex table
+#'
+#' @keywords internal
+#' @noRd
+predictedSexTableMinfiEwasWater <- function(GSet) {
     prediction <- as.data.frame(
-    minfi::getSex(rawData$GSet),
-    stringsAsFactors = FALSE
+    minfi::getSex(GSet), stringsAsFactors = FALSE
     )
     numeric_columns <- names(prediction)[vapply(
     prediction, is.numeric, logical(1)
@@ -445,6 +438,22 @@ prepareSexPredictionMinfiEwasWater <- function(
     for (column in numeric_columns) {
     prediction[[column]][is.nan(prediction[[column]])] <- NA_real_
     }
+    list(prediction = prediction, nanConverted = nan_converted)
+}
+
+prepareSexPredictionMinfiEwasWater <- function(
+    rawData, targets, SampleID, sexColumn
+) {
+    if (!(SampleID %in% colnames(targets))) {
+    stop("SampleID column not found in targets: ", SampleID,
+        call. = FALSE
+    )
+    }
+    if (!(sexColumn %in% colnames(targets))) {
+    stop("sexColumn not found in targets: ", sexColumn, call. = FALSE)
+    }
+    prediction_state <- predictedSexTableMinfiEwasWater(rawData$GSet)
+    prediction <- prediction_state$prediction
     plot_data <- as.data.frame(prediction, stringsAsFactors = FALSE)
     plot_data$SampleID <- rownames(plot_data)
     matched <- matchSampleIdentifiersDnaEpico(
@@ -458,36 +467,73 @@ prepareSexPredictionMinfiEwasWater <- function(
     reported <- canonicalizeSexDnaEpico(aligned[[sexColumn]])
     predicted <- canonicalizeSexDnaEpico(prediction$predictedSex)
     aligned$PredSex <- predicted$code
-    aligned$SexMismatch <- !is.na(reported$code) &
-    !is.na(predicted$code) & reported$code != predicted$code
+    aligned$SexMismatch <- sexMismatchDnaEpico(
+    reported$code, predicted$code
+    )
     plot_data[[sexColumn]] <- reported$code
     plot_data$PredSex <- predicted$code
     plot_data$SexMismatch <- aligned$SexMismatch
+    normalization_sex <- normalizationSexResolutionDnaEpico(
+    aligned, sexColumn, sampleIds = aligned[[SampleID]]
+    )
     list(
     prediction = prediction, targets = aligned, plotData = plot_data,
-    mismatches = aligned[aligned$SexMismatch, , drop = FALSE],
+    mismatches = aligned[which(aligned$SexMismatch %in% TRUE), , drop = FALSE],
     reported = reported, predicted = predicted,
-    nanConverted = nan_converted
+    normalizationSex = normalization_sex,
+    nanConverted = prediction_state$nanConverted
     )
 }
 
-sexPredictionLogLinesMinfiEwasWater <- function(
-    state, originalTargets, sexColumn
-) {
+#' Format reported-sex integrity counts for logging
+#'
+#' @keywords internal
+#' @noRd
+reportedSexLogLinesMinfiEwasWater <- function(state) {
+    status <- state$reported$status
     unknown <- state$reported$unknown
     c(
-    "Sex column integrity check:",
-    paste("  Sex column used:        ", sexColumn),
-    paste(
-        "  NA values:              ",
-        sum(is.na(originalTargets[[sexColumn]]))
-    ),
+    paste("  Literal NA values:      ", sum(status == "NA")),
+    paste("  NaN values:             ", sum(status == "NaN")),
+    paste("  Blank values:           ", sum(status == "blank")),
+    paste("  Missing strings:        ", sum(status == "missing string")),
+    paste("  Unsupported values:     ", sum(status == "unsupported")),
     paste("  NaN values converted:   ", state$nanConverted),
-    paste("  Unknown labels:         ", if (length(unknown)) {
+    paste("  Missing/unsupported:    ", if (length(unknown)) {
         paste(unknown, collapse = ", ")
     } else {
         "none"
-    }),
+    })
+    )
+}
+
+#' Format normalization-sex fallback counts for logging
+#'
+#' @keywords internal
+#' @noRd
+normalizationSexLogLinesMinfiEwasWater <- function(audit) {
+    fallback <- audit$Source == "PredSex"
+    unresolved <- audit$Source == "unresolved"
+    c(
+    paste("PredSex fallbacks:        ", sum(fallback)),
+    if (any(fallback)) paste(
+        "PredSex fallback IDs:     ",
+        paste(audit$SampleID[fallback], collapse = ", ")
+    ) else "PredSex fallback IDs:      none",
+    paste("Unresolved sex values:   ", sum(unresolved)),
+    if (any(unresolved)) paste(
+        "Unresolved sample IDs:    ",
+        paste(audit$SampleID[unresolved], collapse = ", ")
+    ) else "Unresolved sample IDs:     none"
+    )
+}
+
+sexPredictionLogLinesMinfiEwasWater <- function(state, sexColumn) {
+    c(
+    "Sex column integrity check:",
+    paste("  Sex column used:        ", sexColumn),
+    reportedSexLogLinesMinfiEwasWater(state),
+    normalizationSexLogLinesMinfiEwasWater(state$normalizationSex$audit),
     paste("Mismatches found:         ", nrow(state$mismatches)),
     if (nrow(state$mismatches)) {
         previewLinesMinfiEwasWater(
@@ -513,6 +559,8 @@ asSexPredictionResultMinfiEwasWater <- function(state, SampleID, sexColumn) {
     predictedSexLabel = state$predicted$label,
     unknownReportedSex = state$reported$unknown,
     unknownPredictedSex = state$predicted$unknown,
+    normalizationSex = state$normalizationSex$sex,
+    sexResolution = state$normalizationSex$audit,
     nanConverted = state$nanConverted, removedSampleIDs = character(0),
     removeSexMismatch = FALSE, SampleID = SampleID, sexColumn = sexColumn
     ), class = "dnaEPICO_minfiEwasWater_sex")
@@ -536,8 +584,9 @@ asSexPredictionResultMinfiEwasWater <- function(state, SampleID, sexColumn) {
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
 #' @return A list with class `'dnaEPICO_minfiEwasWater_sex'` containing the sex
-#'   prediction result, aligned phenotype data, plotting data, and mismatch
-#'   table.
+#'   prediction result, aligned phenotype data, plotting data, mismatch table,
+#'   and a `sexResolution` audit showing where `PredSex` would replace an
+#'   unusable reported value during sex-aware normalization.
 #'
 #' @examplesIf requireNamespace("minfiData", quietly = TRUE)
 #' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
@@ -565,7 +614,7 @@ predictSexMinfiEwasWater <- function(
     sexColumn = sexColumn
     )
     emitLogMinfiEwasWater(
-    sexPredictionLogLinesMinfiEwasWater(state, targets, sexColumn),
+    sexPredictionLogLinesMinfiEwasWater(state, sexColumn),
     verbose = verbose, log_path = log_path
     )
     asSexPredictionResultMinfiEwasWater(state, SampleID, sexColumn)
@@ -790,6 +839,120 @@ plotCellCompositionMinfiEwasWater <- function(lcData,
     invisible(plot_object)
 }
 
+#' Apply one supported methylation normalization method
+#'
+#' @keywords internal
+#' @noRd
+applyNormalizationMethodDnaEpico <- function(RGSet, method, sex) {
+    normalization_function <- switch(
+        method,
+        adjustedfunnorm = wateRmelon::adjustedFunnorm,
+        funnorm = minfi::preprocessFunnorm,
+        illumina = minfi::preprocessIllumina,
+        quantile = minfi::preprocessQuantile,
+        swan = minfi::preprocessSWAN,
+        stop("Unknown normalization method: ", method, call. = FALSE)
+    )
+    arguments <- normalizationMethodArgumentsDnaEpico(RGSet, method, sex)
+    do.call(normalization_function, arguments)
+}
+
+#' Parse and validate requested normalization methods
+#'
+#' @keywords internal
+#' @noRd
+normalizationMethodsDnaEpico <- function(normMethods) {
+    method_list <- tolower(splitOptionMinfiEwasWater(normMethods, sep = ";"))
+    supported <- c(
+        "adjustedfunnorm", "funnorm", "illumina", "quantile", "swan"
+    )
+    if (length(method_list) == 0L) {
+        stop("At least one normalization method must be supplied.",
+            call. = FALSE
+        )
+    }
+    unknown <- setdiff(method_list, supported)
+    if (length(unknown) > 0L) {
+        unknown_text <- paste(unknown, collapse = ", ")
+        stop(sprintf("Unknown normalization method(s): %s", unknown_text),
+            call. = FALSE
+        )
+    }
+    method_list
+}
+
+#' Resolve normalization sex and its audit table
+#'
+#' @keywords internal
+#' @noRd
+normalizationSexStateDnaEpico <- function(sampleData, sexColumn, methods) {
+    col_data <- SummarizedExperiment::colData(sampleData$RGSet)
+    resolution <- normalizationSexResolutionDnaEpico(
+        col_data, sexColumn, sampleIds = colnames(sampleData$RGSet)
+    )
+    validateNormalizationSexResolutionDnaEpico(
+        resolution, methods, sexColumn
+    )
+    list(
+        sex = if (is.null(resolution)) NULL else resolution$sex,
+        audit = if (is.null(resolution)) NULL else resolution$audit
+    )
+}
+
+#' Format normalization-sex use for logging
+#'
+#' @keywords internal
+#' @noRd
+normalizationUseLogLinesDnaEpico <- function(methods, sexColumn, audit) {
+    if (is.null(audit)) {
+        return(c(
+            paste(
+                "Normalization methods:    ",
+                paste(methods, collapse = ", ")
+            ),
+            paste("Sex column:               ", sexColumn),
+            "Reported sex values used:  0",
+            "PredSex fallbacks used:    0",
+            "PredSex fallback IDs:      none",
+            "Unresolved sex values:    0"
+        ))
+    }
+    fallback <- audit$Source == "PredSex"
+    c(
+        paste("Normalization methods:    ", paste(methods, collapse = ", ")),
+        paste("Sex column:               ", sexColumn),
+        paste("Reported sex values used: ", sum(audit$Source == "reported")),
+        paste("PredSex fallbacks used:   ", sum(fallback)),
+        if (any(fallback)) paste(
+            "PredSex fallback IDs:    ",
+            paste(audit$SampleID[fallback], collapse = ", ")
+        ) else "PredSex fallback IDs:     none",
+        paste("Unresolved sex values:   ", sum(audit$Source == "unresolved"))
+    )
+}
+
+#' Apply all requested normalization methods
+#'
+#' @keywords internal
+#' @noRd
+runNormalizationMethodsDnaEpico <- function(
+    RGSet, methods, sex, verbose, logPath
+) {
+    normalized <- vector("list", length(methods))
+    names(normalized) <- methods
+    for (i in seq_along(methods)) {
+        method <- methods[[i]]
+        emitLogMinfiEwasWater(
+            paste("Applying normalization:   ", method),
+            verbose = verbose, log_path = logPath
+        )
+        normalized[[i]] <- applyNormalizationMethodDnaEpico(
+            RGSet, method, sex
+        )
+    }
+    normalized
+}
+
 #' Normalize filtered samples with minfi and wateRmelon methods
 #'
 #' Apply one or more supported normalization methods to a filtered `RGSet` and
@@ -797,7 +960,9 @@ plotCellCompositionMinfiEwasWater <- function(lcData,
 #'
 #' @param sampleData Object returned by `filterSamplesMinfiEwasWater()`.
 #' @param sexColumn Character. Name of the phenotype column used as the optional
-#'   sex covariate for normalization methods that support it.
+#'   sex covariate for normalization methods that support it. Missing or
+#'   unsupported values use `PredSex` when available, and each substitution is
+#'   recorded in the returned `sexResolution` table.
 #' @param normMethods Character vector or semicolon-separated string of
 #'   normalization methods. Supported values are `'adjustedfunnorm'`,
 #'   `'funnorm'`, `'illumina'`, `'quantile'`, and `'swan'`.
@@ -808,7 +973,8 @@ plotCellCompositionMinfiEwasWater <- function(lcData,
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
 #' @return A list with class `'dnaEPICO_minfiEwasWater_norm'` containing the
-#'   requested normalized objects and the first method as `primary`.
+#'   requested normalized objects, the first method as `primary`, and a
+#'   `sexResolution` audit table describing reported-sex and `PredSex` use.
 #'
 #' @examplesIf requireNamespace("minfiData", quietly = TRUE)
 #' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
@@ -836,49 +1002,63 @@ normalizeMinfiEwasWater <- function(sampleData,
     log_file = "log_normalizeMinfiEwasWater.txt") {
     log_path <- resolveLogPathMinfiEwasWater(logs = logs,
         log_dir = log_dir, log_file = log_file)
-    method_list <- tolower(splitOptionMinfiEwasWater(normMethods,
-        sep = ";"))
-    supported_methods <- c("adjustedfunnorm",
-        "funnorm", "illumina", "quantile", "swan")
-    if (length(method_list) == 0L) {
-        stop("At least one normalization method must be supplied.",
-            call. = FALSE) }
-    unknown_methods <- setdiff(method_list, supported_methods)
-    if (length(unknown_methods) > 0L) {
-        unknown_methods_text <- paste(unknown_methods,
-            collapse = ", ")
-        stop(sprintf("Unknown normalization method(s): %s",
-            unknown_methods_text), call. = FALSE)
-    }
-    normalized <- vector("list", length(method_list))
-    names(normalized) <- method_list
-    col_data <- SummarizedExperiment::colData(sampleData$RGSet)
-    sex_vec <- resolveNormalizationSexDnaEpico(col_data,
-        sexColumn)
-    emitLogMinfiEwasWater(c(paste("Normalization methods:    ",
-        paste(method_list, collapse = ", ")),
-        paste("Sex column:               ", sexColumn)),
-        verbose = verbose, log_path = log_path)
-    for (i in seq_along(method_list)) {
-        method <- method_list[[i]]
-        emitLogMinfiEwasWater(paste("Applying normalization:   ",
-            method), verbose = verbose, log_path = log_path)
-        normalized[[i]] <- switch(method, adjustedfunnorm =
-            wateRmelon::adjustedFunnorm(sampleData$RGSet,
-            sex = sex_vec), funnorm = minfi::preprocessFunnorm(sampleData$RGSet,
-            sex = sex_vec), illumina = minfi::preprocessIllumina(
-            sampleData$RGSet),
-            quantile = minfi::preprocessQuantile(sampleData$RGSet,
-                sex = sex_vec), swan = minfi::preprocessSWAN(sampleData$RGSet),
-            stop("Unknown normalization method: ",
-                method, call. = FALSE))
-    }
+    method_list <- normalizationMethodsDnaEpico(normMethods)
+    sex_state <- normalizationSexStateDnaEpico(
+        sampleData, sexColumn, method_list
+    )
+    emitLogMinfiEwasWater(
+        normalizationUseLogLinesDnaEpico(
+            method_list, sexColumn, sex_state$audit
+        ),
+        verbose = verbose, log_path = log_path
+    )
+    normalized <- runNormalizationMethodsDnaEpico(
+        sampleData$RGSet, method_list, sex_state$sex, verbose, log_path
+    )
     emitLogMinfiEwasWater(paste0(
         "====================================================",
         "========"), verbose = verbose, log_path = log_path)
     structure(list(primary = normalized[[1L]],
         normalized = normalized, methods = method_list,
-        sexColumn = sexColumn), class = "dnaEPICO_minfiEwasWater_norm")
+        sexColumn = sexColumn, normalizationSex = sex_state$sex,
+        sexResolution = sex_state$audit),
+        class = "dnaEPICO_minfiEwasWater_norm")
+}
+
+#' Select sex groups for normalization density plots
+#'
+#' @keywords internal
+#' @noRd
+normalizationPlotSexDnaEpico <- function(normData, targets, sexColumn) {
+    if (!is.null(normData$normalizationSex) &&
+    length(normData$normalizationSex) == nrow(targets)) {
+    return(normData$normalizationSex)
+    }
+    targets[[sexColumn]]
+}
+
+#' Draw raw and normalized methylation density panels
+#'
+#' @keywords internal
+#' @noRd
+drawNormalizationDensitiesDnaEpico <- function(RGSet, normData, plotSex) {
+    graphics::par(mfrow = c(1, 2))
+    minfi::densityPlot(
+        RGSet, sampGroups = plotSex, main = "Raw", legend = FALSE
+    )
+    graphics::legend(
+        "top", legend = levels(factor(plotSex)),
+        text.col = RColorBrewer::brewer.pal(8, "Dark2")
+    )
+    minfi::densityPlot(
+        minfi::getBeta(normData$primary), sampGroups = plotSex,
+        main = "Normalized", legend = FALSE
+    )
+    graphics::legend(
+        "top", legend = levels(factor(plotSex)),
+        text.col = RColorBrewer::brewer.pal(8, "Dark2")
+    )
+    invisible(NULL)
 }
 
 #' Plot raw and normalized methylation distributions
@@ -889,7 +1069,8 @@ normalizeMinfiEwasWater <- function(sampleData,
 #' @param normData Object returned by `normalizeMinfiEwasWater()`.
 #' @param targets Filtered phenotype data aligned with `RGSet`.
 #' @param sexColumn Character. Name of the phenotype column used to colour the
-#'   density curves.
+#'   density curves when `normData` does not contain resolved normalization sex.
+#'   Otherwise the reported-sex/`PredSex` normalization vector is used.
 #' @param display Logical. If `TRUE`, draw the plot on the active graphics
 #'   device.
 #' @param file Character or `NULL`. TIFF file written when supplied.
@@ -929,26 +1110,9 @@ plotNormalizationMinfiEwasWater <- function(
     logs = logs, log_dir = log_dir,
     log_file = log_file
     )
-
+    plot_sex <- normalizationPlotSexDnaEpico(normData, targets, sexColumn)
     draw_fun <- function() {
-    graphics::par(mfrow = c(1, 2))
-    minfi::densityPlot(RGSet,
-        sampGroups = targets[[sexColumn]],
-        main = "Raw", legend = FALSE
-    )
-    graphics::legend("top",
-        legend = levels(factor(targets[[sexColumn]])),
-        text.col = RColorBrewer::brewer.pal(8, "Dark2")
-    )
-
-    minfi::densityPlot(minfi::getBeta(normData$primary),
-        sampGroups = targets[[sexColumn]], main = "Normalized",
-        legend = FALSE
-    )
-    graphics::legend("top",
-        legend = levels(factor(targets[[sexColumn]])),
-        text.col = RColorBrewer::brewer.pal(8, "Dark2")
-    )
+    drawNormalizationDensitiesDnaEpico(RGSet, normData, plot_sex)
     }
 
     runPlotMinfiEwasWater(

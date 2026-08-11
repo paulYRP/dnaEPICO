@@ -325,7 +325,18 @@ canonicalizeSexDnaEpico <- function(values) {
     original <- values
     text <- trimws(as.character(values))
     lower <- tolower(text)
-    missing <- is.na(values) | !nzchar(text)
+    is_nan <- if (is.numeric(values)) {
+        is.nan(values)
+    } else {
+        rep(FALSE, length(values))
+    }
+    is_na <- is.na(values) & !is_nan
+    blank <- !is.na(values) & !is.na(text) & !nzchar(text)
+    missing_strings <- c(
+        "na", "n/a", "nan", "null", "missing", "unknown", "unknow"
+    )
+    missing_string <- !is.na(values) & !blank & lower %in% missing_strings
+    missing <- is_na | is_nan | blank | missing_string
 
     code <- rep(NA_integer_, length(values))
     code[!missing & lower %in% c("f", "female", "0")] <- 0L
@@ -335,9 +346,158 @@ canonicalizeSexDnaEpico <- function(values) {
     label[code == 0L & !is.na(code)] <- "F"
     label[code == 1L & !is.na(code)] <- "M"
 
-    unknown <- unique(text[!missing & is.na(code)])
+    unsupported <- !missing & is.na(code)
+    unknown <- unique(text[(missing_string | unsupported) & !is.na(text)])
+    status <- rep("valid", length(values))
+    status[is_na] <- "NA"
+    status[is_nan] <- "NaN"
+    status[blank] <- "blank"
+    status[missing_string] <- "missing string"
+    status[unsupported] <- "unsupported"
 
-    list(original = original, code = code, label = label, unknown = unknown)
+    list(
+        original = original, code = code, label = label, unknown = unknown,
+        status = status, unusable = is.na(code)
+    )
+}
+
+#' Compare reported and predicted sex when both are available
+#'
+#' @keywords internal
+#' @noRd
+sexMismatchDnaEpico <- function(reportedCode, predictedCode) {
+    if (length(reportedCode) != length(predictedCode)) {
+        stop("Reported and predicted sex vectors must have equal length.",
+            call. = FALSE
+        )
+    }
+    comparable <- !is.na(reportedCode) & !is.na(predictedCode)
+    mismatch <- rep(NA, length(reportedCode))
+    mismatch[comparable] <-
+        reportedCode[comparable] != predictedCode[comparable]
+    mismatch
+}
+
+#' Build an audit of sex labels supplied to methylation normalization
+#'
+#' @keywords internal
+#' @noRd
+normalizationSexResolutionDnaEpico <- function(
+    colData, sexColumn, sampleIds = NULL
+) {
+    if (is.null(sexColumn) || !(sexColumn %in% colnames(colData))) {
+        return(NULL)
+    }
+
+    reported_sex <- canonicalizeSexDnaEpico(colData[[sexColumn]])
+    predicted_values <- if ("PredSex" %in% colnames(colData)) {
+        colData$PredSex
+    } else {
+        rep(NA_character_, length(reported_sex$label))
+    }
+    predicted_sex <- canonicalizeSexDnaEpico(predicted_values)
+    sex_labels <- reported_sex$label
+    use_predicted <- is.na(sex_labels) & !is.na(predicted_sex$label)
+    sex_labels[use_predicted] <- predicted_sex$label[use_predicted]
+
+    source <- rep("reported", length(sex_labels))
+    source[use_predicted] <- "PredSex"
+    source[is.na(sex_labels)] <- "unresolved"
+    fallback_reason <- rep(NA_character_, length(sex_labels))
+    needs_fallback <- is.na(reported_sex$label)
+    fallback_reason[needs_fallback] <- reported_sex$status[needs_fallback]
+
+    if (is.null(sampleIds)) {
+        sampleIds <- rownames(colData)
+    }
+    if (is.null(sampleIds) || length(sampleIds) != length(sex_labels)) {
+        sampleIds <- as.character(seq_along(sex_labels))
+    }
+
+    audit <- data.frame(
+        SampleID = as.character(sampleIds),
+        ReportedValue = as.character(reported_sex$original),
+        ReportedSex = reported_sex$label,
+        PredSex = predicted_sex$label,
+        NormalizationSex = sex_labels,
+        Source = source,
+        FallbackReason = fallback_reason,
+        stringsAsFactors = FALSE
+    )
+
+    list(
+        sex = sex_labels, audit = audit, reported = reported_sex,
+        predicted = predicted_sex
+    )
+}
+
+#' List normalization methods whose API accepts sex
+#'
+#' @keywords internal
+#' @noRd
+sexAwareNormalizationMethodsDnaEpico <- function() {
+    c("adjustedfunnorm", "funnorm", "quantile")
+}
+
+#' Build arguments for a supported normalization backend
+#'
+#' @keywords internal
+#' @noRd
+normalizationMethodArgumentsDnaEpico <- function(RGSet, method, sex) {
+    arguments <- list(RGSet)
+    if (method %in% sexAwareNormalizationMethodsDnaEpico()) {
+        arguments$sex <- sex
+    }
+    arguments
+}
+
+#' Stop when sex-aware normalization still has unresolved values
+#'
+#' @keywords internal
+#' @noRd
+validateNormalizationSexResolutionDnaEpico <- function(
+    resolution, methods, sexColumn = "sexColumn"
+) {
+    sex_methods <- intersect(methods, sexAwareNormalizationMethodsDnaEpico())
+    if (length(sex_methods) == 0L) {
+        return(invisible(NULL))
+    }
+    if (is.null(resolution)) {
+        sex_methods_text <- paste(sex_methods, collapse = ", ")
+        condition_message <- sprintf(
+            paste0(
+                "The configured sex column '%s' is unavailable for ",
+                "sex-aware normalization method(s): %s."
+            ),
+            sexColumn, sex_methods_text
+        )
+        stop(condition_message, call. = FALSE)
+    }
+
+    unresolved <- resolution$audit$Source == "unresolved"
+    if (any(unresolved)) {
+        backends <- c(
+            adjustedfunnorm = "wateRmelon::adjustedFunnorm()",
+            funnorm = "minfi::preprocessFunnorm()",
+            quantile = "minfi::preprocessQuantile()"
+        )
+        method_text <- paste(
+            paste0(sex_methods, " [", backends[sex_methods], "]"),
+            collapse = ", "
+        )
+        sample_text <- paste(
+            resolution$audit$SampleID[unresolved], collapse = ", "
+        )
+        stop(
+            "Normalization method(s) ", method_text,
+            " require complete F/M sex values in '", sexColumn,
+            "'. Reported sex and PredSex were both unusable for: ",
+            sample_text, ".",
+            call. = FALSE
+        )
+    }
+
+    invisible(NULL)
 }
 
 #' Resolve sex labels supplied to methylation normalization
@@ -345,39 +505,15 @@ canonicalizeSexDnaEpico <- function(values) {
 #' @keywords internal
 #' @noRd
 resolveNormalizationSexDnaEpico <- function(colData, sexColumn) {
-    if (is.null(sexColumn) || !(sexColumn %in% colnames(colData))) {
+    resolution <- normalizationSexResolutionDnaEpico(colData, sexColumn)
+    if (is.null(resolution)) {
         return(NULL)
     }
+    validateNormalizationSexResolutionDnaEpico(
+        resolution, c("adjustedfunnorm", "funnorm", "quantile"), sexColumn
+    )
 
-    reported_sex <- canonicalizeSexDnaEpico(colData[[sexColumn]])
-    sex_labels <- reported_sex$label
-    if (anyNA(sex_labels) && "PredSex" %in% colnames(colData)) {
-        predicted_sex <- canonicalizeSexDnaEpico(colData$PredSex)$label
-        replace_with_predicted <- is.na(sex_labels) & !is.na(predicted_sex)
-        sex_labels[replace_with_predicted] <-
-            predicted_sex[replace_with_predicted]
-    }
-
-    if (anyNA(sex_labels)) {
-        condition_message <- if (length(reported_sex$unknown) > 0L) {
-            unknown_sex_text <- paste(reported_sex$unknown, collapse = ", ")
-            sprintf(
-                paste0(
-                    "The normalization sex information contains missing or ",
-                    "unsupported values: %s"
-                ),
-                unknown_sex_text
-            )
-        } else {
-            paste(
-                "The normalization sex information contains missing or",
-                "unsupported values."
-            )
-        }
-        stop(condition_message, call. = FALSE)
-    }
-
-    sex_labels
+    resolution$sex
 }
 
 #' Capture preview lines for logging

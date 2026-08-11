@@ -73,7 +73,9 @@ when \code{saveOutputs = TRUE}.}
 phenotype-plus-methylation \code{.RData} files when \code{saveOutputs = TRUE}.}
 
 \item{sexColumn}{Character. Name of the phenotype sex column used when
-building Clock Foundation exports.}
+building Clock Foundation exports. Values are preserved as supplied,
+including missing, blank, unknown, or other character values; \code{PredSex} is
+not substituted.}
 
 \item{outputLogs}{Character. Directory used for log files when \code{logs = TRUE}.}
 
@@ -105,13 +107,14 @@ phenotype-plus-methylation object and the timepoint combination metadata,
 or \code{NULL} when \code{combineTimepoints = NULL}.}
 \item{clockFoundation}{Object returned by
 \code{\link[=buildClockFoundationInputsPreprocessingPheno]{buildClockFoundationInputsPreprocessingPheno()}} containing the beta table
-and phenotype table prepared for Clock Foundation export.}
+and phenotype table prepared for Clock Foundation export, with the sex
+column preserved as supplied.}
 \item{savedFiles}{Object returned by \code{\link[=writePreprocessingPhenoOutputs]{writePreprocessingPhenoOutputs()}} when
 \code{saveOutputs = TRUE}, otherwise \code{NULL}.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when
 logging was disabled.}
 }
-See \link[=dnaEPICO_preprocessingPheno-class]{dnaEPICO_preprocessingPheno} for a class-level overview.
+See \linkS4class{dnaEPICO_preprocessingPheno} for a class-level overview.
 }
 \description{
 Align the phenotype table with preprocessed beta, M-value, and copy-number
@@ -165,5 +168,5 @@ stopifnot(inherits(result, "dnaEPICO_preprocessingPheno"))
 
 }
 \seealso{
-\link[=dnaEPICO_preprocessingPheno-class]{dnaEPICO_preprocessingPheno}
+\linkS4class{dnaEPICO_preprocessingPheno}
 }

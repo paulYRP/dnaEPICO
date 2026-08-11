@@ -17,8 +17,10 @@ S3-style containers rather than formal S4 classes.
 \item{RGSet}{Filtered \code{RGChannelSet} used in downstream preprocessing.}
 \item{rawData}{Object returned by \code{\link[=buildRawMinfiEwasWater]{buildRawMinfiEwasWater()}}.}
 \item{assessment}{Object returned by \code{\link[=assessSamplesMinfiEwasWater]{assessSamplesMinfiEwasWater()}}.}
-\item{sexData}{Object returned by \code{\link[=predictSexMinfiEwasWater]{predictSexMinfiEwasWater()}}.}
-\item{normData}{Object returned by \code{\link[=normalizeMinfiEwasWater]{normalizeMinfiEwasWater()}}.}
+\item{sexData}{Object returned by \code{\link[=predictSexMinfiEwasWater]{predictSexMinfiEwasWater()}}, including
+predicted-sex values and normalization fallback provenance.}
+\item{normData}{Object returned by \code{\link[=normalizeMinfiEwasWater]{normalizeMinfiEwasWater()}}, including
+the per-sample sex-resolution audit.}
 \item{filterData}{Object returned by \code{\link[=filterProbesMinfiEwasWater]{filterProbesMinfiEwasWater()}}.}
 \item{metricsData}{Object returned by \code{\link[=extractMetricsMinfiEwasWater]{extractMetricsMinfiEwasWater()}}.}
 \item{lcData}{Object returned by \code{\link[=estimateLCMinfiEwasWater]{estimateLCMinfiEwasWater()}}.}

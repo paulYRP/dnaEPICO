@@ -22,7 +22,8 @@ exported files.
 \code{\link[=combineTimepointsPreprocessingPheno]{combineTimepointsPreprocessingPheno()}}, or \code{NULL} when the combined
 object was skipped.}
 \item{clockFoundation}{Object returned by
-\code{\link[=buildClockFoundationInputsPreprocessingPheno]{buildClockFoundationInputsPreprocessingPheno()}}.}
+\code{\link[=buildClockFoundationInputsPreprocessingPheno]{buildClockFoundationInputsPreprocessingPheno()}}, with original phenotype
+sex values preserved for export.}
 \item{savedFiles}{Object returned by \code{\link[=writePreprocessingPhenoOutputs]{writePreprocessingPhenoOutputs()}}
 when \code{saveOutputs = TRUE}, otherwise \code{NULL}.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when
