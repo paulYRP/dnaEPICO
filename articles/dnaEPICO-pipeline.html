@@ -258,7 +258,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpi0AUuK/dnaEPICO-idat-example-25574ade9eef"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmprQa4LA/dnaEPICO-idat-example-25575eb507fe"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span></span>
@@ -549,7 +549,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpi0AUuK/dnaEPICO-preprocessingPheno-example-255773fa9d31"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmprQa4LA/dnaEPICO-preprocessingPheno-example-255778340017"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -675,7 +675,7 @@ phenotype-plus-beta input file used by the GLM example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpi0AUuK/dnaEPICO-glm-example-2557797bb1d9"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmprQa4LA/dnaEPICO-glm-example-2557b6073fa"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">glm_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -809,7 +809,7 @@ longitudinal phenotype-plus-beta input file used by the LME example.</p>
 <span><span class="co">#&gt; [1] "tempDir"        "inputPath"      "preparedData"   "modelResults"  </span></span>
 <span><span class="co">#&gt; [5] "modelSummaries" "annotationData"</span></span>
 <span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpi0AUuK/dnaEPICO-lme-example-25571d975315"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmprQa4LA/dnaEPICO-lme-example-2557495ed4d2"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "phenoBT1T2.RData"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">inputPath</span><span class="op">)</span></span>
@@ -826,6 +826,7 @@ in-memory objects used to build that example: <code>preparedData</code>,
 <span>    outputRData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"rData"</span>, <span class="st">"models"</span><span class="op">)</span>,</span>
 <span>    outputPlots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">lme_inputs</span><span class="op">$</span><span class="va">tempDir</span>, <span class="st">"figures"</span><span class="op">)</span>,</span>
 <span>    personVar <span class="op">=</span> <span class="st">"person"</span>,</span>
+<span>    SampleID <span class="op">=</span> <span class="st">"Sample_Name"</span>,</span>
 <span>    timeVar <span class="op">=</span> <span class="st">"Timepoint"</span>,</span>
 <span>    phenotypes <span class="op">=</span> <span class="st">"score"</span>,</span>
 <span>    covariates <span class="op">=</span> <span class="st">"sex"</span>,</span>
@@ -885,6 +886,12 @@ phenotype-plus-beta object.</li>
 <li>
 <code>personVar</code> defines the participant identifier used for
 the random effect.</li>
+<li>
+<code>SampleID</code> identifies the sample-level column used to
+derive <code>personVar</code> when that participant column is absent.
+Automatic derivation removes a terminal <code>A</code> or
+<code>B</code>; other identifier formats require an explicit participant
+column.</li>
 <li>
 <code>timeVar</code> defines the repeated-measures time variable
 used for longitudinal summaries and preprocessing checks.</li>
@@ -1160,6 +1167,9 @@ phenotype-plus-beta object</li>
 <li>
 <code>personVar</code> for the participant identifier used in the
 random effect</li>
+<li>
+<code>SampleID</code> for the configured sample identifier used only
+when <code>personVar</code> must be derived</li>
 <li>
 <code>timeVar</code> for repeated-measures summaries and
 preprocessing checks</li>
@@ -1989,9 +1999,9 @@ execution.</p>
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-08-11 11:42:05 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-08-11 15:57:27 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 1.889 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 1.956 mins</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>

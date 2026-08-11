@@ -229,7 +229,7 @@ reference used during probe filtering.</p>
 <span><span class="co">#&gt; [4] "targets"            "arrayType"          "annotationVersion" </span></span>
 <span><span class="co">#&gt; [7] "probeExclusionPath"</span></span>
 <span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpyvnib7/dnaEPICO-idat-example-24eb2bd54985"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpXzdBvy/dnaEPICO-idat-example-24eb725f8425"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">preprocessing_inputs</span><span class="op">$</span><span class="va">phenoFile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "pheno.csv"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span></span>
@@ -519,7 +519,7 @@ directory.</p>
 <span><span class="co">#&gt;  [7] "metricsData"       "timepointData"     "combinedData"     </span></span>
 <span><span class="co">#&gt; [10] "clockFoundation"   "preprocessingData"</span></span>
 <span><span class="va">pheno_inputs</span><span class="op">$</span><span class="va">tempDir</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpyvnib7/dnaEPICO-preprocessingPheno-example-24eb3ac70771"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/RtmpXzdBvy/dnaEPICO-preprocessingPheno-example-24eb70ab0469"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">phenoPath</span>,</span>
 <span>    <span class="va">pheno_inputs</span><span class="op">$</span><span class="va">betaPath</span>,</span>
@@ -667,12 +667,17 @@ without p-values.</p>
 <p>Longitudinal lmerTest/lme4 analyses use a participant-level random
 intercept, <code>(1 | personVar)</code>. Set
 <code>omnibusTest = TRUE</code> to obtain one joint F test per CpG. When
-<code>interactionTerm</code> is supplied, the joint null covers all
-estimable phenotype-by-interaction coefficients; otherwise, it covers
-the phenotype main effect. <code>omnibusDdf = "Satterthwaite"</code> is
-the computationally efficient default, while
-<code>"Kenward-Roger"</code> is available when <code>pbkrtest</code> is
-installed. The nlme backend does not currently support this option.</p>
+<code>personVar</code> is absent, <code>SampleID</code> selects the
+sample-level column from which the participant ID is derived by removing
+a terminal <code>A</code> or <code>B</code>. The sample identifier
+column is retained unchanged; unsupported identifier formats require an
+explicit participant column. When <code>interactionTerm</code> is
+supplied, the joint null covers all estimable phenotype-by-interaction
+coefficients; otherwise, it covers the phenotype main effect.
+<code>omnibusDdf = "Satterthwaite"</code> is the computationally
+efficient default, while <code>"Kenward-Roger"</code> is available when
+<code>pbkrtest</code> is installed. The nlme backend does not currently
+support this option.</p>
 </div>
 </div>
 <div class="section level2">
@@ -702,9 +707,9 @@ how phenotype-specific PRS terms are added through
 <h2 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h2>
 <p>Date the vignette was generated.</p>
-<pre><code><span><span class="co">#&gt; [1] "2026-08-11 11:40:06 UTC"</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] "2026-08-11 15:55:24 UTC"</span></span></code></pre>
 <p>Wallclock time spent generating the vignette.</p>
-<pre><code><span><span class="co">#&gt; Time difference of 54.626 secs</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 57.149 secs</span></span></code></pre>
 <p><code>R</code> session information.</p>
 <pre><code><span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>

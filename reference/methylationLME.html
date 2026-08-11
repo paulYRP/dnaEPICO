@@ -138,7 +138,8 @@ in workbook metadata.</p>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  saveOutputs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  resumeFromSummary <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  resumeFromSummary <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  SampleID <span class="op">=</span> <span class="st">"SID"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -169,8 +170,8 @@ plots.</p></dd>
 
 <dt id="arg-personvar">personVar<a class="anchor" aria-label="anchor" href="#arg-personvar"></a></dt>
 <dd><p>Character. Subject identifier variable used for the random
-intercept. When this column is missing, it is derived from <code>SID</code> using the
-package's existing sample naming convention.</p></dd>
+intercept. When this column is missing, it is derived from <code>SampleID</code> using
+the package's terminal <code>A</code>/<code>B</code> visit naming convention.</p></dd>
 
 
 <dt id="arg-timevar">timeVar<a class="anchor" aria-label="anchor" href="#arg-timevar"></a></dt>
@@ -411,6 +412,12 @@ TIFF plots. The default is <code>FALSE</code>.</p></dd>
 complete phenotype summary when its input file and model configuration
 match the current analysis. If processing stops before a phenotype summary
 is complete, that phenotype is fitted again from its first CpG.</p></dd>
+
+
+<dt id="arg-sampleid">SampleID<a class="anchor" aria-label="anchor" href="#arg-sampleid"></a></dt>
+<dd><p>Character. Name of the sample identifier column used to
+derive <code>personVar</code> when the subject identifier column is missing. The
+default, <code>"SID"</code>, preserves the package's earlier behavior.</p></dd>
 
 </dl></div>
     <div id="value">

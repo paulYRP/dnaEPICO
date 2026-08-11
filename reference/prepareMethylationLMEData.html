@@ -93,7 +93,8 @@ for downstream mixed-effects modeling helpers.</p>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  logs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  log_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  log_file <span class="op">=</span> <span class="st">"log_methylationLME.txt"</span></span>
+<span>  log_file <span class="op">=</span> <span class="st">"log_methylationLME.txt"</span>,</span>
+<span>  SampleID <span class="op">=</span> <span class="st">"SID"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -174,6 +175,12 @@ columns. One of <code>'Beta'</code>, <code>'M'</code>, or <code>'CN'</code>, cas
 <dt id="arg-log-file">log_file<a class="anchor" aria-label="anchor" href="#arg-log-file"></a></dt>
 <dd><p>Character. File name used when <code>logs = TRUE</code>.</p></dd>
 
+
+<dt id="arg-sampleid">SampleID<a class="anchor" aria-label="anchor" href="#arg-sampleid"></a></dt>
+<dd><p>Character. Name of the sample identifier column used to
+derive <code>personVar</code> when it is absent. Values must end in <code>A</code> or <code>B</code> for
+automatic derivation. The default is <code>"SID"</code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -199,17 +206,18 @@ timepoint summaries, and subject-ID diagnostics.</p>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">prepared_data</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "data"                     "modelData"               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "inputPheno"               "inputIdentity"           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "personVar"                "timeVar"                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "phenotypes"               "covariates"              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "factorVars"               "scaleVars"               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "scalingMetadata"          "prsMap"                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "cpgColumns"               "cpgPrefix"               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "cpgLimit"                 "methylationScale"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "responseLabel"            "methylationObjectPrefix" </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "internalResponseColumn"   "interactionTerm"         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "requestedInteractionTerm" "personCreated"           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [23] "personCounts"             "personMappingPreview"    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "timepointSummary"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "personVar"                "SampleID"                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "personSourceVar"          "timeVar"                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "phenotypes"               "covariates"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "factorVars"               "scaleVars"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "scalingMetadata"          "prsMap"                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "cpgColumns"               "cpgPrefix"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "cpgLimit"                 "methylationScale"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "responseLabel"            "methylationObjectPrefix" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "internalResponseColumn"   "interactionTerm"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [23] "requestedInteractionTerm" "personCreated"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "personCounts"             "personMappingPreview"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [27] "timepointSummary"        </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
