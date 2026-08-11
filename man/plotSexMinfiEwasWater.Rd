@@ -54,11 +54,11 @@ Plot predicted or clinical sex from \code{predictSexMinfiEwasWater()}
 \examples{
 ex <- dnaEPICO:::exampleSexPlotStateDnaEpico()
 plotSexMinfiEwasWater(
-    sexData = ex,
-    type = "predicted",
-    display = FALSE,
-    verbose = FALSE,
-    logs = FALSE
+  sexData = ex,
+  type = "predicted",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
 )
 
 }

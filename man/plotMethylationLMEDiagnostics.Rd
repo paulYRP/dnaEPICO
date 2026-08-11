@@ -66,11 +66,11 @@ tables returned by \code{summarizeMethylationLMEModels()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 diagnostic_plots <- plotMethylationLMEDiagnostics(
-    modelSummaries = ex$modelSummaries,
-    preparedData = ex$preparedData,
-    display = FALSE,
-    verbose = FALSE,
-    logs = FALSE
+  modelSummaries = ex$modelSummaries,
+  preparedData = ex$preparedData,
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(diagnostic_plots$plots)
 

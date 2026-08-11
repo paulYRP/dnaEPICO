@@ -64,10 +64,10 @@ compact numerical results and discarded before the next batch is returned.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 model_results <- fitMethylationGLMModels(
-    preparedData = ex$preparedData,
-    nCores = 1,
-    verbose = FALSE,
-    logs = FALSE
+  preparedData = ex$preparedData,
+  nCores = 1,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(model_results$fits)
 

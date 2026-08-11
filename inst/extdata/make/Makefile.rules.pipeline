@@ -4,6 +4,7 @@
 MAKEFLAGS += --output-sync
 
 METHYLATION_SCALE ?= beta
+GENCODE_HUB ?= FALSE
 optional_text_arg = $(if $(filter NULL null,$(strip $(1))),NULL,$(if $(strip $(1)),'$(strip $(1))',NULL))
 MODEL_CONFIG_ERROR = The dnaEPICO Makefile configuration has changed. Please update your Makefile.
 require_model_config = $(if $(filter undefined,$(origin $(1))),$(error $(MODEL_CONFIG_ERROR)),$(if $(strip $($(1))),,$(error $(MODEL_CONFIG_ERROR))))
@@ -22,6 +23,22 @@ R_DIR_ARG ?= $(call optional_text_arg,$(R_DIR))
 PROBE_EXCLUSION_ID_COLUMN_ARG ?= $(call optional_text_arg,$(PROBE_EXCLUSION_ID_COLUMN))
 INTERACTION_GLM_ARG ?= $(call optional_text_arg,$(INTERACTION_GLM))
 INTERACTION_LME_ARG ?= $(call optional_text_arg,$(INTERACTION_LME))
+VENND_GLM_PHENOTYPES_ARG ?= $(call optional_text_arg,$(VENND_GLM_PHENOTYPES))
+VENND_GLM_LABELS_ARG ?= $(call optional_text_arg,$(VENND_GLM_LABELS))
+VENND_GLM_OMNIBUS_PHENOTYPES_ARG ?= $(call optional_text_arg,$(VENND_GLM_OMNIBUS_PHENOTYPES))
+VENND_GLM_OMNIBUS_LABELS_ARG ?= $(call optional_text_arg,$(VENND_GLM_OMNIBUS_LABELS))
+VENND_LME_PHENOTYPES_ARG ?= $(call optional_text_arg,$(VENND_LME_PHENOTYPES))
+VENND_LME_LABELS_ARG ?= $(call optional_text_arg,$(VENND_LME_LABELS))
+VENND_LME_OMNIBUS_PHENOTYPES_ARG ?= $(call optional_text_arg,$(VENND_LME_OMNIBUS_PHENOTYPES))
+VENND_LME_OMNIBUS_LABELS_ARG ?= $(call optional_text_arg,$(VENND_LME_OMNIBUS_LABELS))
+GLM_VENND_PHENOTYPES_RUNTIME_ARG = $(VENND_GLM_PHENOTYPES_ARG)
+GLM_VENND_LABELS_RUNTIME_ARG = $(VENND_GLM_LABELS_ARG)
+GLM_VENND_OMNIBUS_PHENOTYPES_RUNTIME_ARG = $(VENND_GLM_OMNIBUS_PHENOTYPES_ARG)
+GLM_VENND_OMNIBUS_LABELS_RUNTIME_ARG = $(VENND_GLM_OMNIBUS_LABELS_ARG)
+LME_VENND_PHENOTYPES_RUNTIME_ARG = $(VENND_LME_PHENOTYPES_ARG)
+LME_VENND_LABELS_RUNTIME_ARG = $(VENND_LME_LABELS_ARG)
+LME_VENND_OMNIBUS_PHENOTYPES_RUNTIME_ARG = $(VENND_LME_OMNIBUS_PHENOTYPES_ARG)
+LME_VENND_OMNIBUS_LABELS_RUNTIME_ARG = $(VENND_LME_OMNIBUS_LABELS_ARG)
 LME_CORRELATION_VAR_ARG ?= $(call optional_text_arg,$(LME_CORRELATION_VAR))
 COMBINE_TIMEPOINTS_ARG ?= $(call optional_text_arg,$(COMBINE_TIMEPOINTS))
 empty :=
@@ -336,6 +353,10 @@ $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION) | validate-glm-config
 	  plotDPI = $(TIFF_RES), \
 	  interactionTerm = $(INTERACTION_GLM_ARG), \
 	  omnibusTest = $(GLM_OMNIBUS_TEST), \
+	  vennDPhenotypes = $(GLM_VENND_PHENOTYPES_RUNTIME_ARG), \
+	  vennDLabels = $(GLM_VENND_LABELS_RUNTIME_ARG), \
+	  vennDOmnibusPhenotypes = $(GLM_VENND_OMNIBUS_PHENOTYPES_RUNTIME_ARG), \
+	  vennDOmnibusLabels = $(GLM_VENND_OMNIBUS_LABELS_RUNTIME_ARG), \
 	  libPath = $(R_DIR_ARG), \
 	  glmLibs = '$(GLM_LIBS)', \
 	  prsMap = $(PRS_MAP_ARG), \
@@ -351,6 +372,7 @@ $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION) | validate-glm-config
 	  padjmethod = '$(PADJ_METHOD)', \
 	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
 	  annotationCols = '$(ANNOTATION_COLS)', \
+	  gencodeHub = $(GENCODE_HUB), \
 	  annotatedGLMOut = '$(DATA_DIR)/$(MODEL)/$(STEP4)', \
 	  reportAssetsDir = '$(GLM_REPORT_ASSET_DIR)', \
 	  resumeFromSummary = $(RESUME_FROM_SUMMARY), \
@@ -393,6 +415,10 @@ $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION) | validate-lme-config
 	  interactionTerm = $(INTERACTION_LME_ARG), \
 	  omnibusTest = $(LME_OMNIBUS_TEST), \
 	  omnibusDdf = '$(LME_OMNIBUS_DDF)', \
+	  vennDPhenotypes = $(LME_VENND_PHENOTYPES_RUNTIME_ARG), \
+	  vennDLabels = $(LME_VENND_LABELS_RUNTIME_ARG), \
+	  vennDOmnibusPhenotypes = $(LME_VENND_OMNIBUS_PHENOTYPES_RUNTIME_ARG), \
+	  vennDOmnibusLabels = $(LME_VENND_OMNIBUS_LABELS_RUNTIME_ARG), \
 	  saveSignificantInteractions = $(SAVE_SIGNIFICANT_INTERACTIONS), \
 	  significantInteractionDir = '$(RESULTS_DIR)/$(MODEL)/$(CPG_DIR)/$(STEP5)', \
 	  significantInteractionPval = $(SIGNIFICANT_INTERACTION_PVAL), \
@@ -403,6 +429,7 @@ $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION) | validate-lme-config
 	  padjmethod = '$(PADJ_METHOD)', \
 	  annotationPackage = '$(ANNOTATION_PACKAGE)', \
 	  annotationCols = '$(ANNOTATION_COLS)', \
+	  gencodeHub = $(GENCODE_HUB), \
 	  annotatedLMEOut = '$(DATA_DIR)/$(MODEL)/$(STEP5)', \
 	  reportAssetsDir = '$(LME_REPORT_ASSET_DIR)', \
 	  resumeFromSummary = $(RESUME_FROM_SUMMARY), \
@@ -449,7 +476,9 @@ report-f3 report-f4 report-f3lme report-all:
 # =================================================================================================================================
 clean_models:
 	@echo "===== Cleaning all models ====="
+	@Rscript -e "models <- trimws(commandArgs(trailingOnly = TRUE)[[1L]]); if (!nzchar(models)) stop('MODELS must contain at least one model directory name.', call. = FALSE)" "$(MODELS)"
 	@$(MAKE) -j1 $(addprefix clean-model-,$(MODELS))
+	@Rscript -e "args <- commandArgs(trailingOnly = TRUE); models <- strsplit(trimws(args[[1L]]), '[[:space:]]+')[[1L]]; roots <- args[2:7]; targets <- unlist(lapply(models, function(model) file.path(roots, model)), use.names = FALSE); remaining <- unique(targets[file.exists(targets)]); if (length(remaining)) stop('Cleanup incomplete because outputs were recreated while clean_models was running:\n  - ', paste(remaining, collapse = '\n  - '), call. = FALSE)" "$(MODELS)" "$(DATA_DIR)" "$(RDATA_DIR)" "$(STEP6)" "$(LOGS_DIR)" "$(FIGURES_DIR)" "$(RESULTS_DIR)"
 	@echo "Cleanup completed for all models. Kept $(DATA_DIR)/$(STEP1)/."
 
 clean-model-%: FORCE
@@ -460,7 +489,7 @@ ifeq ($(MODEL),all)
 	@$(MAKE) -j1 clean_models
 else
 	@echo "Cleaning outputs for: $(MODEL)"
-	@Rscript -e "args <- commandArgs(trailingOnly = TRUE); model <- args[[1L]]; roots <- args[-1L]; if (!nzchar(model) || model %in% c('.', '..') || !identical(basename(model), model)) stop('MODEL must be a single safe directory name.', call. = FALSE); unlink(file.path(roots, model), recursive = TRUE, force = TRUE)" "$(MODEL)" "$(DATA_DIR)" "$(RDATA_DIR)" "$(STEP6)" "$(LOGS_DIR)" "$(FIGURES_DIR)" "$(RESULTS_DIR)"
+	@Rscript -e "args <- commandArgs(trailingOnly = TRUE); model <- trimws(args[[1L]]); backslash <- intToUtf8(92L); if (!nzchar(model) || model %in% c('.', '..', 'all') || grepl('/', model, fixed = TRUE) || grepl(backslash, model, fixed = TRUE) || basename(model) != model) stop('MODEL must be a single safe directory name.', call. = FALSE); workspace <- normalizePath(args[[2L]], winslash = '/', mustWork = TRUE); roots <- stats::setNames(args[3:8], c('data', 'rData', 'reports', 'logs', 'figures', 'results')); roots <- vapply(roots, normalizePath, character(1), winslash = '/', mustWork = FALSE); compare_path <- function(path) if (identical(getElement(.Platform, 'OS.type'), 'windows')) tolower(path) else path; trim_path <- function(path) { while (nchar(path) > 1L && endsWith(path, '/')) path <- substr(path, 1L, nchar(path) - 1L); path }; workspace_compare <- trim_path(compare_path(workspace)); root_compare <- vapply(compare_path(roots), trim_path, character(1)); inside <- startsWith(root_compare, paste0(workspace_compare, '/')) & root_compare != workspace_compare; if (!all(inside)) stop('Cleanup output roots must be distinct directories inside the Make workspace: ', paste(names(roots)[!inside], collapse = ', '), call. = FALSE); if (anyDuplicated(root_compare)) stop('Cleanup output roots must resolve to distinct directories.', call. = FALSE); targets <- unique(file.path(roots, model)); existing <- targets[file.exists(targets)]; statuses <- vapply(targets, unlink, integer(1), recursive = TRUE, force = TRUE); remaining <- targets[file.exists(targets)]; if (any(statuses != 0L) || length(remaining)) stop('Cleanup incomplete. Close open output files and ensure no pipeline is running. Paths not removed:\n  - ', paste(remaining, collapse = '\n  - '), call. = FALSE); pruned <- character(); for (root in roots[names(roots) != 'data']) if (dir.exists(root) && !length(list.files(root, all.files = TRUE, no.. = TRUE))) { root_status <- unlink(root, recursive = TRUE, force = TRUE); if (root_status != 0L || dir.exists(root)) stop('Could not remove empty output root: ', root, call. = FALSE); pruned <- c(pruned, root) }; if (length(existing)) cat('Removed package outputs:\n  - ', paste(existing, collapse = '\n  - '), '\n', sep = '') else cat('No package outputs were present for: ', model, '\n', sep = ''); if (length(pruned)) cat('Removed empty output roots:\n  - ', paste(pruned, collapse = '\n  - '), '\n', sep = ''); cat('Preserved user input root: ', roots[['data']], '\n', sep = '')" "$(MODEL)" "$(CURDIR)" "$(DATA_DIR)" "$(RDATA_DIR)" "$(STEP6)" "$(LOGS_DIR)" "$(FIGURES_DIR)" "$(RESULTS_DIR)"
 	@echo "Cleanup completed for: $(MODEL)"
 endif
 
@@ -478,7 +507,7 @@ status:
 	@echo "============================"
 
 .PHONY: all clean clean_models status models step1 step2 step3 f3 f4 f3lme \
-	f3_models f4_models f3lme_models report-f3 report-f4 report-f3lme report-all \
+	 f3_models f4_models f3lme_models report-f3 report-f4 report-f3lme report-all \
 	validate-glm-config validate-lme-config FORCE
 
 FORCE:

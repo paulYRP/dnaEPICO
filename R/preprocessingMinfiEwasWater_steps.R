@@ -27,96 +27,76 @@
 #'
 #' @examples
 #' if (requireNamespace("minfiData", quietly = TRUE) &&
-#'     requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
-#'     requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
-#'     ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
-#'     rgset <- readRGSetMinfiEwasWater(
-#'         idatFolder = ex$idatFolder,
-#'         targets = ex$targets,
-#'         SampleID = "Sample_Name",
-#'         arrayType = ex$arrayType,
-#'         annotationVersion = ex$annotationVersion
-#'     )
-#'     class(rgset)
+#'   requireNamespace(
+#'     "IlluminaHumanMethylation450kmanifest",
+#'     quietly = TRUE
+#'   ) &&
+#'   requireNamespace(
+#'     "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'     quietly = TRUE
+#'   )) {
+#'   ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
+#'   rgset <- readRGSetMinfiEwasWater(
+#'     idatFolder = ex$idatFolder,
+#'     targets = ex$targets,
+#'     SampleID = "Sample_Name",
+#'     arrayType = ex$arrayType,
+#'     annotationVersion = ex$annotationVersion
+#'   )
+#'   class(rgset)
 #' }
 #'
 #' @export
-readRGSetMinfiEwasWater <- function(
-    idatFolder, targets, SampleID = "Sample_Name",
-    arrayType = "IlluminaHumanMethylationEPICv2",
-        annotationVersion = "20a1.hg38",
-    force = FALSE, verbose = FALSE, logs = FALSE, log_dir = NULL,
-    log_file = "log_readRGSetMinfiEwasWater.txt"
-) {
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
+readRGSetMinfiEwasWater <- function(idatFolder,
+    targets, SampleID = "Sample_Name", arrayType =
+        "IlluminaHumanMethylationEPICv2",
+    annotationVersion = "20a1.hg38", force = FALSE,
+    verbose = FALSE, logs = FALSE, log_dir = NULL,
+    log_file = "log_readRGSetMinfiEwasWater.txt") {
+    log_path <- resolveLogPathMinfiEwasWater(logs = logs,
+        log_dir = log_dir, log_file = log_file)
     if (!dir.exists(idatFolder)) {
-        stop("idatFolder does not exist: ", idatFolder, call. = FALSE)
+        stop("idatFolder does not exist: ",
+            idatFolder, call. = FALSE)
     }
-
     if (!(SampleID %in% colnames(targets))) {
-        stop("SampleID column not found in targets: ", SampleID,
-            call. = FALSE
-        )
+        stop("SampleID column not found in targets: ",
+            SampleID, call. = FALSE)
     }
-    force <- validateLogicalScalarDnaEpico(force, "force")
-
-    emitLogMinfiEwasWater(
-        c(
-            "============================================================",
-            paste("IDAT folder:              ", idatFolder), paste(
-                "Array type:               ",
-                arrayType
-            ), paste("Annotation version:       ", annotationVersion),
-            paste("Force IDAT read:          ", force)
-        ),
-        verbose = verbose,
-        log_path = log_path
-    )
-
-    RGSet <- minfi::read.metharray.exp(
-        base = idatFolder, targets = targets,
-        extended = FALSE, recursive = FALSE, verbose = FALSE,
-        force = force
-    )
-
-    sample_ids <- validateSampleIdentifiersDnaEpico(
-        targets[[SampleID]],
-        paste0("Phenotype column '", SampleID, "'")
-    )
+    force <- validateLogicalScalarDnaEpico(force,
+        "force")
+    emitLogMinfiEwasWater(c(
+        "============================================================",
+        paste("IDAT folder:              ",
+            idatFolder), paste("Array type:               ",
+            arrayType), paste("Annotation version:       ",
+            annotationVersion), paste("Force IDAT read:          ",
+            force)), verbose = verbose, log_path = log_path)
+    RGSet <- minfi::read.metharray.exp(base = idatFolder,
+        targets = targets, extended = FALSE,
+        recursive = FALSE, verbose = FALSE,
+        force = force)
+    sample_ids <- validateSampleIdentifiersDnaEpico(targets[[SampleID]],
+        paste0("Phenotype column '", SampleID,
+            "'"))
     if (ncol(RGSet) != length(sample_ids)) {
-        stop("The IDAT reader returned ", ncol(RGSet), " samples for ",
+        stop("The IDAT reader returned ",
+            ncol(RGSet), " samples for ",
             length(sample_ids), " phenotype rows.",
-            call. = FALSE
-        )
-    }
-
+            call. = FALSE) }
     colnames(RGSet) <- sample_ids
     Biobase::annotation(RGSet) <- c(array = arrayType,
         annotation = annotationVersion)
-
-    manifest_lines <-
-        utils::capture.output(methods::show(minfi::getManifest(RGSet)))
-
-    emitLogMinfiEwasWater(
-        c(
-            paste(
-                "RGSet loaded with", ncol(RGSet),
-                "samples."
-            ), paste("Applied annotation:       ",
-                paste(Biobase::annotation(RGSet),
-                collapse = ", "
-            )), "Manifest used:", manifest_lines,
-            "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
-    )
-
-    RGSet
-}
+    manifest_lines <- utils::capture.output(methods::show(minfi::getManifest(
+        RGSet)))
+    emitLogMinfiEwasWater(c(paste("RGSet loaded with",
+        ncol(RGSet), "samples."), paste("Applied annotation:       ",
+        paste(Biobase::annotation(RGSet),
+            collapse = ", ")), "Manifest used:",
+        manifest_lines,
+            "============================================================"),
+        verbose = verbose, log_path = log_path)
+    RGSet }
 
 #' Build raw minfi preprocessing objects
 #'
@@ -136,68 +116,51 @@ readRGSetMinfiEwasWater <- function(
 #' @examplesIf requireNamespace("minfiData", quietly = TRUE)
 #' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 #' raw_data <- buildRawMinfiEwasWater(
-#'     RGSet = ex$RGSet,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   RGSet = ex$RGSet,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(raw_data)
 #'
 #' @export
-buildRawMinfiEwasWater <- function(
-    RGSet, verbose = FALSE, logs = FALSE,
-    log_dir = NULL, log_file = "log_buildRawMinfiEwasWater.txt"
-) {
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
-    emitLogMinfiEwasWater("Running preprocessRaw(), ratioConvert(), and mapToGenome().",
-        verbose = verbose, log_path = log_path
-    )
-
+buildRawMinfiEwasWater <- function(RGSet,
+    verbose = FALSE, logs = FALSE, log_dir = NULL,
+    log_file = "log_buildRawMinfiEwasWater.txt") {
+    log_path <- resolveLogPathMinfiEwasWater(logs = logs,
+        log_dir = log_dir, log_file = log_file)
+    emitLogMinfiEwasWater(paste0(
+        "Running preprocessRaw(), ratioConvert(), and ",
+        "mapToGenome()."), verbose = verbose,
+        log_path = log_path)
     MSet <- minfi::preprocessRaw(RGSet)
-    RatioSet <- minfi::ratioConvert(MSet, what = "both", keepCN = TRUE)
+    RatioSet <- minfi::ratioConvert(MSet,
+        what = "both", keepCN = TRUE)
     GSet <- minfi::mapToGenome(RatioSet)
-
-    meth_cols <- seq_len(min(ncol(MSet), 3L))
-    gset_cols <- seq_len(min(ncol(GSet), 5L))
-
-    emitLogMinfiEwasWater(
-        c(
-            paste(
-                "MSet dimensions:          ",
-                paste(dim(MSet), collapse = " x ")
-            ), paste(
-                "RatioSet dimensions:      ",
-                paste(dim(RatioSet), collapse = " x ")
-            ), paste(
-                "GSet dimensions:          ",
-                paste(dim(GSet), collapse = " x ")
-            ), "Preview of methylated intensities:",
-            previewLinesMinfiEwasWater(minfi::getMeth(MSet)[, meth_cols,
-                drop = FALSE
-            ]), "Preview of unmethylated intensities:",
-            previewLinesMinfiEwasWater(minfi::getUnmeth(MSet)[, meth_cols,
-                drop = FALSE
-            ]), "Preview of beta values:",
-                previewLinesMinfiEwasWater(minfi::getBeta(GSet)[,
-                gset_cols,
-                drop = FALSE
-            ]), "Preview of M-values:",
-            previewLinesMinfiEwasWater(minfi::getM(GSet)[, gset_cols,
-                drop = FALSE
-            ]), "Preview of copy-number values:",
-            previewLinesMinfiEwasWater(minfi::getCN(GSet)[, gset_cols,
-                drop = FALSE
-            ]), "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
-    )
-
-    structure(list(MSet = MSet, RatioSet = RatioSet, GSet = GSet),
-        class = "dnaEPICO_minfiEwasWater_raw"
-    )
+    meth_cols <- seq_len(min(ncol(MSet),
+        3L))
+    gset_cols <- seq_len(min(ncol(GSet),
+        5L))
+    emitLogMinfiEwasWater(c(paste("MSet dimensions:          ",
+        paste(dim(MSet), collapse = " x ")),
+        paste("RatioSet dimensions:      ",
+            paste(dim(RatioSet), collapse = " x ")),
+        paste("GSet dimensions:          ",
+            paste(dim(GSet), collapse = " x ")),
+        "Preview of methylated intensities:",
+        previewLinesMinfiEwasWater(minfi::getMeth(MSet)[,
+            meth_cols, drop = FALSE]), "Preview of unmethylated intensities:",
+        previewLinesMinfiEwasWater(minfi::getUnmeth(MSet)[,
+            meth_cols, drop = FALSE]), "Preview of beta values:",
+        previewLinesMinfiEwasWater(minfi::getBeta(GSet)[,
+            gset_cols, drop = FALSE]), "Preview of M-values:",
+        previewLinesMinfiEwasWater(minfi::getM(GSet)[,
+            gset_cols, drop = FALSE]), "Preview of copy-number values:",
+        previewLinesMinfiEwasWater(minfi::getCN(GSet)[,
+            gset_cols, drop = FALSE]),
+            "============================================================"),
+        verbose = verbose, log_path = log_path)
+    structure(list(MSet = MSet, RatioSet = RatioSet,
+        GSet = GSet), class = "dnaEPICO_minfiEwasWater_raw")
 }
 
 #' Assess sample quality before sample filtering
@@ -228,87 +191,64 @@ buildRawMinfiEwasWater <- function(
 #' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 #' raw_data <- buildRawMinfiEwasWater(ex$RGSet, verbose = FALSE, logs = FALSE)
 #' assessment <- assessSamplesMinfiEwasWater(
-#'     rawData = raw_data,
-#'     RGSet = ex$RGSet,
-#'     detPThreshold = 1,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   rawData = raw_data,
+#'   RGSet = ex$RGSet,
+#'   detPThreshold = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(assessment)
 #'
 #' @export
-assessSamplesMinfiEwasWater <- function(
-    rawData, RGSet, qcCutoff = 10.5,
-    detPtype = "m+u", detPThreshold = 0.05, verbose = FALSE,
-    logs = FALSE, log_dir = NULL,
-        log_file = "log_assessSamplesMinfiEwasWater.txt"
-) {
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
+assessSamplesMinfiEwasWater <- function(rawData,
+    RGSet, qcCutoff = 10.5, detPtype = "m+u",
+    detPThreshold = 0.05, verbose = FALSE,
+    logs = FALSE, log_dir = NULL, log_file =
+        "log_assessSamplesMinfiEwasWater.txt") {
+    log_path <- resolveLogPathMinfiEwasWater(logs = logs,
+        log_dir = log_dir, log_file = log_file)
     qc <- minfi::getQC(rawData$MSet)
     detP <- minfi::detectionP(RGSet, type = detPtype)
-    detPThreshold <- validateProbabilityDnaEpico(
-        detPThreshold,
-        "detPThreshold"
-    )
+    detPThreshold <- validateProbabilityDnaEpico(detPThreshold,
+        "detPThreshold")
     nanDetPConverted <- sum(is.nan(detP))
     if (nanDetPConverted > 0L) {
         detP[is.nan(detP)] <- NA_real_
     }
-
     missingDetP <- colSums(!is.finite(detP))
     observedDetP <- colSums(is.finite(detP))
-    meanDetP <- vapply(seq_len(ncol(detP)), function(index) {
-        meanFiniteOrNADnaEpico(detP[
-            ,
-            index
-        ])
-    }, numeric(1))
+    meanDetP <- vapply(seq_len(ncol(detP)),
+        function(index) {
+            meanFiniteOrNADnaEpico(detP[,
+                index]) }, numeric(1))
     names(meanDetP) <- colnames(detP)
-    failedSamples <- names(meanDetP[!is.finite(meanDetP) | meanDetP >
-        detPThreshold])
-
-    preview_cols <- seq_len(min(ncol(detP), 5L))
-
-    emitLogMinfiEwasWater(
-        c(
-            paste(
-                "QC cutoff (median):       ",
-                qcCutoff
-            ), paste("Detection P type:         ", detPtype),
-            paste("Detection P threshold:    ", detPThreshold), paste(
-                "Detection P NaN to NA:     ",
-                nanDetPConverted
-            ), paste(
-                "Missing detection values: ",
-                sum(missingDetP)
-            ), "Preview of detection P values:",
-            previewLinesMinfiEwasWater(detP[, preview_cols, drop = FALSE]),
-            paste("Number of failed samples: ", length(failedSamples)),
-            if (length(failedSamples) > 0L) {
-                paste("Failed sample IDs:        ", paste(failedSamples,
-                    collapse = ", "
-                ))
-            } else {
-                "Failed sample IDs:         none"
-            }, "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
-    )
-
-    structure(
-        list(
-            qc = qc, qcCutoff = qcCutoff, detP = detP,
-            detPtype = detPtype, detPThreshold = detPThreshold,
-                nanDetPConverted = nanDetPConverted,
-            observedDetP = observedDetP, missingDetP = missingDetP,
-            meanDetP = meanDetP, failedSamples = failedSamples
-        ),
-        class = "dnaEPICO_minfiEwasWater_assessment"
-    )
+    failedSamples <- names(meanDetP[!is.finite(meanDetP) |
+        meanDetP > detPThreshold])
+    preview_cols <- seq_len(min(ncol(detP),
+        5L))
+    emitLogMinfiEwasWater(c(paste("QC cutoff (median):       ",
+        qcCutoff), paste("Detection P type:         ",
+        detPtype), paste("Detection P threshold:    ",
+        detPThreshold), paste("Detection P NaN to NA:     ",
+        nanDetPConverted), paste("Missing detection values: ",
+        sum(missingDetP)), "Preview of detection P values:",
+        previewLinesMinfiEwasWater(detP[,
+            preview_cols, drop = FALSE]),
+        paste("Number of failed samples: ",
+            length(failedSamples)), if (length(failedSamples) >
+            0L) {
+            paste("Failed sample IDs:        ",
+                paste(failedSamples, collapse = ", "))
+        } else {
+            "Failed sample IDs:         none"
+        }, "============================================================"),
+        verbose = verbose, log_path = log_path)
+    structure(list(qc = qc, qcCutoff = qcCutoff,
+        detP = detP, detPtype = detPtype,
+        detPThreshold = detPThreshold, nanDetPConverted = nanDetPConverted,
+        observedDetP = observedDetP, missingDetP = missingDetP,
+        meanDetP = meanDetP, failedSamples = failedSamples),
+        class = "dnaEPICO_minfiEwasWater_assessment")
 }
 
 #' Plot quality-assessment outputs for preprocessingMinfiEwasWater
@@ -335,68 +275,68 @@ assessSamplesMinfiEwasWater <- function(
 #'
 #' @examples
 #' assessment <- list(
-#'     meanDetP = c(S1 = 0.01, S2 = 0.02, S3 = 0.04),
-#'     detPThreshold = 0.05
+#'   meanDetP = c(S1 = 0.01, S2 = 0.02, S3 = 0.04),
+#'   detPThreshold = 0.05
 #' )
 #' plotAssessmentMinfiEwasWater(
-#'     assessment = assessment,
-#'     plot = "detection",
-#'     display = FALSE,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   assessment = assessment,
+#'   plot = "detection",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #'
 #' @export
-plotAssessmentMinfiEwasWater <- function(
-    assessment, plot = c(
-        "qc",
-        "detection"
-    ), display = FALSE, file = NULL, width = 2000L,
-    height = 1000L, res = 150L, verbose = FALSE, logs = FALSE,
-    log_dir = NULL, log_file = "log_plotAssessmentMinfiEwasWater.txt"
-) {
+plotAssessmentMinfiEwasWater <- function(assessment,
+    plot = c("qc", "detection"), display = FALSE, file = NULL,
+    width = 2000L, height = 1000L, res = 150L, verbose = FALSE,
+    logs = FALSE, log_dir = NULL, log_file =
+        "log_plotAssessmentMinfiEwasWater.txt") {
     plot <- match.arg(plot)
-
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
-    draw_fun <- switch(plot,
-        qc = function() {
-            minfi::plotQC(assessment$qc, badSampleCutoff = assessment$qcCutoff)
-        },
-        detection = function() {
-            graphics::barplot(assessment$meanDetP,
-                las = 3, cex.names = 0.8,
-                ylab = "Mean detection p-values"
-            )
-            graphics::abline(
-                h = assessment$detPThreshold, col = "red",
-                lwd = 2, lty = 2
-            )
+    log_path <- resolveLogPathMinfiEwasWater(logs = logs,
+        log_dir = log_dir, log_file = log_file)
+    draw_fun <- switch(plot, qc = function() {
+        minfi::plotQC(assessment$qc, badSampleCutoff = assessment$qcCutoff)
+    }, detection = function() {
+        plot_data <- data.frame(sample = names(assessment$meanDetP),
+            meanDetectionP = as.numeric(assessment$meanDetP),
+            failed = !is.finite(assessment$meanDetP) |
+                assessment$meanDetP > assessment$detPThreshold,
+            stringsAsFactors = FALSE)
+        plot_data <- plot_data[order(plot_data$failed,
+            plot_data$meanDetectionP, na.last = TRUE),
+            , drop = FALSE]
+        plot_data$rank <- seq_len(nrow(plot_data))
+        label_data <- plot_data[plot_data$failed, , drop = FALSE]
+        if (nrow(label_data) > 20L) {
+            label_data <- utils::tail(label_data, 20L)
         }
-    )
-
-    runPlotMinfiEwasWater(
-        draw_fun = draw_fun, display = display,
-        file = file, width = width, height = height, res = res
-    )
-
-    emitLogMinfiEwasWater(
-        c(paste(
-            "Assessment plot created:   ",
-            plot
-        ), if (is.null(file)) {
-            "Assessment plot file:      none"
-        } else {
-            paste("Assessment plot file:      ", file)
-        }, "============================================================"),
-        verbose = verbose, log_path = log_path
-    )
-
-    invisible(file)
-}
+        style <- adaptivePointStyleDnaEpico(nrow(plot_data))
+        plot_object <- ggplot2::ggplot(plot_data, ggplot2::aes(x = rank,
+            y = meanDetectionP, colour = failed)) + ggplot2::geom_point(size =
+            style$size,
+            alpha = max(style$alpha, 0.55)) + ggplot2::geom_hline(yintercept =
+            assessment$detPThreshold,
+            colour = "#B42318", linewidth = 0.7, linetype = "dashed") +
+            ggrepel::geom_text_repel(data = label_data,
+                ggplot2::aes(label = sample), size = 3,
+                max.overlaps = 20L, show.legend = FALSE) +
+            ggplot2::scale_colour_manual(values = c(`FALSE` = "#176B87",
+                `TRUE` = "#B42318")) + ggplot2::labs(title = NULL,
+            x = "Samples ranked by mean detection p-value",
+            y = "Mean detection p-value", colour = "Failed") +
+            dnaEpicoModelPlotTheme()
+        drawPlotObjectMinfiEwasWater(plot_object) })
+    runPlotMinfiEwasWater(draw_fun = draw_fun, display = display,
+        file = file, width = width, height = height,
+        res = res)
+    emitLogMinfiEwasWater(c(paste("Assessment plot created:   ",
+        plot), if (is.null(file)) {
+        "Assessment plot file:      none" } else {
+        paste("Assessment plot file:      ", file)
+    }, "============================================================"),
+        verbose = verbose, log_path = log_path)
+    invisible(file) }
 
 #' Filter failed samples from an RGSet and phenotype table
 #'
@@ -419,94 +359,163 @@ plotAssessmentMinfiEwasWater <- function(
 #' @examplesIf requireNamespace("minfiData", quietly = TRUE)
 #' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 #' filtered_samples <- filterSamplesMinfiEwasWater(
-#'     RGSet = ex$RGSet,
-#'     targets = ex$targets,
-#'     failedSamples = ex$targets$Sample_Name[1],
-#'     SampleID = "Sample_Name",
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   RGSet = ex$RGSet,
+#'   targets = ex$targets,
+#'   failedSamples = ex$targets$Sample_Name[1],
+#'   SampleID = "Sample_Name",
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' nrow(filtered_samples$targets)
 #'
 #' @export
-filterSamplesMinfiEwasWater <- function(
-    RGSet, targets, failedSamples = character(0),
-    SampleID = "Sample_Name", verbose = FALSE, logs = FALSE,
-    log_dir = NULL, log_file = "log_filterSamplesMinfiEwasWater.txt"
-) {
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
+filterSamplesMinfiEwasWater <- function(RGSet, targets,
+    failedSamples = character(0), SampleID = "Sample_Name",
+    verbose = FALSE, logs = FALSE, log_dir = NULL,
+    log_file = "log_filterSamplesMinfiEwasWater.txt") {
+    log_path <- resolveLogPathMinfiEwasWater(logs = logs,
+        log_dir = log_dir, log_file = log_file)
     if (!(SampleID %in% colnames(targets))) {
-        stop("SampleID column not found in targets: ", SampleID,
-            call. = FALSE
-        )
-    }
-    sample_names <- validateSampleIdentifiersDnaEpico(
-        colnames(RGSet),
-        "RGSet sample identifiers"
-    )
-    target_sample_ids <- validateSampleIdentifiersDnaEpico(
-        targets[[SampleID]],
-        paste0("phenotype column '", SampleID, "'")
-    )
-    matchSampleIdentifiersDnaEpico(
-        query = sample_names, reference = target_sample_ids,
-        queryLabel = "RGSet sample identifiers", referenceLabel = paste0(
-            "phenotype column '",
-            SampleID, "'"
-        ), requireSameSet = TRUE
-    )
+        stop("SampleID column not found in targets: ",
+            SampleID, call. = FALSE) }
+    sample_names <- validateSampleIdentifiersDnaEpico(colnames(RGSet),
+        "RGSet sample identifiers")
+    target_sample_ids <- validateSampleIdentifiersDnaEpico(targets[[SampleID]],
+        paste0("phenotype column '", SampleID, "'"))
+    matchSampleIdentifiersDnaEpico(query = sample_names,
+        reference = target_sample_ids, queryLabel = "RGSet sample identifiers",
+        referenceLabel = paste0("phenotype column '",
+            SampleID, "'"), requireSameSet = TRUE)
     if (length(failedSamples) > 0L) {
-        failedSamples <- validateSampleIdentifiersDnaEpico(
-            failedSamples,
-            "failedSamples"
-        )
-        unknown_failed_samples <- setdiff(failedSamples, sample_names)
+        failedSamples <- validateSampleIdentifiersDnaEpico(failedSamples,
+            "failedSamples")
+        unknown_failed_samples <- setdiff(failedSamples,
+            sample_names)
         if (length(unknown_failed_samples) > 0L) {
-            stop("failedSamples are not present in RGSet: ",
-                paste(unknown_failed_samples, collapse = ", "),
-                call. = FALSE
-            )
-        }
-    }
-
+            unknown_failed_samples_text <- paste(unknown_failed_samples,
+                collapse = ", ")
+            stop(sprintf("failedSamples are not present in RGSet: %s",
+                unknown_failed_samples_text), call. = FALSE)
+        } }
     keep_samples <- !(sample_names %in% failedSamples)
     if (!any(keep_samples)) {
-        stop("Sample filtering would remove every sample.", call. = FALSE)
-    }
+        stop("Sample filtering would remove every sample.",
+            call. = FALSE) }
     RGSet_filtered <- RGSet[, keep_samples]
-
     sample_names <- colnames(RGSet_filtered)
-    matched <- matchSampleIdentifiersDnaEpico(
-        query = sample_names,
-        reference = targets[[SampleID]],
-            queryLabel = "RGSet sample identifiers",
-        referenceLabel = paste0(
-            "phenotype column '", SampleID,
-            "'"
-        )
-    )
+    matched <- matchSampleIdentifiersDnaEpico(query = sample_names,
+        reference = targets[[SampleID]], queryLabel =
+            "RGSet sample identifiers",
+        referenceLabel = paste0("phenotype column '",
+            SampleID, "'"))
     targets_filtered <- targets[matched, , drop = FALSE]
     rownames(targets_filtered) <- NULL
+    emitLogMinfiEwasWater(c(paste("Samples before filtering: ",
+        ncol(RGSet)), paste("Samples after filtering:  ",
+        ncol(RGSet_filtered)),
+            "============================================================"),
+        verbose = verbose, log_path = log_path)
+    structure(list(RGSet = RGSet_filtered, targets = targets_filtered,
+        failedSamples = failedSamples), class =
+            "dnaEPICO_minfiEwasWater_samples")
+}
 
-    emitLogMinfiEwasWater(
-        c(
-            paste(
-                "Samples before filtering: ",
-                ncol(RGSet)
-            ), paste("Samples after filtering:  ", ncol(RGSet_filtered)),
-            "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
+prepareSexPredictionMinfiEwasWater <- function(
+    rawData, targets, SampleID, sexColumn
+) {
+    if (!(SampleID %in% colnames(targets))) {
+    stop("SampleID column not found in targets: ", SampleID,
+        call. = FALSE
     )
+    }
+    if (!(sexColumn %in% colnames(targets))) {
+    stop("sexColumn not found in targets: ", sexColumn, call. = FALSE)
+    }
+    prediction <- as.data.frame(
+    minfi::getSex(rawData$GSet),
+    stringsAsFactors = FALSE
+    )
+    numeric_columns <- names(prediction)[vapply(
+    prediction, is.numeric, logical(1)
+    )]
+    nan_converted <- sum(vapply(
+    prediction[numeric_columns], function(values) sum(is.nan(values)),
+    integer(1)
+    ))
+    for (column in numeric_columns) {
+    prediction[[column]][is.nan(prediction[[column]])] <- NA_real_
+    }
+    plot_data <- as.data.frame(prediction, stringsAsFactors = FALSE)
+    plot_data$SampleID <- rownames(plot_data)
+    matched <- matchSampleIdentifiersDnaEpico(
+    query = plot_data$SampleID, reference = targets[[SampleID]],
+    queryLabel = "Predicted-sex sample identifiers",
+    referenceLabel = paste0("phenotype column '", SampleID, "'"),
+    requireSameSet = TRUE
+    )
+    aligned <- targets[matched, , drop = FALSE]
+    rownames(aligned) <- NULL
+    reported <- canonicalizeSexDnaEpico(aligned[[sexColumn]])
+    predicted <- canonicalizeSexDnaEpico(prediction$predictedSex)
+    aligned$PredSex <- predicted$code
+    aligned$SexMismatch <- !is.na(reported$code) &
+    !is.na(predicted$code) & reported$code != predicted$code
+    plot_data[[sexColumn]] <- reported$code
+    plot_data$PredSex <- predicted$code
+    plot_data$SexMismatch <- aligned$SexMismatch
+    list(
+    prediction = prediction, targets = aligned, plotData = plot_data,
+    mismatches = aligned[aligned$SexMismatch, , drop = FALSE],
+    reported = reported, predicted = predicted,
+    nanConverted = nan_converted
+    )
+}
 
+sexPredictionLogLinesMinfiEwasWater <- function(
+    state, originalTargets, sexColumn
+) {
+    unknown <- state$reported$unknown
+    c(
+    "Sex column integrity check:",
+    paste("  Sex column used:        ", sexColumn),
+    paste(
+        "  NA values:              ",
+        sum(is.na(originalTargets[[sexColumn]]))
+    ),
+    paste("  NaN values converted:   ", state$nanConverted),
+    paste("  Unknown labels:         ", if (length(unknown)) {
+        paste(unknown, collapse = ", ")
+    } else {
+        "none"
+    }),
+    paste("Mismatches found:         ", nrow(state$mismatches)),
+    if (nrow(state$mismatches)) {
+        previewLinesMinfiEwasWater(
+        state$mismatches[, seq_len(min(3L, ncol(state$mismatches))),
+            drop = FALSE
+        ]
+        )
+    } else {
+        character(0)
+    },
+    "============================================================"
+    )
+}
+
+asSexPredictionResultMinfiEwasWater <- function(state, SampleID, sexColumn) {
     structure(list(
-        RGSet = RGSet_filtered, targets = targets_filtered,
-        failedSamples = failedSamples
-    ), class = "dnaEPICO_minfiEwasWater_samples")
+    pSex = state$prediction, targets = state$targets,
+    sexPlotData = state$plotData, mismatches = state$mismatches,
+    reportedSexOriginal = state$reported$original,
+    reportedSexCode = state$reported$code,
+    reportedSexLabel = state$reported$label,
+    predictedSexCode = state$predicted$code,
+    predictedSexLabel = state$predicted$label,
+    unknownReportedSex = state$reported$unknown,
+    unknownPredictedSex = state$predicted$unknown,
+    nanConverted = state$nanConverted, removedSampleIDs = character(0),
+    removeSexMismatch = FALSE, SampleID = SampleID, sexColumn = sexColumn
+    ), class = "dnaEPICO_minfiEwasWater_sex")
 }
 
 #' Predict biological sex from a filtered raw-data object
@@ -533,12 +542,12 @@ filterSamplesMinfiEwasWater <- function(
 #' @examplesIf requireNamespace("minfiData", quietly = TRUE)
 #' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
 #' sex_data <- predictSexMinfiEwasWater(
-#'     rawData = ex$rawFiltered,
-#'     targets = ex$sampleData$targets,
-#'     SampleID = "Sample_Name",
-#'     sexColumn = "Sex",
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   rawData = ex$rawFiltered,
+#'   targets = ex$sampleData$targets,
+#'   SampleID = "Sample_Name",
+#'   sexColumn = "Sex",
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(sex_data)
 #'
@@ -549,106 +558,78 @@ predictSexMinfiEwasWater <- function(
     log_file = "log_predictSexMinfiEwasWater.txt"
 ) {
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    logs = logs, log_dir = log_dir, log_file = log_file
     )
-
-    if (!(SampleID %in% colnames(targets))) {
-        stop("SampleID column not found in targets: ", SampleID,
-            call. = FALSE
-        )
-    }
-
-    if (!(sexColumn %in% colnames(targets))) {
-        stop("sexColumn not found in targets: ", sexColumn, call. = FALSE)
-    }
-
-    pSex <- as.data.frame(minfi::getSex(rawData$GSet), stringsAsFactors = FALSE)
-    numeric_sex_columns <- names(pSex)[vapply(
-        pSex, is.numeric,
-        logical(1)
-    )]
-    nanSexConverted <- sum(vapply(
-        pSex[numeric_sex_columns],
-        function(values) sum(is.nan(values)), integer(1)
-    ))
-    for (column in numeric_sex_columns) {
-        pSex[[column]][is.nan(pSex[[column]])] <- NA_real_
-    }
-    sex_plot_data <- as.data.frame(pSex, stringsAsFactors = FALSE)
-    sex_plot_data$SampleID <- rownames(sex_plot_data)
-
-    matched <- matchSampleIdentifiersDnaEpico(
-        query = sex_plot_data$SampleID,
-        reference = targets[[SampleID]],
-            queryLabel = "Predicted-sex sample identifiers",
-        referenceLabel = paste0(
-            "phenotype column '", SampleID,
-            "'"
-        ), requireSameSet = TRUE
+    state <- prepareSexPredictionMinfiEwasWater(
+    rawData = rawData, targets = targets, SampleID = SampleID,
+    sexColumn = sexColumn
     )
-    targets_aligned <- targets[matched, , drop = FALSE]
-    rownames(targets_aligned) <- NULL
-
-    reported_sex <- canonicalizeSexDnaEpico(targets_aligned[[sexColumn]])
-    predicted_sex <- canonicalizeSexDnaEpico(pSex$predictedSex)
-    targets_aligned$PredSex <- predicted_sex$code
-    targets_aligned$SexMismatch <- !is.na(reported_sex$code) &
-        !is.na(predicted_sex$code) & reported_sex$code != predicted_sex$code
-
-    sex_plot_data[[sexColumn]] <- reported_sex$code
-    sex_plot_data$PredSex <- predicted_sex$code
-    sex_plot_data$SexMismatch <- targets_aligned$SexMismatch
-    mismatches <- targets_aligned[targets_aligned$SexMismatch, ,
-        drop = FALSE
-    ]
-
-    sex_values <- targets[[sexColumn]]
-    nSexNA <- sum(is.na(sex_values))
-    unknown_sex <- reported_sex$unknown
-
     emitLogMinfiEwasWater(
-        c(
-            "Sex column integrity check:", paste(
-                "  Sex column used:        ",
-                sexColumn
-            ), paste("  NA values:              ", nSexNA),
-            paste("  NaN values converted:   ", nanSexConverted),
-            paste("  Unknown labels:         ", if (length(unknown_sex) ==
-                0L) {
-                "none"
-            } else {
-                paste(unknown_sex, collapse = ", ")
-            }), paste("Mismatches found:         ", nrow(mismatches)),
-            if (nrow(mismatches) > 0L) {
-                previewLinesMinfiEwasWater(mismatches[, seq_len(min(
-                    3L,
-                    ncol(mismatches)
-                )), drop = FALSE])
-            } else {
-                character(0)
-            }, "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
+    sexPredictionLogLinesMinfiEwasWater(state, targets, sexColumn),
+    verbose = verbose, log_path = log_path
     )
+    asSexPredictionResultMinfiEwasWater(state, SampleID, sexColumn)
+}
 
-    structure(
-        list(
-            pSex = pSex, targets = targets_aligned, sexPlotData = sex_plot_data,
-            mismatches = mismatches,
-                reportedSexOriginal = reported_sex$original,
-            reportedSexCode = reported_sex$code,
-                reportedSexLabel = reported_sex$label,
-            predictedSexCode = predicted_sex$code,
-                predictedSexLabel = predicted_sex$label,
-            unknownReportedSex = reported_sex$unknown,
-                unknownPredictedSex = predicted_sex$unknown,
-            nanConverted = nanSexConverted, removedSampleIDs = character(0),
-            removeSexMismatch = FALSE, SampleID = SampleID,
-                sexColumn = sexColumn
-        ),
-        class = "dnaEPICO_minfiEwasWater_sex"
+sexPlotDataMinfiEwasWater <- function(sexData, type) {
+    if (identical(type, "predicted")) {
+    return(data.frame(
+        sample = as.character(sexData$targets[[sexData$SampleID]]),
+        xMed = as.numeric(sexData$pSex$xMed),
+        yMed = as.numeric(sexData$pSex$yMed),
+        sex = as.character(sexData$pSex$predictedSex),
+        stringsAsFactors = FALSE
+    ))
+    }
+    clinical <- sexData$sexPlotData[[sexData$sexColumn]]
+    data.frame(
+    sample = as.character(sexData$sexPlotData$SampleID),
+    xMed = as.numeric(sexData$sexPlotData$xMed),
+    yMed = as.numeric(sexData$sexPlotData$yMed),
+    sex = ifelse(clinical == 1L, "M", "F"),
+    stringsAsFactors = FALSE
     )
+}
+
+sexPlotLabelsMinfiEwasWater <- function(plotData, sexData) {
+    mismatch_ids <- if (is.data.frame(sexData$mismatches) &&
+    sexData$SampleID %in% names(sexData$mismatches)) {
+    as.character(sexData$mismatches[[sexData$SampleID]])
+    } else {
+    character()
+    }
+    if (nrow(plotData) <= 25L) {
+    plotData
+    } else {
+    plotData[plotData$sample %in% mismatch_ids, , drop = FALSE]
+    }
+}
+
+sexPlotObjectMinfiEwasWater <- function(plotData, labelData, type) {
+    style <- adaptivePointStyleDnaEpico(nrow(plotData))
+    ggplot2::ggplot(plotData, ggplot2::aes(x = xMed, y = yMed, colour = sex)) +
+    ggplot2::geom_point(
+        size = style$size, alpha = max(style$alpha, 0.55)
+    ) +
+    ggrepel::geom_text_repel(
+        data = labelData, ggplot2::aes(label = sample),
+        size = 3, max.overlaps = 25L, show.legend = FALSE
+    ) +
+    ggplot2::scale_colour_manual(
+        values = c(M = "#2C7FB8", F = "#C51B8A", `NA` = "#64748B"),
+        na.value = "#64748B"
+    ) +
+    ggplot2::labs(
+        title = NULL,
+        x = "X chromosome median total intensity (log2)",
+        y = "Y chromosome median total intensity (log2)",
+        colour = if (identical(type, "predicted")) {
+        "Predicted sex"
+        } else {
+        "Clinical sex"
+        }
+    ) +
+    dnaEpicoModelPlotTheme()
 }
 
 #' Plot predicted or clinical sex from `predictSexMinfiEwasWater()`
@@ -674,84 +655,139 @@ predictSexMinfiEwasWater <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleSexPlotStateDnaEpico()
 #' plotSexMinfiEwasWater(
-#'     sexData = ex,
-#'     type = "predicted",
-#'     display = FALSE,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   sexData = ex,
+#'   type = "predicted",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #'
 #' @export
 plotSexMinfiEwasWater <- function(
-    sexData, type = c(
-        "predicted",
-        "clinical"
-    ), display = FALSE, file = NULL, width = 2000L,
-    height = 1000L, res = 70L, verbose = FALSE, logs = FALSE,
-    log_dir = NULL, log_file = "log_plotSexMinfiEwasWater.txt"
+    sexData, type = c("predicted", "clinical"), display = FALSE,
+    file = NULL, width = 2000L, height = 1000L, res = 70L,
+    verbose = FALSE, logs = FALSE, log_dir = NULL,
+    log_file = "log_plotSexMinfiEwasWater.txt"
 ) {
     type <- match.arg(type)
-
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    logs = logs, log_dir = log_dir, log_file = log_file
     )
-
-    draw_fun <- switch(type,
-        predicted = function() {
-            graphics::plot(
-                x = sexData$pSex$xMed, y = sexData$pSex$yMed,
-                type = "n", xlab = "X chr, median total intensity (log2)",
-                ylab = "Y chr, median total intensity (log2)"
-            )
-            graphics::text(
-                x = sexData$pSex$xMed, y = sexData$pSex$yMed,
-                labels = sexData$targets[[sexData$SampleID]],
-                    col = ifelse(sexData$pSex$predictedSex ==
-                    "M", "deepskyblue", "deeppink3")
-            )
-            graphics::legend("bottomleft", c("M", "F"), col = c(
-                "deepskyblue",
-                "deeppink3"
-            ), pch = 16)
-        },
-        clinical = function() {
-            graphics::plot(
-                x = sexData$sexPlotData$xMed, y = sexData$sexPlotData$yMed,
-                type = "n", xlab = "X chr, median total intensity (log2)",
-                ylab = "Y chr, median total intensity (log2)"
-            )
-            graphics::text(
-                x = sexData$sexPlotData$xMed, y = sexData$sexPlotData$yMed,
-                labels = sexData$sexPlotData$SampleID,
-                    col = ifelse(sexData$sexPlotData[[sexData$sexColumn]] ==
-                    1L, "deepskyblue", "deeppink3")
-            )
-            graphics::legend("bottomleft", c("M", "F"), col = c(
-                "deepskyblue",
-                "deeppink3"
-            ), pch = 16)
-        }
-    )
-
+    plot_data <- sexPlotDataMinfiEwasWater(sexData, type)
+    label_data <- sexPlotLabelsMinfiEwasWater(plot_data, sexData)
+    plot_object <- sexPlotObjectMinfiEwasWater(plot_data, label_data, type)
+    draw_fun <- function() drawPlotObjectMinfiEwasWater(plot_object)
     runPlotMinfiEwasWater(
-        draw_fun = draw_fun, display = display,
-        file = file, width = width, height = height, res = res
+    draw_fun = draw_fun, display = display,
+    file = file, width = width, height = height, res = res
     )
-
     emitLogMinfiEwasWater(
-        c(paste(
-            "Sex plot created:         ",
-            type
-        ), if (is.null(file)) {
-            "Sex plot file:            none"
+    c(
+        paste("Sex plot created:         ", type),
+        if (is.null(file)) {
+        "Sex plot file:            none"
         } else {
-            paste("Sex plot file:            ", file)
-        }, "============================================================"),
-        verbose = verbose, log_path = log_path
+        paste("Sex plot file:            ", file)
+        },
+        "============================================================"
+    ),
+    verbose = verbose, log_path = log_path
     )
-
     invisible(file)
+}
+
+plotRetentionMinfiEwasWater <- function(counts,
+    unit = c("samples", "CpGs"), display = FALSE,
+    file = NULL, width = 2000L, height = 1000L,
+    res = 150L) {
+    unit <- match.arg(unit)
+    stages <- names(counts)
+    counts <- as.numeric(counts)
+    if (is.null(stages) || !length(counts) ||
+        any(!is.finite(counts)) || any(counts <
+        0)) {
+        stop("Retention counts must be a named, finite, non-negative vector.",
+            call. = FALSE)
+    }
+    retained <- if (counts[[1L]] > 0)
+        100 * counts/counts[[1L]]
+    else 0
+    plot_data <- data.frame(stage = factor(stages,
+        levels = rev(stages)), count = counts,
+        retained = retained, stringsAsFactors = FALSE)
+    plot_data$label <- paste0(format(plot_data$count,
+        big.mark = ","), " (", sprintf("%.1f%%",
+        plot_data$retained), ")")
+    plot_object <- ggplot2::ggplot(plot_data,
+        ggplot2::aes(x = stage, y = count)) +
+        ggplot2::geom_col(fill = "#176B87",
+            alpha = 0.88) + ggplot2::geom_text(ggplot2::aes(label = label),
+        hjust = -0.08, size = 3.6) + ggplot2::coord_flip(clip = "off") +
+        ggplot2::scale_y_continuous(labels = function(value) {
+            format(value, big.mark = ",",
+                scientific = FALSE)
+        }, expand = ggplot2::expansion(mult = c(0,
+            0.2))) + ggplot2::labs(title = NULL,
+        x = "Processing stage", y = paste("Retained",
+            unit)) + dnaEpicoModelPlotTheme()
+    runPlotMinfiEwasWater(draw_fun = function() drawPlotObjectMinfiEwasWater(
+        plot_object),
+        display = display, file = file, width = width,
+        height = adaptiveFigureDimensionDnaEpico(height,
+            length(counts), pixelsPerItem = 130L),
+        res = res)
+    invisible(plot_object)
+}
+
+plotCellCompositionMinfiEwasWater <- function(lcData,
+    display = FALSE, file = NULL, width = 2000L,
+    height = 1000L, res = 150L) {
+    composition <- as.data.frame(lcData$lc, stringsAsFactors = FALSE)
+    numeric_columns <- names(composition)[vapply(composition,
+        is.numeric, logical(1))]
+    if (!length(numeric_columns)) {
+        stop("Cell-composition output contains no numeric cell estimates.",
+            call. = FALSE)
+    }
+    long_data <- do.call(rbind, lapply(numeric_columns,
+        function(cell) {
+            data.frame(cell = cell, proportion = as.numeric(composition[[
+            cell]]),
+                stringsAsFactors = FALSE)
+        }))
+    long_data <- long_data[is.finite(long_data$proportion),
+        , drop = FALSE]
+    long_data$cell <- factor(long_data$cell, levels = numeric_columns)
+    style <- adaptivePointStyleDnaEpico(nrow(composition))
+    point_rows <- unlist(lapply(split(seq_len(nrow(long_data)),
+        long_data$cell), function(rows) {
+        rows[deterministicPlotRowsDnaEpico(length(rows),
+            maximum = 1000L)]
+    }), use.names = FALSE)
+    point_data <- long_data[point_rows, , drop = FALSE]
+    plot_object <- ggplot2::ggplot(long_data, ggplot2::aes(x = cell,
+        y = proportion)) + ggplot2::geom_violin(fill = "#D8EFF3",
+        colour = "#176B87", alpha = 0.72, scale = "width",
+        trim = TRUE) + ggplot2::geom_boxplot(width = 0.16,
+        outlier.shape = NA, fill = "white", colour = "#17324D") +
+        ggplot2::geom_jitter(data = point_data,
+            width = 0.08, height = 0, size = min(style$size,
+                1.1), alpha = min(style$alpha,
+                0.32), colour = "#243746") + ggplot2::labs(title = NULL,
+        x = "Estimated cell type", y = "Proportion") +
+        dnaEpicoModelPlotTheme() + ggplot2::theme(axis.text.x =
+            ggplot2::element_text(angle = if (length(numeric_columns) >
+        5L) {
+        35 }
+    else { 0
+    }, hjust = 1))
+    runPlotMinfiEwasWater(draw_fun = function() drawPlotObjectMinfiEwasWater(
+        plot_object),
+        display = display, file = file, width =
+            adaptiveFigureDimensionDnaEpico(width,
+            length(numeric_columns), pixelsPerItem = 230L),
+        height = height, res = res)
+    invisible(plot_object)
 }
 
 #' Normalize filtered samples with minfi and wateRmelon methods
@@ -777,96 +813,72 @@ plotSexMinfiEwasWater <- function(
 #' @examplesIf requireNamespace("minfiData", quietly = TRUE)
 #' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 #' sample_data <- filterSamplesMinfiEwasWater(
-#'     RGSet = ex$RGSet,
-#'     targets = ex$targets,
-#'     failedSamples = character(0),
-#'     SampleID = "Sample_Name",
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   RGSet = ex$RGSet,
+#'   targets = ex$targets,
+#'   failedSamples = character(0),
+#'   SampleID = "Sample_Name",
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' norm_data <- normalizeMinfiEwasWater(
-#'     sampleData = sample_data,
-#'     sexColumn = "Sex",
-#'     normMethods = "quantile",
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   sampleData = sample_data,
+#'   sexColumn = "Sex",
+#'   normMethods = "quantile",
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(norm_data$normalized)
 #'
 #' @export
-normalizeMinfiEwasWater <- function(
-    sampleData, sexColumn = "Sex",
-    normMethods = "adjustedfunnorm", verbose = FALSE, logs = FALSE,
-    log_dir = NULL, log_file = "log_normalizeMinfiEwasWater.txt"
-) {
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
+normalizeMinfiEwasWater <- function(sampleData,
+    sexColumn = "Sex", normMethods = "adjustedfunnorm",
+    verbose = FALSE, logs = FALSE, log_dir = NULL,
+    log_file = "log_normalizeMinfiEwasWater.txt") {
+    log_path <- resolveLogPathMinfiEwasWater(logs = logs,
+        log_dir = log_dir, log_file = log_file)
     method_list <- tolower(splitOptionMinfiEwasWater(normMethods,
-        sep = ";"
-    ))
-    supported_methods <- c(
-        "adjustedfunnorm", "funnorm", "illumina",
-        "quantile", "swan"
-    )
+        sep = ";"))
+    supported_methods <- c("adjustedfunnorm",
+        "funnorm", "illumina", "quantile", "swan")
     if (length(method_list) == 0L) {
         stop("At least one normalization method must be supplied.",
-            call. = FALSE
-        )
-    }
+            call. = FALSE) }
     unknown_methods <- setdiff(method_list, supported_methods)
     if (length(unknown_methods) > 0L) {
-        stop("Unknown normalization method(s): ", paste(unknown_methods,
-            collapse = ", "
-        ), call. = FALSE)
+        unknown_methods_text <- paste(unknown_methods,
+            collapse = ", ")
+        stop(sprintf("Unknown normalization method(s): %s",
+            unknown_methods_text), call. = FALSE)
     }
     normalized <- vector("list", length(method_list))
     names(normalized) <- method_list
-
     col_data <- SummarizedExperiment::colData(sampleData$RGSet)
-    sex_vec <- resolveNormalizationSexDnaEpico(col_data, sexColumn)
-
-    emitLogMinfiEwasWater(c(paste(
-        "Normalization methods:    ",
-        paste(method_list, collapse = ", ")
-    ), paste(
-        "Sex column:               ",
-        sexColumn
-    )), verbose = verbose, log_path = log_path)
-
+    sex_vec <- resolveNormalizationSexDnaEpico(col_data,
+        sexColumn)
+    emitLogMinfiEwasWater(c(paste("Normalization methods:    ",
+        paste(method_list, collapse = ", ")),
+        paste("Sex column:               ", sexColumn)),
+        verbose = verbose, log_path = log_path)
     for (i in seq_along(method_list)) {
         method <- method_list[[i]]
-        emitLogMinfiEwasWater(paste(
-            "Applying normalization:   ",
-            method
-        ), verbose = verbose, log_path = log_path)
-
-        normalized[[i]] <- switch(method,
-            adjustedfunnorm = wateRmelon::adjustedFunnorm(sampleData$RGSet,
-                sex = sex_vec
-            ),
-            funnorm = minfi::preprocessFunnorm(sampleData$RGSet,
-                sex = sex_vec
-            ),
-            illumina = minfi::preprocessIllumina(sampleData$RGSet),
+        emitLogMinfiEwasWater(paste("Applying normalization:   ",
+            method), verbose = verbose, log_path = log_path)
+        normalized[[i]] <- switch(method, adjustedfunnorm =
+            wateRmelon::adjustedFunnorm(sampleData$RGSet,
+            sex = sex_vec), funnorm = minfi::preprocessFunnorm(sampleData$RGSet,
+            sex = sex_vec), illumina = minfi::preprocessIllumina(
+            sampleData$RGSet),
             quantile = minfi::preprocessQuantile(sampleData$RGSet,
-                sex = sex_vec
-            ),
-            swan = minfi::preprocessSWAN(sampleData$RGSet),
-            stop("Unknown normalization method: ", method, call. = FALSE)
-        )
+                sex = sex_vec), swan = minfi::preprocessSWAN(sampleData$RGSet),
+            stop("Unknown normalization method: ",
+                method, call. = FALSE))
     }
-
-    emitLogMinfiEwasWater("============================================================",
-        verbose = verbose, log_path = log_path
-    )
-
-    structure(list(
-        primary = normalized[[1L]], normalized = normalized,
-        methods = method_list, sexColumn = sexColumn
-    ), class = "dnaEPICO_minfiEwasWater_norm")
+    emitLogMinfiEwasWater(paste0(
+        "====================================================",
+        "========"), verbose = verbose, log_path = log_path)
+    structure(list(primary = normalized[[1L]],
+        normalized = normalized, methods = method_list,
+        sexColumn = sexColumn), class = "dnaEPICO_minfiEwasWater_norm")
 }
 
 #' Plot raw and normalized methylation distributions
@@ -896,13 +908,13 @@ normalizeMinfiEwasWater <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 #' plotNormalizationMinfiEwasWater(
-#'     RGSet = ex$beta,
-#'     normData = ex$normData,
-#'     targets = ex$targets,
-#'     sexColumn = "Sex",
-#'     display = FALSE,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   RGSet = ex$beta,
+#'   normData = ex$normData,
+#'   targets = ex$targets,
+#'   sexColumn = "Sex",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #'
 #' @export
@@ -911,46 +923,46 @@ plotNormalizationMinfiEwasWater <- function(
     targets, sexColumn = "Sex", display = FALSE, file = NULL,
     width = 2000L, height = 1000L, res = 150L, verbose = FALSE,
     logs = FALSE, log_dir = NULL,
-        log_file = "log_plotNormalizationMinfiEwasWater.txt"
+    log_file = "log_plotNormalizationMinfiEwasWater.txt"
 ) {
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    logs = logs, log_dir = log_dir,
+    log_file = log_file
     )
 
     draw_fun <- function() {
-        graphics::par(mfrow = c(1, 2))
-        minfi::densityPlot(RGSet,
-            sampGroups = targets[[sexColumn]],
-            main = "Raw", legend = FALSE
-        )
-        graphics::legend("top",
-            legend = levels(factor(targets[[sexColumn]])),
-            text.col = RColorBrewer::brewer.pal(8, "Dark2")
-        )
+    graphics::par(mfrow = c(1, 2))
+    minfi::densityPlot(RGSet,
+        sampGroups = targets[[sexColumn]],
+        main = "Raw", legend = FALSE
+    )
+    graphics::legend("top",
+        legend = levels(factor(targets[[sexColumn]])),
+        text.col = RColorBrewer::brewer.pal(8, "Dark2")
+    )
 
-        minfi::densityPlot(minfi::getBeta(normData$primary),
-            sampGroups = targets[[sexColumn]], main = "Normalized",
-            legend = FALSE
-        )
-        graphics::legend("top",
-            legend = levels(factor(targets[[sexColumn]])),
-            text.col = RColorBrewer::brewer.pal(8, "Dark2")
-        )
+    minfi::densityPlot(minfi::getBeta(normData$primary),
+        sampGroups = targets[[sexColumn]], main = "Normalized",
+        legend = FALSE
+    )
+    graphics::legend("top",
+        legend = levels(factor(targets[[sexColumn]])),
+        text.col = RColorBrewer::brewer.pal(8, "Dark2")
+    )
     }
 
     runPlotMinfiEwasWater(
-        draw_fun = draw_fun, display = display,
-        file = file, width = width, height = height, res = res
+    draw_fun = draw_fun, display = display,
+    file = file, width = width, height = height, res = res
     )
 
     emitLogMinfiEwasWater(
-        c(if (is.null(file)) {
-            "Raw-vs-normalized plot:   not written to file"
-        } else {
-            paste("Raw-vs-normalized plot:   ", file)
-        }, "============================================================"),
-        verbose = verbose, log_path = log_path
+    c(if (is.null(file)) {
+        "Raw-vs-normalized plot:   not written to file"
+    } else {
+        paste("Raw-vs-normalized plot:   ", file)
+    }, "============================================================"),
+    verbose = verbose, log_path = log_path
     )
 
     invisible(file)
@@ -983,12 +995,12 @@ plotNormalizationMinfiEwasWater <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 #' plotRawDensityMinfiEwasWater(
-#'     rawData = ex$rawData,
-#'     targets = ex$targets,
-#'     plotGroupVar = "Sex",
-#'     display = FALSE,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   rawData = ex$rawData,
+#'   targets = ex$targets,
+#'   plotGroupVar = "Sex",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #'
 #' @export
@@ -999,35 +1011,101 @@ plotRawDensityMinfiEwasWater <- function(
     log_file = "log_plotRawDensityMinfiEwasWater.txt"
 ) {
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    logs = logs, log_dir = log_dir,
+    log_file = log_file
     )
 
     draw_fun <- function() {
-        minfi::densityPlot(minfi::getBeta(rawData$MSet),
-            sampGroups = targets[[plotGroupVar]],
-            pal = RColorBrewer::brewer.pal(8, "Dark2"), main = paste(
-                "Density Plot of Beta Values by",
-                plotGroupVar
-            ), legend = TRUE
-        )
+    minfi::densityPlot(minfi::getBeta(rawData$MSet),
+        sampGroups = targets[[plotGroupVar]],
+        pal = RColorBrewer::brewer.pal(8, "Dark2"), main = paste(
+        "Density Plot of Beta Values by",
+        plotGroupVar
+        ), legend = TRUE
+    )
     }
 
     runPlotMinfiEwasWater(
-        draw_fun = draw_fun, display = display,
-        file = file, width = width, height = height, res = res
+    draw_fun = draw_fun, display = display,
+    file = file, width = width, height = height, res = res
     )
 
     emitLogMinfiEwasWater(
-        c(if (is.null(file)) {
-            "Raw beta density plot:    not written to file"
-        } else {
-            paste("Raw beta density plot:    ", file)
-        }, "============================================================"),
-        verbose = verbose, log_path = log_path
+    c(if (is.null(file)) {
+        "Raw beta density plot:    not written to file"
+    } else {
+        paste("Raw beta density plot:    ", file)
+    }, "============================================================"),
+    verbose = verbose, log_path = log_path
     )
 
     invisible(file)
+}
+
+normalizeProbeExclusionIdColumnMinfiEwasWater <- function(value) {
+    if (!length(value) || is.na(value[[1L]])) {
+    return(NULL)
+    }
+    value <- trimws(as.character(value[[1L]]))
+    if (!nzchar(value) || identical(toupper(value), "NULL")) NULL else value
+}
+
+probeExclusionAvailableColumnsTextMinfiEwasWater <- function(columns) {
+    paste(ifelse(nzchar(columns), columns, "<blank>"), collapse = ", ")
+}
+
+autoProbeExclusionColumnMinfiEwasWater <- function(data, path) {
+    columns <- colnames(data)
+    standard <- c("ProbeID", "TargetID", "IlmnID", "Name")
+    standard_match <- standard[standard %in% columns]
+    if (length(standard_match)) {
+    column <- standard_match[[1L]]
+    return(list(
+        column = column, index = match(column, columns),
+        source = "standard"
+    ))
+    }
+    first_column <- columns[[1L]]
+    values <- trimws(as.character(data[[1L]]))
+    values <- values[!is.na(values) & nzchar(values)]
+    unlabeled <- !nzchar(first_column)
+    probe_like <- length(values) > 0L && all(grepl("^(cg|ch\\.)", values))
+    if (unlabeled || probe_like) {
+    return(list(
+        column = first_column, index = 1L,
+        source = if (unlabeled) {
+        "unlabeled first column"
+        } else {
+        "probe-like first column"
+        }
+    ))
+    }
+    stop(sprintf(
+    "%s in %s. %s: %s",
+    "Could not detect a probe-exclusion ID column", path,
+    "Set probeExclusionIdColumn to one of",
+    probeExclusionAvailableColumnsTextMinfiEwasWater(columns)
+    ), call. = FALSE)
+}
+
+selectProbeExclusionColumnMinfiEwasWater <- function(data, path, configured) {
+    configured <- normalizeProbeExclusionIdColumnMinfiEwasWater(configured)
+    if (is.null(configured)) {
+    return(autoProbeExclusionColumnMinfiEwasWater(data, path))
+    }
+    columns <- colnames(data)
+    if (!(configured %in% columns)) {
+    stop(sprintf(
+        "%s: %s. Available columns: %s",
+        "probeExclusionIdColumn not found in probe-exclusion file",
+        configured,
+        probeExclusionAvailableColumnsTextMinfiEwasWater(columns)
+    ), call. = FALSE)
+    }
+    list(
+    column = configured, index = match(configured, columns),
+    source = "configured"
+    )
 }
 
 #' Read probe-exclusion identifiers from one CSV file
@@ -1049,116 +1127,45 @@ readProbeExclusionFileIdsMinfiEwasWater <- function(
     probeExclusionIdColumn = NULL, featureNames = NULL
 ) {
     if (!file.exists(probeExclusionPath)) {
-        stop("probeExclusionPath does not exist: ", probeExclusionPath,
-            call. = FALSE
-        )
-    }
-
-    probe_exclusion <- utils::read.csv(probeExclusionPath,
-        stringsAsFactors = FALSE,
-        check.names = FALSE
+    stop("probeExclusionPath does not exist: ", probeExclusionPath,
+        call. = FALSE
     )
-
+    }
+    probe_exclusion <- utils::read.csv(
+    probeExclusionPath,
+    stringsAsFactors = FALSE, check.names = FALSE
+    )
     if (ncol(probe_exclusion) == 0L) {
-        stop("probeExclusionPath contains no columns: ", probeExclusionPath,
-            call. = FALSE
-        )
+    stop("probeExclusionPath contains no columns: ", probeExclusionPath,
+        call. = FALSE
+    )
     }
-
-    id_column <- probeExclusionIdColumn
-    if (length(id_column) == 0L || is.na(id_column[[1L]])) {
-        id_column <- NULL
-    } else {
-        id_column <- trimws(as.character(id_column[[1L]]))
-        if (!nzchar(id_column) || identical(
-            toupper(id_column),
-            "NULL"
-        )) {
-            id_column <- NULL
-        }
-    }
-
-    available_columns <- colnames(probe_exclusion)
-    standard_columns <- c("ProbeID", "TargetID", "IlmnID", "Name")
-
-    if (!is.null(id_column)) {
-        if (!(id_column %in% available_columns)) {
-            stop("probeExclusionIdColumn not found in probe-exclusion file: ",
-                id_column, ". Available columns: ",
-                    paste(ifelse(nzchar(available_columns),
-                    available_columns, "<blank>"
-                ), collapse = ", "),
-                call. = FALSE
-            )
-        }
-        selected_column <- id_column
-        selected_index <- match(id_column, available_columns)
-        source <- "configured"
-    } else {
-        standard_match <- standard_columns[standard_columns %in%
-            available_columns]
-        if (length(standard_match) > 0L) {
-            selected_column <- standard_match[[1L]]
-            selected_index <- match(selected_column, available_columns)
-            source <- "standard"
-        } else {
-            first_column <- available_columns[[1L]]
-            first_values <- trimws(as.character(probe_exclusion[[1L]]))
-            first_values <- first_values[!is.na(first_values) &
-                nzchar(first_values)]
-            first_column_is_unlabeled <- !nzchar(first_column)
-            first_column_is_probe_like <- length(first_values) >
-                0L && all(grepl("^(cg|ch\\.)", first_values))
-
-            if (isTRUE(first_column_is_unlabeled) ||
-                isTRUE(first_column_is_probe_like)) {
-                selected_column <- first_column
-                selected_index <- 1L
-                source <- if (isTRUE(first_column_is_unlabeled)) {
-                    "unlabeled first column"
-                } else {
-                    "probe-like first column"
-                }
-            } else {
-                stop("Could not detect a probe-exclusion ID column in ",
-                    probeExclusionPath,
-                        ". Set probeExclusionIdColumn to one of: ",
-                    paste(ifelse(nzchar(available_columns), available_columns,
-                        "<blank>"
-                    ), collapse = ", "),
-                    call. = FALSE
-                )
-            }
-        }
-    }
-
-    ids <- trimws(as.character(probe_exclusion[[selected_index]]))
+    selected <- selectProbeExclusionColumnMinfiEwasWater(
+    probe_exclusion, probeExclusionPath, probeExclusionIdColumn
+    )
+    ids <- trimws(as.character(probe_exclusion[[selected$index]]))
     ids <- unique(ids[!is.na(ids) & nzchar(ids)])
-
-    if (length(ids) == 0L) {
-        stop("Probe-exclusion ID column contains no usable IDs: ",
-            ifelse(nzchar(selected_column), selected_column,
-                "<blank>"
-            ),
-            call. = FALSE
-        )
+    if (!length(ids)) {
+    stop("Probe-exclusion ID column contains no usable IDs: ",
+        ifelse(nzchar(selected$column), selected$column, "<blank>"),
+        call. = FALSE
+    )
     }
-
-    overlap <- NA_integer_
-    if (!is.null(featureNames)) {
-        overlap <- sum(ids %in% featureNames)
+    overlap <- if (is.null(featureNames)) {
+    NA_integer_
+    } else {
+    sum(ids %in% featureNames)
     }
-
     structure(list(
-        ids = ids, path = probeExclusionPath, column = selected_column,
-        source = source, nRows = nrow(probe_exclusion), nIds = length(ids),
-        overlap = overlap
+    ids = ids, path = probeExclusionPath, column = selected$column,
+    source = selected$source, nRows = nrow(probe_exclusion),
+    nIds = length(ids), overlap = overlap
     ), class = "dnaEPICO_probeExclusion_file_ids")
 }
 
 normalizeProbeExclusionPathsMinfiEwasWater <- function(probeExclusionPath) {
     if (length(probeExclusionPath) == 0L || all(is.na(probeExclusionPath))) {
-        return(character(0))
+    return(character(0))
     }
 
     paths <- splitOptionMinfiEwasWater(probeExclusionPath, sep = ";")
@@ -1170,29 +1177,30 @@ normalizeProbeExclusionColumnsMinfiEwasWater <- function(
     nFiles
 ) {
     if (length(probeExclusionIdColumn) == 0L ||
-        all(is.na(probeExclusionIdColumn))) {
-        return(rep(list(NULL), nFiles))
+    all(is.na(probeExclusionIdColumn))) {
+    return(rep(list(NULL), nFiles))
     }
 
     columns <- splitOptionMinfiEwasWater(probeExclusionIdColumn,
-        sep = ";"
+    sep = ";"
     )
     if (length(columns) == 0L || identical(
-        toupper(columns[[1L]]),
-        "NULL"
+    toupper(columns[[1L]]),
+    "NULL"
     )) {
-        return(rep(list(NULL), nFiles))
+    return(rep(list(NULL), nFiles))
     }
 
     if (length(columns) == 1L) {
-        return(rep(as.list(columns), nFiles))
+    return(rep(as.list(columns), nFiles))
     }
 
     if (length(columns) != nFiles) {
-        stop("probeExclusionIdColumn must be NULL, a single column name, or one ",
-            "semicolon-separated column name per probe-exclusion file.",
-            call. = FALSE
-        )
+    stop(
+        "probeExclusionIdColumn must be NULL, a single column name, or ",
+        "one semicolon-separated column name per probe-exclusion file.",
+        call. = FALSE
+    )
     }
 
     as.list(columns)
@@ -1211,228 +1219,346 @@ normalizeProbeExclusionColumnsMinfiEwasWater <- function(
 #'
 #' @keywords internal
 #' @noRd
-readProbeExclusionIdsMinfiEwasWater <- function(
-    probeExclusionPath,
-    probeExclusionIdColumn = NULL, featureNames = NULL
-) {
+readProbeExclusionIdsMinfiEwasWater <- function(probeExclusionPath,
+    probeExclusionIdColumn = NULL, featureNames = NULL) {
     paths <- normalizeProbeExclusionPathsMinfiEwasWater(probeExclusionPath)
     columns <- normalizeProbeExclusionColumnsMinfiEwasWater(
         probeExclusionIdColumn = probeExclusionIdColumn,
-        nFiles = length(paths)
-    )
-
+        nFiles = length(paths))
     if (length(paths) == 0L) {
-        return(structure(
-            list(
-                ids = character(0), files = data.frame(
-                    path = character(0),
-                    column = character(0), source = character(0),
-                        nRows = integer(0),
-                    nIds = integer(0), overlap = integer(0),
-                        stringsAsFactors = FALSE
-                ),
-                nIds = 0L,
-                    overlap = if (is.null(featureNames)) NA_integer_ else 0L
-            ),
-            class = "dnaEPICO_probeExclusion_ids"
-        ))
+        return(structure(list(ids = character(0),
+            files = data.frame(path = character(0),
+                column = character(0), source = character(0),
+                nRows = integer(0), nIds = integer(0),
+                overlap = integer(0), stringsAsFactors = FALSE),
+            nIds = 0L, overlap = if (is.null(
+            featureNames)) NA_integer_ else 0L),
+            class = "dnaEPICO_probeExclusion_ids"))
     }
-
-    file_results <- Map(f = function(path, column) {
-        readProbeExclusionFileIdsMinfiEwasWater(
-            probeExclusionPath = path,
-            probeExclusionIdColumn = column, featureNames = featureNames
-        )
+    file_results <- Map(f = function(path,
+        column) {
+        readProbeExclusionFileIdsMinfiEwasWater(probeExclusionPath = path,
+            probeExclusionIdColumn = column,
+            featureNames = featureNames)
     }, path = paths, column = columns)
-
-    ids <- unique(unlist(lapply(file_results, `[[`, "ids"), use.names = FALSE))
+    ids <- unique(unlist(lapply(file_results,
+        `[[`, "ids"), use.names = FALSE))
     overlap <- NA_integer_
     if (!is.null(featureNames)) {
         overlap <- sum(ids %in% featureNames)
     }
-
-    files <- do.call(rbind, lapply(file_results, function(result) {
-        data.frame(
-            path = result$path, column = ifelse(nzchar(result$column),
-                result$column, "<blank>"
-            ), source = result$source,
-            nRows = result$nRows, nIds = result$nIds, overlap = result$overlap,
-            stringsAsFactors = FALSE
-        )
-    }))
-
-    structure(list(
-        ids = ids, files = files, nIds = length(ids),
-        overlap = overlap
-    ), class = "dnaEPICO_probeExclusion_ids")
+    files <- do.call(rbind, lapply(file_results,
+        function(result) {
+            data.frame(path = result$path,
+                column = ifelse(nzchar(result$column),
+                    result$column, "<blank>"),
+                source = result$source, nRows = result$nRows,
+                nIds = result$nIds, overlap = result$overlap,
+                stringsAsFactors = FALSE)
+        }))
+    structure(list(ids = ids, files = files,
+        nIds = length(ids), overlap = overlap),
+        class = "dnaEPICO_probeExclusion_ids")
 }
 
 normalizeEpicV2ManifestFlagsMinfiEwasWater <- function(epicV2ManifestFlags) {
-    default_flags <- c(
-        CH_WGBS_evidence = TRUE, CH_BLAT = TRUE,
-        MissingPos = TRUE, MismatchPos = FALSE
-    )
-
-    if (length(epicV2ManifestFlags) == 0L || all(is.na(epicV2ManifestFlags))) {
+    default_flags <- c(CH_WGBS_evidence = TRUE,
+        CH_BLAT = TRUE, MissingPos = TRUE,
+        MismatchPos = FALSE)
+    if (length(epicV2ManifestFlags) == 0L ||
+        all(is.na(epicV2ManifestFlags))) {
         return(default_flags)
     }
-
     if (is.logical(epicV2ManifestFlags)) {
         if (is.null(names(epicV2ManifestFlags))) {
-            if (length(epicV2ManifestFlags) != length(default_flags)) {
+            if (length(epicV2ManifestFlags) !=
+                length(default_flags)) {
                 stop("Unnamed epicV2ManifestFlags must have ",
                     length(default_flags), " values.",
-                    call. = FALSE
-                )
+                    call. = FALSE)
             }
             names(epicV2ManifestFlags) <- names(default_flags)
         }
-
-        unknown_flags <- setdiff(
-            names(epicV2ManifestFlags),
-            names(default_flags)
-        )
+        unknown_flags <- setdiff(names(epicV2ManifestFlags),
+            names(default_flags))
         if (length(unknown_flags) > 0L) {
-            stop("Unknown EPICv2 manifest flag(s): ", paste(unknown_flags,
-                collapse = ", "
-            ), call. = FALSE)
+            unknown_flags_text <- paste(unknown_flags,
+                collapse = ", ")
+            stop(sprintf("Unknown EPICv2 manifest flag(s): %s",
+                unknown_flags_text), call. = FALSE)
         }
-
         if (anyNA(epicV2ManifestFlags)) {
             stop("epicV2ManifestFlags must contain only TRUE or FALSE values.",
-                call. = FALSE
-            )
+                call. = FALSE)
         }
-
         default_flags[names(epicV2ManifestFlags)] <- epicV2ManifestFlags
         return(default_flags)
     }
-
     flag_values <- splitOptionMinfiEwasWater(epicV2ManifestFlags,
-        sep = ";"
-    )
+        sep = ";")
     if (length(flag_values) == 0L) {
         return(default_flags)
     }
-
     flag_names <- sub("=.*$", "", flag_values)
     flag_enabled <- rep(TRUE, length(flag_values))
     has_equals <- grepl("=", flag_values, fixed = TRUE)
-    flag_enabled[has_equals] <- as.logical(toupper(sub(
-        "^.*=",
-        "", flag_values[has_equals]
-    )))
+    flag_enabled[has_equals] <- as.logical(toupper(sub("^.*=",
+        "", flag_values[has_equals])))
     if (anyNA(flag_enabled)) {
         stop("epicV2ManifestFlags must contain only TRUE or FALSE values.",
-            call. = FALSE
-        )
+            call. = FALSE)
     }
-
     names(flag_enabled) <- flag_names
     normalizeEpicV2ManifestFlagsMinfiEwasWater(flag_enabled)
 }
 
-extractEpicV2ManifestExclusionIdsMinfiEwasWater <- function(
-    manifest,
-    epicV2ManifestFlags = c(
-        CH_WGBS_evidence = TRUE, CH_BLAT = TRUE,
-        MissingPos = TRUE, MismatchPos = FALSE
-    ), featureNames = NULL
-) {
+extractEpicV2ManifestExclusionIdsMinfiEwasWater <- function(manifest,
+    epicV2ManifestFlags = c(CH_WGBS_evidence = TRUE,
+        CH_BLAT = TRUE, MissingPos = TRUE, MismatchPos = FALSE),
+    featureNames = NULL) {
     flags <- normalizeEpicV2ManifestFlagsMinfiEwasWater(epicV2ManifestFlags)
-    enabled_flags <- names(flags)[!is.na(flags) & flags]
-
+    enabled_flags <- names(flags)[!is.na(flags) &
+        flags]
     if (length(enabled_flags) == 0L) {
-        return(structure(
-            list(
-                ids = character(0), flags = flags,
-                flagCounts = stats::setNames(integer(0), character(0)),
-                nIds = 0L,
-                    overlap = if (is.null(featureNames)) NA_integer_ else 0L
-            ),
-            class = "dnaEPICO_epicV2Manifest_ids"
-        ))
+        return(structure(list(ids = character(0),
+            flags = flags, flagCounts = stats::setNames(integer(0),
+                character(0)), nIds = 0L, overlap = if (is.null(
+            featureNames)) NA_integer_ else 0L),
+            class = "dnaEPICO_epicV2Manifest_ids"))
     }
-
     manifest <- as.data.frame(manifest, stringsAsFactors = FALSE)
     missing_flags <- setdiff(enabled_flags, colnames(manifest))
     if (length(missing_flags) > 0L) {
-        stop("EPICv2 manifest is missing requested flag column(s): ",
-            paste(missing_flags, collapse = ", "),
-            call. = FALSE
-        )
-    }
-
-    ids <- rownames(manifest)
+        missing_flags_text <- paste(missing_flags,
+            collapse = ", ")
+        stop(sprintf("EPICv2 manifest is missing requested flag column(s): %s",
+            missing_flags_text), call. = FALSE)
+    }; ids <- rownames(manifest)
     default_row_names <- identical(ids, as.character(seq_len(nrow(manifest))))
     if (is.null(ids) || all(!nzchar(ids)) || isTRUE(default_row_names)) {
         if (!("IlmnID" %in% colnames(manifest))) {
-            stop("EPICv2 manifest must have IlmnID row names or an IlmnID column.",
-                call. = FALSE
-            )
+            stop("EPICv2 manifest must have IlmnID row names or an IlmnID ",
+                "column.", call. = FALSE)
         }
         ids <- as.character(manifest$IlmnID)
     }
-
     selected <- rep(FALSE, nrow(manifest))
-    flag_counts <- stats::setNames(
-        integer(length(enabled_flags)),
-        enabled_flags
-    )
+    flag_counts <- stats::setNames(integer(length(enabled_flags)),
+        enabled_flags)
     for (flag in enabled_flags) {
         flag_values <- toupper(trimws(as.character(manifest[[flag]])))
-        flag_selected <- !is.na(flag_values) & flag_values %in%
-            c("Y", "TRUE", "1")
+        flag_selected <- !is.na(flag_values) &
+            flag_values %in% c("Y", "TRUE", "1")
         flag_counts[[flag]] <- sum(flag_selected)
         selected <- selected | flag_selected
     }
-
-    selected_ids <- unique(ids[selected & !is.na(ids) & nzchar(ids)])
+    selected_ids <- unique(ids[selected & !is.na(ids) &
+        nzchar(ids)])
     overlap <- NA_integer_
     if (!is.null(featureNames)) {
         overlap <- sum(selected_ids %in% featureNames)
     }
-
-    structure(list(
-        ids = selected_ids, flags = flags, flagCounts = flag_counts,
-        nIds = length(selected_ids), overlap = overlap
-    ), class = "dnaEPICO_epicV2Manifest_ids")
+    structure(list(ids = selected_ids, flags = flags,
+        flagCounts = flag_counts, nIds = length(selected_ids),
+        overlap = overlap), class = "dnaEPICO_epicV2Manifest_ids")
 }
 
 readEpicV2ManifestExclusionIdsMinfiEwasWater <- function(
     useEpicV2Manifest = FALSE,
     epicV2ManifestFlags = c(
-        CH_WGBS_evidence = TRUE, CH_BLAT = TRUE,
-        MissingPos = TRUE, MismatchPos = FALSE
+    CH_WGBS_evidence = TRUE, CH_BLAT = TRUE,
+    MissingPos = TRUE, MismatchPos = FALSE
     ), featureNames = NULL
 ) {
     if (!isTRUE(useEpicV2Manifest)) {
-        return(extractEpicV2ManifestExclusionIdsMinfiEwasWater(
-            manifest = data.frame(row.names = character(0)),
-            epicV2ManifestFlags = stats::setNames(rep(
-                FALSE,
-                4L
-            ), c(
-                "CH_WGBS_evidence", "CH_BLAT", "MissingPos",
-                "MismatchPos"
-            )), featureNames = featureNames
-        ))
+    return(extractEpicV2ManifestExclusionIdsMinfiEwasWater(
+        manifest = data.frame(row.names = character(0)),
+        epicV2ManifestFlags = stats::setNames(rep(
+        FALSE,
+        4L
+        ), c(
+        "CH_WGBS_evidence", "CH_BLAT", "MissingPos",
+        "MismatchPos"
+        )), featureNames = featureNames
+    ))
     }
 
     if (!requireNamespace("AnnotationHub", quietly = TRUE)) {
-        stop("AnnotationHub is required when useEpicV2Manifest = TRUE. ",
-            "Install AnnotationHub or set useEpicV2Manifest = FALSE.",
-            call. = FALSE
-        )
+    stop("AnnotationHub is required when useEpicV2Manifest = TRUE. ",
+        "Install AnnotationHub or set useEpicV2Manifest = FALSE.",
+        call. = FALSE
+    )
     }
 
     hub <- AnnotationHub::AnnotationHub()
     manifest <- hub[["AH116484"]]
 
     extractEpicV2ManifestExclusionIdsMinfiEwasWater(
-        manifest = manifest,
-        epicV2ManifestFlags = epicV2ManifestFlags, featureNames = featureNames
+    manifest = manifest,
+    epicV2ManifestFlags = epicV2ManifestFlags, featureNames = featureNames
     )
+}
+
+normalizeProbeFilterOptionsMinfiEwasWater <- function(
+    pvalThreshold, mafThreshold, chrToRemove, snpsToRemove,
+    useEpicV2Manifest
+) {
+    list(
+    pvalThreshold = validateProbabilityDnaEpico(
+        pvalThreshold, "pvalThreshold"
+    ),
+    mafThreshold = validateProbabilityDnaEpico(
+        mafThreshold, "mafThreshold"
+    ),
+    chr = splitOptionMinfiEwasWater(chrToRemove, sep = ","),
+    snps = splitOptionMinfiEwasWater(snpsToRemove, sep = ","),
+    useEpicV2Manifest = validateLogicalScalarDnaEpico(
+        useEpicV2Manifest, "useEpicV2Manifest"
+    )
+    )
+}
+
+detectionFilterMinfiEwasWater <- function(
+    normData, RGSet, threshold, detPtype
+) {
+    detP <- minfi::detectionP(RGSet, type = detPtype)
+    nan_converted <- sum(is.nan(detP))
+    if (nan_converted > 0L) detP[is.nan(detP)] <- NA_real_
+    normalized_samples <- colnames(normData$primary)
+    matchSampleIdentifiersDnaEpico(
+    query = normalized_samples, reference = colnames(RGSet),
+    queryLabel = "Normalized sample identifiers",
+    referenceLabel = "RGSet sample identifiers", requireSameSet = TRUE
+    )
+    feature_match <- match(
+    Biobase::featureNames(normData$primary), rownames(detP)
+    )
+    if (anyNA(feature_match)) {
+    stop("Detection P values are missing for ", sum(is.na(feature_match)),
+        " normalized probes.",
+        call. = FALSE
+    )
+    }
+    detP <- detP[feature_match, normalized_samples, drop = FALSE]
+    keep <- rowSums(!is.na(detP) & detP < threshold) == ncol(detP)
+    list(
+    data = normData$primary[keep, ], detP = detP,
+    nanConverted = nan_converted
+    )
+}
+
+standardProbeFiltersMinfiEwasWater <- function(
+    data, RGSet, chromosomes, snps, mafThreshold
+) {
+    annotation <- minfi::getAnnotation(RGSet)
+    removed <- annotation$Name[annotation$chr %in% chromosomes]
+    chromosome <- data[!(Biobase::featureNames(data) %in% removed), ]
+    snp <- minfi::dropLociWithSnps(
+    chromosome,
+    snps = snps, maf = mafThreshold
+    )
+    list(chromosome = chromosome, snp = snp)
+}
+
+probeExclusionSourcesMinfiEwasWater <- function(
+    filteredSnp, probeExclusionPath, probeExclusionIdColumn,
+    useEpicV2Manifest, epicV2ManifestFlags
+) {
+    features <- Biobase::featureNames(filteredSnp)
+    files <- readProbeExclusionIdsMinfiEwasWater(
+    probeExclusionPath = probeExclusionPath,
+    probeExclusionIdColumn = probeExclusionIdColumn,
+    featureNames = features
+    )
+    manifest <- readEpicV2ManifestExclusionIdsMinfiEwasWater(
+    useEpicV2Manifest = useEpicV2Manifest,
+    epicV2ManifestFlags = epicV2ManifestFlags, featureNames = features
+    )
+    ids <- unique(c(files$ids, manifest$ids))
+    overlap <- if (length(ids)) sum(ids %in% features) else NA_integer_
+    if (length(ids) && !is.na(overlap) && identical(overlap, 0L)) {
+    warning(
+        "No probe-exclusion IDs overlap the filtered array feature ",
+        "names. Check that probeExclusionPath, probeExclusionIdColumn, ",
+        "and manifest settings match the array platform.",
+        call. = FALSE
+    )
+    }
+    list(files = files, manifest = manifest, ids = ids, overlap = overlap)
+}
+
+probeExclusionLogLinesMinfiEwasWater <- function(sources, manifestEnabled) {
+    file_lines <- if (nrow(sources$files$files)) {
+    apply(sources$files$files, 1L, function(row) {
+        paste0(
+        "  - ", row[["path"]], " [", row[["column"]], "; ",
+        row[["source"]], "; IDs=", row[["nIds"]],
+        "; overlap=", row[["overlap"]], "]"
+        )
+    })
+    } else {
+    "  - none"
+    }
+    flag_lines <- if (manifestEnabled) {
+    paste0(
+        "  - ", names(sources$manifest$flagCounts), ": ",
+        sources$manifest$flagCounts
+    )
+    } else {
+    "  - disabled"
+    }
+    list(files = file_lines, flags = flag_lines)
+}
+
+probeFilterLogLinesMinfiEwasWater <- function(
+    options, detection, sources, counts
+) {
+    details <- probeExclusionLogLinesMinfiEwasWater(
+    sources, options$useEpicV2Manifest
+    )
+    c(
+    paste("Probe filter threshold:    ", options$pvalThreshold),
+    paste("Detection P NaN to NA:     ", detection$nanConverted),
+    paste("Chromosomes removed:       ", paste(options$chr, collapse = ", ")),
+    paste("SNP filters removed:       ", paste(options$snps, collapse = ", ")),
+    paste("MAF threshold:             ", options$mafThreshold),
+    "Probe-exclusion files:", details$files,
+    paste("Probe-exclusion file IDs: ", sources$files$nIds),
+    paste("EPICv2 manifest enabled:  ", options$useEpicV2Manifest),
+    "EPICv2 manifest flag counts:", details$flags,
+    paste("EPICv2 manifest IDs:      ", sources$manifest$nIds),
+    paste("Probe-exclusion IDs total:", length(sources$ids)),
+    paste("Probe-exclusion overlap:  ", sources$overlap),
+    paste("Probes after detP filter:  ", counts[["detP"]]),
+    paste("Probes after chr filter:   ", counts[["chromosome"]]),
+    paste("Probes after SNP filter:   ", counts[["snp"]]),
+    paste("Probes after exclusion:    ", counts[["probeExclusion"]]),
+    "============================================================"
+    )
+}
+
+asProbeFilterResultMinfiEwasWater <- function(
+    final, detection, standard, counts, options, paths, columns,
+    sources, epicV2ManifestFlags
+) {
+    structure(list(
+    filtered = final, detPFiltered = detection$data,
+    chrFiltered = standard$chromosome, snpFiltered = standard$snp,
+    detP = detection$detP, counts = counts,
+    pvalThreshold = options$pvalThreshold,
+    nanDetPConverted = detection$nanConverted,
+    chrToRemove = options$chr, snpsToRemove = options$snps,
+    mafThreshold = options$mafThreshold, probeExclusionPath = paths,
+    probeExclusionIdColumn = columns, probeExclusionIds = sources$ids,
+    probeExclusionFileIds = sources$files,
+    epicV2ManifestIds = sources$manifest,
+    useEpicV2Manifest = options$useEpicV2Manifest,
+    epicV2ManifestFlags = normalizeEpicV2ManifestFlagsMinfiEwasWater(
+        epicV2ManifestFlags
+    ),
+    crossReactivePath = paths, crossReactiveIdColumn = columns,
+    crossReactiveIds = sources$files
+    ), class = "dnaEPICO_minfiEwasWater_filter")
 }
 
 #' Filter probes from a normalized methylation object
@@ -1479,228 +1605,66 @@ readEpicV2ManifestExclusionIdsMinfiEwasWater <- function(
 #' @examplesIf requireNamespace("minfiData", quietly = TRUE)
 #' ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
 #' filtered_data <- filterProbesMinfiEwasWater(
-#'     normData = ex$normData,
-#'     RGSet = ex$sampleData$RGSet,
-#'     pvalThreshold = 1,
-#'     chrToRemove = "chrY",
-#'     snpsToRemove = "SBE",
-#'     mafThreshold = 1,
-#'     probeExclusionPath = ex$probeExclusionPath,
-#'     detPtype = "m+u",
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   normData = ex$normData,
+#'   RGSet = ex$sampleData$RGSet,
+#'   pvalThreshold = 1,
+#'   chrToRemove = "chrY",
+#'   snpsToRemove = "SBE",
+#'   mafThreshold = 1,
+#'   probeExclusionPath = ex$probeExclusionPath,
+#'   detPtype = "m+u",
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' filtered_data$counts[["probeExclusion"]]
 #'
 #' @export
-filterProbesMinfiEwasWater <- function(
-    normData, RGSet, pvalThreshold = 0.01,
-    chrToRemove = "chrX,chrY", snpsToRemove = "SBE,CpG", mafThreshold = 0.1,
+filterProbesMinfiEwasWater <- function(normData,
+    RGSet, pvalThreshold = 0.01, chrToRemove = "chrX,chrY",
+    snpsToRemove = "SBE,CpG", mafThreshold = 0.1,
     probeExclusionPath, probeExclusionIdColumn = NULL,
-        useEpicV2Manifest = FALSE,
-    epicV2ManifestFlags = c(
-        CH_WGBS_evidence = TRUE, CH_BLAT = TRUE,
-        MissingPos = TRUE, MismatchPos = FALSE
-    ), detPtype = "m+u",
+    useEpicV2Manifest = FALSE, epicV2ManifestFlags = c(CH_WGBS_evidence = TRUE,
+        CH_BLAT = TRUE, MissingPos = TRUE,
+        MismatchPos = FALSE), detPtype = "m+u",
     verbose = FALSE, logs = FALSE, log_dir = NULL,
-        log_file = "log_filterProbesMinfiEwasWater.txt",
-    crossReactivePath = NULL, crossReactiveIdColumn = NULL
-) {
+    log_file = "log_filterProbesMinfiEwasWater.txt",
+    crossReactivePath = NULL, crossReactiveIdColumn = NULL) {
     if (!is.null(crossReactivePath)) {
         probeExclusionPath <- crossReactivePath
     }
     if (!is.null(crossReactiveIdColumn)) {
         probeExclusionIdColumn <- crossReactiveIdColumn
     }
-
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
-    chr_list <- splitOptionMinfiEwasWater(chrToRemove, sep = ",")
-    snp_list <- splitOptionMinfiEwasWater(snpsToRemove, sep = ",")
-
-    pvalThreshold <- validateProbabilityDnaEpico(
-        pvalThreshold,
-        "pvalThreshold"
-    )
-    mafThreshold <- validateProbabilityDnaEpico(
-        mafThreshold,
-        "mafThreshold"
-    )
-    useEpicV2Manifest <- validateLogicalScalarDnaEpico(
-        useEpicV2Manifest,
-        "useEpicV2Manifest"
-    )
-
-    detP <- minfi::detectionP(RGSet, type = detPtype)
-    nan_detp_converted <- sum(is.nan(detP))
-    if (nan_detp_converted > 0L) {
-        detP[is.nan(detP)] <- NA_real_
+    log_path <- resolveLogPathMinfiEwasWater(logs = logs,
+        log_dir = log_dir, log_file = log_file)
+    options <- normalizeProbeFilterOptionsMinfiEwasWater(pvalThreshold,
+        mafThreshold, chrToRemove, snpsToRemove,
+        useEpicV2Manifest)
+    detection <- detectionFilterMinfiEwasWater(normData,
+        RGSet, options$pvalThreshold, detPtype)
+    standard <- standardProbeFiltersMinfiEwasWater(detection$data,
+        RGSet, options$chr, options$snps,
+        options$mafThreshold)
+    sources <- probeExclusionSourcesMinfiEwasWater(standard$snp,
+        probeExclusionPath, probeExclusionIdColumn,
+        options$useEpicV2Manifest, epicV2ManifestFlags)
+    final <- standard$snp[!(Biobase::featureNames(standard$snp) %in%
+        sources$ids), ]
+    counts <- c(start = nrow(normData$primary),
+        detP = nrow(detection$data), chromosome = nrow(standard$chromosome),
+        snp = nrow(standard$snp), probeExclusion = nrow(final))
+    if (!nrow(final)) {
+        stop("Probe filtering removed every probe. Review the detection ",
+            "P-value, chromosome, SNP, and probe-exclusion settings.",
+            call. = FALSE)
     }
-
-    normalized_samples <- colnames(normData$primary)
-    rgset_samples <- colnames(RGSet)
-    matchSampleIdentifiersDnaEpico(
-        query = normalized_samples,
-        reference = rgset_samples, queryLabel = "Normalized sample identifiers",
-        referenceLabel = "RGSet sample identifiers", requireSameSet = TRUE
-    )
-
-    feature_match <- match(
-        Biobase::featureNames(normData$primary),
-        rownames(detP)
-    )
-    if (anyNA(feature_match)) {
-        stop("Detection P values are missing for ", sum(is.na(feature_match)),
-            " normalized probes.",
-            call. = FALSE
-        )
-    }
-    detP <- detP[feature_match, normalized_samples, drop = FALSE]
-
-    keep_detp <- rowSums(!is.na(detP) & detP < pvalThreshold) ==
-        ncol(detP)
-    filtered_detp <- normData$primary[keep_detp, ]
-
-    ann <- minfi::getAnnotation(RGSet)
-    remove_probes <- ann$Name[ann$chr %in% chr_list]
-    keep_chr <- !(Biobase::featureNames(filtered_detp) %in% remove_probes)
-    filtered_chr <- filtered_detp[keep_chr, ]
-
-    filtered_snp <- minfi::dropLociWithSnps(filtered_chr,
-        snps = snp_list,
-        maf = mafThreshold
-    )
-
-    probe_file_ids <- readProbeExclusionIdsMinfiEwasWater(
-        probeExclusionPath = probeExclusionPath,
-        probeExclusionIdColumn = probeExclusionIdColumn,
-            featureNames = Biobase::featureNames(filtered_snp)
-    )
-    epicv2_manifest_ids <- readEpicV2ManifestExclusionIdsMinfiEwasWater(
-        useEpicV2Manifest = useEpicV2Manifest,
-        epicV2ManifestFlags = epicV2ManifestFlags,
-            featureNames = Biobase::featureNames(filtered_snp)
-    )
-
-    probe_exclusion_ids <- unique(c(probe_file_ids$ids,
-        epicv2_manifest_ids$ids))
-    probe_exclusion_overlap <- NA_integer_
-    if (length(probe_exclusion_ids) > 0L) {
-        probe_exclusion_overlap <- sum(probe_exclusion_ids %in%
-            Biobase::featureNames(filtered_snp))
-    }
-
-    if (length(probe_exclusion_ids) > 0L &&
-        isTRUE(!is.na(probe_exclusion_overlap)) &&
-        identical(probe_exclusion_overlap, 0L)) {
-        warning("No probe-exclusion IDs overlap the filtered array feature names. ",
-            "Check that probeExclusionPath, probeExclusionIdColumn, and manifest ",
-            "settings match the array platform.",
-            call. = FALSE
-        )
-    }
-
-    keep_probe_exclusion <- !(Biobase::featureNames(filtered_snp) %in%
-        probe_exclusion_ids)
-    filtered_final <- filtered_snp[keep_probe_exclusion, ]
-
-    counts <- c(
-        start = nrow(normData$primary), detP = nrow(filtered_detp),
-        chromosome = nrow(filtered_chr), snp = nrow(filtered_snp),
-        probeExclusion = nrow(filtered_final)
-    )
-    if (nrow(filtered_final) == 0L) {
-        stop("Probe filtering removed every probe. Review the detection P-value, chromosome, SNP, and probe-exclusion settings.",
-            call. = FALSE
-        )
-    }
-
-    probe_file_lines <- if (nrow(probe_file_ids$files) > 0L) {
-        apply(probe_file_ids$files, 1L, function(row) {
-            paste0(
-                "  - ", row[["path"]], " [", row[["column"]],
-                "; ", row[["source"]], "; IDs=", row[["nIds"]],
-                "; overlap=", row[["overlap"]], "]"
-            )
-        })
-    } else {
-        "  - none"
-    }
-    epicv2_flag_lines <- if (isTRUE(useEpicV2Manifest)) {
-        paste0(
-            "  - ", names(epicv2_manifest_ids$flagCounts),
-            ": ", epicv2_manifest_ids$flagCounts
-        )
-    } else {
-        "  - disabled"
-    }
-
-    emitLogMinfiEwasWater(
-        c(
-            paste(
-                "Probe filter threshold:    ",
-                pvalThreshold
-            ), paste(
-                "Detection P NaN to NA:     ",
-                nan_detp_converted
-            ), paste(
-                "Chromosomes removed:       ",
-                paste(chr_list, collapse = ", ")
-            ), paste(
-                "SNP filters removed:       ",
-                paste(snp_list, collapse = ", ")
-            ), paste(
-                "MAF threshold:             ",
-                mafThreshold
-            ), "Probe-exclusion files:", probe_file_lines,
-            paste("Probe-exclusion file IDs: ", probe_file_ids$nIds),
-            paste("EPICv2 manifest enabled:  ", useEpicV2Manifest),
-            "EPICv2 manifest flag counts:", epicv2_flag_lines, paste(
-                "EPICv2 manifest IDs:      ",
-                epicv2_manifest_ids$nIds
-            ), paste(
-                "Probe-exclusion IDs total:",
-                length(probe_exclusion_ids)
-            ), paste(
-                "Probe-exclusion overlap:  ",
-                probe_exclusion_overlap
-            ), paste(
-                "Probes after detP filter:  ",
-                counts[["detP"]]
-            ), paste(
-                "Probes after chr filter:   ",
-                counts[["chromosome"]]
-            ), paste(
-                "Probes after SNP filter:   ",
-                counts[["snp"]]
-            ), paste(
-                "Probes after exclusion:    ",
-                counts[["probeExclusion"]]
-            ), "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
-    )
-
-    structure(list(
-        filtered = filtered_final, detPFiltered = filtered_detp,
-        chrFiltered = filtered_chr, snpFiltered = filtered_snp,
-        detP = detP, counts = counts, pvalThreshold = pvalThreshold,
-        nanDetPConverted = nan_detp_converted, chrToRemove = chr_list,
-        snpsToRemove = snp_list, mafThreshold = mafThreshold,
-        probeExclusionPath = probeExclusionPath,
-            probeExclusionIdColumn = probeExclusionIdColumn,
-        probeExclusionIds = probe_exclusion_ids,
-            probeExclusionFileIds = probe_file_ids,
-        epicV2ManifestIds = epicv2_manifest_ids,
-            useEpicV2Manifest = useEpicV2Manifest,
-        epicV2ManifestFlags = normalizeEpicV2ManifestFlagsMinfiEwasWater(epicV2ManifestFlags),
-        crossReactivePath = probeExclusionPath,
-            crossReactiveIdColumn = probeExclusionIdColumn,
-        crossReactiveIds = probe_file_ids
-    ), class = "dnaEPICO_minfiEwasWater_filter")
+    emitLogMinfiEwasWater(probeFilterLogLinesMinfiEwasWater(options,
+        detection, sources, counts), verbose = verbose,
+        log_path = log_path)
+    asProbeFilterResultMinfiEwasWater(final,
+        detection, standard, counts, options,
+        probeExclusionPath, probeExclusionIdColumn,
+        sources, epicV2ManifestFlags)
 }
 
 #' Extract beta, M, and copy-number matrices from a filtered object
@@ -1718,83 +1682,62 @@ filterProbesMinfiEwasWater <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 #' metrics_data <- extractMetricsMinfiEwasWater(
-#'     filteredData = ex$filteredData,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   filteredData = ex$filteredData,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(metrics_data)
 #'
 #' @export
-extractMetricsMinfiEwasWater <- function(
-    filteredData, verbose = FALSE,
-    logs = FALSE, log_dir = NULL,
-        log_file = "log_extractMetricsMinfiEwasWater.txt"
-) {
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
+extractMetricsMinfiEwasWater <- function(filteredData,
+    verbose = FALSE, logs = FALSE, log_dir = NULL,
+    log_file = "log_extractMetricsMinfiEwasWater.txt") {
+    log_path <- resolveLogPathMinfiEwasWater(logs = logs,
+        log_dir = log_dir, log_file = log_file)
     beta <- minfi::getBeta(filteredData$filtered)
     m <- minfi::getM(filteredData$filtered)
     cn <- minfi::getCN(filteredData$filtered)
-
     if (is.null(rownames(beta)) || is.null(colnames(beta))) {
-        stop("The extracted beta matrix must have probe and sample identifiers.",
-            call. = FALSE
-        )
-    }
-    validateMethylationProbeIdentifiersDnaEpico(
-        rownames(beta),
-        "Extracted methylation probe identifiers"
-    )
+        stop(
+            "The extracted beta matrix must have probe and sample identifiers.",
+            call. = FALSE) }
+    validateMethylationProbeIdentifiersDnaEpico(rownames(beta),
+        "Extracted methylation probe identifiers")
     validateSampleIdentifiersDnaEpico(colnames(beta),
         "Extracted methylation sample identifiers")
-    metrics_match <- vapply(list(m = m, cn = cn), function(metric) {
-        identical(dim(metric), dim(beta)) && identical(
-            rownames(metric),
-            rownames(beta)
-        ) && identical(colnames(metric), colnames(beta))
-    }, logical(1))
+    metrics_match <- vapply(list(m = m, cn = cn),
+        function(metric) {
+            identical(dim(metric), dim(beta)) &&
+                identical(rownames(metric),
+                    rownames(beta)) && identical(colnames(metric),
+                colnames(beta))
+        }, logical(1))
     if (!all(metrics_match)) {
-        stop("Extracted Beta, M, and CN matrices must have identical probe and sample order.",
-            call. = FALSE
-        )
+        stop("Extracted Beta, M, and CN matrices must have identical probe ",
+            "and sample order.", call. = FALSE)
     }
-
-    range_summaries <- list(
-        beta = summarizeMethylationRangeDnaEpico(beta, "beta"),
-        m = summarizeMethylationRangeDnaEpico(m, "m"),
-        cn = summarizeMethylationRangeDnaEpico(cn, "cn")
-    )
-
-    preview_cols <- seq_len(min(ncol(beta), 5L))
-
-    emitLogMinfiEwasWater(
-        c(
-            "Extracting final DNAm matrices (M, Beta, CN).",
-            unlist(lapply(range_summaries, function(range_summary) {
-                formatMethylationRangeLogDnaEpico(range_summary)
-            }), use.names = FALSE), "Preview of beta values:",
-                previewLinesMinfiEwasWater(beta[,
-                preview_cols,
-                drop = FALSE
-            ]), "Preview of M-values:",
-            previewLinesMinfiEwasWater(m[, preview_cols, drop = FALSE]),
-            "Preview of copy-number values:", previewLinesMinfiEwasWater(cn[,
-                preview_cols,
-                drop = FALSE
-            ]), "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
-    )
-
-    structure(list(
-        beta = beta, m = m, cn = cn,
-        methylationRanges = range_summaries
-    ),
-        class = "dnaEPICO_minfiEwasWater_metrics"
-    )
+    range_summaries <- list(beta = summarizeMethylationRangeDnaEpico(beta,
+        "beta"), m = summarizeMethylationRangeDnaEpico(m,
+        "m"), cn = summarizeMethylationRangeDnaEpico(cn,
+        "cn"))
+    preview_cols <- seq_len(min(ncol(beta),
+        5L))
+    emitLogMinfiEwasWater(c("Extracting final DNAm matrices (M, Beta, CN).",
+        unlist(lapply(range_summaries, function(range_summary) {
+            formatMethylationRangeLogDnaEpico(range_summary)
+        }), use.names = FALSE), "Preview of beta values:",
+        previewLinesMinfiEwasWater(beta[,
+            preview_cols, drop = FALSE]),
+        "Preview of M-values:", previewLinesMinfiEwasWater(m[,
+            preview_cols, drop = FALSE]),
+        "Preview of copy-number values:",
+        previewLinesMinfiEwasWater(cn[, preview_cols,
+            drop = FALSE]),
+            "============================================================"),
+        verbose = verbose, log_path = log_path)
+    structure(list(beta = beta, m = m, cn = cn,
+        methylationRanges = range_summaries),
+        class = "dnaEPICO_minfiEwasWater_metrics")
 }
 
 #' Plot multidimensional scaling or density summaries from final metrics
@@ -1823,101 +1766,67 @@ extractMetricsMinfiEwasWater <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 #' plotMetricsMinfiEwasWater(
-#'     metricsData = ex$metricsData,
-#'     targets = ex$targets,
-#'     plot = "density",
-#'     plotGroupVar = "Sex",
-#'     sexColumn = "Sex",
-#'     display = FALSE,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   metricsData = ex$metricsData,
+#'   targets = ex$targets,
+#'   plot = "density",
+#'   plotGroupVar = "Sex",
+#'   sexColumn = "Sex",
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #'
 #' @export
-plotMetricsMinfiEwasWater <- function(
-    metricsData, targets, plot = c(
-        "mds",
-        "density"
-    ), plotGroupVar = "Sex", sexColumn = "Sex", display = FALSE,
-    file = NULL, width = 2000L, height = 1000L, res = 150L, verbose = FALSE,
-    logs = FALSE, log_dir = NULL, log_file = "log_plotMetricsMinfiEwasWater.txt"
-) {
+plotMetricsMinfiEwasWater <- function(metricsData,
+    targets, plot = c("mds", "density"), plotGroupVar = "Sex",
+    sexColumn = "Sex", display = FALSE, file = NULL,
+    width = 2000L, height = 1000L, res = 150L, verbose = FALSE,
+    logs = FALSE, log_dir = NULL, log_file =
+        "log_plotMetricsMinfiEwasWater.txt") {
     plot <- match.arg(plot)
-
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
-    draw_fun <- switch(plot,
-        mds = function() {
-            group_factor <- factor(targets[[plotGroupVar]])
-            group_sex <- factor(targets[[sexColumn]])
-            pal <- RColorBrewer::brewer.pal(8, "Dark2")
-
-            graphics::par(mfrow = c(1, 2))
-            limma::plotMDS(metricsData$m,
-                main = plotGroupVar, top = 1000,
-                gene.selection = "common", col = pal[group_factor],
-                dim = c(1, 2)
-            )
-            graphics::legend("right",
-                legend = levels(group_factor),
-                text.col = pal, cex = 0.7, bg = "white"
-            )
-
-            limma::plotMDS(metricsData$m,
-                main = sexColumn, top = 1000,
-                gene.selection = "common", col = pal[group_sex],
-                dim = c(2, 3)
-            )
-            graphics::legend("topright",
-                legend = levels(group_sex),
-                text.col = pal, cex = 0.7, bg = "white"
-            )
-        },
-        density = function() {
-            group_factor <- factor(targets[[plotGroupVar]])
-            graphics::par(mfrow = c(1, 2))
-            minfi::densityPlot(metricsData$beta,
-                sampGroups = group_factor,
-                main = "Beta values", legend = FALSE, xlab = "Beta values"
-            )
-            graphics::legend("top",
-                legend = levels(group_factor),
-                text.col = RColorBrewer::brewer.pal(8, "Dark2")
-            )
-
-            minfi::densityPlot(metricsData$m,
-                sampGroups = group_factor,
-                main = "M-values", legend = FALSE, xlab = "M values"
-            )
-            graphics::legend("topleft",
-                legend = levels(group_factor),
-                text.col = RColorBrewer::brewer.pal(8, "Dark2")
-            )
-        }
-    )
-
-    runPlotMinfiEwasWater(
-        draw_fun = draw_fun, display = display,
-        file = file, width = width, height = height, res = res
-    )
-
-    emitLogMinfiEwasWater(
-        c(paste(
-            "Metrics plot created:     ",
-            plot
-        ), if (is.null(file)) {
-            "Metrics plot file:        none"
-        } else {
-            paste("Metrics plot file:        ", file)
-        }, "============================================================"),
-        verbose = verbose, log_path = log_path
-    )
-
-    invisible(file)
-}
+    log_path <- resolveLogPathMinfiEwasWater(logs = logs,
+        log_dir = log_dir, log_file = log_file)
+    draw_fun <- switch(plot, mds = function() {
+        group_factor <- factor(targets[[plotGroupVar]])
+        group_sex <- factor(targets[[sexColumn]])
+        pal <- RColorBrewer::brewer.pal(8, "Dark2")
+        graphics::par(mfrow = c(1, 2))
+        limma::plotMDS(metricsData$m, main = plotGroupVar,
+            top = 1000, gene.selection = "common",
+            col = pal[group_factor], dim = c(1, 2))
+        graphics::legend("right", legend = levels(group_factor),
+            text.col = pal, cex = 0.7, bg = "white")
+        limma::plotMDS(metricsData$m, main = sexColumn,
+            top = 1000, gene.selection = "common",
+            col = pal[group_sex], dim = c(2, 3))
+        graphics::legend("topright", legend = levels(group_sex),
+            text.col = pal, cex = 0.7, bg = "white")
+    }, density = function() {
+        group_factor <- factor(targets[[plotGroupVar]])
+        graphics::par(mfrow = c(1, 2))
+        minfi::densityPlot(metricsData$beta, sampGroups = group_factor,
+            main = "Beta values", legend = FALSE,
+            xlab = "Beta values")
+        graphics::legend("top", legend = levels(group_factor),
+            text.col = RColorBrewer::brewer.pal(8,
+                "Dark2"))
+        minfi::densityPlot(metricsData$m, sampGroups = group_factor,
+            main = "M-values", legend = FALSE, xlab = "M values")
+        graphics::legend("topleft", legend = levels(group_factor),
+            text.col = RColorBrewer::brewer.pal(8,
+                "Dark2"))
+    })
+    runPlotMinfiEwasWater(draw_fun = draw_fun, display = display,
+        file = file, width = width, height = height,
+        res = res)
+    emitLogMinfiEwasWater(c(paste("Metrics plot created:     ",
+        plot), if (is.null(file)) {
+        "Metrics plot file:        none"
+    } else {
+        paste("Metrics plot file:        ", file)
+    }, "============================================================"),
+        verbose = verbose, log_path = log_path)
+    invisible(file) }
 
 #' Plot ENmix control images from an RGSet
 #'
@@ -1941,10 +1850,10 @@ plotMetricsMinfiEwasWater <- function(
 #' ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 #' output_dir <- file.path(tempdir(), "enmix-control-plots")
 #' plotCtrlMinfiEwasWater(
-#'     RGSet = ex$RGSet,
-#'     output_dir = output_dir,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   RGSet = ex$RGSet,
+#'   output_dir = output_dir,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' dir.exists(output_dir)
 #'
@@ -1952,23 +1861,23 @@ plotMetricsMinfiEwasWater <- function(
 plotCtrlMinfiEwasWater <- function(
     RGSet, output_dir = NULL,
     verbose = FALSE, logs = FALSE, log_dir = NULL,
-        log_file = "log_plotCtrlMinfiEwasWater.txt"
+    log_file = "log_plotCtrlMinfiEwasWater.txt"
 ) {
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    logs = logs, log_dir = log_dir,
+    log_file = log_file
     )
 
     if (is.null(output_dir)) {
-        emitLogMinfiEwasWater(
-            c(
-                "ENmix control plots skipped because output_dir is NULL.",
-                "============================================================"
-            ),
-            verbose = verbose, log_path = log_path
-        )
+    emitLogMinfiEwasWater(
+        c(
+        "ENmix control plots skipped because output_dir is NULL.",
+        "============================================================"
+        ),
+        verbose = verbose, log_path = log_path
+    )
 
-        return(invisible(NULL))
+    return(invisible(NULL))
     }
 
     dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
@@ -1983,11 +1892,11 @@ plotCtrlMinfiEwasWater <- function(
     ENmix::plotCtrl(RGSet)
 
     emitLogMinfiEwasWater(
-        c(paste(
-            "Generated ENmix control JPGs in:",
-            output_dir
-        ), "============================================================"),
-        verbose = verbose, log_path = log_path
+    c(paste(
+        "Generated ENmix control JPGs in:",
+        output_dir
+    ), "============================================================"),
+    verbose = verbose, log_path = log_path
     )
 
     invisible(output_dir)

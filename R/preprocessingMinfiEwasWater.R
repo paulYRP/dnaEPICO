@@ -1,3 +1,577 @@
+normalizePreprocessingConfigDnaEpico <- function(config) {
+    config$saveOutputs <- isTRUE(config$saveOutputs)
+    config$removeSexMismatch <- validateLogicalScalarDnaEpico(
+    config$removeSexMismatch, "removeSexMismatch"
+    )
+    if (!is.null(config$crossReactivePath)) {
+    config$probeExclusionPath <- config$crossReactivePath
+    }
+    if (!is.null(config$crossReactiveIdColumn)) {
+    config$probeExclusionIdColumn <- config$crossReactiveIdColumn
+    }
+    config$logFile <- "log_preprocessingMinfiEwasWater.txt"
+    config$logPath <- resolveLogPathMinfiEwasWater(
+    logs = config$logs, log_dir = config$outputLogs,
+    log_file = config$logFile
+    )
+    config$normMethodList <- splitOptionMinfiEwasWater(
+    config$normMethods,
+    sep = ";"
+    )
+    config$manifestFlags <- normalizeEpicV2ManifestFlagsMinfiEwasWater(
+    config$epicV2ManifestFlags
+    )
+    config
+}
+
+preprocessingProbeIdColumnTextDnaEpico <- function(value) {
+    if (!length(value) || is.na(value[[1L]]) ||
+    !nzchar(trimws(as.character(value[[1L]]))) ||
+    identical(toupper(trimws(as.character(value[[1L]]))), "NULL")) {
+    "auto"
+    } else {
+    value
+    }
+}
+
+preprocessingInputLogLinesDnaEpico <- function(config) {
+    c(
+    paste("==== Starting", config$scriptLabel, "===="),
+    paste("Start Time:               ", format(Sys.time())),
+    paste(
+        "Log file path:            ",
+        if (is.null(config$logPath)) "disabled" else config$logPath
+    ),
+    paste("Phenotype file:           ", config$phenoFile),
+    paste(
+        "Separator type:           ",
+        if (is.null(resolveSeparatorMinfiEwasWater(config$sepType))) {
+        "default (',')"
+        } else {
+        config$sepType
+        }
+    ),
+    paste("IDAT folder:              ", config$idatFolder),
+    paste(
+        "nSamples limit:           ",
+        if (is.na(config$nSamples)) "all" else config$nSamples
+    ),
+    paste("SampleID column:          ", config$SampleID),
+    paste("Array type:               ", config$arrayType),
+    paste("Annotation version:       ", config$annotationVersion),
+    paste("Force IDAT read:          ", config$idatForce),
+    paste("Base RData folder:        ", config$baseDataFolder),
+    paste("Base Figure folder:       ", config$figureBaseDir),
+    paste(
+        "TIFF size (w x h @ dpi):  ", config$tiffWidth, " x ",
+        config$tiffHeight, " @ ", config$tiffRes
+    ),
+    paste("QC cutoff (median):       ", config$qcCutoff),
+    paste("Detection P-value type:   ", config$detPtype),
+    paste("Detection p-value threshold:", config$detPThreshold),
+    paste(
+        "Normalization methods:    ",
+        paste(config$normMethodList, collapse = ", ")
+    ),
+    paste("Sex column:               ", config$sexColumn),
+    paste("Remove sex mismatches:    ", config$removeSexMismatch),
+    paste("Plot grouping variable:   ", config$plotGroupVar)
+    )
+}
+
+preprocessingFilterLogLinesDnaEpico <- function(config) {
+    c(
+    "Probe filtering:",
+    paste("  P-value threshold:      ", config$pvalThreshold),
+    paste("  Chromosomes to remove:  ", config$chrToRemove),
+    paste("  SNP positions filter:   ", config$snpsToRemove),
+    paste("  MAF threshold:          ", config$mafThreshold),
+    paste("  Probe-exclusion file(s):", config$probeExclusionPath),
+    paste(
+        "  Probe-exclusion ID col: ",
+        preprocessingProbeIdColumnTextDnaEpico(
+        config$probeExclusionIdColumn
+        )
+    ),
+    paste("  Use EPICv2 manifest:    ", config$useEpicV2Manifest),
+    paste("  EPICv2 manifest flags:  ", paste(paste(
+        names(config$manifestFlags), config$manifestFlags,
+        sep = "="
+    ), collapse = ";")),
+    "Cell composition (estimateLC):",
+    paste("  Reference:              ", config$lcRef),
+    paste("  Leading pheno order:    ", config$phenoOrder),
+    paste("Display plots:            ", config$display),
+    paste("Save outputs:             ", config$saveOutputs),
+    "============================================================"
+    )
+}
+
+logPreprocessingStartDnaEpico <- function(config) {
+    emitLogMinfiEwasWater(c(
+    preprocessingInputLogLinesDnaEpico(config),
+    preprocessingFilterLogLinesDnaEpico(config)
+    ), verbose = config$verbose, log_path = config$logPath)
+}
+
+preprocessingPathsDnaEpico <- function(config) {
+    paths <- list(
+    object = file.path(
+        config$baseDataFolder, config$scriptLabel, "objects"
+    ),
+    norm = file.path(
+        config$baseDataFolder, config$scriptLabel, "normObjects"
+    ),
+    metrics = file.path(
+        config$baseDataFolder, config$scriptLabel, "metrics"
+    ),
+    filter = file.path(
+        config$baseDataFolder, config$scriptLabel, "filterObjects"
+    ),
+    qc = file.path(config$baseDataFolder, config$scriptLabel, "qc"),
+    metricsFigures = file.path(
+        config$figureBaseDir, config$scriptLabel, "metrics"
+    ),
+    qcFigures = file.path(
+        config$figureBaseDir, config$scriptLabel, "qc"
+    ),
+    enmix = file.path(
+        config$figureBaseDir, config$scriptLabel, "enmix"
+    )
+    )
+    if (config$saveOutputs) {
+    for (path in c(unlist(paths, use.names = FALSE), config$lcPhenoDir)) {
+        dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    }
+    }
+    paths
+}
+
+preprocessingFigureFileDnaEpico <- function(config, directory, filename) {
+    if (config$saveOutputs) file.path(directory, filename) else NULL
+}
+
+preprocessingPlotArgumentsDnaEpico <- function(config, file) {
+    list(
+    display = config$display, file = file,
+    width = config$tiffWidth, height = config$tiffHeight,
+    res = config$tiffRes, verbose = config$verbose,
+    logs = config$logs, log_dir = config$outputLogs,
+    log_file = config$logFile
+    )
+}
+
+loadAndAssessPreprocessingSamplesDnaEpico <- function(config, paths) {
+    targets <- readPhenotypeTargets(
+    phenoFile = config$phenoFile, sepType = config$sepType,
+    nSamples = config$nSamples, SampleID = config$SampleID,
+    verbose = config$verbose, logs = config$logs,
+    log_dir = config$outputLogs, log_file = config$logFile
+    )
+    rgset <- readRGSetMinfiEwasWater(
+    idatFolder = config$idatFolder, targets = targets,
+    SampleID = config$SampleID, arrayType = config$arrayType,
+    annotationVersion = config$annotationVersion,
+    force = config$idatForce, verbose = config$verbose,
+    logs = config$logs, log_dir = config$outputLogs,
+    log_file = config$logFile
+    )
+    plotCtrlMinfiEwasWater(
+    RGSet = rgset,
+    output_dir = if (config$saveOutputs) paths$enmix else NULL,
+    verbose = config$verbose, logs = config$logs,
+    log_dir = config$outputLogs, log_file = config$logFile
+    )
+    raw <- buildRawMinfiEwasWater(
+    RGSet = rgset, verbose = config$verbose, logs = config$logs,
+    log_dir = config$outputLogs, log_file = config$logFile
+    )
+    assessment <- assessSamplesMinfiEwasWater(
+    rawData = raw, RGSet = rgset, qcCutoff = config$qcCutoff,
+    detPtype = config$detPtype, detPThreshold = config$detPThreshold,
+    verbose = config$verbose, logs = config$logs,
+    log_dir = config$outputLogs, log_file = config$logFile
+    )
+    list(targets = targets, RGSet = rgset, assessment = assessment)
+}
+
+plotPreprocessingAssessmentDnaEpico <- function(state, config, paths) {
+    qc_args <- preprocessingPlotArgumentsDnaEpico(
+    config,
+    preprocessingFigureFileDnaEpico(
+        config, paths$qcFigures, "quality_control(MSet).tiff"
+    )
+    )
+    do.call(plotAssessmentMinfiEwasWater, c(list(
+    assessment = state$assessment, plot = "qc"
+    ), qc_args))
+    detection_args <- preprocessingPlotArgumentsDnaEpico(
+    config,
+    preprocessingFigureFileDnaEpico(
+        config, paths$qcFigures,
+        "detectionPvalue_sampleMean_byRank.tiff"
+    )
+    )
+    do.call(plotAssessmentMinfiEwasWater, c(list(
+    assessment = state$assessment, plot = "detection"
+    ), detection_args))
+    invisible(NULL)
+}
+
+filterInitialPreprocessingSamplesDnaEpico <- function(state, config, paths) {
+    sample_data <- filterSamplesMinfiEwasWater(
+    RGSet = state$RGSet, targets = state$targets,
+    failedSamples = state$assessment$failedSamples,
+    SampleID = config$SampleID, verbose = config$verbose,
+    logs = config$logs, log_dir = config$outputLogs,
+    log_file = config$logFile
+    )
+    raw <- buildRawMinfiEwasWater(
+    RGSet = sample_data$RGSet, verbose = config$verbose,
+    logs = config$logs, log_dir = config$outputLogs,
+    log_file = config$logFile
+    )
+    args <- preprocessingPlotArgumentsDnaEpico(
+    config,
+    preprocessingFigureFileDnaEpico(
+        config, paths$qcFigures, "densityBeta(MSet).tiff"
+    )
+    )
+    do.call(plotRawDensityMinfiEwasWater, c(list(
+    rawData = raw, targets = sample_data$targets,
+    plotGroupVar = config$plotGroupVar
+    ), args))
+    list(sampleData = sample_data, rawData = raw)
+}
+
+applySexConcordanceDnaEpico <- function(
+    sampleData, rawData, initialRGSet, assessment, config
+) {
+    sex <- predictSexMinfiEwasWater(
+    rawData = rawData, targets = sampleData$targets,
+    SampleID = config$SampleID, sexColumn = config$sexColumn,
+    verbose = config$verbose, logs = config$logs,
+    log_dir = config$outputLogs, log_file = config$logFile
+    )
+    mismatch_ids <- as.character(sex$mismatches[[config$SampleID]])
+    mismatch_ids <- mismatch_ids[!is.na(mismatch_ids) & nzchar(mismatch_ids)]
+    sex$removeSexMismatch <- config$removeSexMismatch
+    sex$removedSampleIDs <- character(0)
+    if (config$removeSexMismatch && length(mismatch_ids)) {
+    if (length(mismatch_ids) >= ncol(sampleData$RGSet)) {
+        stop(
+        "Removing sex mismatches would leave no samples for ",
+        "normalization.",
+        call. = FALSE
+        )
+    }
+    sampleData <- filterSamplesMinfiEwasWater(
+        RGSet = sampleData$RGSet, targets = sex$targets,
+        failedSamples = mismatch_ids, SampleID = config$SampleID,
+        verbose = config$verbose, logs = config$logs,
+        log_dir = config$outputLogs, log_file = config$logFile
+    )
+    rawData <- buildRawMinfiEwasWater(
+        RGSet = sampleData$RGSet, verbose = config$verbose,
+        logs = config$logs, log_dir = config$outputLogs,
+        log_file = config$logFile
+    )
+    sex$removedSampleIDs <- mismatch_ids
+    } else {
+    sampleData$targets <- sex$targets
+    }
+    sex$retainedTargets <- sampleData$targets
+    list(sampleData = sampleData, rawData = rawData, sexData = sex)
+}
+
+logSexConcordanceDnaEpico <- function(sexData, config) {
+    emitLogMinfiEwasWater(c(
+    paste("Remove sex mismatches:    ", config$removeSexMismatch),
+    paste("Sex mismatches removed:   ", length(sexData$removedSampleIDs)),
+    if (length(sexData$removedSampleIDs)) {
+        paste(
+        "Removed sample IDs:        ",
+        paste(sexData$removedSampleIDs, collapse = ", ")
+        )
+    } else {
+        "Removed sample IDs:         none"
+    },
+    "============================================================"
+    ), verbose = config$verbose, log_path = config$logPath)
+}
+
+updatePreprocessingColDataDnaEpico <- function(sampleData, sexData, config) {
+    col_data <- SummarizedExperiment::colData(sampleData$RGSet)
+    if (config$sexColumn %in% colnames(col_data)) {
+    col_data[[config$sexColumn]] <- sampleData$targets[[config$sexColumn]]
+    }
+    col_data$PredSex <- sampleData$targets$PredSex
+    col_data$SexMismatch <- sampleData$targets$SexMismatch
+    SummarizedExperiment::colData(sampleData$RGSet) <- col_data
+    sampleData
+}
+
+plotPreprocessingSexDnaEpico <- function(
+    sampleData, sexData, initialRGSet, assessment, config, paths
+) {
+    plotRetentionMinfiEwasWater(
+    counts = c(
+        `Read from IDAT` = ncol(initialRGSet),
+        `Detection p-value filter` = ncol(initialRGSet) -
+        length(unique(assessment$failedSamples)),
+        `Sex-concordance filter` = ncol(sampleData$RGSet)
+    ), unit = "samples", display = config$display,
+    file = preprocessingFigureFileDnaEpico(
+        config, paths$qcFigures, "sampleRetention_processingStages.tiff"
+    ), width = config$tiffWidth, height = config$tiffHeight,
+    res = config$tiffRes
+    )
+    for (type in c("predicted", "clinical")) {
+    filename <- if (identical(type, "predicted")) {
+        "sexPrediction(GSet).tiff"
+    } else {
+        "sexClinical(GSet).tiff"
+    }
+    args <- preprocessingPlotArgumentsDnaEpico(
+        config,
+        preprocessingFigureFileDnaEpico(config, paths$qcFigures, filename)
+    )
+    do.call(plotSexMinfiEwasWater, c(list(
+        sexData = sexData, type = type
+    ), args))
+    }
+    invisible(NULL)
+}
+
+normalizeFilterPreprocessingDnaEpico <- function(sampleData, config, paths) {
+    norm <- normalizeMinfiEwasWater(
+    sampleData = sampleData, sexColumn = config$sexColumn,
+    normMethods = config$normMethods, verbose = config$verbose,
+    logs = config$logs, log_dir = config$outputLogs,
+    log_file = config$logFile
+    )
+    args <- preprocessingPlotArgumentsDnaEpico(
+    config,
+    preprocessingFigureFileDnaEpico(
+        config, paths$qcFigures, "sexComparison_RawNorm(MSetF).tiff"
+    )
+    )
+    do.call(plotNormalizationMinfiEwasWater, c(list(
+    RGSet = sampleData$RGSet, normData = norm,
+    targets = sampleData$targets, sexColumn = config$sexColumn
+    ), args))
+    filtered <- filterProbesMinfiEwasWater(
+    normData = norm, RGSet = sampleData$RGSet,
+    pvalThreshold = config$pvalThreshold,
+    chrToRemove = config$chrToRemove,
+    snpsToRemove = config$snpsToRemove,
+    mafThreshold = config$mafThreshold,
+    probeExclusionPath = config$probeExclusionPath,
+    probeExclusionIdColumn = config$probeExclusionIdColumn,
+    useEpicV2Manifest = config$useEpicV2Manifest,
+    epicV2ManifestFlags = config$epicV2ManifestFlags,
+    detPtype = config$detPtype, verbose = config$verbose,
+    logs = config$logs, log_dir = config$outputLogs,
+    log_file = config$logFile
+    )
+    list(normData = norm, filterData = filtered)
+}
+
+plotProbeRetentionDnaEpico <- function(filterData, config, paths) {
+    plotRetentionMinfiEwasWater(
+    counts = stats::setNames(as.numeric(filterData$counts), c(
+        "Normalised", "Detection p-value filter", "Chromosome filter",
+        "SNP filter", "Probe-exclusion filter"
+    )), unit = "CpGs", display = config$display,
+    file = preprocessingFigureFileDnaEpico(
+        config, paths$qcFigures, "probeRetention_processingStages.tiff"
+    ), width = config$tiffWidth, height = config$tiffHeight,
+    res = config$tiffRes
+    )
+    invisible(NULL)
+}
+
+extractPreprocessingMetricsDnaEpico <- function(sampleData, filterData,
+                                                config, paths) {
+    metrics <- extractMetricsMinfiEwasWater(
+    filteredData = filterData, verbose = config$verbose,
+    logs = config$logs, log_dir = config$outputLogs,
+    log_file = config$logFile
+    )
+    filenames <- c(
+    mds = paste0(
+        "examineMDS_PostFilteringCrossRect(",
+        "MSetF_Flt_Rxy_Ds_Rc).tiff"
+    ),
+    density = "densityBeta&M(MSetF_Flt_Rxy_Ds_Rc).tiff"
+    )
+    for (plot_type in names(filenames)) {
+    args <- preprocessingPlotArgumentsDnaEpico(
+        config,
+        preprocessingFigureFileDnaEpico(
+        config, paths$metricsFigures, filenames[[plot_type]]
+        )
+    )
+    do.call(plotMetricsMinfiEwasWater, c(list(
+        metricsData = metrics, targets = sampleData$targets,
+        plot = plot_type, plotGroupVar = config$plotGroupVar,
+        sexColumn = config$sexColumn
+    ), args))
+    }
+    metrics
+}
+
+estimatePreprocessingCellsDnaEpico <- function(
+    sampleData, metricsData, config, paths
+) {
+    cells <- estimateLCMinfiEwasWater(
+    beta = metricsData$beta, targets = sampleData$targets,
+    SampleID = config$SampleID, lcRef = config$lcRef,
+    phenoOrder = config$phenoOrder, constrained = FALSE,
+    verbose = config$verbose, logs = config$logs,
+    log_dir = config$outputLogs, log_file = config$logFile
+    )
+    plotCellCompositionMinfiEwasWater(
+    lcData = cells, display = config$display,
+    file = preprocessingFigureFileDnaEpico(
+        config, paths$metricsFigures,
+        "cellComposition_estimatedDistributions.tiff"
+    ), width = config$tiffWidth, height = config$tiffHeight,
+    res = config$tiffRes
+    )
+    cells
+}
+
+savePreprocessingCoreObjectsDnaEpico <- function(state, paths) {
+    objects <- list(
+    RGSet = state$sampleData$RGSet,
+    MSet = state$rawData$MSet,
+    RatioSet = state$rawData$RatioSet,
+    GSet = state$rawData$GSet
+    )
+    for (name in names(objects)) {
+    saveNamedObjectMinfiEwasWater(
+        objects[[name]], name, file.path(paths$object, paste0(name, ".RData"))
+    )
+    }
+    saveNamedObjectMinfiEwasWater(
+    state$assessment$detP, "detP",
+    file.path(paths$qc, "detP_RGSet.RData")
+    )
+    invisible(NULL)
+}
+
+savePreprocessingFilteredObjectsDnaEpico <- function(state, paths, config) {
+    filtered <- list(
+    MSetF_Flt = state$filterData$detPFiltered,
+    MSetF_Flt_Rxy = state$filterData$chrFiltered,
+    MSetF_Flt_Rxy_Ds = state$filterData$snpFiltered,
+    MSetF_Flt_Rxy_Ds_Rc = state$filterData$filtered
+    )
+    files <- c(
+    "removProbes_MSetF_Flt.RData", "removChrXY_MSetF_Flt_Rxy.RData",
+    paste0(
+        "removSNPs_MAF", config$mafThreshold,
+        "_MSetF_Flt_Rxy_Ds.RData"
+    ), "removCrossReactive_MSetF_Flt_Rxy_Ds_Rc.RData"
+    )
+    for (index in seq_along(filtered)) {
+    saveNamedObjectMinfiEwasWater(
+        filtered[[index]], names(filtered)[[index]],
+        file.path(paths$filter, files[[index]])
+    )
+    }
+    invisible(NULL)
+}
+
+savePreprocessingMetricsDnaEpico <- function(state, paths) {
+    filenames <- c(
+    m = "m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+    beta = "beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+    cn = "cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+    )
+    for (name in names(filenames)) {
+    saveNamedObjectMinfiEwasWater(
+        state$metricsData[[name]], name,
+        file.path(paths$metrics, filenames[[name]])
+    )
+    }
+    invisible(NULL)
+}
+
+savePreprocessingOutputsDnaEpico <- function(state, paths, config) {
+    if (!config$saveOutputs) {
+    return(invisible(NULL))
+    }
+    savePreprocessingCoreObjectsDnaEpico(state, paths)
+    for (index in seq_along(state$normData$methods)) {
+    saveNamedObjectMinfiEwasWater(
+        state$normData$normalized[[index]], "normObj",
+        file.path(paths$norm, paste0(
+        "norm_", state$normData$methods[[index]], "_RGSet.RData"
+        ))
+    )
+    }
+    savePreprocessingFilteredObjectsDnaEpico(state, paths, config)
+    savePreprocessingMetricsDnaEpico(state, paths)
+    writePhenoLCMinfiEwasWater(
+    lcData = state$lcData,
+    file = file.path(config$lcPhenoDir, "phenoLC.csv"),
+    verbose = config$verbose, logs = config$logs,
+    log_dir = config$outputLogs, log_file = config$logFile
+    )
+    invisible(NULL)
+}
+
+runPreprocessingWorkflowDnaEpico <- function(config) {
+    paths <- preprocessingPathsDnaEpico(config)
+    state <- loadAndAssessPreprocessingSamplesDnaEpico(config, paths)
+    plotPreprocessingAssessmentDnaEpico(state, config, paths)
+    initial <- filterInitialPreprocessingSamplesDnaEpico(state, config, paths)
+    sex <- applySexConcordanceDnaEpico(
+    initial$sampleData, initial$rawData,
+    state$RGSet, state$assessment, config
+    )
+    logSexConcordanceDnaEpico(sex$sexData, config)
+    sex$sampleData <- updatePreprocessingColDataDnaEpico(
+    sex$sampleData, sex$sexData, config
+    )
+    plotPreprocessingSexDnaEpico(
+    sex$sampleData, sex$sexData, state$RGSet,
+    state$assessment, config, paths
+    )
+    normalized <- normalizeFilterPreprocessingDnaEpico(
+    sex$sampleData, config, paths
+    )
+    plotProbeRetentionDnaEpico(normalized$filterData, config, paths)
+    metrics <- extractPreprocessingMetricsDnaEpico(
+    sex$sampleData, normalized$filterData, config, paths
+    )
+    cells <- estimatePreprocessingCellsDnaEpico(
+    sex$sampleData, metrics, config, paths
+    )
+    result <- list(
+    sampleData = sex$sampleData, rawData = sex$rawData,
+    assessment = state$assessment, sexData = sex$sexData,
+    normData = normalized$normData, filterData = normalized$filterData,
+    metricsData = metrics, lcData = cells
+    )
+    savePreprocessingOutputsDnaEpico(result, paths, config)
+    emitLogMinfiEwasWater(c(
+    paste("==== Finished", config$scriptLabel, "===="),
+    paste("End Time:                 ", format(Sys.time())),
+    "============================================================"
+    ), verbose = config$verbose, log_path = config$logPath)
+    structure(list(
+    targets = result$sampleData$targets,
+    RGSet = result$sampleData$RGSet, rawData = result$rawData,
+    assessment = result$assessment, sexData = result$sexData,
+    normData = result$normData, filterData = result$filterData,
+    metricsData = result$metricsData, lcData = result$lcData,
+    logFile = config$logPath
+    ), class = "dnaEPICO_preprocessingMinfiEwasWater")
+}
+
 #' Convenience preprocessing pipeline for Illumina methylation arrays
 #'
 #' Run the `dnaEPICO` preprocessing workflow with the package's
@@ -112,37 +686,43 @@
 #'
 #' @examples
 #' if (requireNamespace("minfiData", quietly = TRUE) &&
-#'     requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
-#'     requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
-#'     ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
-#'     result <- preprocessingMinfiEwasWater(
-#'         phenoFile = ex$phenoFile,
-#'         idatFolder = ex$idatFolder,
-#'         outputLogs = file.path(ex$tempDir, "logs"),
-#'         nSamples = 4,
-#'         SampleID = "Sample_Name",
-#'         arrayType = ex$arrayType,
-#'         annotationVersion = ex$annotationVersion,
-#'         scriptLabel = "preprocessingMinfiEwasWater",
-#'         baseDataFolder = file.path(ex$tempDir, "rData"),
-#'         figureBaseDir = file.path(ex$tempDir, "figures"),
-#'         detPThreshold = 1,
-#'         normMethods = "quantile",
-#'         sexColumn = "Sex",
-#'         pvalThreshold = 1,
-#'         chrToRemove = "",
-#'         snpsToRemove = "SBE",
-#'         mafThreshold = 1,
-#'         probeExclusionPath = ex$probeExclusionPath,
-#'         plotGroupVar = "Sex",
-#'         lcRef = "saliva",
-#'         phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
-#'         lcPhenoDir = ex$tempDir,
-#'         saveOutputs = FALSE,
-#'         verbose = FALSE,
-#'         logs = FALSE
-#'     )
-#'     inherits(result, "dnaEPICO_preprocessingMinfiEwasWater")
+#'   requireNamespace(
+#'     "IlluminaHumanMethylation450kmanifest",
+#'     quietly = TRUE
+#'   ) &&
+#'   requireNamespace(
+#'     "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'     quietly = TRUE
+#'   )) {
+#'   ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
+#'   result <- preprocessingMinfiEwasWater(
+#'     phenoFile = ex$phenoFile,
+#'     idatFolder = ex$idatFolder,
+#'     outputLogs = file.path(ex$tempDir, "logs"),
+#'     nSamples = 4,
+#'     SampleID = "Sample_Name",
+#'     arrayType = ex$arrayType,
+#'     annotationVersion = ex$annotationVersion,
+#'     scriptLabel = "preprocessingMinfiEwasWater",
+#'     baseDataFolder = file.path(ex$tempDir, "rData"),
+#'     figureBaseDir = file.path(ex$tempDir, "figures"),
+#'     detPThreshold = 1,
+#'     normMethods = "quantile",
+#'     sexColumn = "Sex",
+#'     pvalThreshold = 1,
+#'     chrToRemove = "",
+#'     snpsToRemove = "SBE",
+#'     mafThreshold = 1,
+#'     probeExclusionPath = ex$probeExclusionPath,
+#'     plotGroupVar = "Sex",
+#'     lcRef = "saliva",
+#'     phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
+#'     lcPhenoDir = ex$tempDir,
+#'     saveOutputs = FALSE,
+#'     verbose = FALSE,
+#'     logs = FALSE
+#'   )
+#'   inherits(result, "dnaEPICO_preprocessingMinfiEwasWater")
 #' }
 #'
 #' @seealso [dnaEPICO_preprocessingMinfiEwasWater-class]
@@ -150,507 +730,44 @@
 #' @export
 preprocessingMinfiEwasWater <- function(
     phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
-    idatFolder = "data/preprocessingMinfiEwasWater/idats", outputLogs = "logs",
-    nSamples = NA, SampleID = "Sample_Name",
-        arrayType = "IlluminaHumanMethylationEPICv2",
+    idatFolder = "data/preprocessingMinfiEwasWater/idats",
+    outputLogs = "logs", nSamples = NA, SampleID = "Sample_Name",
+    arrayType = "IlluminaHumanMethylationEPICv2",
     annotationVersion = "20a1.hg38", idatForce = FALSE,
-        scriptLabel = "preprocessingMinfiEwasWater",
+    scriptLabel = "preprocessingMinfiEwasWater",
     baseDataFolder = "rData", figureBaseDir = "figures", sepType = NULL,
-    tiffWidth = 2000, tiffHeight = 1000, tiffRes = 150, qcCutoff = 10.5,
-    detPtype = "m+u", detPThreshold = 0.05, normMethods = "adjustedfunnorm",
-    sexColumn = "Sex", removeSexMismatch = FALSE, pvalThreshold = 0.01,
-    chrToRemove = "chrX,chrY", snpsToRemove = "SBE,CpG", mafThreshold = 0.1,
-    probeExclusionPath = "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
+    tiffWidth = 2000, tiffHeight = 1000, tiffRes = 150,
+    qcCutoff = 10.5, detPtype = "m+u", detPThreshold = 0.05,
+    normMethods = "adjustedfunnorm", sexColumn = "Sex",
+    removeSexMismatch = FALSE, pvalThreshold = 0.01,
+    chrToRemove = "chrX,chrY", snpsToRemove = "SBE,CpG",
+    mafThreshold = 0.1,
+    probeExclusionPath = paste0(
+    "data/preprocessingMinfiEwasWater/",
+    "12864_2024_10027_MOESM8_ESM.csv"
+    ),
     probeExclusionIdColumn = NULL, useEpicV2Manifest = FALSE,
     epicV2ManifestFlags = c(
-        CH_WGBS_evidence = TRUE, CH_BLAT = TRUE,
-        MissingPos = TRUE, MismatchPos = FALSE
-    ), plotGroupVar = "Sex",
-    lcRef = "salivaEPIC",
-        phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
-    lcPhenoDir = "data/preprocessingMinfiEwasWater", display = FALSE,
-    verbose = FALSE, logs = FALSE, saveOutputs = FALSE,
-        crossReactivePath = NULL,
+    CH_WGBS_evidence = TRUE, CH_BLAT = TRUE,
+    MissingPos = TRUE, MismatchPos = FALSE
+    ),
+    plotGroupVar = "Sex", lcRef = "salivaEPIC",
+    phenoOrder = paste0(
+    "Sample_Name;Timepoint;Sex;PredSex;Basename;",
+    "Sentrix_ID;Sentrix_Position"
+    ),
+    lcPhenoDir = "data/preprocessingMinfiEwasWater",
+    display = FALSE, verbose = FALSE, logs = FALSE,
+    saveOutputs = FALSE, crossReactivePath = NULL,
     crossReactiveIdColumn = NULL
 ) {
-    removeSexMismatch <- validateLogicalScalarDnaEpico(
-        removeSexMismatch,
-        "removeSexMismatch"
+    config <- normalizePreprocessingConfigDnaEpico(
+    as.list(environment(), all.names = TRUE)
     )
-
-    if (!is.null(crossReactivePath)) {
-        probeExclusionPath <- crossReactivePath
-    }
-    if (!is.null(crossReactiveIdColumn)) {
-        probeExclusionIdColumn <- crossReactiveIdColumn
-    }
-
-    log_file <- "log_preprocessingMinfiEwasWater.txt"
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = outputLogs,
-        log_file = log_file
+    logPreprocessingStartDnaEpico(config)
+    withLoggedErrorsMinfiEwasWater(
+    expr = runPreprocessingWorkflowDnaEpico(config),
+    log_path = config$logPath, verbose = config$verbose,
+    context = "preprocessingMinfiEwasWater"
     )
-
-    norm_method_list <- splitOptionMinfiEwasWater(normMethods,
-        sep = ";"
-    )
-
-    emitLogMinfiEwasWater(
-        c(
-            paste(
-                "==== Starting", scriptLabel,
-                "===="
-            ), paste("Start Time:               ", format(Sys.time())),
-            paste("Log file path:            ",
-                if (is.null(log_path)) "disabled" else log_path),
-            paste("Phenotype file:           ", phenoFile), paste(
-                "Separator type:           ",
-                if (is.null(resolveSeparatorMinfiEwasWater(sepType))) {
-                    "default (',')"
-                } else {
-                    sepType
-                }
-            ), paste("IDAT folder:              ", idatFolder),
-            paste("nSamples limit:           ",
-                if (is.na(nSamples)) "all" else nSamples),
-            paste("SampleID column:          ", SampleID), paste(
-                "Array type:               ",
-                arrayType
-            ), paste("Annotation version:       ", annotationVersion),
-            paste("Force IDAT read:          ", idatForce), paste(
-                "Base RData folder:        ",
-                baseDataFolder
-            ), paste(
-                "Base Figure folder:       ",
-                figureBaseDir
-            ), paste(
-                "TIFF size (w x h @ dpi):  ",
-                tiffWidth, " x ", tiffHeight, " @ ", tiffRes
-            ), paste(
-                "QC cutoff (median):       ",
-                qcCutoff
-            ), paste("Detection P-value type:   ", detPtype),
-            paste("Detection p-value threshold:", detPThreshold),
-            paste("Normalization methods:    ", paste(norm_method_list,
-                collapse = ", "
-            )), paste(
-                "Sex column:               ",
-                sexColumn
-            ), paste("Remove sex mismatches:    ", removeSexMismatch),
-            paste("Plot grouping variable:   ", plotGroupVar),
-                "Probe filtering:",
-            paste("  P-value threshold:      ", pvalThreshold), paste(
-                "  Chromosomes to remove:  ",
-                chrToRemove
-            ), paste(
-                "  SNP positions filter:   ",
-                snpsToRemove
-            ), paste(
-                "  MAF threshold:          ",
-                mafThreshold
-            ), paste(
-                "  Probe-exclusion file(s):",
-                probeExclusionPath
-            ), paste(
-                "  Probe-exclusion ID col: ",
-                if (length(probeExclusionIdColumn) == 0L ||
-                    is.na(probeExclusionIdColumn[[1L]]) ||
-                    !nzchar(trimws(as.character(probeExclusionIdColumn[[1L]]))) ||
-                    identical(
-                        toupper(trimws(as.character(probeExclusionIdColumn[[1L]]))),
-                        "NULL"
-                    )) {
-                    "auto"
-                } else {
-                    probeExclusionIdColumn
-                }
-            ), paste("  Use EPICv2 manifest:    ", useEpicV2Manifest),
-            paste("  EPICv2 manifest flags:  ",
-                paste(paste(names(normalizeEpicV2ManifestFlagsMinfiEwasWater(epicV2ManifestFlags)),
-                normalizeEpicV2ManifestFlagsMinfiEwasWater(epicV2ManifestFlags),
-                sep = "="
-            ), collapse = ";")), "Cell composition (estimateLC):",
-            paste("  Reference:              ", lcRef), paste(
-                "  Leading pheno order:    ",
-                phenoOrder
-            ), paste(
-                "Display plots:            ",
-                display
-            ), paste("Save outputs:             ", saveOutputs),
-            "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
-    )
-
-    withLoggedErrorsMinfiEwasWater(expr = {
-        objectDir <- file.path(baseDataFolder, scriptLabel, "objects")
-        normDir <- file.path(baseDataFolder, scriptLabel, "normObjects")
-        metricsDir <- file.path(
-            baseDataFolder, scriptLabel,
-            "metrics"
-        )
-        filterDir <- file.path(baseDataFolder, scriptLabel, "filterObjects")
-        qcDir <- file.path(baseDataFolder, scriptLabel, "qc")
-        metricsFigDir <- file.path(
-            figureBaseDir, scriptLabel,
-            "metrics"
-        )
-        qcFigDir <- file.path(figureBaseDir, scriptLabel, "qc")
-        enmixDir <- file.path(figureBaseDir, scriptLabel, "enmix")
-
-        if (isTRUE(saveOutputs)) {
-            dirs_to_create <- c(
-                objectDir, normDir, metricsDir,
-                filterDir, qcDir, metricsFigDir, qcFigDir, enmixDir,
-                lcPhenoDir
-            )
-            for (dir_path in dirs_to_create) {
-                dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)
-            }
-        }
-
-        targets <- readPhenotypeTargets(
-            phenoFile = phenoFile,
-            sepType = sepType, nSamples = nSamples, SampleID = SampleID,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        RGSet <- readRGSetMinfiEwasWater(
-            idatFolder = idatFolder,
-            targets = targets, SampleID = SampleID, arrayType = arrayType,
-            annotationVersion = annotationVersion, force = idatForce,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        plotCtrlMinfiEwasWater(
-            RGSet = RGSet, output_dir = if (isTRUE(saveOutputs)) {
-                enmixDir
-            } else {
-                NULL
-            }, verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        rawDataInitial <- buildRawMinfiEwasWater(
-            RGSet = RGSet,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        assessment <- assessSamplesMinfiEwasWater(
-            rawData = rawDataInitial,
-            RGSet = RGSet, qcCutoff = qcCutoff, detPtype = detPtype,
-            detPThreshold = detPThreshold, verbose = verbose,
-            logs = logs, log_dir = outputLogs, log_file = log_file
-        )
-
-        plotAssessmentMinfiEwasWater(
-            assessment = assessment,
-            plot = "qc", display = display, file = if (isTRUE(saveOutputs)) {
-                file.path(qcFigDir, "quality_control(MSet).tiff")
-            } else {
-                NULL
-            }, width = tiffWidth, height = tiffHeight, res = tiffRes,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        plotAssessmentMinfiEwasWater(
-            assessment = assessment,
-            plot = "detection", display = display,
-                file = if (isTRUE(saveOutputs)) {
-                file.path(qcFigDir, "detection_pvalues(RGSet).tiff")
-            } else {
-                NULL
-            }, width = tiffWidth, height = tiffHeight, res = tiffRes,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        sampleData <- filterSamplesMinfiEwasWater(
-            RGSet = RGSet,
-            targets = targets, failedSamples = assessment$failedSamples,
-            SampleID = SampleID, verbose = verbose, logs = logs,
-            log_dir = outputLogs, log_file = log_file
-        )
-
-        rawData <- buildRawMinfiEwasWater(
-            RGSet = sampleData$RGSet,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        plotRawDensityMinfiEwasWater(
-            rawData = rawData, targets = sampleData$targets,
-            plotGroupVar = plotGroupVar, display = display,
-                file = if (isTRUE(saveOutputs)) {
-                file.path(qcFigDir, "densityBeta(MSet).tiff")
-            } else {
-                NULL
-            }, width = tiffWidth, height = tiffHeight, res = tiffRes,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        sexData <- predictSexMinfiEwasWater(
-            rawData = rawData,
-            targets = sampleData$targets, SampleID = SampleID,
-            sexColumn = sexColumn, verbose = verbose, logs = logs,
-            log_dir = outputLogs, log_file = log_file
-        )
-
-        mismatch_ids <- as.character(sexData$mismatches[[SampleID]])
-        mismatch_ids <-
-            mismatch_ids[!is.na(mismatch_ids) & nzchar(mismatch_ids)]
-        sexData$removeSexMismatch <- removeSexMismatch
-        sexData$removedSampleIDs <- character(0)
-
-        if (isTRUE(removeSexMismatch) && length(mismatch_ids) >
-            0L) {
-            if (length(mismatch_ids) >= ncol(sampleData$RGSet)) {
-                stop("Removing sex mismatches would leave no samples for normalization.",
-                    call. = FALSE
-                )
-            }
-
-            sampleData <- filterSamplesMinfiEwasWater(
-                RGSet = sampleData$RGSet,
-                targets = sexData$targets, failedSamples = mismatch_ids,
-                SampleID = SampleID, verbose = verbose, logs = logs,
-                log_dir = outputLogs, log_file = log_file
-            )
-            rawData <- buildRawMinfiEwasWater(
-                RGSet = sampleData$RGSet,
-                verbose = verbose, logs = logs, log_dir = outputLogs,
-                log_file = log_file
-            )
-            sexData$removedSampleIDs <- mismatch_ids
-        } else {
-            sampleData$targets <- sexData$targets
-        }
-
-        sexData$retainedTargets <- sampleData$targets
-        emitLogMinfiEwasWater(
-            c(paste(
-                "Remove sex mismatches:    ",
-                removeSexMismatch
-            ), paste(
-                "Sex mismatches removed:   ",
-                length(sexData$removedSampleIDs)
-            ), if (length(sexData$removedSampleIDs) >
-                0L) {
-                paste("Removed sample IDs:        ",
-                    paste(sexData$removedSampleIDs,
-                    collapse = ", "
-                ))
-            } else {
-                "Removed sample IDs:         none"
-            }, "============================================================"),
-            verbose = verbose, log_path = log_path
-        )
-
-        rgset_col_data <- SummarizedExperiment::colData(sampleData$RGSet)
-        if (sexColumn %in% colnames(rgset_col_data)) {
-            rgset_col_data[[sexColumn]] <- sampleData$targets[[sexColumn]]
-        }
-        rgset_col_data$PredSex <- sampleData$targets$PredSex
-        rgset_col_data$SexMismatch <- sampleData$targets$SexMismatch
-        SummarizedExperiment::colData(sampleData$RGSet) <- rgset_col_data
-
-        plotSexMinfiEwasWater(
-            sexData = sexData, type = "predicted",
-            display = display, file = if (isTRUE(saveOutputs)) {
-                file.path(qcFigDir, "sexPrediction(GSet).tiff")
-            } else {
-                NULL
-            }, width = tiffWidth, height = tiffHeight, res = 70L,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        plotSexMinfiEwasWater(
-            sexData = sexData, type = "clinical",
-            display = display, file = if (isTRUE(saveOutputs)) {
-                file.path(qcFigDir, "sexClinical(GSet).tiff")
-            } else {
-                NULL
-            }, width = tiffWidth, height = tiffHeight, res = 70L,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        normData <- normalizeMinfiEwasWater(
-            sampleData = sampleData,
-            sexColumn = sexColumn, normMethods = normMethods,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        plotNormalizationMinfiEwasWater(
-            RGSet = sampleData$RGSet,
-            normData = normData, targets = sampleData$targets,
-            sexColumn = sexColumn, display = display,
-                file = if (isTRUE(saveOutputs)) {
-                file.path(qcFigDir, "sexComparison_RawNorm(MSetF).tiff")
-            } else {
-                NULL
-            }, width = tiffWidth, height = tiffHeight, res = tiffRes,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        filterData <- filterProbesMinfiEwasWater(
-            normData = normData,
-            RGSet = sampleData$RGSet, pvalThreshold = pvalThreshold,
-            chrToRemove = chrToRemove, snpsToRemove = snpsToRemove,
-            mafThreshold = mafThreshold,
-                probeExclusionPath = probeExclusionPath,
-            probeExclusionIdColumn = probeExclusionIdColumn,
-            useEpicV2Manifest = useEpicV2Manifest,
-                epicV2ManifestFlags = epicV2ManifestFlags,
-            detPtype = detPtype, verbose = verbose, logs = logs,
-            log_dir = outputLogs, log_file = log_file
-        )
-
-        metricsData <- extractMetricsMinfiEwasWater(
-            filteredData = filterData,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        plotMetricsMinfiEwasWater(
-            metricsData = metricsData,
-            targets = sampleData$targets, plot = "mds",
-                plotGroupVar = plotGroupVar,
-            sexColumn = sexColumn, display = display,
-                file = if (isTRUE(saveOutputs)) {
-                file.path(metricsFigDir,
-                    "examineMDS_PostFilteringCrossRect(MSetF_Flt_Rxy_Ds_Rc).tiff")
-            } else {
-                NULL
-            }, width = tiffWidth, height = tiffHeight, res = tiffRes,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        plotMetricsMinfiEwasWater(
-            metricsData = metricsData,
-            targets = sampleData$targets, plot = "density",
-                plotGroupVar = plotGroupVar,
-            sexColumn = sexColumn, display = display,
-                file = if (isTRUE(saveOutputs)) {
-                file.path(metricsFigDir,
-                    "densityBeta&M(MSetF_Flt_Rxy_Ds_Rc).tiff")
-            } else {
-                NULL
-            }, width = tiffWidth, height = tiffHeight, res = tiffRes,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        lcData <- estimateLCMinfiEwasWater(
-            beta = metricsData$beta,
-            targets = sampleData$targets, SampleID = SampleID,
-            lcRef = lcRef, phenoOrder = phenoOrder, constrained = FALSE,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        if (isTRUE(saveOutputs)) {
-            saveNamedObjectMinfiEwasWater(
-                sampleData$RGSet, "RGSet",
-                file.path(objectDir, "RGSet.RData")
-            )
-            saveNamedObjectMinfiEwasWater(
-                rawData$MSet, "MSet",
-                file.path(objectDir, "MSet.RData")
-            )
-            saveNamedObjectMinfiEwasWater(
-                rawData$RatioSet, "RatioSet",
-                file.path(objectDir, "RatioSet.RData")
-            )
-            saveNamedObjectMinfiEwasWater(
-                rawData$GSet, "GSet",
-                file.path(objectDir, "GSet.RData")
-            )
-            saveNamedObjectMinfiEwasWater(
-                assessment$detP, "detP",
-                file.path(qcDir, "detP_RGSet.RData")
-            )
-
-            for (i in seq_along(normData$methods)) {
-                saveNamedObjectMinfiEwasWater(
-                    normData$normalized[[i]],
-                    "normObj", file.path(normDir, paste0(
-                        "norm_",
-                        normData$methods[[i]], "_RGSet.RData"
-                    ))
-                )
-            }
-
-            saveNamedObjectMinfiEwasWater(
-                filterData$detPFiltered,
-                "MSetF_Flt", file.path(filterDir, "removProbes_MSetF_Flt.RData")
-            )
-            saveNamedObjectMinfiEwasWater(
-                filterData$chrFiltered,
-                "MSetF_Flt_Rxy", file.path(filterDir,
-                    "removChrXY_MSetF_Flt_Rxy.RData")
-            )
-            saveNamedObjectMinfiEwasWater(
-                filterData$snpFiltered,
-                "MSetF_Flt_Rxy_Ds", file.path(filterDir, paste0(
-                    "removSNPs_MAF",
-                    mafThreshold, "_MSetF_Flt_Rxy_Ds.RData"
-                ))
-            )
-            saveNamedObjectMinfiEwasWater(
-                filterData$filtered,
-                "MSetF_Flt_Rxy_Ds_Rc", file.path(filterDir,
-                    "removCrossReactive_MSetF_Flt_Rxy_Ds_Rc.RData")
-            )
-            saveNamedObjectMinfiEwasWater(
-                metricsData$m, "m",
-                file.path(metricsDir, "m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData")
-            )
-            saveNamedObjectMinfiEwasWater(
-                metricsData$beta, "beta",
-                file.path(metricsDir, "beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData")
-            )
-            saveNamedObjectMinfiEwasWater(
-                metricsData$cn, "cn",
-                file.path(metricsDir, "cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData")
-            )
-
-            writePhenoLCMinfiEwasWater(
-                lcData = lcData, file = file.path(
-                    lcPhenoDir,
-                    "phenoLC.csv"
-                ), verbose = verbose, logs = logs,
-                log_dir = outputLogs, log_file = log_file
-            )
-        }
-
-        emitLogMinfiEwasWater(
-            c(
-                paste(
-                    "==== Finished", scriptLabel,
-                    "===="
-                ), paste("End Time:                 ", format(Sys.time())),
-                "============================================================"
-            ),
-            verbose = verbose, log_path = log_path
-        )
-
-        structure(list(
-            targets = sampleData$targets, RGSet = sampleData$RGSet,
-            rawData = rawData, assessment = assessment, sexData = sexData,
-            normData = normData, filterData = filterData,
-                metricsData = metricsData,
-            lcData = lcData, logFile = log_path
-        ), class = "dnaEPICO_preprocessingMinfiEwasWater")
-    }, log_path = log_path, verbose = verbose,
-        context = "preprocessingMinfiEwasWater")
 }

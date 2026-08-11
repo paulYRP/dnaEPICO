@@ -194,7 +194,10 @@ test_that("methylationLME returns in-memory results quietly by default", {
     expect_true("score" %in% names(result$modelSummaries$summaries))
     expect_equal(result$modelFits$settings$parallelBackend, "serial")
     expect_equal(nrow(result$modelFits$summaryCache$score), 2)
+    expect_s3_class(result$distributionPlots$plots$observations, "ggplot")
+    expect_s3_class(result$designPlots$plots$missingness, "ggplot")
     expect_s3_class(result$diagnosticPlots$plots$score$qqplot, "ggplot")
+    expect_s3_class(result$manhattanPlots, "dnaEPICO_manhattan_plots")
     expect_true("IlmnID" %in% colnames(result$annotation$data))
     expect_false(isTRUE(result$preparedData$personCreated))
     expect_equal(result$runSettings$analysisLabel, "methylationLME")
@@ -349,7 +352,26 @@ test_that("methylationLME can write outputs and derive person IDs on request", {
     expect_true(all(c("Key", "Value") %in% colnames(metadata)))
     expect_equal(metadata$Value[metadata$Key == "backend"], "lme4")
     expect_equal(metadata$Value[metadata$Key == "fitting_function"], "lmerTest::lmer")
-    expect_true(file.exists(file.path(tmp, "figures", "methylationLME", "qqplot_score.tiff")))
+    expect_true(file.exists(file.path(
+        tmp, "figures", "methylationLME",
+        "qqplot_score_coefficientPvalue.tiff"
+    )))
+    expect_true(file.exists(file.path(
+        tmp, "figures", "methylationLME",
+        "modelVariables_missingnessPercentage.tiff"
+    )))
+    expect_true(file.exists(file.path(
+        tmp, "figures", "methylationLME",
+        "standardError_score_byAverageMethylation.tiff"
+    )))
+    expect_false(file.exists(file.path(
+        tmp, "figures", "methylationLME", "residualSD_score.tiff"
+    )))
+    manhattan_files <- list.files(
+        file.path(tmp, "figures", "methylationLME"),
+        pattern = "^manhattan_.*_v[12]\\.tiff$"
+    )
+    expect_gte(length(manhattan_files), 2L)
     expect_true(isTRUE(result$preparedData$personCreated))
     expect_true(length(result$savedFiles$significantInteractionFiles$score) >= 1)
     expect_true(all(file.exists(result$savedFiles$significantInteractionFiles$score)))
@@ -406,6 +428,10 @@ test_that("methylationLME supports nlme AR1 models through lmeLibs", {
     expect_equal(result$runSettings$correlationVar, "VisitOrder")
     expect_equal(result$runSettings$methylationScale, "m")
     expect_equal(nrow(result$modelFits$summaryCache$status), 2)
+    expect_s3_class(result$distributionPlots$plots$observations, "ggplot")
+    expect_s3_class(result$designPlots$plots$missingness, "ggplot")
+    expect_s3_class(result$diagnosticPlots$plots$status$qqplot, "ggplot")
+    expect_s3_class(result$manhattanPlots, "dnaEPICO_manhattan_plots")
     expect_true(all(c(
         "CpG", "Interaction.Term", "Estimate", "Std.Error", "t.value", "P.value",
         "Model.Message"
@@ -433,6 +459,19 @@ test_that("methylationLME supports nlme AR1 models through lmeLibs", {
     )
     expect_true("status_Model.Message" %in% colnames(annotated))
     expect_true(file.exists(file.path(report_assets, "annotatedLME.tsv.gz")))
+    expect_true(file.exists(file.path(
+        tmp, "figures", "methylationLME",
+        "qqplot_status_coefficientPvalue.tiff"
+    )))
+    expect_true(file.exists(file.path(
+        tmp, "figures", "methylationLME",
+        "standardError_status_byAverageMethylation.tiff"
+    )))
+    nlme_manhattan_files <- list.files(
+        file.path(tmp, "figures", "methylationLME"),
+        pattern = "^manhattan_.*_v[12]\\.tiff$"
+    )
+    expect_gte(length(nlme_manhattan_files), 2L)
     expect_false(dir.exists(file.path(
         dirname(result$savedFiles$annotatedLME), "report-assets"
     )))

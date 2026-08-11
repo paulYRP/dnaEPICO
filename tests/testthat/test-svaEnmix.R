@@ -167,6 +167,55 @@ test_that("plotSvaEnmix saves a sentrix-id plot", {
     expect_true(file.exists(plot_file))
 })
 
+test_that("plotSvaEnmix saves a technical-factor association summary", {
+    tmp <- withr::local_tempdir()
+    plot_file <- file.path(tmp, "sva_technicalFactorAssociations.tiff")
+    analysis_data <- create_large_sva_analysis(
+        sample_count = 48L, K = 3L, sentrix_id_count = 4L
+    )
+    technical_data <- data.frame(
+        sentrix_id = analysis_data$sentrixID,
+        sentrix_position = analysis_data$sentrixPosition
+    )
+    models <- lapply(seq_len(ncol(analysis_data$sva)), function(index) {
+        stats::lm(
+            analysis_data$sva[, index] ~ sentrix_id + sentrix_position,
+            data = technical_data
+        )
+    })
+    analysis_data$anovaFull <- suppressWarnings(lapply(models, stats::anova))
+
+    output <- plotSvaEnmix(
+        analysisData = analysis_data,
+        plot = "association", file = plot_file,
+        width = 700, height = 500, res = 72
+    )
+
+    expect_identical(output, plot_file)
+    expect_true(file.exists(plot_file))
+    association_plot <- dnaEPICO:::svaEnmixPlotAssociations(
+        analysis_data
+    )
+    expect_null(association_plot$labels$title)
+    expect_null(association_plot$labels$caption)
+})
+
+test_that("plotSvaEnmix omits empty technical-factor association figures", {
+    tmp <- withr::local_tempdir()
+    plot_file <- file.path(tmp, "stale_association.tiff")
+    writeLines("stale", plot_file)
+    analysis_data <- create_large_sva_analysis()
+    analysis_data$anovaFull <- list()
+
+    output <- plotSvaEnmix(
+        analysisData = analysis_data, plot = "association",
+        file = plot_file, width = 700, height = 500, res = 72
+    )
+
+    expect_null(output)
+    expect_false(file.exists(plot_file))
+})
+
 test_that("plotSvaEnmix adapts matrix plots and SentrixID legends", {
     tmp <- withr::local_tempdir()
     log_dir <- file.path(tmp, "logs")

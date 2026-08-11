@@ -120,122 +120,125 @@ validateCellCompositionReferenceDnaEpico <- function(ref) {
     invisible(ref)
 }
 
-estimateLCFromBetaDnaEpico <- function(meth, ref, constrained) {
-    ref_file <- system.file("extdata", paste0(ref, ".txt"),
-        package = "dnaEPICO")
-    if (!nzchar(ref_file)) {
-        stop("The bundled reference file was not found for ref '",
-            ref, "'.",
-            call. = FALSE
-        )
+detectCellCompositionProbeTypeDnaEpico <- function(x, label) {
+    legacy_regex <-
+        "^cg[0-9]{8}$|^rs[0-9]+$|^ch\\.[[:alnum:]_]+\\.\\d+[FR]$"
+    epicv2_regex <- "^(cg|ch|rs|nv).+_[TB][CO][0-9]+$"
+    if (all(grepl(legacy_regex, x))) {
+        return("legacy")
     }
-
-    J <- ncol(meth)
-
-    coefs <- utils::read.table(ref_file)
-
-    coefs <- as.matrix(coefs)
-    n_celltypes <- ncol(coefs)
-
-
-    detect_probe_id_type <- function(x, label) {
-        legacy_regex <-
-            "^cg[0-9]{8}$|^rs[0-9]+$|^ch\\.[[:alnum:]_]+\\.\\d+[FR]$"
-        epicv2_regex <- "^(cg|ch|rs|nv).+_[TB][CO][0-9]+$"
-
-        if (all(grepl(legacy_regex, x))) {
-            return("legacy")
-        }
-
-        if (all(grepl(epicv2_regex, x))) {
-            return("epicv2")
-        }
-
-        stop(label, " contain unsupported or mixed probe identifiers.",
-            call. = FALSE
-        )
+    if (all(grepl(epicv2_regex, x))) {
+        return("epicv2")
     }
-
-    query_type <- detect_probe_id_type(
-        rownames(coefs),
-        "Reference probe identifiers"
+    stop(label, " contain unsupported or mixed probe identifiers.",
+        call. = FALSE
     )
-    row_type <- detect_probe_id_type(rownames(meth), "meth row names")
+}
 
+collapseEpicV2CellCompositionMarkersDnaEpico <- function(meth, markers) {
+    vapply(markers, function(indices) {
+        locus_values <- meth[indices, , drop = FALSE]
+        observed <- colSums(!is.na(locus_values))
+        locus_means <- rep(NA_real_, ncol(meth))
+        has_values <- observed > 0L
+        locus_means[has_values] <- colSums(
+            locus_values[, has_values, drop = FALSE], na.rm = TRUE
+        ) / observed[has_values]
+        locus_means
+    }, numeric(ncol(meth)))
+}
+
+alignCellCompositionMarkersDnaEpico <- function(meth, coefs) {
+    query_type <- detectCellCompositionProbeTypeDnaEpico(
+        rownames(coefs), "Reference probe identifiers"
+    )
+    row_type <- detectCellCompositionProbeTypeDnaEpico(
+        rownames(meth), "meth row names"
+    )
     if (identical(query_type, row_type)) {
         markers <- match(rownames(coefs), rownames(meth))
-        retained_markers <- !is.na(markers)
-        coefs <- coefs[retained_markers, , drop = FALSE]
-        marker_meth <- meth[markers[retained_markers], , drop = FALSE]
-    } else if (query_type == "legacy" && row_type == "epicv2") {
+        retained <- !is.na(markers)
+        return(list(
+            coefs = coefs[retained, , drop = FALSE],
+            meth = meth[markers[retained], , drop = FALSE]
+        ))
+    }
+    if (query_type == "legacy" && row_type == "epicv2") {
         row_loci <- sub("_[TB][CO]\\d+$", "", rownames(meth))
-        marker_groups <- lapply(rownames(coefs), function(marker) {
-            which(row_loci ==
-                marker)
+        groups <- lapply(rownames(coefs), function(marker) {
+            which(row_loci == marker)
         })
-        retained_markers <- lengths(marker_groups) > 0L
-        coefs <- coefs[retained_markers, , drop = FALSE]
-        marker_groups <- marker_groups[retained_markers]
-        marker_meth <- t(vapply(marker_groups, function(indices) {
-            locus_values <- meth[indices, , drop = FALSE]
-            observed <- colSums(!is.na(locus_values))
-            locus_means <- rep(NA_real_, J)
-            has_values <- observed > 0L
-            locus_means[has_values] <- colSums(locus_values[,
-                has_values,
-                drop = FALSE
-            ], na.rm = TRUE) / observed[has_values]
-            locus_means
-        }, numeric(J)))
-    } else if (query_type == "epicv2" && row_type == "legacy") {
-        stop(
-            "The reference uses EPICv2 probe IDs, but meth uses legacy probe IDs.",
+        retained <- lengths(groups) > 0L
+        return(list(
+            coefs = coefs[retained, , drop = FALSE],
+            meth = t(collapseEpicV2CellCompositionMarkersDnaEpico(
+                meth, groups[retained]
+            ))
+        ))
+    }
+    if (query_type == "epicv2" && row_type == "legacy") {
+        stop("The reference uses EPICv2 probe IDs, but meth uses legacy ",
+            "probe IDs.", call. = FALSE
+        )
+    }
+    stop("Unsupported probe identifier combination.", call. = FALSE)
+}
+
+estimateCellCompositionSampleDnaEpico <- function(
+    values, coefs, constrained, sampleLabel
+) {
+    observed <- !is.na(values)
+    n_celltypes <- ncol(coefs)
+    if (sum(observed) < n_celltypes ||
+        qr(coefs[observed, , drop = FALSE])$rank < n_celltypes) {
+        stop("Sample ", sampleLabel, " has too few independent markers for ",
+            "cell composition estimation.", call. = FALSE
+        )
+    }
+    design <- coefs[observed, , drop = FALSE]
+    response <- values[observed]
+    if (!isTRUE(constrained)) {
+        return(quadprog::solve.QP(
+            t(design) %*% design, t(design) %*% response,
+            diag(n_celltypes), rep(0, n_celltypes)
+        )$solution)
+    }
+    quadprog::solve.QP(
+        t(design) %*% design, t(design) %*% response,
+        cbind(1, diag(n_celltypes)), c(1, rep(0, n_celltypes)), meq = 1
+    )$solution
+}
+
+estimateLCFromBetaDnaEpico <- function(meth, ref, constrained) {
+    ref_file <- system.file("extdata", paste0(ref, ".txt"),
+        package = "dnaEPICO"
+    )
+    if (!nzchar(ref_file)) {
+        stop("The bundled reference file was not found for ref '", ref, "'.",
             call. = FALSE
         )
-    } else {
-        stop("Unsupported probe identifier combination.", call. = FALSE)
     }
-
-    if (nrow(marker_meth) < n_celltypes || qr(coefs)$rank < n_celltypes) {
+    aligned <- alignCellCompositionMarkersDnaEpico(
+        meth, as.matrix(utils::read.table(ref_file))
+    )
+    n_celltypes <- ncol(aligned$coefs)
+    if (nrow(aligned$meth) < n_celltypes ||
+        qr(aligned$coefs)$rank < n_celltypes) {
         stop("Too few independent reference markers overlap meth for cell ",
-            "composition estimation.",
-            call. = FALSE
+            "composition estimation.", call. = FALSE
         )
     }
-
-    EST <- vapply(seq_len(J), function(j) {
-        tmp <- marker_meth[, j]
-        i <- !is.na(tmp)
-
-        if (sum(i) < n_celltypes || qr(coefs[i, , drop = FALSE])$rank <
-            n_celltypes) {
-            stop("Sample ", if (is.null(colnames(meth))) {
-                j
-            } else {
-                colnames(meth)[[j]]
-            }, " has too few independent markers for cell composition estimation.",
-            call. = FALSE
-            )
-        }
-
-        if (!isTRUE(constrained)) {
-            quadprog::solve.QP(
-                t(coefs[i, ]) %*% coefs[i, ],
-                t(coefs[i, ]) %*% tmp[i], diag(n_celltypes),
-                rep(0, n_celltypes)
-            )$solution
+    estimates <- vapply(seq_len(ncol(meth)), function(index) {
+        sample_label <- if (is.null(colnames(meth))) {
+            index
         } else {
-            quadprog::solve.QP(t(coefs[i, ]) %*% coefs[i, ],
-                t(coefs[i, ]) %*% tmp[i], cbind(1, diag(n_celltypes)),
-                c(1, rep(0, n_celltypes)),
-                meq = 1
-            )$solution
+            colnames(meth)[[index]]
         }
+        estimateCellCompositionSampleDnaEpico(
+            aligned$meth[, index], aligned$coefs, constrained, sample_label
+        )
     }, FUN.VALUE = numeric(n_celltypes))
-
-    EST <- t(EST)
-    colnames(EST) <- colnames(coefs)
-    EST <- data.table::data.table(EST)
-
-    EST
+    estimates <- t(estimates)
+    colnames(estimates) <- colnames(aligned$coefs)
+    data.table::data.table(estimates)
 }

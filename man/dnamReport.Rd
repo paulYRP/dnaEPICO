@@ -22,7 +22,7 @@ dnamReport(
   detPThreshold = 0.01,
   cpgDetectionPath = NULL,
   sampleDetectionPath = NULL,
-  logoPath = system.file("extdata", "dnaEPICO.svg", package = "dnaEPICO"),
+  logoPath = system.file("extdata", "dnaEPICORM.svg", package = "dnaEPICO"),
   imagePattern = "\\\\.(png|jpg|jpeg|gif|webp|svg|tif|tiff)$",
   recursive = TRUE
 )
@@ -45,14 +45,14 @@ figures.}
 \item{glmTab}{Character or \code{NULL}. XLSX workbook shown in the GLM Analysis
 tab.
 When \code{NULL}, the path is inferred from the Makefile output layout. Report
-sidecars produced by \code{methylationGLM()} are read from this report project's
-\code{assets/results/glm_results} directory when available.}
+sidecars produced by \code{methylationGLM()} are read from this report
+project's \code{assets/results/glm_results} directory when available.}
 
 \item{lmeTab}{Character or \code{NULL}. XLSX workbook shown in the LME Analysis
 tab.
 When \code{NULL}, the path is inferred from the Makefile output layout. Report
-sidecars produced by \code{methylationLME()} are read from this report project's
-\code{assets/results/lme_results} directory when available.}
+sidecars produced by \code{methylationLME()} are read from this report
+project's \code{assets/results/lme_results} directory when available.}
 
 \item{modelSections}{Character vector containing any of \code{'glm'} and \code{'lme'}.
 The report includes the corresponding model pages, logs, and summary
@@ -60,8 +60,8 @@ sections.
 Use \code{character(0)} for a preprocessing-only report. The default preserves
 the complete GLM-and-LME report.}
 
-\item{logTab}{Character. Directory containing workflow logs shown in the Logs
-tab.}
+\item{logTab}{Character. Directory containing workflow logs shown in the
+Logs tab.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages.}
 
@@ -82,8 +82,8 @@ summary CSV.}
 \item{sampleDetectionPath}{Character or \code{NULL}. Optional fallback sample
 detection summary CSV.}
 
-\item{logoPath}{Character. Path to the navbar logo. Defaults to the packaged
-\code{inst/extdata/dnaEPICO.svg} asset.}
+\item{logoPath}{Character. Path to the navigation-panel logo. Defaults to
+the packaged \code{inst/extdata/dnaEPICORM.svg} asset.}
 
 \item{imagePattern}{Character. Regular expression used to identify image
 files inside the section directories.}
@@ -96,52 +96,57 @@ A list with class \code{'dnaEPICO_dnamReport'}.
 \description{
 Generate a DNA methylation dashboard report
 }
+\details{
+The Quarto command-line interface is required to render the website. It is
+not required to install or load \code{dnaEPICO}, or to use the package's
+preprocessing and statistical-modeling functions.
+}
 \examples{
 report_root <- file.path(tempdir(), "dnaepico-dnam-report")
 pheno_file <- file.path(
-    report_root,
-    "data",
-    "model1",
-    "preprocessingMinfiEwasWater",
-    "phenoLC.csv"
+  report_root,
+  "data",
+  "model1",
+  "preprocessingMinfiEwasWater",
+  "phenoLC.csv"
 )
 dir.create(dirname(pheno_file), recursive = TRUE, showWarnings = FALSE)
 utils::write.csv(
-    data.frame(
-        UID = c("sample1", "sample2"),
-        Timepoint = c(1, 2),
-        Sex = c("F", "M")
-    ),
-    pheno_file,
-    row.names = FALSE
+  data.frame(
+    UID = c("sample1", "sample2"),
+    Timepoint = c(1, 2),
+    Sex = c("F", "M")
+  ),
+  pheno_file,
+  row.names = FALSE
 )
 
 result <- dnamReport(
-    outputDir = file.path(report_root, "reports", "model1"),
-    phenoTab = pheno_file,
-    enmixTab = file.path(
-        report_root,
-        "figures",
-        "model1",
-        "preprocessingMinfiEwasWater",
-        "enmix"
-    ),
-    qcTab = file.path(
-        report_root,
-        "figures",
-        "model1",
-        "preprocessingMinfiEwasWater",
-        "qc"
-    ),
-    svaTab = file.path(report_root, "figures", "model1", "svaEnmix"),
-    metricTab = file.path(
-        report_root,
-        "figures",
-        "model1",
-        "preprocessingMinfiEwasWater",
-        "metrics"
-    ),
-    logTab = file.path(report_root, "logs", "model1")
+  outputDir = file.path(report_root, "reports", "model1"),
+  phenoTab = pheno_file,
+  enmixTab = file.path(
+    report_root,
+    "figures",
+    "model1",
+    "preprocessingMinfiEwasWater",
+    "enmix"
+  ),
+  qcTab = file.path(
+    report_root,
+    "figures",
+    "model1",
+    "preprocessingMinfiEwasWater",
+    "qc"
+  ),
+  svaTab = file.path(report_root, "figures", "model1", "svaEnmix"),
+  metricTab = file.path(
+    report_root,
+    "figures",
+    "model1",
+    "preprocessingMinfiEwasWater",
+    "metrics"
+  ),
+  logTab = file.path(report_root, "logs", "model1")
 )
 result$status
 

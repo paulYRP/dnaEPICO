@@ -48,6 +48,68 @@ cpgResponseMethylationModels <- function(data, cpg) {
     data[[cpg]]
 }
 
+coefficientNamesMethylationModels <- function(fits) {
+    names <- unique(unlist(lapply(
+        fits, function(x) rownames(x$coef)
+    ), use.names = FALSE))
+    names[!is.na(names) & nzchar(names)]
+}
+
+newCompactCoefficientStorageMethylationModels <- function(
+    cpgOrder, coefficientNames, includeResidualSD
+) {
+    make_matrix <- function() {
+        matrix(
+            NA_real_, nrow = length(cpgOrder), ncol = length(coefficientNames),
+            dimnames = list(cpgOrder, coefficientNames)
+        )
+    }
+    list(
+        estimate = make_matrix(), stdError = make_matrix(),
+        df = make_matrix(), statistic = make_matrix(), pValue = make_matrix(),
+        residualSD = if (isTRUE(includeResidualSD)) {
+            stats::setNames(rep(NA_real_, length(cpgOrder)), cpgOrder)
+        } else {
+            NULL
+        },
+        coefficientTerms = stats::setNames(
+            rep(NA_character_, length(coefficientNames)), coefficientNames
+        )
+    )
+}
+
+fillCompactCoefficientStorageMethylationModels <- function(
+    storage, fit, cpg, coefficientNames
+) {
+    coef_table <- fit$coef
+    if (is.null(coef_table) || nrow(coef_table) == 0L) {
+        return(storage)
+    }
+    rows <- intersect(rownames(coef_table), coefficientNames)
+    source_columns <- c(
+        estimate = "Estimate", stdError = "Std. Error", df = "df",
+        statistic = "t value", pValue = "Pr(>|t|)"
+    )
+    for (field in names(source_columns)) {
+        source <- source_columns[[field]]
+        if (source %in% colnames(coef_table)) {
+            storage[[field]][cpg, rows] <-
+                as.numeric(coef_table[rows, source, drop = TRUE])
+        }
+    }
+    if (!is.null(storage$residualSD) && !is.null(fit$residualSD)) {
+        storage$residualSD[[cpg]] <- as.numeric(fit$residualSD[[1L]])
+    }
+    if (!is.null(fit$coefficientTerms)) {
+        mapped <- intersect(
+            names(fit$coefficientTerms), names(storage$coefficientTerms)
+        )
+        storage$coefficientTerms[mapped] <-
+            as.character(fit$coefficientTerms[mapped])
+    }
+    storage
+}
+
 compactCoefficientResultsMethylationModels <- function(
     fits, cpgOrder,
     includeResidualSD = FALSE
@@ -58,81 +120,55 @@ compactCoefficientResultsMethylationModels <- function(
             "dnaEPICO_methylationLME_fit_error"
         ))
     }, logical(1))]
-    coefficient_names <- unique(unlist(lapply(
-        successful,
-        function(x) rownames(x$coef)
-    ), use.names = FALSE))
-    coefficient_names <- coefficient_names[
-        !is.na(coefficient_names) & nzchar(coefficient_names)
-    ]
-
-    make_matrix <- function() {
-        matrix(
-            NA_real_, nrow = length(cpgOrder),
-            ncol = length(coefficient_names),
-            dimnames = list(cpgOrder, coefficient_names)
+    coefficient_names <- coefficientNamesMethylationModels(successful)
+    storage <- newCompactCoefficientStorageMethylationModels(
+        cpgOrder, coefficient_names, includeResidualSD
+    )
+    for (cpg in intersect(cpgOrder, names(successful))) {
+        storage <- fillCompactCoefficientStorageMethylationModels(
+            storage, successful[[cpg]], cpg, coefficient_names
         )
     }
-    estimate <- make_matrix()
-    std_error <- make_matrix()
-    degrees_freedom <- make_matrix()
-    statistic <- make_matrix()
-    p_value <- make_matrix()
-    residual_sd <- if (isTRUE(includeResidualSD)) {
-        stats::setNames(rep(NA_real_, length(cpgOrder)), cpgOrder)
-    } else {
-        NULL
-    }
-    coefficient_terms <- stats::setNames(
-        rep(NA_character_, length(coefficient_names)),
-        coefficient_names
-    )
-
-    for (cpg in intersect(cpgOrder, names(successful))) {
-        fit <- successful[[cpg]]
-        coef_table <- fit$coef
-        if (is.null(coef_table) || nrow(coef_table) == 0L) {
-            next
-        }
-        coefficient_rows <- intersect(rownames(coef_table), coefficient_names)
-        copy_column <- function(target, source) {
-            if (!(source %in% colnames(coef_table))) {
-                return(target)
-            }
-            target[cpg, coefficient_rows] <-
-                as.numeric(coef_table[coefficient_rows, source, drop = TRUE])
-            target
-        }
-        estimate <- copy_column(estimate, "Estimate")
-        std_error <- copy_column(std_error, "Std. Error")
-        degrees_freedom <- copy_column(degrees_freedom, "df")
-        statistic <- copy_column(statistic, "t value")
-        p_value <- copy_column(p_value, "Pr(>|t|)")
-        if (!is.null(residual_sd) && !is.null(fit$residualSD)) {
-            residual_sd[[cpg]] <- as.numeric(fit$residualSD[[1L]])
-        }
-        if (!is.null(fit$coefficientTerms)) {
-            mapped <- intersect(
-                names(fit$coefficientTerms),
-                names(coefficient_terms)
-            )
-            coefficient_terms[mapped] <-
-                as.character(fit$coefficientTerms[mapped])
-        }
-    }
-
-    if (length(degrees_freedom) == 0L ||
-        !any(is.finite(degrees_freedom))) {
-        degrees_freedom <- NULL
+    if (length(storage$df) == 0L || !any(is.finite(storage$df))) {
+        storage$df <- NULL
     }
     list(
         cpgOrder = cpgOrder,
         coefficientNames = coefficient_names,
-        coefficientTerms = coefficient_terms,
-        estimate = estimate, stdError = std_error,
-        df = degrees_freedom, statistic = statistic,
-        pValue = p_value, residualSD = residual_sd
+        coefficientTerms = storage$coefficientTerms,
+        estimate = storage$estimate, stdError = storage$stdError,
+        df = storage$df, statistic = storage$statistic,
+        pValue = storage$pValue, residualSD = storage$residualSD
     )
+}
+
+mergeCompactCoefficientBatchMethylationModels <- function(
+    combined, batch, cpgOrder, coefficientNames
+) {
+    rows <- intersect(batch$cpgOrder, cpgOrder)
+    columns <- intersect(batch$coefficientNames, coefficientNames)
+    if (length(rows) > 0L && length(columns) > 0L) {
+        for (field in c("estimate", "stdError", "statistic", "pValue")) {
+            combined[[field]][rows, columns] <-
+                batch[[field]][rows, columns, drop = FALSE]
+        }
+        if (!is.null(batch$df)) {
+            combined$df[rows, columns] <-
+                batch$df[rows, columns, drop = FALSE]
+        }
+    }
+    if (!is.null(batch$residualSD)) {
+        combined$residualSD[rows] <- batch$residualSD[rows]
+    }
+    if (!is.null(batch$coefficientTerms)) {
+        mapped <- intersect(
+            names(batch$coefficientTerms), names(combined$coefficientTerms)
+        )
+        mapped <- mapped[is.na(combined$coefficientTerms[mapped])]
+        combined$coefficientTerms[mapped] <-
+            as.character(batch$coefficientTerms[mapped])
+    }
+    combined
 }
 
 combineCompactCoefficientResultsMethylationModels <- function(
@@ -142,67 +178,22 @@ combineCompactCoefficientResultsMethylationModels <- function(
     compact_batches <- lapply(batchResults, function(x) x$coefficientResults)
     compact_batches <- Filter(Negate(is.null), compact_batches)
     coefficient_names <- unique(unlist(lapply(
-        compact_batches,
-        function(x) x$coefficientNames
+        compact_batches, function(x) x$coefficientNames
     ), use.names = FALSE))
     coefficient_names <- coefficient_names[
         !is.na(coefficient_names) & nzchar(coefficient_names)
     ]
-
-    make_matrix <- function() {
-        matrix(
-            NA_real_, nrow = length(cpgOrder),
-            ncol = length(coefficient_names),
-            dimnames = list(cpgOrder, coefficient_names)
-        )
-    }
-    combined <- list(
-        cpgOrder = cpgOrder,
-        coefficientNames = coefficient_names,
-        coefficientTerms = stats::setNames(
-            rep(NA_character_, length(coefficient_names)),
-            coefficient_names
-        ),
-        estimate = make_matrix(), stdError = make_matrix(),
-        df = make_matrix(), statistic = make_matrix(),
-        pValue = make_matrix(),
-        residualSD = stats::setNames(
-            rep(NA_real_, length(cpgOrder)),
-            cpgOrder
-        )
+    storage <- newCompactCoefficientStorageMethylationModels(
+        cpgOrder, coefficient_names, includeResidualSD = TRUE
     )
-
+    combined <- c(list(
+        cpgOrder = cpgOrder, coefficientNames = coefficient_names
+    ), storage)
     for (batch in compact_batches) {
-        rows <- intersect(batch$cpgOrder, cpgOrder)
-        columns <- intersect(batch$coefficientNames, coefficient_names)
-        if (length(rows) > 0L && length(columns) > 0L) {
-            for (field in c(
-                "estimate", "stdError", "statistic",
-                "pValue"
-            )) {
-                combined[[field]][rows, columns] <-
-                    batch[[field]][rows, columns, drop = FALSE]
-            }
-            if (!is.null(batch$df)) {
-                combined$df[rows, columns] <-
-                    batch$df[rows, columns, drop = FALSE]
-            }
-        }
-        if (!is.null(batch$residualSD)) {
-            combined$residualSD[rows] <- batch$residualSD[rows]
-        }
-        if (!is.null(batch$coefficientTerms)) {
-            mapped <- intersect(
-                names(batch$coefficientTerms),
-                names(combined$coefficientTerms)
-            )
-            missing_terms <- is.na(combined$coefficientTerms[mapped])
-            mapped <- mapped[missing_terms]
-            combined$coefficientTerms[mapped] <-
-                as.character(batch$coefficientTerms[mapped])
-        }
+        combined <- mergeCompactCoefficientBatchMethylationModels(
+            combined, batch, cpgOrder, coefficient_names
+        )
     }
-
     if (!any(is.finite(combined$df))) {
         combined$df <- NULL
     }
@@ -380,8 +371,11 @@ phenotypeSummaryPathMethylationModels <- function(
     phenotype,
     analysis
 ) {
-    suffix <- if (identical(analysis, "glm")) "SummaryGLM.rds" else
+    suffix <- if (identical(analysis, "glm")) {
+        "SummaryGLM.rds"
+    } else {
         "SummaryLME.rds"
+    }
     file.path(outputDir, paste0(phenotype, suffix))
 }
 
@@ -481,6 +475,19 @@ loadPhenotypeSummaryMethylationModels <- function(
     list(object = object, reason = "valid")
 }
 
+phenotypeSummaryTemporaryPathsMethylationModels <- function(path) {
+    list(
+        temporary = tempfile(
+            pattern = paste0(".", basename(path), "-"),
+            tmpdir = dirname(path), fileext = ".tmp"
+        ),
+        backup = tempfile(
+            pattern = paste0(".", basename(path), "-"),
+            tmpdir = dirname(path), fileext = ".backup"
+        )
+    )
+}
+
 savePhenotypeSummaryMethylationModels <- function(
     object,
     path
@@ -492,18 +499,14 @@ savePhenotypeSummaryMethylationModels <- function(
     if (!isTRUE(validation$valid)) {
         stop(
             "The phenotype summary is invalid: ",
-            validation$reason, call. = FALSE
+            validation$reason,
+            call. = FALSE
         )
     }
     dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-    temporary <- tempfile(
-        pattern = paste0(".", basename(path), "-"),
-        tmpdir = dirname(path), fileext = ".tmp"
-    )
-    backup <- tempfile(
-        pattern = paste0(".", basename(path), "-"),
-        tmpdir = dirname(path), fileext = ".backup"
-    )
+    temporary_paths <- phenotypeSummaryTemporaryPathsMethylationModels(path)
+    temporary <- temporary_paths$temporary
+    backup <- temporary_paths$backup
     on.exit(unlink(temporary), add = TRUE)
     on.exit(unlink(backup), add = TRUE)
     saveRDS(object, file = temporary, compress = TRUE)
@@ -517,7 +520,8 @@ savePhenotypeSummaryMethylationModels <- function(
     had_existing <- file.exists(path)
     if (had_existing && !file.rename(path, backup)) {
         stop("Could not preserve the existing phenotype summary: ",
-            path, call. = FALSE
+            path,
+            call. = FALSE
         )
     }
     if (!file.rename(temporary, path)) {
@@ -532,6 +536,60 @@ savePhenotypeSummaryMethylationModels <- function(
     invisible(path)
 }
 
+procAvailableMemoryMbMethylationModels <- function() {
+    if (!file.exists("/proc/meminfo")) {
+        return(numeric(0))
+    }
+    info <- tryCatch(
+        readLines("/proc/meminfo", warn = FALSE),
+        error = function(error) character(0)
+    )
+    line <- grep("^MemAvailable:", info, value = TRUE)
+    if (length(line) != 1L) {
+        return(numeric(0))
+    }
+    kb <- parseFiniteNumericMethylationModels(gsub("[^0-9]", "", line))
+    if (is.finite(kb)) kb / 1024 else numeric(0)
+}
+
+cgroupAvailableMemoryMbMethylationModels <- function() {
+    limit_path <- "/sys/fs/cgroup/memory.max"
+    used_path <- "/sys/fs/cgroup/memory.current"
+    if (!file.exists(limit_path) || !file.exists(used_path)) {
+        return(numeric(0))
+    }
+    limit <- parseFiniteNumericMethylationModels(readLines(
+        limit_path, n = 1L, warn = FALSE
+    ))
+    used <- parseFiniteNumericMethylationModels(readLines(
+        used_path, n = 1L, warn = FALSE
+    ))
+    if (is.finite(limit) && is.finite(used) && limit > used) {
+        return((limit - used) / 1024^2)
+    }
+    numeric(0)
+}
+
+slurmAvailableMemoryMbMethylationModels <- function() {
+    node <- parseFiniteNumericMethylationModels(Sys.getenv(
+        "SLURM_MEM_PER_NODE", unset = ""
+    ))
+    per_cpu <- parseFiniteNumericMethylationModels(Sys.getenv(
+        "SLURM_MEM_PER_CPU", unset = ""
+    ))
+    cpus <- parseFiniteNumericMethylationModels(Sys.getenv(
+        "SLURM_CPUS_PER_TASK", unset = ""
+    ))
+    candidates <- numeric(0)
+    if (is.finite(node) && node > 0) {
+        candidates <- c(candidates, node)
+    }
+    if (is.finite(per_cpu) && per_cpu > 0 && is.finite(cpus) && cpus > 0) {
+        candidates <- c(candidates, per_cpu * cpus)
+    }
+    candidates
+}
+
 availableMemoryMbMethylationModels <- function() {
     configured <- Sys.getenv("DNAEPICO_AVAILABLE_MEMORY_MB", unset = "")
     if (nzchar(configured)) {
@@ -540,57 +598,11 @@ availableMemoryMbMethylationModels <- function() {
             return(value)
         }
     }
-    candidates <- numeric(0)
-    if (file.exists("/proc/meminfo")) {
-        info <- tryCatch(
-            readLines("/proc/meminfo", warn = FALSE),
-            error = function(error) character(0)
-        )
-        line <- grep("^MemAvailable:", info, value = TRUE)
-        if (length(line) == 1L) {
-            kb <- parseFiniteNumericMethylationModels(gsub(
-                "[^0-9]", "",
-                line
-            ))
-            if (is.finite(kb)) {
-                candidates <- c(candidates, kb / 1024)
-            }
-        }
-    }
-    cgroup_limit <- "/sys/fs/cgroup/memory.max"
-    cgroup_used <- "/sys/fs/cgroup/memory.current"
-    if (file.exists(cgroup_limit) && file.exists(cgroup_used)) {
-        limit <- parseFiniteNumericMethylationModels(readLines(
-            cgroup_limit,
-            n = 1L, warn = FALSE
-        ))
-        used <- parseFiniteNumericMethylationModels(readLines(
-            cgroup_used,
-            n = 1L, warn = FALSE
-        ))
-        if (is.finite(limit) && is.finite(used) && limit > used) {
-            candidates <- c(candidates, (limit - used) / 1024^2)
-        }
-    }
-    slurm_node <- parseFiniteNumericMethylationModels(Sys.getenv(
-        "SLURM_MEM_PER_NODE",
-        unset = ""
-    ))
-    if (is.finite(slurm_node) && slurm_node > 0) {
-        candidates <- c(candidates, slurm_node)
-    }
-    slurm_per_cpu <- parseFiniteNumericMethylationModels(Sys.getenv(
-        "SLURM_MEM_PER_CPU",
-        unset = ""
-    ))
-    slurm_cpus <- parseFiniteNumericMethylationModels(Sys.getenv(
-        "SLURM_CPUS_PER_TASK",
-        unset = ""
-    ))
-    if (is.finite(slurm_per_cpu) && slurm_per_cpu > 0 &&
-        is.finite(slurm_cpus) && slurm_cpus > 0) {
-        candidates <- c(candidates, slurm_per_cpu * slurm_cpus)
-    }
+    candidates <- c(
+        procAvailableMemoryMbMethylationModels(),
+        cgroupAvailableMemoryMbMethylationModels(),
+        slurmAvailableMemoryMbMethylationModels()
+    )
     candidates <- candidates[is.finite(candidates) & candidates > 0]
     if (length(candidates) == 0L) {
         return(NA_real_)
@@ -604,8 +616,7 @@ estimateWorkerMemoryMethylationModels <- function(
     nSamples
 ) {
     model_mb <- as.numeric(utils::object.size(modelData)) / 1024^2
-    engine_mb <- switch(
-        tolower(engine),
+    engine_mb <- switch(tolower(engine),
         lme4 = 384,
         nlme = 256,
         glm2 = 128,

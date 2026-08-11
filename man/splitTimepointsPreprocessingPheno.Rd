@@ -53,13 +53,13 @@ modeling functions.
 \examples{
 ex <- dnaEPICO:::examplePreprocessingPhenoStateDnaEpico()
 timepoint_data <- splitTimepointsPreprocessingPheno(
-    pheno = ex$pheno,
-    metricsData = ex$metricsData,
-    SampleID = "Sample_Name",
-    timeVar = "Timepoint",
-    timepoints = "1,2",
-    verbose = FALSE,
-    logs = FALSE
+  pheno = ex$pheno,
+  metricsData = ex$metricsData,
+  SampleID = "Sample_Name",
+  timeVar = "Timepoint",
+  timepoints = "1,2",
+  verbose = FALSE,
+  logs = FALSE
 )
 timepoint_data$timepoints
 

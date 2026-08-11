@@ -44,11 +44,11 @@ matrix as an in-memory object.
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 sva_data <- estimateSvaEnmixControls(
-    RGSet = ex$RGSet,
-    ctrlSvaPercVar = 0.5,
-    ctrlSvaFlag = 1,
-    verbose = FALSE,
-    logs = FALSE
+  RGSet = ex$RGSet,
+  ctrlSvaPercVar = 0.5,
+  ctrlSvaFlag = 1,
+  verbose = FALSE,
+  logs = FALSE
 )
 sva_data$K
 \dontshow{\}) # examplesIf}

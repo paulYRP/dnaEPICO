@@ -7,11 +7,12 @@
 preprocessingPheno(
   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
   sepType = NULL,
-  betaPath =
-    "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
-  mPath = "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
-  cnPath =
-    "rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+  betaPath = paste0("rData/preprocessingMinfiEwasWater/metrics/",
+    "beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"),
+  mPath = paste0("rData/preprocessingMinfiEwasWater/metrics/",
+    "m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"),
+  cnPath = paste0("rData/preprocessingMinfiEwasWater/metrics/",
+    "cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"),
   SampleID = "Sample_Name",
   timeVar = "Timepoint",
   timepoints = "1,2",
@@ -110,7 +111,7 @@ and phenotype table prepared for Clock Foundation export.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when
 logging was disabled.}
 }
-See \linkS4class{dnaEPICO_preprocessingPheno} for a class-level overview.
+See \link[=dnaEPICO_preprocessingPheno-class]{dnaEPICO_preprocessingPheno} for a class-level overview.
 }
 \description{
 Align the phenotype table with preprocessed beta, M-value, and copy-number
@@ -152,7 +153,9 @@ result <- preprocessingPheno(
     combineTimepoints = "1,2",
     outputPheno = file.path(tmp, "data", "preprocessingPheno"),
     outputRData = file.path(tmp, "rData", "preprocessingPheno", "metrics"),
-    outputRDataMerge = file.path(tmp, "rData", "preprocessingPheno", "mergeData"),
+    outputRDataMerge = file.path(
+        tmp, "rData", "preprocessingPheno", "mergeData"
+    ),
     sexColumn = "Sex",
     outputLogs = file.path(tmp, "logs"),
     outputDir = file.path(tmp, "clockFoundation"),
@@ -162,5 +165,5 @@ stopifnot(inherits(result, "dnaEPICO_preprocessingPheno"))
 
 }
 \seealso{
-\linkS4class{dnaEPICO_preprocessingPheno}
+\link[=dnaEPICO_preprocessingPheno-class]{dnaEPICO_preprocessingPheno}
 }

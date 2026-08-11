@@ -60,13 +60,13 @@ Draw the density comparison plot used to inspect raw versus normalized data.
 \examples{
 ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 plotNormalizationMinfiEwasWater(
-    RGSet = ex$beta,
-    normData = ex$normData,
-    targets = ex$targets,
-    sexColumn = "Sex",
-    display = FALSE,
-    verbose = FALSE,
-    logs = FALSE
+  RGSet = ex$beta,
+  normData = ex$normData,
+  targets = ex$targets,
+  sexColumn = "Sex",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
 )
 
 }

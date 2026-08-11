@@ -40,11 +40,11 @@ preserving the original row order of \code{targets}.
 \examples{
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 merged_pheno <- mergeSvaTargetsEnmix(
-    targets = ex$targets,
-    sva = ex$sva,
-    SampleID = "Sample_Name",
-    verbose = FALSE,
-    logs = FALSE
+  targets = ex$targets,
+  sva = ex$sva,
+  SampleID = "Sample_Name",
+  verbose = FALSE,
+  logs = FALSE
 )
 colnames(merged_pheno)[seq_len(4)]
 

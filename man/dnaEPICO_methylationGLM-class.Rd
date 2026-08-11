@@ -26,8 +26,13 @@ saved files.
 \code{\link[=plotMethylationGLMDiagnostics]{plotMethylationGLMDiagnostics()}}.}
 \item{annotation}{Object returned by
 \code{\link[=annotateMethylationGLMSummaries]{annotateMethylationGLMSummaries()}}.}
+\item{manhattanPlots}{Versioned circular and rectangular Manhattan plots
+for every raw p-value column in the annotated results.}
+\item{vennDPlots}{Requested coefficient and omnibus model-level Venn plots,
+worksheet tables, and label mappings.}
 \item{savedFiles}{Object returned by \code{\link[=writeMethylationGLMOutputs]{writeMethylationGLMOutputs()}} when
 \code{saveOutputs = TRUE}, otherwise \code{NULL}.}
+\item{runSettings}{High-level settings recorded for the analysis.}
 }
 }
 

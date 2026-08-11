@@ -58,12 +58,12 @@ results produced by \code{fitMethylationLMEModels()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 summary_results <- summarizeMethylationLMEModels(
-    modelResults = ex$modelResults,
-    preparedData = ex$preparedData,
-    summaryPval = NA,
-    nCores = 1,
-    verbose = FALSE,
-    logs = FALSE
+  modelResults = ex$modelResults,
+  preparedData = ex$preparedData,
+  summaryPval = NA,
+  nCores = 1,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(summary_results$summaries)
 

@@ -28,3 +28,14 @@
 #' @docType package
 #' @keywords package
 "_PACKAGE"
+
+utils::globalVariables(c(
+    "SV1", "SV2", "X", "Y", "angle", "cell", "chromosome", "count",
+    "cumulativePosition", "density", "diagnosticEstimate", "displayCpG",
+    "displayLabel", "end", "failed", "group", "intersectionLabel", "label",
+    "labelOffset", "lower", "meanDetectionP", "midpoint", "minusLog10P",
+    "observations", "percentage", "proportion", "radius", "sex",
+    "significance", "stage", "start", "surrogateVariable",
+    "technicalFactor", "threshold", "time", "upper", "variable1",
+    "variable2", "x", "xMed", "y", "yMed"
+))

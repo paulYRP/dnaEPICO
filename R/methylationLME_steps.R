@@ -15,80 +15,55 @@
 #'
 #' @keywords internal
 #' @noRd
-ensurePersonColumnMethylationLME <- function(
-    data, personVar = "person",
-    sidVar = "SID"
-) {
+ensurePersonColumnMethylationLME <- function(data, personVar = "person",
+    sidVar = "SID") {
     person_created <- FALSE
     mapping_preview <- NULL
-
     if (!(personVar %in% colnames(data))) {
         if (!(sidVar %in% colnames(data))) {
             stop("Column '", personVar,
-                "' was not found and cannot be created because '",
-                sidVar, "' is missing.",
-                call. = FALSE
-            )
+            "' was not found and cannot be created because '",
+                sidVar, "' is missing.", call. = FALSE)
         }
-
-        sid_values <- validateSampleIdentifiersDnaEpico(
-            data[[sidVar]],
-            paste0("inputPheno$", sidVar)
-        )
+        sid_values <- validateSampleIdentifiersDnaEpico(data[[sidVar]],
+            paste0("inputPheno$", sidVar))
         if (any(!grepl("[AB]$", sid_values))) {
             stop("Cannot safely derive '", personVar, "' from '",
-                sidVar, "': every SID must end in A or B. Supply an explicit subject identifier column.",
-                call. = FALSE
-            )
+                sidVar, "': every SID must end in A or B. ",
+            "Supply an explicit subject identifier column.",
+                call. = FALSE)
         }
         person_values <- sub("[AB]$", "", sid_values)
         visit_values <- sub("^.*([AB])$", "\\1", sid_values)
         if (any(!nzchar(person_values))) {
             stop("Derived subject identifiers cannot be empty.",
-                call. = FALSE
-            )
+                call. = FALSE)
         }
-        if (anyDuplicated(paste(person_values, visit_values,
-            sep = "\r"
-        ))) {
+        if (anyDuplicated(paste(person_values, visit_values, sep = "\r"))) {
             stop("SID contains duplicate subject/visit identifiers.",
-                call. = FALSE
-            )
+                call. = FALSE)
         }
         data[[personVar]] <- person_values
         person_created <- TRUE
-        mapping_preview <- utils::head(
-            data[order(
-                data[[personVar]],
-                data[[sidVar]]
-            ), c(sidVar, personVar), drop = FALSE],
-            20L
-        )
-    }
-
+        mapping_preview <- utils::head(data[order(data[[personVar]],
+            data[[sidVar]]), c(sidVar, personVar), drop = FALSE],
+            20L) }
     person_values <- as.character(data[[personVar]])
     if (anyNA(person_values) || any(!nzchar(trimws(person_values)))) {
         stop("personVar contains missing or blank subject identifiers.",
-            call. = FALSE
-        )
-    }
+            call. = FALSE) }
     person_counts <- table(data[[personVar]], useNA = "ifany")
     if (length(person_counts) < 2L) {
         stop("At least two subjects are required for mixed-effects modeling.",
-            call. = FALSE
-        )
+            call. = FALSE)
     }
     if (max(person_counts) < 2L) {
-        stop("At least one subject must have repeated observations for mixed-effects modeling.",
-            call. = FALSE
-        )
+        stop("At least one subject must have repeated observations for ",
+            "mixed-effects modeling.", call. = FALSE)
     }
-
-    list(
-        data = data, personCreated = person_created,
-            mappingPreview = mapping_preview,
-        personCounts = person_counts
-    )
+    list(data = data, personCreated = person_created, mappingPreview =
+        mapping_preview,
+        personCounts = person_counts)
 }
 
 #' Build a mixed-effects formula for methylationLME helpers
@@ -107,55 +82,45 @@ ensurePersonColumnMethylationLME <- function(
 #'
 #' @keywords internal
 #' @noRd
-buildFormulaMethylationLME <- function(
-    phenotype, personVar,
-    covariates = character(0), interactionTerm = NULL, includeRandomTerm = TRUE,
-    responseVar = "beta"
-) {
+buildFormulaMethylationLME <- function(phenotype,
+    personVar, covariates = character(0),
+    interactionTerm = NULL, includeRandomTerm = TRUE,
+    responseVar = "beta") {
     if (!is.null(interactionTerm) && nzchar(interactionTerm) &&
         identical(interactionTerm, phenotype)) {
         stop("interactionTerm must differ from the phenotype being modelled.",
-            call. = FALSE
-        )
+            call. = FALSE)
     }
     quoted_phenotype <- quoteNamesMethylationGLM(phenotype)
     quoted_person <- quoteNamesMethylationGLM(personVar)
     fixed_terms <- unique(c(covariates))
-
     if (!is.null(interactionTerm) && nzchar(interactionTerm)) {
         quoted_interaction <- quoteNamesMethylationGLM(interactionTerm)
-        interaction_part <- paste(quoted_phenotype, quoted_interaction,
-            sep = " * "
-        )
-        fixed_terms <- setdiff(fixed_terms, c(
-            interactionTerm,
-            phenotype
-        ))
+        interaction_part <- paste(quoted_phenotype,
+            quoted_interaction, sep = " * ")
+        fixed_terms <- setdiff(fixed_terms,
+            c(interactionTerm, phenotype))
         fixed_formula_terms <- c(interaction_part,
             quoteNamesMethylationGLM(fixed_terms))
-    } else {
-        fixed_terms <- setdiff(fixed_terms, phenotype)
+    }
+    else {
+        fixed_terms <- setdiff(fixed_terms,
+            phenotype)
         fixed_formula_terms <- c(quoted_phenotype,
             quoteNamesMethylationGLM(fixed_terms))
     }
-
-    fixed_formula_terms <-
-        unique(fixed_formula_terms[nzchar(fixed_formula_terms)])
+    fixed_formula_terms <- unique(fixed_formula_terms[nzchar(
+        fixed_formula_terms)])
     if (length(fixed_formula_terms) == 0L) {
-        stop("At least one fixed-effect term is required.", call. = FALSE)
+        stop("At least one fixed-effect term is required.",
+            call. = FALSE)
     }
-
-    formula_text <- paste(responseVar, "~", paste(fixed_formula_terms,
-        collapse = " + "
-    ))
-
+    formula_text <- paste(responseVar, "~",
+        paste(fixed_formula_terms, collapse = " + "))
     if (isTRUE(includeRandomTerm)) {
-        formula_text <- paste(
-            formula_text, "+ (1 |", quoted_person,
-            ")"
-        )
+        formula_text <- paste(formula_text,
+            "+ (1 |", quoted_person, ")")
     }
-
     formula_text
 }
 
@@ -167,7 +132,7 @@ normalizeCorrelationStructureMethylationLME <-
     }
     if (length(correlationStructure) != 1L) {
         stop("correlationStructure must contain one value.",
-            call. = FALSE
+        call. = FALSE
         )
     }
 
@@ -185,27 +150,27 @@ normalizeCorrelationStructureMethylationLME <-
     stop("correlationStructure must be one of: none, AR1, CAR1.",
         call. = FALSE
     )
-}
+    }
 
 normalizeCorrelationVariableMethylationLME <- function(correlationVar = NULL) {
     if (is.null(correlationVar) || length(correlationVar) ==
-        0L || all(is.na(correlationVar))) {
-        return(NULL)
+    0L || all(is.na(correlationVar))) {
+    return(NULL)
     }
 
     parsed <- splitOptionMinfiEwasWater(correlationVar, sep = ",")
     if (length(parsed) == 0L) {
-        return(NULL)
+    return(NULL)
     }
     if (length(parsed) > 1L) {
-        stop("correlationVar must contain a single variable name.",
-            call. = FALSE
-        )
+    stop("correlationVar must contain a single variable name.",
+        call. = FALSE
+    )
     }
 
     parsed <- trimws(as.character(parsed[[1L]]))
     if (!nzchar(parsed) || tolower(parsed) %in% c("null", "na")) {
-        return(NULL)
+    return(NULL)
     }
 
     parsed
@@ -214,7 +179,7 @@ normalizeCorrelationVariableMethylationLME <- function(correlationVar = NULL) {
 resolveLmeLibrariesMethylationLME <- function(lmeLibs = "lme4,lmerTest") {
     requested <- splitOptionMinfiEwasWater(lmeLibs, sep = ",")
     if (length(requested) == 0L) {
-        requested <- c("lme4", "lmerTest")
+    requested <- c("lme4", "lmerTest")
     }
 
     requested_lower <- tolower(requested)
@@ -222,27 +187,27 @@ resolveLmeLibrariesMethylationLME <- function(lmeLibs = "lme4,lmerTest") {
     has_lme4 <- any(requested_lower %in% c("lme4", "lmertest"))
 
     if (isTRUE(has_nlme) && isTRUE(has_lme4)) {
-        stop("lmeLibs must choose either 'lme4,lmerTest' or 'nlme', not both.",
-            call. = FALSE
-        )
+    stop("lmeLibs must choose either 'lme4,lmerTest' or 'nlme', not both.",
+        call. = FALSE
+    )
     }
 
     if (isTRUE(has_nlme)) {
-        return(list(
-            engine = "nlme", requestedPackages = requested,
-            requiredPackages = "nlme"
-        ))
+    return(list(
+        engine = "nlme", requestedPackages = requested,
+        requiredPackages = "nlme"
+    ))
     }
 
     if (isTRUE(has_lme4)) {
-        return(list(
-            engine = "lme4", requestedPackages = requested,
-            requiredPackages = unique(c(requested, "lme4", "lmerTest"))
-        ))
+    return(list(
+        engine = "lme4", requestedPackages = requested,
+        requiredPackages = unique(c(requested, "lme4", "lmerTest"))
+    ))
     }
 
     stop("lmeLibs must contain either 'lme4'/'lmerTest' or 'nlme'.",
-        call. = FALSE
+    call. = FALSE
     )
 }
 
@@ -250,24 +215,24 @@ normalizeOmnibusDdfMethylationLME <- function(
     omnibusDdf = "Satterthwaite"
 ) {
     if (!is.character(omnibusDdf) || length(omnibusDdf) != 1L ||
-        is.na(omnibusDdf)) {
-        stop(
-            "omnibusDdf must be either 'Satterthwaite' or 'Kenward-Roger'.",
-            call. = FALSE
-        )
+    is.na(omnibusDdf)) {
+    stop(
+        "omnibusDdf must be either 'Satterthwaite' or 'Kenward-Roger'.",
+        call. = FALSE
+    )
     }
 
     normalized <- tolower(trimws(omnibusDdf))
     if (identical(normalized, "satterthwaite")) {
-        return("Satterthwaite")
+    return("Satterthwaite")
     }
     if (normalized %in% c("kenward-roger", "kenwardroger")) {
-        return("Kenward-Roger")
+    return("Kenward-Roger")
     }
 
     stop(
-        "omnibusDdf must be either 'Satterthwaite' or 'Kenward-Roger'.",
-        call. = FALSE
+    "omnibusDdf must be either 'Satterthwaite' or 'Kenward-Roger'.",
+    call. = FALSE
     )
 }
 
@@ -276,24 +241,26 @@ validateOmnibusConfigurationMethylationLME <- function(
     lmeEngine = "lme4"
 ) {
     omnibus_test <- validateLogicalScalarDnaEpico(
-        omnibusTest,
-        "omnibusTest"
+    omnibusTest,
+    "omnibusTest"
     )
     omnibus_ddf <- normalizeOmnibusDdfMethylationLME(omnibusDdf)
 
     if (isTRUE(omnibus_test) && identical(lmeEngine, "nlme")) {
-        stop(
-            "omnibusTest is currently available only for the lmerTest/lme4 engine, not nlme.",
-            call. = FALSE
-        )
+    stop(
+        "omnibusTest is currently available only for the lmerTest/lme4 ",
+        "engine, not nlme.",
+        call. = FALSE
+    )
     }
     if (isTRUE(omnibus_test) &&
-        identical(omnibus_ddf, "Kenward-Roger") &&
-        !requireNamespace("pbkrtest", quietly = TRUE)) {
-        stop(
-            "omnibusDdf = 'Kenward-Roger' requires the suggested package 'pbkrtest'.",
-            call. = FALSE
-        )
+    identical(omnibus_ddf, "Kenward-Roger") &&
+    !requireNamespace("pbkrtest", quietly = TRUE)) {
+    stop(
+        "omnibusDdf = 'Kenward-Roger' requires the suggested package ",
+        "'pbkrtest'.",
+        call. = FALSE
+    )
     }
 
     list(test = omnibus_test, ddf = omnibus_ddf)
@@ -304,34 +271,40 @@ resolveOmnibusTargetTermMethylationLME <- function(
 ) {
     fixed_formula <- removeRandomInterceptMethylationModels(formulaText)
     terms_object <- stats::terms(
-        stats::as.formula(fixed_formula),
-        data = data
+    stats::as.formula(fixed_formula),
+    data = data
     )
     term_labels <- attr(stats::delete.response(terms_object), "term.labels")
     target_variables <- if (!is.null(interactionTerm) &&
-        nzchar(interactionTerm)) {
-        c(phenotype, interactionTerm)
+    nzchar(interactionTerm)) {
+    c(phenotype, interactionTerm)
     } else {
-        phenotype
+    phenotype
     }
 
     matches_target <- vapply(term_labels, function(term_label) {
-        term_variables <- all.vars(stats::as.formula(paste("~", term_label)))
-        length(term_variables) == length(target_variables) &&
-            setequal(term_variables, target_variables)
+    term_variables <- all.vars(stats::as.formula(paste("~", term_label)))
+    length(term_variables) == length(target_variables) &&
+        setequal(term_variables, target_variables)
     }, logical(1))
     matched_terms <- term_labels[matches_target]
     if (length(matched_terms) != 1L) {
-        target_label <- if (length(target_variables) == 1L) {
-            target_variables
-        } else {
-            paste(target_variables, collapse = ":")
-        }
-        stop(
-            "Could not identify one fixed-effect model term for omnibus testing: ",
-            target_label, ".",
-            call. = FALSE
-        )
+    target_label <- if (length(target_variables) == 1L) {
+        target_variables
+    } else {
+        paste(target_variables, collapse = ":")
+    }
+    target_message <- paste(
+        "Could not identify one fixed-effect model term",
+        "for omnibus testing"
+    )
+    stop(
+        sprintf(
+        "%s: %s.",
+        target_message, target_label
+        ),
+        call. = FALSE
+    )
     }
 
     unname(matched_terms[[1L]])
@@ -341,73 +314,58 @@ emptyOmnibusResultMethylationLME <- function(
     term, method, status = "not_estimable", reason = NA_character_
 ) {
     list(
-        term = term, method = method,
-        fValue = NA_real_, numeratorDf = NA_real_,
-        denominatorDf = NA_real_, pValue = NA_real_,
-        status = status, reason = reason, modelMessage = NA_character_,
-        rhs = 0
+    term = term, method = method,
+    fValue = NA_real_, numeratorDf = NA_real_,
+    denominatorDf = NA_real_, pValue = NA_real_,
+    status = status, reason = reason, modelMessage = NA_character_,
+    rhs = 0
     )
 }
 
-computeOmnibusTestMethylationLME <- function(
-    fit, coefficientTerms, omnibusTerm,
-    omnibusDdf = "Satterthwaite"
-) {
-    result <- emptyOmnibusResultMethylationLME(
-        term = omnibusTerm,
-        method = omnibusDdf
-    )
-
+computeOmnibusTestMethylationLME <- function(fit,
+    coefficientTerms, omnibusTerm, omnibusDdf = "Satterthwaite") {
+    result <- emptyOmnibusResultMethylationLME(term = omnibusTerm,
+        method = omnibusDdf)
     captured <- captureModelConditionsDnaEpico({
         fixed_effects <- lme4::fixef(fit)
         fixed_names <- names(fixed_effects)
         mapped_terms <- coefficientTerms[fixed_names]
-        selected <- which(!is.na(mapped_terms) & mapped_terms == omnibusTerm)
+        selected <- which(!is.na(mapped_terms) &
+            mapped_terms == omnibusTerm)
         if (length(selected) == 0L) {
-            stop(
-                "The omnibus model term has no estimable fixed-effect coefficients.",
-                call. = FALSE
-            )
+            stop("The omnibus model term has no estimable fixed-effect ",
+                "coefficients.", call. = FALSE)
         }
-
-        contrast <- matrix(
-            0,
-            nrow = length(selected), ncol = length(fixed_effects),
-            dimnames = list(fixed_names[selected], fixed_names)
-        )
+        contrast <- matrix(0, nrow = length(selected),
+            ncol = length(fixed_effects), dimnames = list(fixed_names[selected],
+                fixed_names))
         contrast[cbind(seq_along(selected), selected)] <- 1
-
-        test <- lmerTest::contestMD(
-            model = fit, L = contrast, rhs = 0,
-            ddf = omnibusDdf, joint = TRUE
-        )
-        required <- c("F value", "NumDF", "DenDF", "Pr(>F)")
+        test <- lmerTest::contestMD(model = fit,
+            L = contrast, rhs = 0, ddf = omnibusDdf,
+            joint = TRUE)
+        required <- c("F value", "NumDF", "DenDF",
+            "Pr(>F)")
         if (!all(required %in% colnames(test))) {
-            stop(
-                "The omnibus test did not return the expected F-test statistics.",
-                call. = FALSE
-            )
+            stop("The omnibus test did not return the expected F-test ",
+                "statistics.", call. = FALSE)
         }
-        values <- unlist(test[1L, required, drop = TRUE], use.names = FALSE)
+        values <- unlist(test[1L, required, drop = TRUE],
+            use.names = FALSE)
         if (any(!is.finite(values))) {
-            stop(
-                "The omnibus test returned missing or non-finite statistics.",
-                call. = FALSE
-            )
+            stop("The omnibus test returned missing or non-finite statistics.",
+                call. = FALSE)
         }
-
-        list(
-            fValue = unname(test[["F value"]][[1L]]),
+        list(fValue = unname(test[["F value"]][[1L]]),
             numeratorDf = unname(test[["NumDF"]][[1L]]),
             denominatorDf = unname(test[["DenDF"]][[1L]]),
-            pValue = unname(test[["Pr(>F)"]][[1L]])
-        )
+            pValue = unname(test[["Pr(>F)"]][[1L]]))
     })
     result$modelMessage <- captured$modelMessage
     if (!is.null(captured$error)) {
         result$reason <- conditionMessage(captured$error)
         result
-    } else {
+    }
+    else {
         result[names(captured$value)] <- captured$value
         result$status <- "tested"
         result$reason <- NA_character_
@@ -417,37 +375,37 @@ computeOmnibusTestMethylationLME <- function(
 
 collectOmnibusTestsMethylationLME <- function(fits, phenotype) {
     rows <- lapply(names(fits), function(cpg) {
-        fit <- fits[[cpg]]
-        if (is.null(fit) || inherits(
-            fit,
-            "dnaEPICO_methylationLME_fit_error"
-        ) || is.null(fit$omnibus)) {
-            return(NULL)
-        }
-        omnibus <- fit$omnibus
-        data.frame(
-            Phenotype = phenotype, CpG = cpg,
-            Omnibus.Term = as.character(omnibus$term),
-            Omnibus.F.Value = as.numeric(omnibus$fValue),
-            Omnibus.Num.DF = as.numeric(omnibus$numeratorDf),
-            Omnibus.Den.DF = as.numeric(omnibus$denominatorDf),
-            Omnibus.P.Value = as.numeric(omnibus$pValue),
-            Omnibus.Method = as.character(omnibus$method),
-            Omnibus.Status = as.character(omnibus$status),
-            Omnibus.Reason = as.character(omnibus$reason),
-            stringsAsFactors = FALSE, check.names = FALSE
-        )
+    fit <- fits[[cpg]]
+    if (is.null(fit) || inherits(
+        fit,
+        "dnaEPICO_methylationLME_fit_error"
+    ) || is.null(fit$omnibus)) {
+        return(NULL)
+    }
+    omnibus <- fit$omnibus
+    data.frame(
+        Phenotype = phenotype, CpG = cpg,
+        Omnibus.Term = as.character(omnibus$term),
+        Omnibus.F.Value = as.numeric(omnibus$fValue),
+        Omnibus.Num.DF = as.numeric(omnibus$numeratorDf),
+        Omnibus.Den.DF = as.numeric(omnibus$denominatorDf),
+        Omnibus.P.Value = as.numeric(omnibus$pValue),
+        Omnibus.Method = as.character(omnibus$method),
+        Omnibus.Status = as.character(omnibus$status),
+        Omnibus.Reason = as.character(omnibus$reason),
+        stringsAsFactors = FALSE, check.names = FALSE
+    )
     })
     rows <- Filter(Negate(is.null), rows)
     if (length(rows) == 0L) {
-        return(data.frame(
-            Phenotype = character(0), CpG = character(0),
-            Omnibus.Term = character(0), Omnibus.F.Value = numeric(0),
-            Omnibus.Num.DF = numeric(0), Omnibus.Den.DF = numeric(0),
-            Omnibus.P.Value = numeric(0), Omnibus.Method = character(0),
-            Omnibus.Status = character(0), Omnibus.Reason = character(0),
-            stringsAsFactors = FALSE, check.names = FALSE
-        ))
+    return(data.frame(
+        Phenotype = character(0), CpG = character(0),
+        Omnibus.Term = character(0), Omnibus.F.Value = numeric(0),
+        Omnibus.Num.DF = numeric(0), Omnibus.Den.DF = numeric(0),
+        Omnibus.P.Value = numeric(0), Omnibus.Method = character(0),
+        Omnibus.Status = character(0), Omnibus.Reason = character(0),
+        stringsAsFactors = FALSE, check.names = FALSE
+    ))
     }
     result <- do.call(rbind, rows)
     rownames(result) <- NULL
@@ -456,7 +414,7 @@ collectOmnibusTestsMethylationLME <- function(fits, phenotype) {
 
 coerceCorrelationTimeMethylationLME <- function(x) {
     if (is.numeric(x)) {
-        return(as.numeric(x))
+    return(as.numeric(x))
     }
 
     character_x <- trimws(as.character(x))
@@ -465,13 +423,15 @@ coerceCorrelationTimeMethylationLME <- function(x) {
     is_numeric_text <- grepl(numeric_pattern, character_x)
 
     if (all(is_numeric_text[non_missing])) {
-        numeric_x <- rep(NA_real_, length(x))
-        numeric_x[non_missing] <- as.numeric(character_x[non_missing])
-        return(numeric_x)
+    numeric_x <- rep(NA_real_, length(x))
+    numeric_x[non_missing] <- as.numeric(character_x[non_missing])
+    return(numeric_x)
     }
 
-    stop("correlationVar must be numeric or contain numeric text; categorical values cannot define AR1/CAR1 spacing.",
-        call. = FALSE
+    stop(
+    "correlationVar must be numeric or contain numeric text; ",
+    "categorical values cannot define AR1/CAR1 spacing.",
+    call. = FALSE
     )
 }
 
@@ -481,14 +441,14 @@ addCorrelationTimeVariableMethylationLME <- function(
 ) {
     correlation_time_var <- "dnaEPICO_lme_correlation_time"
     while (correlation_time_var %in% colnames(modelData)) {
-        correlation_time_var <- paste0(
-            correlation_time_var,
-            "_"
-        )
+    correlation_time_var <- paste0(
+        correlation_time_var,
+        "_"
+    )
     }
 
     modelData[[correlation_time_var]] <-
-        coerceCorrelationTimeMethylationLME(modelData[[correlationVar]])
+    coerceCorrelationTimeMethylationLME(modelData[[correlationVar]])
 
     list(data = modelData, correlationTimeVar = correlation_time_var)
 }
@@ -501,21 +461,25 @@ validateCorrelationTimeMethylationLME <- function(
     person_values <- modelData[[personVar]]
 
     if (anyNA(time_values) || any(!is.finite(time_values))) {
-        stop("correlationVar contains missing or non-finite values after conversion.",
-            call. = FALSE
-        )
+    stop(
+        "correlationVar contains missing or non-finite values after ",
+        "conversion.",
+        call. = FALSE
+    )
     }
     person_time <- interaction(person_values, time_values, drop = TRUE)
     if (anyDuplicated(person_time)) {
-        stop("correlationVar must be unique within each subject for AR1/CAR1 models.",
-            call. = FALSE
-        )
+    stop(
+        "correlationVar must be unique within each subject for AR1/CAR1 ",
+        "models.",
+        call. = FALSE
+    )
     }
     if (identical(correlationStructure, "AR1") && any(abs(time_values -
-        round(time_values)) > sqrt(.Machine$double.eps))) {
-        stop("AR1 requires integer-valued correlationVar observations.",
-            call. = FALSE
-        )
+    round(time_values)) > sqrt(.Machine$double.eps))) {
+    stop("AR1 requires integer-valued correlationVar observations.",
+        call. = FALSE
+    )
     }
 
     invisible(TRUE)
@@ -526,26 +490,28 @@ buildCorrelationMethylationLME <- function(
     correlationTimeVar = NULL, personVar
 ) {
     if (identical(correlationStructure, "none")) {
-        return(NULL)
+    return(NULL)
     }
 
     if (is.null(correlationTimeVar) || !nzchar(correlationTimeVar)) {
-        stop("An internal correlation time variable is required for AR1/CAR1 models.",
-            call. = FALSE
-        )
+    stop(
+        "An internal correlation time variable is required for AR1/CAR1 ",
+        "models.",
+        call. = FALSE
+    )
     }
 
     correlation_formula <- stats::as.formula(paste(
-        "~", quoteNamesMethylationGLM(correlationTimeVar),
-        "|", quoteNamesMethylationGLM(personVar)
+    "~", quoteNamesMethylationGLM(correlationTimeVar),
+    "|", quoteNamesMethylationGLM(personVar)
     ))
 
     switch(correlationStructure,
-        AR1 = nlme::corAR1(form = correlation_formula),
-        CAR1 = nlme::corCAR1(form = correlation_formula),
-        stop("Unsupported correlation structure.",
-            call. = FALSE
-        )
+    AR1 = nlme::corAR1(form = correlation_formula),
+    CAR1 = nlme::corCAR1(form = correlation_formula),
+    stop("Unsupported correlation structure.",
+        call. = FALSE
+    )
     )
 }
 
@@ -553,16 +519,16 @@ coerceCoefficientTableMethylationLME <- function(coefTable, engine = "lme4") {
     coef_table <- as.data.frame(coefTable, check.names = FALSE)
 
     if (identical(engine, "nlme")) {
-        rename_map <- c(
-            Value = "Estimate", Std.Error = "Std. Error",
-            DF = "df", `t-value` = "t value", `p-value` = "Pr(>|t|)"
-        )
-        for (old_name in names(rename_map)) {
-            if (old_name %in% colnames(coef_table)) {
-                colnames(coef_table)[colnames(coef_table) ==
-                    old_name] <- rename_map[[old_name]]
-            }
+    rename_map <- c(
+        Value = "Estimate", Std.Error = "Std. Error",
+        DF = "df", `t-value` = "t value", `p-value` = "Pr(>|t|)"
+    )
+    for (old_name in names(rename_map)) {
+        if (old_name %in% colnames(coef_table)) {
+        colnames(coef_table)[colnames(coef_table) ==
+            old_name] <- rename_map[[old_name]]
         }
+    }
     }
 
     as.matrix(coef_table)
@@ -587,9 +553,9 @@ findCoefficientRowsMethylationLME <- function(
     interactionTerm = NULL, coefficientTerms = NULL
 ) {
     findCoefficientRowsMethylationGLM(
-        coefNames = coefNames,
-        variable = phenotype, interactionTerm = interactionTerm,
-        coefficientTerms = coefficientTerms
+    coefNames = coefNames,
+    variable = phenotype, interactionTerm = interactionTerm,
+    coefficientTerms = coefficientTerms
     )
 }
 
@@ -597,26 +563,26 @@ collectModelMessagesMethylationLME <- function(fits) {
     rows <- list()
     row_index <- 1L
     for (phenotype in names(fits)) {
-        fit_group <- fits[[phenotype]]
-        for (cpg in names(fit_group)) {
-            fit_object <- fit_group[[cpg]]
-            rows[[row_index]] <- data.frame(
-                Phenotype = phenotype,
-                CpG = cpg,
-                Model.Message = modelMessageDnaEpico(fit_object),
-                P.Value.Available = isTRUE(fit_object$pValueAvailable),
-                stringsAsFactors = FALSE, check.names = FALSE
-            )
-            row_index <- row_index + 1L
-        }
+    fit_group <- fits[[phenotype]]
+    for (cpg in names(fit_group)) {
+        fit_object <- fit_group[[cpg]]
+        rows[[row_index]] <- data.frame(
+        Phenotype = phenotype,
+        CpG = cpg,
+        Model.Message = modelMessageDnaEpico(fit_object),
+        P.Value.Available = isTRUE(fit_object$pValueAvailable),
+        stringsAsFactors = FALSE, check.names = FALSE
+        )
+        row_index <- row_index + 1L
+    }
     }
 
     if (length(rows) == 0L) {
-        return(data.frame(
-            Phenotype = character(0), CpG = character(0),
-            Model.Message = character(0), P.Value.Available = logical(0),
-            stringsAsFactors = FALSE, check.names = FALSE
-        ))
+    return(data.frame(
+        Phenotype = character(0), CpG = character(0),
+        Model.Message = character(0), P.Value.Available = logical(0),
+        stringsAsFactors = FALSE, check.names = FALSE
+    ))
     }
 
     model_messages <- do.call(rbind, rows)
@@ -643,54 +609,157 @@ summarizeCpGFitMethylationLME <- function(
     cpg, modelObj, phenotype,
     interactionTerm = NULL
 ) {
-    if (is.null(modelObj) || inherits(modelObj,
-        "dnaEPICO_methylationLME_fit_error")) {
-        return(NULL)
+    if (is.null(modelObj) || inherits(
+    modelObj,
+    "dnaEPICO_methylationLME_fit_error"
+    )) {
+    return(NULL)
     }
 
     coef_table <- modelObj$coef
     if (is.null(coef_table)) {
-        return(NULL)
+    return(NULL)
     }
 
     matched_terms <- findCoefficientRowsMethylationLME(
-        coefNames = rownames(coef_table),
-        phenotype = phenotype, interactionTerm = interactionTerm,
-        coefficientTerms = modelObj$coefficientTerms
+    coefNames = rownames(coef_table),
+    phenotype = phenotype, interactionTerm = interactionTerm,
+    coefficientTerms = modelObj$coefficientTerms
     )
     if (length(matched_terms) == 0L) {
-        return(NULL)
+    return(NULL)
     }
 
     do.call(rbind, lapply(matched_terms, function(term) {
-        coef_row <- coef_table[term, ]
-        data.frame(
-            CpG = cpg, Interaction.Term = term,
-                Estimate = unname(coef_row["Estimate"]),
-            Std.Error = unname(coef_row["Std. Error"]),
-                t.value = unname(coef_row["t value"]),
-            P.value = unname(coef_row["Pr(>|t|)"]),
-            Model.Message = modelMessageDnaEpico(modelObj),
-            stringsAsFactors = FALSE,
-            row.names = NULL
-        )
+    coef_row <- coef_table[term, ]
+    data.frame(
+        CpG = cpg, Interaction.Term = term,
+        Estimate = unname(coef_row["Estimate"]),
+        Std.Error = unname(coef_row["Std. Error"]),
+        t.value = unname(coef_row["t value"]),
+        P.value = unname(coef_row["Pr(>|t|)"]),
+        Model.Message = modelMessageDnaEpico(modelObj),
+        stringsAsFactors = FALSE,
+        row.names = NULL
+    )
     }))
 }
 
 filterSummaryByPvalueMethylationLME <- function(summaryDf, pValueFilter) {
     summary_df <- summaryDf
     if (is.null(summary_df) || nrow(summary_df) == 0L) {
-        return(data.frame())
+    return(data.frame())
     }
 
     if (nrow(summary_df) > 0L && !is.na(pValueFilter)) {
-        keep <- is.finite(summary_df$P.value) & summary_df$P.value <
-            pValueFilter
-        summary_df <- summary_df[keep, , drop = FALSE]
+    keep <- is.finite(summary_df$P.value) & summary_df$P.value <
+        pValueFilter
+    summary_df <- summary_df[keep, , drop = FALSE]
     }
     rownames(summary_df) <- NULL
 
     summary_df
+}
+
+fitLmeEngineDnaEpico <- function(
+    formula, data, personVar, engine, correlationStructure,
+    correlationTimeVar
+) {
+    if (identical(engine, "nlme")) {
+    fit <- nlme::lme(
+        fixed = formula,
+        random = stats::as.formula(paste(
+        "~ 1 |", quoteNamesMethylationGLM(personVar)
+        )),
+        correlation = buildCorrelationMethylationLME(
+        correlationStructure = correlationStructure,
+        correlationTimeVar = correlationTimeVar,
+        personVar = personVar
+        ),
+        data = data, na.action = stats::na.exclude, method = "REML",
+        control = nlme::lmeControl(returnObject = TRUE)
+    )
+    coefficients <- coerceCoefficientTableMethylationLME(
+        summary(fit)$tTable,
+        engine = engine
+    )
+    } else {
+    fit <- lmerTest::lmer(
+        formula = formula, data = data,
+        na.action = stats::na.exclude, REML = TRUE
+    )
+    coefficients <- coerceCoefficientTableMethylationLME(
+        summary(fit)$coefficients,
+        engine = engine
+    )
+    }
+    list(fit = fit, coefficients = coefficients)
+}
+
+coefficientTermsForLmeDnaEpico <- function(
+    supplied, formulaText, data, engine
+) {
+    if (!is.null(supplied)) {
+    return(supplied)
+    }
+    buildCoefficientTermMapMethylationModels(
+    formulaText = formulaText, data = data,
+    removeRandomEffects = !identical(engine, "nlme")
+    )
+}
+
+omnibusForLmeFitDnaEpico <- function(
+    fit, coefficientTerms, omnibusTest, omnibusTerm, omnibusDdf, engine
+) {
+    if (!isTRUE(omnibusTest)) {
+    return(NULL)
+    }
+    if (identical(engine, "nlme")) {
+    stop("omnibusTest is not available for nlme fits.", call. = FALSE)
+    }
+    computeOmnibusTestMethylationLME(
+    fit = fit, coefficientTerms = coefficientTerms,
+    omnibusTerm = omnibusTerm, omnibusDdf = omnibusDdf
+    )
+}
+
+retainLmeFitDetailsDnaEpico <- function(result, fit, engine, retainModel) {
+    if (!isTRUE(retainModel)) {
+    return(result)
+    }
+    result$residuals <- stats::residuals(fit)
+    result$fitted <- stats::fitted(fit)
+    result$ranef <- if (identical(engine, "nlme")) {
+    nlme::ranef(fit)
+    } else {
+    lme4::ranef(fit)
+    }
+    result$fixef <- if (identical(engine, "nlme")) {
+    nlme::fixef(fit)
+    } else {
+    lme4::fixef(fit)
+    }
+    result$model <- fit
+    result
+}
+
+completeCapturedLmeFitDnaEpico <- function(captured) {
+    if (!is.null(captured$error)) {
+    return(newMethylationFitErrorDnaEpico(
+        reason = conditionMessage(captured$error),
+        errorClass = "dnaEPICO_methylationLME_fit_error",
+        modelMessage = captured$modelMessage
+    ))
+    }
+    captured$value$modelMessage <- combineModelMessagesDnaEpico(
+    captured$modelMessage,
+    if (is.null(captured$value$omnibus)) {
+        NULL
+    } else {
+        captured$value$omnibus$modelMessage
+    }
+    )
+    captured$value
 }
 
 fitCpGModelMethylationLME <- function(
@@ -702,187 +771,116 @@ fitCpGModelMethylationLME <- function(
     formulaObject = NULL, coefficientTerms = NULL
 ) {
     captured <- captureModelConditionsDnaEpico({
-            model_data <- modelData
-            if (!is.numeric(cpgValues)) {
-                stop("The CpG response is not numeric.", call. = FALSE)
-            }
-            model_data[[responseVar]] <- cpgValues
-            fit_formula <- if (is.null(formulaObject)) {
-                stats::as.formula(formulaText)
-            } else {
-                formulaObject
-            }
-
-            if (identical(lmeEngine, "nlme")) {
-                fit <- nlme::lme(
-                    fixed = fit_formula,
-                    random = stats::as.formula(paste("~ 1 |",
-                        quoteNamesMethylationGLM(personVar))),
-                    correlation = buildCorrelationMethylationLME(
-                        correlationStructure = correlationStructure,
-                        correlationTimeVar = correlationTimeVar,
-                        personVar = personVar
-                    ),
-                    data = model_data, na.action = stats::na.exclude,
-                    method = "REML",
-                    control = nlme::lmeControl(returnObject = TRUE)
-                )
-                coef_table <-
-                    coerceCoefficientTableMethylationLME(summary(fit)$tTable,
-                    engine = lmeEngine
-                )
-            } else {
-                fit <- lmerTest::lmer(
-                    formula = fit_formula,
-                    data = model_data, na.action = stats::na.exclude,
-                    REML = TRUE
-                )
-                coef_table <-
-                    coerceCoefficientTableMethylationLME(summary(fit)$coefficients,
-                    engine = lmeEngine
-                )
-            }
-
-            coefficient_terms <- if (is.null(coefficientTerms)) {
-                buildCoefficientTermMapMethylationModels(
-                    formulaText = formulaText,
-                    data = model_data, removeRandomEffects = !identical(
-                        lmeEngine,
-                        "nlme"
-                    )
-                )
-            } else {
-                coefficientTerms
-            }
-            omnibus_result <- NULL
-            if (isTRUE(omnibusTest)) {
-                if (identical(lmeEngine, "nlme")) {
-                    stop(
-                        "omnibusTest is not available for nlme fits.",
-                        call. = FALSE
-                    )
-                }
-                omnibus_result <- computeOmnibusTestMethylationLME(
-                    fit = fit, coefficientTerms = coefficient_terms,
-                    omnibusTerm = omnibusTerm,
-                    omnibusDdf = omnibusDdf
-                )
-            }
-
-            result <- list(
-                coef = coef_table, coefficientTerms = coefficient_terms,
-                omnibus = omnibus_result, pValueAvailable = FALSE
-            )
-            if (isTRUE(retainModel)) {
-                result$residuals <- stats::residuals(fit)
-                result$fitted <- stats::fitted(fit)
-                result$ranef <- if (identical(lmeEngine, "nlme")) {
-                    nlme::ranef(fit)
-                } else {
-                    lme4::ranef(fit)
-                }
-                result$fixef <- if (identical(lmeEngine, "nlme")) {
-                    nlme::fixef(fit)
-                } else {
-                    lme4::fixef(fit)
-                }
-                result$model <- fit
-            }
-            result
-    })
-    if (!is.null(captured$error)) {
-        return(newMethylationFitErrorDnaEpico(
-            reason = conditionMessage(captured$error),
-            errorClass = "dnaEPICO_methylationLME_fit_error",
-            modelMessage = captured$modelMessage
-        ))
+    if (!is.numeric(cpgValues)) {
+        stop("The CpG response is not numeric.", call. = FALSE)
     }
-    captured$value$modelMessage <- combineModelMessagesDnaEpico(
-        captured$modelMessage,
-        if (!is.null(captured$value$omnibus)) {
-            captured$value$omnibus$modelMessage
-        } else {
-            NULL
-        }
+    model_data <- modelData
+    model_data[[responseVar]] <- cpgValues
+    fit_formula <- if (is.null(formulaObject)) {
+        stats::as.formula(formulaText)
+    } else {
+        formulaObject
+    }
+    engine_fit <- fitLmeEngineDnaEpico(
+        fit_formula, model_data, personVar, lmeEngine,
+        correlationStructure, correlationTimeVar
     )
-    captured$value
+    coefficient_terms <- coefficientTermsForLmeDnaEpico(
+        coefficientTerms, formulaText, model_data, lmeEngine
+    )
+    omnibus <- omnibusForLmeFitDnaEpico(
+        engine_fit$fit, coefficient_terms, omnibusTest,
+        omnibusTerm, omnibusDdf, lmeEngine
+    )
+    result <- list(
+        coef = engine_fit$coefficients,
+        coefficientTerms = coefficient_terms,
+        omnibus = omnibus, pValueAvailable = FALSE
+    )
+    retainLmeFitDetailsDnaEpico(
+        result, engine_fit$fit, lmeEngine, retainModel
+    )
+    })
+    completeCapturedLmeFitDnaEpico(captured)
 }
 
-fitMethylationLMEBatch <- function(
-    cpgBatch, data, modelData,
+fitMethylationLMEBatch <- function(cpgBatch, data, modelData,
     formulaText, personVar, lmeEngine = "lme4", correlationStructure = "none",
     correlationTimeVar = NULL, phenotype, interactionTerm = NULL,
-    responseVar = "beta",
-    omnibusTest = FALSE, omnibusDdf = "Satterthwaite",
-    omnibusTerm = NULL, formulaObject = NULL, coefficientTerms = NULL
-) {
+    responseVar = "beta", omnibusTest = FALSE, omnibusDdf = "Satterthwaite",
+    omnibusTerm = NULL, formulaObject = NULL, coefficientTerms = NULL) {
     fits <- vector("list", length(cpgBatch))
     names(fits) <- cpgBatch
     summaries <- vector("list", length(cpgBatch))
     names(summaries) <- cpgBatch
-
     for (cpg in cpgBatch) {
-        model_obj <- fitCpGModelMethylationLME(
-            cpg = cpg,
-            cpgValues = cpgResponseMethylationModels(data, cpg),
-            modelData = modelData, formulaText = formulaText,
+        model_obj <- fitCpGModelMethylationLME(cpg = cpg,
+            cpgValues = cpgResponseMethylationModels(data,
+                cpg), modelData = modelData, formulaText = formulaText,
             personVar = personVar, lmeEngine = lmeEngine,
             correlationStructure = correlationStructure,
-            correlationTimeVar = correlationTimeVar,
-            responseVar = responseVar,
+            correlationTimeVar = correlationTimeVar, responseVar = responseVar,
             omnibusTest = omnibusTest, omnibusDdf = omnibusDdf,
             omnibusTerm = omnibusTerm, retainModel = FALSE,
-            formulaObject = formulaObject,
-            coefficientTerms = coefficientTerms
-        )
-        summary_row <- summarizeCpGFitMethylationLME(
-            cpg = cpg,
+            formulaObject = formulaObject, coefficientTerms = coefficientTerms)
+        summary_row <- summarizeCpGFitMethylationLME(cpg = cpg,
             modelObj = model_obj, phenotype = phenotype,
-            interactionTerm = interactionTerm
-        )
+            interactionTerm = interactionTerm)
         coefficient_p_available <- !is.null(summary_row) &&
-            "P.value" %in% colnames(summary_row) &&
-            any(is.finite(summary_row$P.value))
+            "P.value" %in% colnames(summary_row) && any(is.finite(
+            summary_row$P.value))
         omnibus_p_available <- !is.null(model_obj$omnibus) &&
             is.finite(model_obj$omnibus$pValue)
         p_value_available <- coefficient_p_available || omnibus_p_available
         model_obj$pValueAvailable <- p_value_available
         if (!is.null(summary_row)) {
             summary_row$Model.Message <- modelMessageDnaEpico(model_obj)
-        }
-        fits[[cpg]] <- model_obj
+        }; fits[[cpg]] <- model_obj
         summaries[[cpg]] <- summary_row
     }
-
     summaries <- Filter(Negate(is.null), summaries)
     summary_df <- if (length(summaries) == 0L) {
-        data.frame()
-    } else {
+        data.frame() } else {
         out <- do.call(rbind, summaries)
-        rownames(out) <- NULL
-        out
-    }
-
-    list(
-        coefficientResults =
-            compactCoefficientResultsMethylationModels(
-                fits = fits, cpgOrder = cpgBatch,
-                includeResidualSD = FALSE
-            ),
-        summaries = summary_df,
-        omnibusTests = collectOmnibusTestsMethylationLME(
-            fits = fits,
-            phenotype = phenotype
-        ),
-        modelMessages = collectBatchModelMessagesMethylationModels(
+        rownames(out) <- NULL; out }
+    list(coefficientResults = compactCoefficientResultsMethylationModels(fits =
+        fits,
+        cpgOrder = cpgBatch, includeResidualSD = FALSE),
+        summaries = summary_df, omnibusTests =
+            collectOmnibusTestsMethylationLME(fits = fits,
+            phenotype = phenotype), modelMessages =
+            collectBatchModelMessagesMethylationModels(fits,
+            phenotype), fitFailures = collectBatchFitFailuresMethylationModels(
             fits,
-            phenotype
-        ),
-        fitFailures = collectBatchFitFailuresMethylationModels(
-            fits, phenotype,
-            "dnaEPICO_methylationLME_fit_error"
+            phenotype, "dnaEPICO_methylationLME_fit_error"))
+}
+
+summarizeTimepointGroupDnaEpico <- function(data, timeVar, phenotypes) {
+    output <- list()
+    output[[timeVar]] <- as.character(data[[timeVar]][[1L]])
+    for (phenotype in phenotypes) {
+    values <- data[[phenotype]]
+    if (is.numeric(values)) {
+        finite_values <- values[is.finite(values)]
+        output[[paste0(phenotype, "_mean")]] <-
+        if (length(finite_values)) mean(finite_values) else NA_real_
+        output[[paste0(phenotype, "_sd")]] <-
+        if (length(finite_values) > 1L) {
+            stats::sd(finite_values)
+        } else {
+            NA_real_
+        }
+        output[[paste0(phenotype, "_n")]] <- length(finite_values)
+    } else {
+        observed <- unique(as.character(values[!is.na(values)]))
+        output[[paste0(phenotype, "_n")]] <- sum(!is.na(values))
+        output[[paste0(phenotype, "_levels")]] <- paste(
+        observed,
+        collapse = ","
         )
-    )
+    }
+    }
+    as.data.frame(output, stringsAsFactors = FALSE)
 }
 
 #' Summarize phenotype values by timepoint for longitudinal methylation analyses
@@ -909,11 +907,11 @@ fitMethylationLMEBatch <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 #' timepoint_summary <- summarizeTimepointsMethylationLME(
-#'     data = ex$preparedData$data,
-#'     timeVar = "Timepoint",
-#'     phenotypes = "score",
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   data = ex$preparedData$data,
+#'   timeVar = "Timepoint",
+#'   phenotypes = "score",
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' nrow(timepoint_summary)
 #'
@@ -924,72 +922,280 @@ summarizeTimepointsMethylationLME <- function(
     log_file = "log_methylationLME.txt"
 ) {
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    logs = logs, log_dir = log_dir,
+    log_file = log_file
     )
     phenotype_list <- unique(splitOptionMinfiEwasWater(phenotypes,
-        sep = ","
+    sep = ","
     ))
 
     if (!(timeVar %in% colnames(data))) {
-        stop("timeVar column not found: ", timeVar, call. = FALSE)
+    stop("timeVar column not found: ", timeVar, call. = FALSE)
     }
 
     missing_phenotypes <- setdiff(phenotype_list, colnames(data))
     if (length(missing_phenotypes) > 0L) {
-        stop("Phenotype columns not found for timepoint summary: ",
-            paste(missing_phenotypes, collapse = ", "),
-            call. = FALSE
-        )
+    missing_phenotypes_text <- paste(missing_phenotypes, collapse = ", ")
+    stop(
+        sprintf(
+        "Phenotype columns not found for timepoint summary: %s",
+        missing_phenotypes_text
+        ),
+        call. = FALSE
+    )
     }
 
     split_data <- split(data, as.character(data[[timeVar]]))
-    summaries <- lapply(split_data, function(df) {
-        out <- list()
-        out[[timeVar]] <- as.character(df[[timeVar]][[1L]])
-
-        for (phenotype in phenotype_list) {
-            values <- df[[phenotype]]
-            if (is.numeric(values)) {
-                finite_values <- values[is.finite(values)]
-                out[[paste0(phenotype, "_mean")]] <-
-                    if (length(finite_values)) {
-                    mean(finite_values)
-                } else {
-                    NA_real_
-                }
-                out[[paste0(phenotype, "_sd")]] <- if (length(finite_values) >
-                    1L) {
-                    stats::sd(finite_values)
-                } else {
-                    NA_real_
-                }
-                out[[paste0(phenotype, "_n")]] <- length(finite_values)
-            } else {
-                observed_levels <- unique(as.character(values[!is.na(values)]))
-                out[[paste0(phenotype, "_n")]] <- sum(!is.na(values))
-                out[[paste0(phenotype, "_levels")]] <- paste(observed_levels,
-                    collapse = ","
-                )
-            }
-        }
-
-        as.data.frame(out, stringsAsFactors = FALSE)
-    })
+    summaries <- lapply(split_data, summarizeTimepointGroupDnaEpico,
+    timeVar = timeVar, phenotypes = phenotype_list
+    )
     summary_df <- do.call(rbind, summaries)
     rownames(summary_df) <- NULL
 
     emitLogMinfiEwasWater(
-        c(
-            "============================================================",
-            "Summary statistics for phenotype scores by timepoint:",
-            previewLinesMinfiEwasWater(summary_df),
-                "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
+    c(
+        "============================================================",
+        "Summary statistics for phenotype scores by timepoint:",
+        previewLinesMinfiEwasWater(summary_df),
+        "============================================================"
+    ),
+    verbose = verbose, log_path = log_path
     )
 
     summary_df
+}
+
+normalizeLmePreparationConfigDnaEpico <- function(config) {
+    config$phenotypeList <- unique(splitOptionMinfiEwasWater(
+    config$phenotypes,
+    sep = ","
+    ))
+    config$covariateList <- splitOptionMinfiEwasWater(
+    config$covariates,
+    sep = ","
+    )
+    config$factorList <- splitOptionMinfiEwasWater(config$factorVars, sep = ",")
+    config$scaleList <- normalizeScaleVariablesDnaEpico(config$scaleVars)
+    config$prsMapParsed <- parsePrsMapMethylationGLM(config$prsMap)
+    config$cpgLimitValue <- validateCpgLimitMethylationModels(
+    normalizeOptionalNumericMethylationGLM(config$cpgLimit)
+    )
+    config$cpgPrefix <- validateCpgPrefixDnaEpico(config$cpgPrefix)
+    config$methylationScaleValue <- normalizeMethylationScaleDnaEpico(
+    config$methylationScale
+    )
+    config$responseLabel <- methylationScaleResponseLabelDnaEpico(
+    config$methylationScaleValue
+    )
+    config$objectPrefix <- methylationScaleObjectPrefixDnaEpico(
+    config$methylationScaleValue
+    )
+    config$responseColumn <- methylationScaleResponseColumnDnaEpico(
+    config$methylationScaleValue
+    )
+    config$logPath <- resolveLogPathMinfiEwasWater(
+    logs = config$logs, log_dir = config$log_dir,
+    log_file = config$log_file
+    )
+    config
+}
+
+loadMethylationLMEInputDnaEpico <- function(config) {
+    input_name <- sub("[.][^.]+$", "", basename(config$inputPheno))
+    scale_name <- if (startsWith(input_name, config$objectPrefix)) {
+    input_name
+    } else {
+    character(0)
+    }
+    legacy_name <- if (identical(config$methylationScaleValue, "beta")) {
+    "phenoBT1T2"
+    } else {
+    character(0)
+    }
+    data <- loadSavedObjectPreprocessingPheno(
+    config$inputPheno,
+    preferred_name = c(
+        scale_name, paste0(config$objectPrefix, "T1T2"),
+        legacy_name, input_name
+    )
+    )
+    if (!is.data.frame(data)) {
+    data <- as.data.frame(data, stringsAsFactors = FALSE)
+    }
+    data
+}
+
+validateLmeColumnsDnaEpico <- function(data, columns, messageTemplate) {
+    missing <- setdiff(columns, colnames(data))
+    if (length(missing) > 0L) {
+    missing_text <- paste(unique(missing), collapse = ", ")
+    stop(sprintf(messageTemplate, missing_text),
+        call. = FALSE
+    )
+    }
+    invisible(TRUE)
+}
+
+validateLmeTimeValuesDnaEpico <- function(data, timeVar) {
+    if (!(timeVar %in% colnames(data))) {
+    stop("timeVar column not found in inputPheno: ", timeVar,
+        call. = FALSE
+    )
+    }
+    values <- data[[timeVar]]
+    invalid <- is.na(values) | !nzchar(trimws(as.character(values)))
+    if (is.numeric(values)) {
+    invalid <- invalid | !is.finite(values)
+    }
+    if (any(invalid)) {
+    stop("timeVar contains missing, blank, or non-finite values.",
+        call. = FALSE
+    )
+    }
+    invisible(TRUE)
+}
+
+validateLmeModelVariablesDnaEpico <- function(data, config) {
+    if (length(config$phenotypeList) == 0L) {
+    stop("At least one phenotype must be supplied.", call. = FALSE)
+    }
+    validateLmeTimeValuesDnaEpico(data, config$timeVar)
+    validateLmeColumnsDnaEpico(
+    data, config$phenotypeList,
+    "Phenotype columns not found in inputPheno: %s"
+    )
+    validateLmeColumnsDnaEpico(
+    data, config$covariateList,
+    "Covariate columns not found in inputPheno: %s"
+    )
+    mapped_prs <- unname(config$prsMapParsed[
+    names(config$prsMapParsed) %in% config$phenotypeList
+    ])
+    validateLmeColumnsDnaEpico(
+    data, mapped_prs, "PRS columns not found in inputPheno: %s"
+    )
+    interaction <- normalizeOptionalColumnMethylationModels(
+    config$interactionTerm, "interactionTerm"
+    )
+    if (!is.null(interaction) && !(interaction %in% colnames(data))) {
+    stop("interactionTerm column not found in inputPheno: ", interaction,
+        call. = FALSE
+    )
+    }
+    validateLmeColumnsDnaEpico(
+    data, config$factorList,
+    "Factor columns not found in inputPheno: %s"
+    )
+    list(mappedPrs = mapped_prs, interaction = interaction)
+}
+
+prepareLmeColumnsDnaEpico <- function(data, config, variables) {
+    for (var in intersect(config$factorList, colnames(data))) {
+    data[[var]] <- as.factor(data[[var]])
+    }
+    cpg_columns <- grep(
+    paste0("^", escapeRegexMethylationGLM(config$cpgPrefix)),
+    colnames(data),
+    value = TRUE
+    )
+    if (!is.na(config$cpgLimitValue)) {
+    cpg_columns <- utils::head(cpg_columns, config$cpgLimitValue)
+    }
+    if (length(cpg_columns) == 0L) {
+    stop("No CpG columns were found with prefix '", config$cpgPrefix,
+        "'.",
+        call. = FALSE
+    )
+    }
+    validateMethylationProbeIdentifiersDnaEpico(
+    cpg_columns, "CpG columns in the LME input"
+    )
+    scaled_cpgs <- intersect(config$scaleList, cpg_columns)
+    if (length(scaled_cpgs) > 0L) {
+    scaled_cpg_text <- paste(scaled_cpgs, collapse = ", ")
+    stop(sprintf(
+        "%s: %s",
+        "CpG methylation response columns cannot be listed in scaleVars",
+        scaled_cpg_text
+    ), call. = FALSE)
+    }
+    eligible <- unique(c(
+    config$phenotypeList, config$covariateList,
+    variables$mappedPrs, variables$interaction
+    ))
+    eligible <- eligible[!is.na(eligible) & nzchar(eligible)]
+    scaling <- scaleModelVariablesDnaEpico(
+    data = data[, setdiff(colnames(data), cpg_columns), drop = FALSE],
+    scaleVars = config$scaleList, factorVars = config$factorList,
+    eligibleVars = eligible, protectedVars = c(config$personVar, cpg_columns)
+    )
+    list(data = data, cpgColumns = cpg_columns, scaling = scaling)
+}
+
+logPreparedLmeDataDnaEpico <- function(config,
+    data, personData, columns, timepointSummary) {
+    lines <- c("============================================================",
+        paste("Loaded longitudinal phenotype + methylation data from:",
+            config$inputPheno), paste("Merged modeling object:            ",
+            config$objectPrefix, "*"), paste(
+            "Data dimensions:                  ",
+            paste(dim(data), collapse = " x ")),
+        paste("Person variable:                  ",
+            config$personVar), paste("Time variable:                    ",
+            config$timeVar), paste("Phenotypes:                       ",
+            paste(config$phenotypeList, collapse = ", ")),
+        paste("Covariates:                       ",
+            paste(config$covariateList, collapse = ", ")),
+        paste("Factor variables:                 ",
+            paste(config$factorList, collapse = ", ")),
+        formatScalingMetadataLogDnaEpico(columns$scaling$metadata),
+        paste("CpG columns retained:             ",
+            length(columns$cpgColumns)),
+        if (isTRUE(personData$personCreated)) {
+            paste("Created person variable from SID: ",
+                config$personVar)
+        } else {
+            paste("Person variable already present:  ",
+                config$personVar)
+        }, paste("Values observed in", config$timeVar,
+            ":"), previewLinesMinfiEwasWater(table(data[[config$timeVar]],
+            useNA = "ifany")))
+    if (!is.null(personData$mappingPreview)) {
+        lines <- c(lines, "Example mapping of SID to person ID:",
+            previewLinesMinfiEwasWater(personData$mappingPreview))
+    }
+    lines <- c(lines, "Summary statistics for phenotype scores by timepoint:",
+        previewLinesMinfiEwasWater(timepointSummary),
+        "============================================================")
+    emitLogMinfiEwasWater(lines, verbose = config$verbose,
+        log_path = config$logPath)
+}
+
+newPreparedMethylationLMEDataDnaEpico <- function(
+    config, columns, variables, personData, timepointSummary
+) {
+    structure(list(
+    data = columns$data, modelData = columns$scaling$data,
+    inputPheno = config$inputPheno,
+    inputIdentity = inputIdentityMethylationModels(config$inputPheno),
+    personVar = config$personVar, timeVar = config$timeVar,
+    phenotypes = config$phenotypeList, covariates = config$covariateList,
+    factorVars = config$factorList,
+    scaleVars = columns$scaling$scaleVars,
+    scalingMetadata = columns$scaling$metadata,
+    prsMap = config$prsMapParsed, cpgColumns = columns$cpgColumns,
+    cpgPrefix = config$cpgPrefix, cpgLimit = config$cpgLimitValue,
+    methylationScale = config$methylationScaleValue,
+    responseLabel = config$responseLabel,
+    methylationObjectPrefix = config$objectPrefix,
+    internalResponseColumn = config$responseColumn,
+    interactionTerm = variables$interaction,
+    requestedInteractionTerm = config$interactionTerm,
+    personCreated = personData$personCreated,
+    personCounts = personData$personCounts,
+    personMappingPreview = personData$mappingPreview,
+    timepointSummary = timepointSummary
+    ), class = "dnaEPICO_methylationLME_data")
 }
 
 #' Prepare longitudinal phenotype-plus-methylation data for mixed-effects
@@ -1036,15 +1242,15 @@ summarizeTimepointsMethylationLME <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 #' prepared_data <- prepareMethylationLMEData(
-#'     inputPheno = ex$inputPath,
-#'     personVar = "person",
-#'     timeVar = "Timepoint",
-#'     phenotypes = "score",
-#'     covariates = "sex",
-#'     factorVars = "sex",
-#'     cpgLimit = 2,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   inputPheno = ex$inputPath,
+#'   personVar = "person",
+#'   timeVar = "Timepoint",
+#'   phenotypes = "score",
+#'   covariates = "sex",
+#'   factorVars = "sex",
+#'   cpgLimit = 2,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(prepared_data)
 #'
@@ -1056,252 +1262,868 @@ prepareMethylationLMEData <- function(
     methylationScale = "beta", interactionTerm = NULL, verbose = FALSE,
     logs = FALSE, log_dir = NULL, log_file = "log_methylationLME.txt"
 ) {
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    config <- normalizeLmePreparationConfigDnaEpico(
+    as.list(environment(), all.names = TRUE)
     )
-    phenotype_list <- unique(splitOptionMinfiEwasWater(phenotypes,
-        sep = ","
-    ))
-    covariate_list <- splitOptionMinfiEwasWater(covariates, sep = ",")
-    factor_list <- splitOptionMinfiEwasWater(factorVars, sep = ",")
-    scale_list <- normalizeScaleVariablesDnaEpico(scaleVars)
-    prs_map <- parsePrsMapMethylationGLM(prsMap)
-    cpg_limit <-
-        validateCpgLimitMethylationModels(normalizeOptionalNumericMethylationGLM(cpgLimit))
-    cpgPrefix <- validateCpgPrefixDnaEpico(cpgPrefix)
-    methylation_scale <- normalizeMethylationScaleDnaEpico(methylationScale)
-    methylation_label <-
-        methylationScaleResponseLabelDnaEpico(methylation_scale)
-    methylation_prefix <-
-        methylationScaleObjectPrefixDnaEpico(methylation_scale)
-    response_column <- methylationScaleResponseColumnDnaEpico(methylation_scale)
-    input_object_name <- sub("[.][^.]+$", "", basename(inputPheno))
-    scale_named_input <- if (startsWith(input_object_name,
-        methylation_prefix)) {
-        input_object_name
-    } else {
-        character(0)
+    analysis_data <- loadMethylationLMEInputDnaEpico(config)
+    if (length(config$phenotypeList) == 0L) {
+    stop("At least one phenotype must be supplied.", call. = FALSE)
     }
-    legacy_input_name <- if (identical(methylation_scale, "beta")) {
-        "phenoBT1T2"
-    } else {
-        character(0)
-    }
-    analysis_data <- loadSavedObjectPreprocessingPheno(inputPheno,
-        preferred_name = c(scale_named_input, paste0(
-            methylation_prefix,
-            "T1T2"
-        ), legacy_input_name, input_object_name)
-    )
-
-    if (!is.data.frame(analysis_data)) {
-        analysis_data <- as.data.frame(analysis_data, stringsAsFactors = FALSE)
-    }
-
-    if (length(phenotype_list) == 0L) {
-        stop("At least one phenotype must be supplied.", call. = FALSE)
-    }
-
     person_data <- ensurePersonColumnMethylationLME(
-        data = analysis_data,
-        personVar = personVar
+    data = analysis_data, personVar = config$personVar
     )
     analysis_data <- person_data$data
-
-    if (!(timeVar %in% colnames(analysis_data))) {
-        stop("timeVar column not found in inputPheno: ", timeVar,
-            call. = FALSE
-        )
-    }
-    time_values <- analysis_data[[timeVar]]
-    invalid_time <-
-        is.na(time_values) | !nzchar(trimws(as.character(time_values)))
-    if (is.numeric(time_values)) {
-        invalid_time <- invalid_time | !is.finite(time_values)
-    }
-    if (any(invalid_time)) {
-        stop("timeVar contains missing, blank, or non-finite values.",
-            call. = FALSE
-        )
-    }
-
-    missing_phenotypes <- setdiff(phenotype_list, colnames(analysis_data))
-    if (length(missing_phenotypes) > 0L) {
-        stop("Phenotype columns not found in inputPheno: ",
-            paste(missing_phenotypes,
-            collapse = ", "
-        ), call. = FALSE)
-    }
-
-    missing_covariates <- setdiff(covariate_list, colnames(analysis_data))
-    if (length(missing_covariates) > 0L) {
-        stop("Covariate columns not found in inputPheno: ",
-            paste(missing_covariates,
-            collapse = ", "
-        ), call. = FALSE)
-    }
-
-    mapped_prs <- unname(prs_map[names(prs_map) %in% phenotype_list])
-    missing_prs <- setdiff(mapped_prs, colnames(analysis_data))
-    if (length(missing_prs) > 0L) {
-        stop("PRS columns not found in inputPheno: ", paste(unique(missing_prs),
-            collapse = ", "
-        ), call. = FALSE)
-    }
-
-    resolved_interaction <- normalizeOptionalColumnMethylationModels(
-        interactionTerm,
-        "interactionTerm"
-    )
-    if (!is.null(resolved_interaction) && nzchar(resolved_interaction)) {
-        if (!(resolved_interaction %in% colnames(analysis_data))) {
-            stop("interactionTerm column not found in inputPheno: ",
-                resolved_interaction,
-                call. = FALSE
-            )
-        }
-    }
-
-    missing_factor_vars <- setdiff(factor_list, colnames(analysis_data))
-    if (length(missing_factor_vars) > 0L) {
-        stop("Factor columns not found in inputPheno: ",
-            paste(missing_factor_vars,
-            collapse = ", "
-        ), call. = FALSE)
-    }
-
-    for (var in intersect(c(personVar, factor_list), colnames(analysis_data))) {
-        if (identical(var, personVar)) {
-            next
-        }
-        analysis_data[[var]] <- as.factor(analysis_data[[var]])
-    }
-
-    cpg_columns <- grep(paste0("^", escapeRegexMethylationGLM(cpgPrefix)),
-        colnames(analysis_data),
-        value = TRUE
-    )
-    if (!is.na(cpg_limit)) {
-        cpg_columns <- utils::head(cpg_columns, as.integer(cpg_limit))
-    }
-    if (length(cpg_columns) == 0L) {
-        stop("No CpG columns were found with prefix '", cpgPrefix,
-            "'.",
-            call. = FALSE
-        )
-    }
-    validateMethylationProbeIdentifiersDnaEpico(
-        cpg_columns,
-        "CpG columns in the LME input"
-    )
-    fixed_effect_variables <- unique(c(
-        phenotype_list, covariate_list,
-        mapped_prs, resolved_interaction
-    ))
-    fixed_effect_variables <-
-        fixed_effect_variables[!is.na(fixed_effect_variables) &
-        nzchar(fixed_effect_variables)]
-    scaled_cpgs <- intersect(scale_list, cpg_columns)
-    if (length(scaled_cpgs) > 0L) {
-        stop("CpG methylation response columns cannot be listed in scaleVars: ",
-            paste(scaled_cpgs, collapse = ", "),
-            call. = FALSE
-        )
-    }
-    model_columns <- setdiff(colnames(analysis_data), cpg_columns)
-    scaling <- scaleModelVariablesDnaEpico(
-        data = analysis_data[,
-            model_columns,
-            drop = FALSE
-        ], scaleVars = scale_list,
-        factorVars = factor_list, eligibleVars = fixed_effect_variables,
-        protectedVars = c(personVar, cpg_columns)
-    )
-
+    variables <- validateLmeModelVariablesDnaEpico(analysis_data, config)
+    columns <- prepareLmeColumnsDnaEpico(analysis_data, config, variables)
     timepoint_summary <- summarizeTimepointsMethylationLME(
-        data = analysis_data,
-        timeVar = timeVar, phenotypes = phenotype_list, verbose = FALSE,
-        logs = FALSE
+    data = columns$data, timeVar = config$timeVar,
+    phenotypes = config$phenotypeList, verbose = FALSE, logs = FALSE
     )
-
-    log_lines <- c(
-        "============================================================",
-        paste(
-            "Loaded longitudinal phenotype + methylation data from:",
-            inputPheno
-        ), paste(
-            "Merged modeling object:            ",
-            methylation_prefix, "*"
-        ), paste(
-            "Data dimensions:                  ",
-            paste(dim(analysis_data), collapse = " x ")
-        ), paste(
-            "Person variable:                  ",
-            personVar
-        ), paste(
-            "Time variable:                    ",
-            timeVar
-        ), paste(
-            "Phenotypes:                       ",
-            paste(phenotype_list, collapse = ", ")
-        ), paste(
-            "Covariates:                       ",
-            paste(covariate_list, collapse = ", ")
-        ), paste(
-            "Factor variables:                 ",
-            paste(factor_list, collapse = ", ")
-        ), formatScalingMetadataLogDnaEpico(scaling$metadata),
-        paste("CpG columns retained:             ", length(cpg_columns)),
-        if (isTRUE(person_data$personCreated)) {
-            paste("Created person variable from SID: ", personVar)
-        } else {
-            paste("Person variable already present:  ", personVar)
-        },
-        paste("Values observed in", timeVar, ":"),
-            previewLinesMinfiEwasWater(table(analysis_data[[timeVar]],
-            useNA = "ifany"
-        ))
+    logPreparedLmeDataDnaEpico(
+    config, columns$data, person_data, columns, timepoint_summary
     )
-
-    if (!is.null(person_data$mappingPreview)) {
-        log_lines <- c(
-            log_lines, "Example mapping of SID to person ID:",
-            previewLinesMinfiEwasWater(person_data$mappingPreview)
-        )
-    }
-
-    log_lines <- c(
-        log_lines, "Summary statistics for phenotype scores by timepoint:",
-        previewLinesMinfiEwasWater(timepoint_summary),
-            "============================================================"
-    )
-    emitLogMinfiEwasWater(log_lines, verbose = verbose, log_path = log_path)
-
-    structure(
-        list(
-            data = analysis_data, modelData = scaling$data,
-            inputPheno = inputPheno,
-            inputIdentity = inputIdentityMethylationModels(inputPheno),
-            personVar = personVar, timeVar = timeVar,
-                phenotypes = phenotype_list,
-            covariates = covariate_list, factorVars = factor_list,
-            scaleVars = scaling$scaleVars, scalingMetadata = scaling$metadata,
-            prsMap = prs_map, cpgColumns = cpg_columns, cpgPrefix = cpgPrefix,
-            cpgLimit = cpg_limit, methylationScale = methylation_scale,
-            responseLabel = methylation_label,
-                methylationObjectPrefix = methylation_prefix,
-            internalResponseColumn = response_column,
-                interactionTerm = resolved_interaction,
-            requestedInteractionTerm = interactionTerm,
-            personCreated = person_data$personCreated,
-                personCounts = person_data$personCounts,
-            personMappingPreview = person_data$mappingPreview,
-                timepointSummary = timepoint_summary
-        ),
-        class = "dnaEPICO_methylationLME_data"
+    newPreparedMethylationLMEDataDnaEpico(
+    config, columns, variables, person_data, timepoint_summary
     )
 }
+validateLmeCorrelationConfigDnaEpico <- function(config, preparedData) {
+    if (!identical(config$engine, "nlme") &&
+    !identical(config$correlationStructureValue, "none")) {
+    stop(
+        "correlationStructure can only be AR1 or CAR1 when lmeLibs ",
+        "selects 'nlme'.",
+        call. = FALSE
+    )
+    }
+    if (!identical(config$correlationStructureValue, "none")) {
+    if (is.null(config$correlationVarValue)) {
+        stop(
+        "correlationVar must be supplied when correlationStructure ",
+        "is AR1 or CAR1.",
+        call. = FALSE
+        )
+    }
+    if (config$correlationVarValue %in% preparedData$scaleVars) {
+        stop(
+        "correlationVar cannot also be listed in scaleVars; provide ",
+        "a separate scaled fixed-effect column if required.",
+        call. = FALSE
+        )
+    }
+    }
+    config
+}
+
+normalizeLmeFitConfigDnaEpico <- function(config, preparedData) {
+    config$resumeFromSummary <- validateLogicalScalarDnaEpico(
+    config$resumeFromSummary, "resumeFromSummary"
+    )
+    config$logPath <- resolveLogPathMinfiEwasWater(
+    logs = config$logs, log_dir = config$log_dir,
+    log_file = config$log_file
+    )
+    if (is.null(config$libPath)) {
+    config$libPath <- .libPaths()
+    }
+    libraries <- resolveLmeLibrariesMethylationLME(config$lmeLibs)
+    config$requestedPackages <- libraries$requestedPackages
+    config$requiredPackages <- libraries$requiredPackages
+    config$engine <- libraries$engine
+    config$omnibus <- validateOmnibusConfigurationMethylationLME(
+    config$omnibusTest, config$omnibusDdf, config$engine
+    )
+    if (config$omnibus$test && identical(config$omnibus$ddf, "Kenward-Roger")) {
+    config$requiredPackages <- unique(c(
+        config$requiredPackages, "pbkrtest"
+    ))
+    }
+    config$correlationStructureValue <-
+    normalizeCorrelationStructureMethylationLME(
+        config$correlationStructure
+    )
+    config$correlationVarValue <- normalizeCorrelationVariableMethylationLME(
+    config$correlationVar
+    )
+    config$nCoresValue <- validatePositiveIntegerMethylationModels(
+    config$nCores, "nCores"
+    )
+    validateLmeCorrelationConfigDnaEpico(config, preparedData)
+}
+
+newLmeFitStateDnaEpico <- function(preparedData, config) {
+    state <- new.env(parent = emptyenv())
+    state$fits <- list()
+    state$summaryCache <- list()
+    state$coefficientResults <- list()
+    state$phenotypeSummaries <- list()
+    state$summaryFiles <- list()
+    state$modelMessages <- list()
+    state$fitFailures <- list()
+    state$resumedPhenotypes <- character(0)
+    state$fittedPhenotypes <- character(0)
+    state$omnibusTests <- list()
+    state$formulas <- stats::setNames(
+    character(length(preparedData$phenotypes)), preparedData$phenotypes
+    )
+    state$failureCounts <- stats::setNames(
+    integer(length(preparedData$phenotypes)), preparedData$phenotypes
+    )
+    state$failureReasons <- list()
+    state$omnibusTargets <- stats::setNames(
+    character(length(preparedData$phenotypes)), preparedData$phenotypes
+    )
+    state$parallelPlan <- resolveParallelPlanMethylationModels(
+    engine = config$engine, nCores = config$nCoresValue,
+    nCpGs = length(preparedData$cpgColumns),
+    analysisData = preparedData$data,
+    modelData = if (is.null(preparedData$modelData)) {
+        preparedData$data
+    } else {
+        preparedData$modelData
+    }
+    )
+    state$parallelPlan$pilotMemoryMB <- NA_real_
+    state$backend <- state$parallelPlan$backend
+    state$workerCount <- state$parallelPlan$workerCount
+    state$batches <- chunkCpGColumnsMethylationModels(
+    preparedData$cpgColumns, state$workerCount,
+    batchesPerCore = 8L
+    )
+    state$cluster <- NULL
+    state$clusterUseCount <- 0L
+    state$pilotCompleted <- FALSE
+    state
+}
+
+stopLmeFitClusterDnaEpico <- function(state) {
+    if (!is.null(state$cluster)) {
+    try(parallel::stopCluster(state$cluster), silent = TRUE)
+    state$cluster <- NULL
+    }
+    invisible(NULL)
+}
+
+lmePhenotypeVariablesDnaEpico <- function(
+    preparedData, modelData, phenotype, config
+) {
+    prs <- if (phenotype %in% names(preparedData$prsMap)) {
+    unname(preparedData$prsMap[[phenotype]])
+    } else {
+    character(0)
+    }
+    covariates <- unique(c(preparedData$covariates, prs))
+    variables <- unique(c(
+    preparedData$personVar, phenotype, covariates,
+    preparedData$interactionTerm,
+    if (!identical(config$correlationStructureValue, "none")) {
+        config$correlationVarValue
+    } else {
+        character(0)
+    }
+    ))
+    variables <- variables[!is.na(variables) & nzchar(variables)]
+    missing <- setdiff(variables, colnames(modelData))
+    if (length(missing)) {
+    missing_text <- paste(missing, collapse = ", ")
+    stop(sprintf(
+        "Model variables not found for phenotype %s: %s",
+        phenotype, missing_text
+    ), call. = FALSE)
+    }
+    list(covariates = covariates, variables = variables)
+}
+
+lmePhenotypeFormulasDnaEpico <- function(
+    preparedData, phenotype, covariates, modelData, config
+) {
+    display <- buildFormulaMethylationLME(
+    phenotype, preparedData$personVar, covariates,
+    preparedData$interactionTerm,
+    includeRandomTerm = TRUE,
+    responseVar = preparedData$internalResponseColumn
+    )
+    fitted <- buildFormulaMethylationLME(
+    phenotype, preparedData$personVar, covariates,
+    preparedData$interactionTerm,
+    includeRandomTerm = !identical(config$engine, "nlme"),
+    responseVar = preparedData$internalResponseColumn
+    )
+    validateFixedEffectDesignMethylationModels(
+    formulaText = fitted, data = modelData,
+    removeRandomEffects = !identical(config$engine, "nlme")
+    )
+    list(
+    display = display, fitted = fitted,
+    object = stats::as.formula(fitted, env = baseenv()),
+    coefficientTerms = buildCoefficientTermMapMethylationModels(
+        formulaText = fitted, data = modelData,
+        removeRandomEffects = !identical(config$engine, "nlme")
+    )
+    )
+}
+
+addLmeCorrelationDataDnaEpico <- function(data, preparedData, config) {
+    if (identical(config$correlationStructureValue, "none")) {
+    return(list(data = data, timeVar = NULL))
+    }
+    correlation <- addCorrelationTimeVariableMethylationLME(
+    data, config$correlationVarValue
+    )
+    validateCorrelationTimeMethylationLME(
+    modelData = correlation$data,
+    correlationTimeVar = correlation$correlationTimeVar,
+    personVar = preparedData$personVar,
+    correlationStructure = config$correlationStructureValue
+    )
+    list(data = correlation$data, timeVar = correlation$correlationTimeVar)
+}
+
+prepareLmePhenotypeSpecDnaEpico <- function(
+    preparedData, modelData, phenotype, config
+) {
+    variables <- lmePhenotypeVariablesDnaEpico(
+    preparedData, modelData, phenotype, config
+    )
+    data <- modelData[, variables$variables, drop = FALSE]
+    data[[preparedData$personVar]] <- as.factor(
+    data[[preparedData$personVar]]
+    )
+    for (var in intersect(preparedData$factorVars, colnames(data))) {
+    data[[var]] <- as.factor(data[[var]])
+    }
+    formulas <- lmePhenotypeFormulasDnaEpico(
+    preparedData, phenotype, variables$covariates, data, config
+    )
+    omnibus_target <- if (config$omnibus$test) {
+    resolveOmnibusTargetTermMethylationLME(
+        formulas$fitted, data, phenotype, preparedData$interactionTerm
+    )
+    } else {
+    NULL
+    }
+    correlation <- addLmeCorrelationDataDnaEpico(data, preparedData, config)
+    list(
+    phenotype = phenotype, covariates = variables$covariates,
+    data = correlation$data, correlationTimeVar = correlation$timeVar,
+    formulas = formulas, omnibusTarget = omnibus_target
+    )
+}
+
+lmePhenotypeSummaryPathDnaEpico <- function(phenotype, config) {
+    if (is.null(config$summaryDir)) {
+    return(NULL)
+    }
+    phenotypeSummaryPathMethylationModels(
+    outputDir = config$summaryDir, phenotype = phenotype, analysis = "lme"
+    )
+}
+
+lmePhenotypeSignatureDnaEpico <- function(
+    preparedData, spec, config
+) {
+    buildPhenotypeSignatureMethylationModels(
+    analysis = "lme", engine = config$engine,
+    phenotype = spec$phenotype, formulaText = spec$formulas$display,
+    preparedData = preparedData,
+    modelSettings = list(
+        fittedFormula = spec$formulas$fitted,
+        personVar = preparedData$personVar, timeVar = preparedData$timeVar,
+        random = paste0("~ 1 | ", preparedData$personVar), REML = TRUE,
+        correlationStructure = config$correlationStructureValue,
+        correlationVar = if (identical(
+        config$correlationStructureValue, "none"
+        )) {
+        NULL
+        } else {
+        config$correlationVarValue
+        },
+        omnibusTest = config$omnibus$test, omnibusDdf = config$omnibus$ddf,
+        omnibusTerm = spec$omnibusTarget,
+        omnibusRhs = 0, omnibusJoint = TRUE
+    ),
+    packages = config$requiredPackages
+    )
+}
+
+logResumedLmePhenotypeDnaEpico <- function(
+    phenotype, formula, path, nCpGs, config
+) {
+    emitLogMinfiEwasWater(c(
+    "============================================================",
+    paste("Resumed phenotype:           ", phenotype),
+    paste("Formula:                     ", formula),
+    paste("Phenotype summary:           ", path),
+    paste("CpGs restored:               ", nCpGs),
+    "No CpG models were refitted.",
+    "============================================================"
+    ), verbose = config$verbose, log_path = config$logPath)
+}
+
+restoreLmePhenotypeDnaEpico <- function(
+    state, phenotype, artifact, summaryPath, config, nCpGs
+) {
+    state$fits[phenotype] <- list(structure(
+    list(),
+    class = "dnaEPICO_compact_fit_index"
+    ))
+    state$summaryCache[[phenotype]] <- artifact$targetSummary
+    state$coefficientResults[[phenotype]] <- artifact$coefficientResults
+    state$omnibusTests[[phenotype]] <- artifact$omnibusTests
+    state$modelMessages[[phenotype]] <- artifact$modelMessages
+    state$fitFailures[[phenotype]] <- artifact$fitFailures
+    state$formulas[[phenotype]] <- artifact$formula
+    state$failureCounts[[phenotype]] <- artifact$failureCount
+    state$failureReasons[[phenotype]] <- artifact$failureReasons
+    state$phenotypeSummaries[[phenotype]] <- artifact
+    state$summaryFiles[[phenotype]] <- summaryPath
+    state$resumedPhenotypes <- c(state$resumedPhenotypes, phenotype)
+    logResumedLmePhenotypeDnaEpico(
+    phenotype, artifact$formula, summaryPath, nCpGs, config
+    )
+    invisible(TRUE)
+}
+
+tryResumeLmePhenotypeDnaEpico <- function(
+    state, spec, signature, summaryPath, config, nCpGs
+) {
+    resumed <- list(object = NULL, reason = "resume was not requested")
+    if (config$resumeFromSummary && !is.null(summaryPath)) {
+    resumed <- loadPhenotypeSummaryMethylationModels(
+        path = summaryPath, expectedSignature = signature
+    )
+    }
+    if (!is.null(resumed$object)) {
+    restoreLmePhenotypeDnaEpico(
+        state, spec$phenotype, resumed$object, summaryPath,
+        config, nCpGs
+    )
+    return(TRUE)
+    }
+    if (config$resumeFromSummary && !is.null(summaryPath)) {
+    emitLogMinfiEwasWater(paste(
+        "Phenotype summary was not reused for", spec$phenotype,
+        ":", resumed$reason
+    ), verbose = config$verbose, log_path = config$logPath)
+    }
+    FALSE
+}
+
+lmeBatchArgumentsDnaEpico <- function(preparedData, spec, config) {
+    list(
+    modelData = spec$data, formulaText = spec$formulas$fitted,
+    personVar = preparedData$personVar, lmeEngine = config$engine,
+    correlationStructure = config$correlationStructureValue,
+    correlationTimeVar = spec$correlationTimeVar,
+    phenotype = spec$phenotype,
+    interactionTerm = preparedData$interactionTerm,
+    responseVar = preparedData$internalResponseColumn,
+    omnibusTest = config$omnibus$test,
+    omnibusDdf = config$omnibus$ddf,
+    omnibusTerm = spec$omnibusTarget,
+    formulaObject = spec$formulas$object,
+    coefficientTerms = spec$formulas$coefficientTerms
+    )
+}
+
+updateLmePilotPlanDnaEpico <- function(
+    state, preparedData, spec, config
+) {
+    cpgs <- preparedData$cpgColumns
+    if (state$pilotCompleted || state$workerCount <= 1L || !length(cpgs)) {
+    return(invisible(NULL))
+    }
+    pilot_cpgs <- utils::head(cpgs, 3L)
+    common <- lmeBatchArgumentsDnaEpico(preparedData, spec, config)
+    pilot <- measurePilotMemoryMethylationModels(function() {
+    do.call(fitMethylationLMEBatch, c(list(
+        cpgBatch = pilot_cpgs,
+        data = preparedData$data[, pilot_cpgs, drop = FALSE]
+    ), common))
+    })
+    state$parallelPlan <- refineParallelPlanWithPilotMethylationModels(
+    state$parallelPlan, pilot$incrementalMB
+    )
+    state$backend <- state$parallelPlan$backend
+    state$workerCount <- state$parallelPlan$workerCount
+    state$batches <- chunkCpGColumnsMethylationModels(
+    cpgs, state$workerCount,
+    batchesPerCore = 8L
+    )
+    state$pilotCompleted <- TRUE
+    invisible(gc(FALSE))
+}
+
+lmePsockDependencyNamesDnaEpico <- function() {
+    c(
+    "validateWorkerPackagesMethylationModels",
+    "newMethylationFitErrorDnaEpico",
+    "fitMethylationLMEBatch", "fitCpGModelMethylationLME",
+    "fitLmeEngineDnaEpico", "coefficientTermsForLmeDnaEpico",
+    "omnibusForLmeFitDnaEpico", "retainLmeFitDetailsDnaEpico",
+    "completeCapturedLmeFitDnaEpico", "buildCorrelationMethylationLME",
+    "coerceCoefficientTableMethylationLME",
+    "buildCoefficientTermMapMethylationModels",
+    "removeRandomInterceptMethylationModels",
+    "computeOmnibusTestMethylationLME", "emptyOmnibusResultMethylationLME",
+    "summarizeCpGFitMethylationLME", "captureModelConditionsDnaEpico",
+    "combineModelMessagesDnaEpico", "modelMessageDnaEpico",
+    "findCoefficientRowsMethylationLME",
+    "findCoefficientRowsMethylationGLM", "quoteNamesMethylationGLM",
+    "escapeRegexMethylationGLM", "cpgResponseMethylationModels",
+    "compactCoefficientResultsMethylationModels",
+    "coefficientNamesMethylationModels",
+    "newCompactCoefficientStorageMethylationModels",
+    "fillCompactCoefficientStorageMethylationModels",
+    "collectBatchModelMessagesMethylationModels",
+    "collectBatchFitFailuresMethylationModels",
+    "emptyModelMessagesDnaEpico", "emptyFitFailuresMethylationModels",
+    "collectOmnibusTestsMethylationLME"
+    )
+}
+
+ensureLmePsockClusterDnaEpico <- function(state, config) {
+    if (!identical(state$backend, "psock") || length(state$batches) <= 1L ||
+    !is.null(state$cluster)) {
+    return(invisible(NULL))
+    }
+    state$cluster <- makePsockClusterMethylationModels(min(
+    state$workerCount, length(state$batches)
+    ))
+    parallel::clusterExport(
+    state$cluster,
+    varlist = lmePsockDependencyNamesDnaEpico(),
+    envir = environment()
+    )
+    lib_path <- config$libPath
+    packages <- config$requiredPackages
+    parallel::clusterExport(
+    state$cluster, c("lib_path", "packages"),
+    envir = environment()
+    )
+    parallel::clusterEvalQ(
+    state$cluster,
+    validateWorkerPackagesMethylationModels(lib_path, packages)
+    )
+    invisible(NULL)
+}
+
+runSerialLmeBatchesDnaEpico <- function(
+    batches, preparedData, common, config, worker
+) {
+    validateWorkerPackagesMethylationModels(
+    config$libPath, config$requiredPackages
+    )
+    lapply(batches, function(batch) {
+    do.call(worker, c(list(
+        cpgBatch = batch,
+        data = preparedData$data[, batch, drop = FALSE]
+    ), common))
+    })
+}
+
+runForkLmeBatchesDnaEpico <- function(
+    batches, preparedData, common, config, worker, workers
+) {
+    parallel::mclapply(batches, function(batch) {
+    validateWorkerPackagesMethylationModels(
+        config$libPath, config$requiredPackages
+    )
+    do.call(worker, c(list(
+        cpgBatch = batch,
+        data = preparedData$data[, batch, drop = FALSE]
+    ), common))
+    }, mc.cores = min(workers, length(batches)), mc.preschedule = TRUE)
+}
+
+runPsockLmeBatchesDnaEpico <- function(
+    state, preparedData, common, worker
+) {
+    state$clusterUseCount <- state$clusterUseCount + 1L
+    parallel::clusterExport(
+    state$cluster, c("common", "worker"),
+    envir = environment()
+    )
+    results <- vector("list", length(state$batches))
+    cluster_size <- min(state$workerCount, length(state$batches))
+    waves <- split(
+    seq_along(state$batches),
+    ceiling(seq_along(state$batches) / cluster_size)
+    )
+    for (wave in waves) {
+    tasks <- lapply(wave, function(index) {
+        list(
+        cpgBatch = state$batches[[index]],
+        responses = as.matrix(preparedData$data[,
+            state$batches[[index]],
+            drop = FALSE
+        ])
+        )
+    })
+    wave_results <- parallel::parLapplyLB(
+        state$cluster, tasks, function(task) {
+        do.call(worker, c(list(
+            cpgBatch = task$cpgBatch, data = task$responses
+        ), common))
+        }
+    )
+    results[wave] <- wave_results
+    invisible(gc(FALSE))
+    }
+    results
+}
+
+runLmePhenotypeBatchesDnaEpico <- function(
+    state, preparedData, spec, config
+) {
+    ensureLmePsockClusterDnaEpico(state, config)
+    worker <- fitMethylationLMEBatch
+    common <- lmeBatchArgumentsDnaEpico(preparedData, spec, config)
+    if (identical(state$backend, "fork") && length(state$batches) > 1L) {
+    return(runForkLmeBatchesDnaEpico(
+        state$batches, preparedData, common, config,
+        worker, state$workerCount
+    ))
+    }
+    if (identical(state$backend, "psock") && length(state$batches) > 1L) {
+    environment(worker) <- .GlobalEnv
+    return(runPsockLmeBatchesDnaEpico(
+        state, preparedData, common, worker
+    ))
+    }
+    runSerialLmeBatchesDnaEpico(
+    state$batches, preparedData, common, config, worker
+    )
+}
+
+combineLmeBatchResultsDnaEpico <- function(
+    batchResults, cpgColumns, phenotype
+) {
+    coefficients <- combineCompactCoefficientResultsMethylationModels(
+    batchResults,
+    cpgOrder = cpgColumns
+    )
+    summaries <- combineBatchTablesMethylationModels(
+    batchResults, "summaries", data.frame()
+    )
+    omnibus <- combineBatchTablesMethylationModels(
+    batchResults, "omnibusTests",
+    collectOmnibusTestsMethylationLME(list(), phenotype)
+    )
+    summary_cache <- filterSummaryByPvalueMethylationLME(
+    summaries, NA_real_
+    )
+    messages <- combineBatchTablesMethylationModels(
+    batchResults, "modelMessages", emptyModelMessagesDnaEpico()
+    )
+    failures <- combineBatchTablesMethylationModels(
+    batchResults, "fitFailures", emptyFitFailuresMethylationModels()
+    )
+    messages <- messages[match(cpgColumns, messages$CpG), , drop = FALSE]
+    rownames(messages) <- NULL
+    errors <- if (!nrow(failures)) {
+    integer(0)
+    } else {
+    sort(table(failures$Error), decreasing = TRUE)
+    }
+    list(
+    coefficients = coefficients, summaryCache = summary_cache,
+    omnibus = omnibus, messages = messages, failures = failures,
+    errors = errors, pValueAvailable = messages$P.Value.Available,
+    failureCount = sum(!messages$P.Value.Available)
+    )
+}
+
+lmePhenotypeArtifactDnaEpico <- function(
+    preparedData, spec, combined, signature, config
+) {
+    factor_vars <- preparedData$factorVars[
+    preparedData$factorVars %in% colnames(preparedData$data)
+    ]
+    assemblePhenotypeSummaryMethylationModels(
+    analysis = "lme", engine = config$engine,
+    phenotype = spec$phenotype, signature = signature,
+    cpgOrder = preparedData$cpgColumns,
+    coefficientResults = combined$coefficients,
+    targetSummary = combined$summaryCache,
+    omnibusTests = combined$omnibus,
+    modelMessages = combined$messages, fitFailures = combined$failures,
+    failureCount = combined$failureCount,
+    failureReasons = combined$errors,
+    formulaText = spec$formulas$display,
+    settings = list(
+        fittedFormula = spec$formulas$fitted,
+        methylationScale = preparedData$methylationScale,
+        responseLabel = preparedData$responseLabel,
+        interactionTerm = preparedData$interactionTerm,
+        covariates = spec$covariates, factorVars = preparedData$factorVars,
+        factorLevels = lapply(preparedData$data[factor_vars], levels),
+        scaleVars = preparedData$scaleVars,
+        scalingMetadata = preparedData$scalingMetadata,
+        personVar = preparedData$personVar, timeVar = preparedData$timeVar,
+        random = paste0("~ 1 | ", preparedData$personVar), REML = TRUE,
+        correlationStructure = config$correlationStructureValue,
+        correlationVar = if (identical(
+        config$correlationStructureValue, "none"
+        )) {
+        NULL
+        } else {
+        config$correlationVarValue
+        },
+        omnibusTest = config$omnibus$test, omnibusDdf = config$omnibus$ddf,
+        omnibusTerm = spec$omnibusTarget,
+        omnibusRhs = 0, omnibusJoint = TRUE
+    )
+    )
+}
+
+storeFittedLmePhenotypeDnaEpico <- function(
+    state, spec, combined, artifact, summaryPath
+) {
+    phenotype <- spec$phenotype
+    state$fits[phenotype] <- list(structure(
+    list(),
+    class = "dnaEPICO_compact_fit_index"
+    ))
+    state$summaryCache[[phenotype]] <- combined$summaryCache
+    state$coefficientResults[[phenotype]] <- combined$coefficients
+    state$omnibusTests[[phenotype]] <- combined$omnibus
+    state$modelMessages[[phenotype]] <- combined$messages
+    state$fitFailures[[phenotype]] <- combined$failures
+    state$formulas[[phenotype]] <- spec$formulas$display
+    state$failureCounts[[phenotype]] <- combined$failureCount
+    state$failureReasons[[phenotype]] <- combined$errors
+    state$phenotypeSummaries[[phenotype]] <- artifact
+    state$fittedPhenotypes <- c(state$fittedPhenotypes, phenotype)
+    if (!is.null(summaryPath)) {
+    savePhenotypeSummaryMethylationModels(artifact, summaryPath)
+    state$summaryFiles[[phenotype]] <- summaryPath
+    }
+    invisible(NULL)
+}
+
+lmeFitResourceLogLinesDnaEpico <- function(state) {
+    plan <- state$parallelPlan
+    c(
+    paste("Parallel backend:            ", state$backend),
+    paste("Effective workers:           ", state$workerCount),
+    paste("Parallel crossover CpGs:     ", plan$crossoverCpGs),
+    paste("Parallel selection:          ", plan$reason),
+    paste(
+        "Available memory (MB):       ",
+        if (is.finite(plan$availableMemoryMB)) {
+        round(plan$availableMemoryMB)
+        } else {
+        "unknown"
+        }
+    ),
+    paste(
+        "Estimated memory per worker: ",
+        round(plan$estimatedWorkerMemoryMB), "MB"
+    ),
+    paste(
+        "Pilot incremental memory:    ",
+        if (is.finite(plan$pilotMemoryMB)) {
+        paste(round(plan$pilotMemoryMB), "MB")
+        } else {
+        "not required"
+        }
+    ),
+    paste("Memory worker cap:           ", plan$memoryWorkerCap),
+    paste("Fit batches:                 ", length(state$batches)),
+    paste(
+        "Fit batch size:              ",
+        if (!length(state$batches)) {
+        0L
+        } else {
+        max(vapply(state$batches, length, integer(1)))
+        }
+    )
+    )
+}
+
+logFittedLmePhenotypeDnaEpico <- function(
+    state, preparedData, spec, combined, config
+) {
+    emitLogMinfiEwasWater(c(
+    "============================================================",
+    paste("Fitted phenotype:            ", spec$phenotype),
+    paste("Formula:                     ", spec$formulas$display),
+    paste(
+        "Correlation structure:       ",
+        config$correlationStructureValue
+    ),
+    paste(
+        "Correlation variable:        ",
+        if (identical(config$correlationStructureValue, "none")) {
+        "None"
+        } else {
+        config$correlationVarValue
+        }
+    ),
+    paste("CpGs attempted:              ", length(preparedData$cpgColumns)),
+    paste("CpGs without p-values:       ", combined$failureCount),
+    paste("Omnibus tests requested:     ", config$omnibus$test),
+    paste(
+        "Omnibus target term:         ",
+        if (is.null(spec$omnibusTarget)) "None" else spec$omnibusTarget
+    ),
+    paste(
+        "Omnibus denominator DF:      ",
+        if (config$omnibus$test) config$omnibus$ddf else "None"
+    ),
+    paste(
+        "Successful omnibus tests:    ",
+        sum(combined$omnibus$Omnibus.Status == "tested")
+    ),
+    paste(
+        "Unavailable omnibus tests:   ",
+        sum(combined$omnibus$Omnibus.Status != "tested")
+    ),
+    paste(
+        "Top fit errors:              ",
+        formatFitErrorsMethylationModels(combined$errors)
+    ),
+    lmeFitResourceLogLinesDnaEpico(state),
+    paste("Fit-time summary rows cached:", nrow(combined$summaryCache)),
+    "============================================================"
+    ), verbose = config$verbose, log_path = config$logPath)
+}
+
+warnUnavailableLmePvaluesDnaEpico <- function(
+    preparedData, spec, combined, config
+) {
+    if (!length(preparedData$cpgColumns) || any(combined$pValueAvailable)) {
+    return(invisible(NULL))
+    }
+    warning(sprintf(
+    "%s %s p-values were available for phenotype '%s'. %s: %s. %s",
+    "No CpG", toupper(config$engine), spec$phenotype,
+    "Top failure reasons", formatFitErrorsMethylationModels(combined$errors),
+    "The failure inventory was retained and the analysis continued."
+    ), call. = FALSE)
+    invisible(NULL)
+}
+
+combineLmeFitAuditTablesDnaEpico <- function(state) {
+    list(
+    failures = combineBatchTablesMethylationModels(
+        lapply(state$fitFailures, function(x) list(table = x)),
+        "table", emptyFitFailuresMethylationModels()
+    ),
+    messages = combineBatchTablesMethylationModels(
+        lapply(state$modelMessages, function(x) list(table = x)),
+        "table", emptyModelMessagesDnaEpico()
+    )
+    )
+}
+
+lmeFitSettingsDnaEpico <- function(state, preparedData, config) {
+    plan <- state$parallelPlan
+    list(
+    nCores = config$nCoresValue, parallelBackend = state$backend,
+    workerCount = state$workerCount,
+    resourceWorkerCap = plan$resourceWorkerCap,
+    parallelCrossoverCpGs = plan$crossoverCpGs,
+    parallelSelectionReason = plan$reason,
+    availableMemoryMB = plan$availableMemoryMB,
+    reservedMemoryMB = plan$reservedMemoryMB,
+    estimatedWorkerMemoryMB = plan$estimatedWorkerMemoryMB,
+    pilotIncrementalMemoryMB = plan$pilotMemoryMB,
+    memoryWorkerCap = plan$memoryWorkerCap,
+    clusterReusedAcrossPhenotypes = state$clusterUseCount > 1L,
+    fitBatchCount = length(state$batches), libPath = config$libPath,
+    lmeLibs = config$requestedPackages, lmeEngine = config$engine,
+    correlationStructure = config$correlationStructureValue,
+    correlationVar = if (identical(
+        config$correlationStructureValue, "none"
+    )) {
+        NULL
+    } else {
+        config$correlationVarValue
+    },
+    methylationScale = preparedData$methylationScale,
+    methylationObjectPrefix = preparedData$methylationObjectPrefix,
+    responseLabel = preparedData$responseLabel,
+    internalResponseColumn = preparedData$internalResponseColumn,
+    interactionTerm = preparedData$interactionTerm,
+    omnibusTest = config$omnibus$test, omnibusDdf = config$omnibus$ddf,
+    omnibusRhs = 0, omnibusJoint = TRUE,
+    phenotypes = preparedData$phenotypes,
+    covariates = preparedData$covariates,
+    factorVars = preparedData$factorVars,
+    factorLevels = lapply(stats::setNames(
+        preparedData$factorVars, preparedData$factorVars
+    ), function(variable) levels(preparedData$data[[variable]])),
+    scaleVars = preparedData$scaleVars,
+    scalingMetadata = preparedData$scalingMetadata,
+    sampleCount = nrow(preparedData$data), personVar = preparedData$personVar,
+    timeVar = preparedData$timeVar
+    )
+}
+
+newMethylationLMEModelsDnaEpico <- function(state, preparedData, config) {
+    audit <- combineLmeFitAuditTablesDnaEpico(state)
+    structure(list(
+    fits = state$fits, summaryCache = state$summaryCache,
+    coefficientResults = state$coefficientResults,
+    phenotypeSummaries = state$phenotypeSummaries,
+    summaryFiles = state$summaryFiles,
+    resumedPhenotypes = state$resumedPhenotypes,
+    fittedPhenotypes = state$fittedPhenotypes,
+    omnibusTests = state$omnibusTests,
+    omnibusTargets = state$omnibusTargets,
+    formulas = state$formulas, phenotypes = names(state$fits),
+    failureCounts = state$failureCounts,
+    failureReasons = state$failureReasons,
+    fitFailures = audit$failures, modelMessages = audit$messages,
+    settings = lmeFitSettingsDnaEpico(state, preparedData, config),
+    responseLabel = preparedData$responseLabel
+    ), class = "dnaEPICO_methylationLME_models")
+}
+
+fitAllLmePhenotypesDnaEpico <- function(
+    state, preparedData, modelData, config
+) {
+    for (phenotype in preparedData$phenotypes) {
+    spec <- prepareLmePhenotypeSpecDnaEpico(
+        preparedData, modelData, phenotype, config
+    )
+    if (config$omnibus$test) {
+        state$omnibusTargets[[phenotype]] <- spec$omnibusTarget
+    }
+    signature <- lmePhenotypeSignatureDnaEpico(
+        preparedData, spec, config
+    )
+    summary_path <- lmePhenotypeSummaryPathDnaEpico(phenotype, config)
+    if (tryResumeLmePhenotypeDnaEpico(
+        state, spec, signature, summary_path, config,
+        length(preparedData$cpgColumns)
+    )) {
+        next
+    }
+    updateLmePilotPlanDnaEpico(state, preparedData, spec, config)
+    batches <- runLmePhenotypeBatchesDnaEpico(
+        state, preparedData, spec, config
+    )
+    combined <- combineLmeBatchResultsDnaEpico(
+        batches, preparedData$cpgColumns, phenotype
+    )
+    artifact <- lmePhenotypeArtifactDnaEpico(
+        preparedData, spec, combined, signature, config
+    )
+    storeFittedLmePhenotypeDnaEpico(
+        state, spec, combined, artifact, summary_path
+    )
+    logFittedLmePhenotypeDnaEpico(
+        state, preparedData, spec, combined, config
+    )
+    warnUnavailableLmePvaluesDnaEpico(
+        preparedData, spec, combined, config
+    )
+    }
+    invisible(NULL)
+}
+
 #' Fit CpG-wise mixed-effects models for longitudinal methylation analyses
 #'
 #' @param preparedData Object returned by `prepareMethylationLMEData()`.
@@ -1347,10 +2169,10 @@ prepareMethylationLMEData <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 #' model_results <- fitMethylationLMEModels(
-#'     preparedData = ex$preparedData,
-#'     nCores = 1,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   preparedData = ex$preparedData,
+#'   nCores = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(model_results$fits)
 #'
@@ -1361,787 +2183,208 @@ fitMethylationLMEModels <- function(
     correlationVar = NULL, omnibusTest = FALSE,
     omnibusDdf = "Satterthwaite", summaryDir = NULL,
     resumeFromSummary = TRUE, verbose = FALSE, logs = FALSE,
-    log_dir = NULL,
-    log_file = "log_methylationLME.txt"
+    log_dir = NULL, log_file = "log_methylationLME.txt"
 ) {
-    resumeFromSummary <- validateLogicalScalarDnaEpico(
-        resumeFromSummary,
-        "resumeFromSummary"
+    config <- normalizeLmeFitConfigDnaEpico(
+    as.list(environment(), all.names = TRUE), preparedData
     )
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-
-    if (is.null(libPath)) {
-        libPath <- .libPaths()
-    }
-
-    lme_config <- resolveLmeLibrariesMethylationLME(lmeLibs)
-    lme_lib_list <- lme_config$requestedPackages
-    required_lme_lib_list <- lme_config$requiredPackages
-    lme_engine <- lme_config$engine
-    omnibus_config <- validateOmnibusConfigurationMethylationLME(
-        omnibusTest = omnibusTest, omnibusDdf = omnibusDdf,
-        lmeEngine = lme_engine
-    )
-    if (isTRUE(omnibus_config$test) &&
-        identical(omnibus_config$ddf, "Kenward-Roger")) {
-        required_lme_lib_list <- unique(c(
-            required_lme_lib_list,
-            "pbkrtest"
-        ))
-    }
-    correlation_structure <-
-        normalizeCorrelationStructureMethylationLME(correlationStructure)
-    correlation_var <-
-        normalizeCorrelationVariableMethylationLME(correlationVar = correlationVar)
-    if (!identical(lme_engine, "nlme") && !identical(
-        correlation_structure,
-        "none"
-    )) {
-        stop("correlationStructure can only be AR1 or CAR1 when lmeLibs selects 'nlme'.",
-            call. = FALSE
-        )
-    }
-    if (!identical(correlation_structure, "none")) {
-        if (is.null(correlation_var)) {
-            stop("correlationVar must be supplied when correlationStructure is AR1 or CAR1.",
-                call. = FALSE
-            )
-        }
-        if (correlation_var %in% preparedData$scaleVars) {
-            stop("correlationVar cannot also be listed in scaleVars; provide a separate scaled fixed-effect column if required.",
-                call. = FALSE
-            )
-        }
-    }
-
-    analysis_data <- preparedData$data
-    model_data <- if (!is.null(preparedData$modelData)) {
-        preparedData$modelData
+    model_data <- if (is.null(preparedData$modelData)) {
+    preparedData$data
     } else {
-        analysis_data
+    preparedData$modelData
     }
-    cpg_columns <- preparedData$cpgColumns
-    n_cores <- validatePositiveIntegerMethylationModels(
-        nCores,
-        "nCores"
-    )
-    fits <- list()
-    summary_cache <- list()
-    coefficient_results <- list()
-    phenotype_summaries <- list()
-    summary_files <- list()
-    phenotype_model_messages <- list()
-    phenotype_fit_failures <- list()
-    resumed_phenotypes <- character(0)
-    fitted_phenotypes <- character(0)
-    omnibus_tests <- list()
-    formulas <- stats::setNames(
-        character(length(preparedData$phenotypes)),
-        preparedData$phenotypes
-    )
-    failure_counts <- stats::setNames(
-        integer(length(preparedData$phenotypes)),
-        preparedData$phenotypes
-    )
-    failure_reasons <- list()
-    omnibus_targets <- stats::setNames(
-        character(length(preparedData$phenotypes)),
-        preparedData$phenotypes
-    )
-    parallel_plan <- resolveParallelPlanMethylationModels(
-        engine = lme_engine,
-        nCores = n_cores, nCpGs = length(cpg_columns),
-        analysisData = analysis_data, modelData = model_data
-    )
-    backend <- parallel_plan$backend
-    worker_count <- parallel_plan$workerCount
-    cpg_batches <- chunkCpGColumnsMethylationModels(
-        cpgColumns = cpg_columns,
-        nCores = worker_count, batchesPerCore = 8L
-    )
-    psock_cluster <- NULL
-    psock_cluster_use_count <- 0L
-    pilot_completed <- FALSE
-    parallel_plan$pilotMemoryMB <- NA_real_
-    for (phenotype in preparedData$phenotypes) {
-        prs_var <- character(0)
-        if (phenotype %in% names(preparedData$prsMap)) {
-            prs_var <- unname(preparedData$prsMap[[phenotype]])
-        }
-        covariates <- unique(c(preparedData$covariates, prs_var))
-        model_vars <- unique(c(
-            preparedData$personVar, phenotype,
-            covariates, preparedData$interactionTerm, if (!identical(
-                correlation_structure,
-                "none"
-            )) {
-                correlation_var
-            } else {
-                character(0)
-            }
-        ))
-        model_vars <- model_vars[!is.na(model_vars) & nzchar(model_vars)]
-
-        missing_vars <- setdiff(model_vars, colnames(model_data))
-        if (length(missing_vars) > 0L) {
-            stop("Model variables not found for phenotype ",
-                phenotype, ": ", paste(missing_vars, collapse = ", "),
-                call. = FALSE
-            )
-        }
-
-        display_formula_text <- buildFormulaMethylationLME(
-            phenotype = phenotype,
-            personVar = preparedData$personVar, covariates = covariates,
-            interactionTerm = preparedData$interactionTerm,
-                includeRandomTerm = TRUE,
-            responseVar = preparedData$internalResponseColumn
-        )
-        formula_text <- buildFormulaMethylationLME(
-            phenotype = phenotype,
-            personVar = preparedData$personVar, covariates = covariates,
-            interactionTerm = preparedData$interactionTerm,
-                includeRandomTerm = !identical(
-                lme_engine,
-                "nlme"
-            ), responseVar = preparedData$internalResponseColumn
-        )
-
-        base_model_data <- model_data[, model_vars, drop = FALSE]
-        factor_vars <- preparedData$factorVars
-        person_var <- preparedData$personVar
-        base_model_data[[person_var]] <-
-            as.factor(base_model_data[[person_var]])
-        for (var in intersect(factor_vars, colnames(base_model_data))) {
-            base_model_data[[var]] <- as.factor(base_model_data[[var]])
-        }
-        validateFixedEffectDesignMethylationModels(
-            formulaText = formula_text,
-            data = base_model_data, removeRandomEffects = !identical(
-                lme_engine,
-                "nlme"
-            )
-        )
-        shared_formula <- stats::as.formula(formula_text, env = baseenv())
-        shared_coefficient_terms <- buildCoefficientTermMapMethylationModels(
-            formulaText = formula_text,
-            data = base_model_data, removeRandomEffects = !identical(
-                lme_engine,
-                "nlme"
-            )
-        )
-        omnibus_target <- NULL
-        if (isTRUE(omnibus_config$test)) {
-            omnibus_target <- resolveOmnibusTargetTermMethylationLME(
-                formulaText = formula_text, data = base_model_data,
-                phenotype = phenotype,
-                interactionTerm = preparedData$interactionTerm
-            )
-            omnibus_targets[[phenotype]] <- omnibus_target
-        }
-        correlation_time_var <- NULL
-        if (!identical(correlation_structure, "none")) {
-            correlation_data <- addCorrelationTimeVariableMethylationLME(
-                modelData = base_model_data,
-                correlationVar = correlation_var
-            )
-            base_model_data <- correlation_data$data
-            correlation_time_var <- correlation_data$correlationTimeVar
-            validateCorrelationTimeMethylationLME(
-                modelData = base_model_data,
-                correlationTimeVar = correlation_time_var,
-                    personVar = person_var,
-                correlationStructure = correlation_structure
-            )
-        }
-        signature <- buildPhenotypeSignatureMethylationModels(
-            analysis = "lme", engine = lme_engine, phenotype = phenotype,
-            formulaText = display_formula_text, preparedData = preparedData,
-            modelSettings = list(
-                fittedFormula = formula_text,
-                personVar = person_var, timeVar = preparedData$timeVar,
-                random = paste0("~ 1 | ", person_var), REML = TRUE,
-                correlationStructure = correlation_structure,
-                correlationVar = if (identical(
-                    correlation_structure,
-                    "none"
-                )) NULL else correlation_var,
-                omnibusTest = omnibus_config$test,
-                omnibusDdf = omnibus_config$ddf,
-                omnibusTerm = omnibus_target,
-                omnibusRhs = 0, omnibusJoint = TRUE
-            ),
-            packages = required_lme_lib_list
-        )
-        summary_path <- if (is.null(summaryDir)) {
-            NULL
-        } else {
-            phenotypeSummaryPathMethylationModels(
-                outputDir = summaryDir, phenotype = phenotype,
-                analysis = "lme"
-            )
-        }
-        resumed <- list(object = NULL, reason = "resume was not requested")
-        if (isTRUE(resumeFromSummary) && !is.null(summary_path)) {
-            resumed <- loadPhenotypeSummaryMethylationModels(
-                path = summary_path,
-                expectedSignature = signature
-            )
-        }
-        if (!is.null(resumed$object)) {
-            artifact <- resumed$object
-            fits[phenotype] <- list(structure(
-                list(),
-                class = "dnaEPICO_compact_fit_index"
-            ))
-            summary_cache[[phenotype]] <- artifact$targetSummary
-            coefficient_results[[phenotype]] <- artifact$coefficientResults
-            omnibus_tests[[phenotype]] <- artifact$omnibusTests
-            phenotype_model_messages[[phenotype]] <- artifact$modelMessages
-            phenotype_fit_failures[[phenotype]] <- artifact$fitFailures
-            formulas[[phenotype]] <- artifact$formula
-            failure_counts[[phenotype]] <- artifact$failureCount
-            failure_reasons[[phenotype]] <- artifact$failureReasons
-            phenotype_summaries[[phenotype]] <- artifact
-            summary_files[[phenotype]] <- summary_path
-            resumed_phenotypes <- c(resumed_phenotypes, phenotype)
-            emitLogMinfiEwasWater(
-                c(
-                    "============================================================",
-                    paste("Resumed phenotype:           ", phenotype),
-                    paste("Formula:                     ", display_formula_text),
-                    paste("Phenotype summary:           ", summary_path),
-                    paste("CpGs restored:               ", length(cpg_columns)),
-                    "No CpG models were refitted.",
-                    "============================================================"
-                ),
-                verbose = verbose, log_path = log_path
-            )
-            next
-        }
-        if (isTRUE(resumeFromSummary) && !is.null(summary_path)) {
-            emitLogMinfiEwasWater(
-                paste(
-                    "Phenotype summary was not reused for", phenotype,
-                    ":", resumed$reason
-                ),
-                verbose = verbose, log_path = log_path
-            )
-        }
-        fitted_phenotypes <- c(fitted_phenotypes, phenotype)
-        if (!isTRUE(pilot_completed) && worker_count > 1L &&
-            length(cpg_columns) > 0L) {
-            pilot_cpgs <- utils::head(cpg_columns, 3L)
-            pilot <- measurePilotMemoryMethylationModels(function() {
-                fitMethylationLMEBatch(
-                    cpgBatch = pilot_cpgs,
-                    data = analysis_data[, pilot_cpgs, drop = FALSE],
-                    modelData = base_model_data,
-                    formulaText = formula_text, personVar = person_var,
-                    lmeEngine = lme_engine,
-                    correlationStructure = correlation_structure,
-                    correlationTimeVar = correlation_time_var,
-                    phenotype = phenotype,
-                    interactionTerm = preparedData$interactionTerm,
-                    responseVar = preparedData$internalResponseColumn,
-                    omnibusTest = omnibus_config$test,
-                    omnibusDdf = omnibus_config$ddf,
-                    omnibusTerm = omnibus_target,
-                    formulaObject = shared_formula,
-                    coefficientTerms = shared_coefficient_terms
-                )
-            })
-            parallel_plan <- refineParallelPlanWithPilotMethylationModels(
-                plan = parallel_plan,
-                pilotMemoryMB = pilot$incrementalMB
-            )
-            backend <- parallel_plan$backend
-            worker_count <- parallel_plan$workerCount
-            cpg_batches <- chunkCpGColumnsMethylationModels(
-                cpgColumns = cpg_columns,
-                nCores = worker_count, batchesPerCore = 8L
-            )
-            pilot_completed <- TRUE
-            rm(pilot)
-            invisible(gc(FALSE))
-        }
-
-        if (identical(backend, "psock") &&
-            length(cpg_batches) > 1L && is.null(psock_cluster)) {
-            psock_cluster <- makePsockClusterMethylationModels(min(
-                worker_count,
-                length(cpg_batches)
-            ))
-            on.exit(
-                {
-                    if (!is.null(psock_cluster)) {
-                        try(
-                            parallel::stopCluster(psock_cluster),
-                            silent = TRUE
-                        )
-                    }
-                },
-                add = TRUE
-            )
-            parallel::clusterExport(psock_cluster,
-                varlist = c(
-                    "libPath", "required_lme_lib_list",
-                    "validateWorkerPackagesMethylationModels",
-                    "newMethylationFitErrorDnaEpico",
-                    "fitMethylationLMEBatch", "fitCpGModelMethylationLME",
-                    "buildCorrelationMethylationLME",
-                    "coerceCoefficientTableMethylationLME",
-                    "buildCoefficientTermMapMethylationModels",
-                    "removeRandomInterceptMethylationModels",
-                    "computeOmnibusTestMethylationLME",
-                    "emptyOmnibusResultMethylationLME",
-                    "summarizeCpGFitMethylationLME",
-                    "captureModelConditionsDnaEpico",
-                    "combineModelMessagesDnaEpico", "modelMessageDnaEpico",
-                    "findCoefficientRowsMethylationLME",
-                    "findCoefficientRowsMethylationGLM",
-                    "quoteNamesMethylationGLM", "escapeRegexMethylationGLM",
-                    "cpgResponseMethylationModels",
-                    "compactCoefficientResultsMethylationModels",
-                    "collectBatchModelMessagesMethylationModels",
-                    "collectBatchFitFailuresMethylationModels",
-                    "emptyModelMessagesDnaEpico",
-                    "emptyFitFailuresMethylationModels",
-                    "collectOmnibusTestsMethylationLME"
-                ),
-                envir = environment()
-            )
-            parallel::clusterEvalQ(psock_cluster,
-                validateWorkerPackagesMethylationModels(
-                    libPath = libPath,
-                    packages = required_lme_lib_list
-                ))
-        }
-        batch_worker <- fitMethylationLMEBatch
-        resolved_interaction <- preparedData$interactionTerm
-        response_var <- preparedData$internalResponseColumn
-
-        if (!identical(backend, "serial") && length(cpg_batches) >
-            1L) {
-            cluster_size <- min(worker_count, length(cpg_batches))
-
-            if (identical(backend, "fork")) {
-                batch_results <- parallel::mclapply(cpg_batches,
-                    function(batch) {
-                        validateWorkerPackagesMethylationModels(
-                            libPath = libPath,
-                            packages = required_lme_lib_list
-                        )
-                        batch_worker(
-                            cpgBatch = batch, data = analysis_data,
-                            modelData = base_model_data,
-                                formulaText = formula_text,
-                            personVar = person_var, lmeEngine = lme_engine,
-                            correlationStructure = correlation_structure,
-                            correlationTimeVar = correlation_time_var,
-                            phenotype = phenotype,
-                                interactionTerm = resolved_interaction,
-                            responseVar = response_var,
-                            omnibusTest = omnibus_config$test,
-                            omnibusDdf = omnibus_config$ddf,
-                            omnibusTerm = omnibus_target,
-                            formulaObject = shared_formula,
-                            coefficientTerms = shared_coefficient_terms
-                        )
-                    },
-                    mc.cores = cluster_size, mc.preschedule = TRUE
-                )
-            } else {
-                psock_cluster_use_count <- psock_cluster_use_count + 1L
-                parallel::clusterExport(psock_cluster,
-                    varlist = c(
-                        "base_model_data", "shared_formula",
-                        "shared_coefficient_terms",
-                        "formula_text", "phenotype", "resolved_interaction",
-                        "person_var", "lme_engine", "correlation_structure",
-                        "correlation_time_var", "response_var", "batch_worker",
-                        "omnibus_config", "omnibus_target"
-                    ),
-                    envir = environment()
-                )
-                batch_results <- vector("list", length(cpg_batches))
-                cluster_size <- min(worker_count, length(cpg_batches))
-                batch_waves <- split(
-                    seq_along(cpg_batches),
-                    ceiling(seq_along(cpg_batches) / cluster_size)
-                )
-                for (wave in batch_waves) {
-                    tasks <- lapply(wave, function(index) {
-                        batch <- cpg_batches[[index]]
-                        list(
-                            cpgBatch = batch,
-                            responses = as.matrix(
-                                analysis_data[, batch, drop = FALSE]
-                            )
-                        )
-                    })
-                    wave_results <- parallel::parLapplyLB(
-                        psock_cluster,
-                        tasks, function(task) {
-                            batch_worker(
-                                cpgBatch = task$cpgBatch,
-                                data = task$responses,
-                                modelData = base_model_data,
-                                formulaText = formula_text,
-                                personVar = person_var,
-                                lmeEngine = lme_engine,
-                                correlationStructure =
-                                    correlation_structure,
-                                correlationTimeVar = correlation_time_var,
-                                phenotype = phenotype,
-                                interactionTerm = resolved_interaction,
-                                responseVar = response_var,
-                                omnibusTest = omnibus_config$test,
-                                omnibusDdf = omnibus_config$ddf,
-                                omnibusTerm = omnibus_target,
-                                formulaObject = shared_formula,
-                                coefficientTerms = shared_coefficient_terms
-                            )
-                        }
-                    )
-                    batch_results[wave] <- wave_results
-                    rm(tasks, wave_results)
-                    invisible(gc(FALSE))
-                }
-            }
-        } else {
-            validateWorkerPackagesMethylationModels(
-                libPath = libPath,
-                packages = required_lme_lib_list
-            )
-            batch_results <- lapply(cpg_batches, function(batch) {
-                batch_worker(
-                    cpgBatch = batch,
-                    data = analysis_data[, batch, drop = FALSE],
-                    modelData = base_model_data, formulaText = formula_text,
-                    personVar = person_var, lmeEngine = lme_engine,
-                    correlationStructure = correlation_structure,
-                    correlationTimeVar = correlation_time_var,
-                    phenotype = phenotype,
-                        interactionTerm = resolved_interaction,
-                    responseVar = response_var,
-                    omnibusTest = omnibus_config$test,
-                    omnibusDdf = omnibus_config$ddf,
-                    omnibusTerm = omnibus_target,
-                    formulaObject = shared_formula,
-                    coefficientTerms = shared_coefficient_terms
-                )
-            })
-        }
-
-        phenotype_coefficients <-
-            combineCompactCoefficientResultsMethylationModels(
-                batchResults = batch_results,
-                cpgOrder = cpg_columns
-            )
-        combined_summaries <- combineBatchTablesMethylationModels(
-            batchResults = batch_results, field = "summaries",
-            empty = data.frame()
-        )
-        phenotype_omnibus <- combineBatchTablesMethylationModels(
-            batchResults = batch_results, field = "omnibusTests",
-            empty = collectOmnibusTestsMethylationLME(
-                fits = list(),
-                phenotype = phenotype
-            )
-        )
-        phenotype_summary_cache <- filterSummaryByPvalueMethylationLME(
-            summaryDf = combined_summaries,
-            pValueFilter = NA_real_
-        )
-        phenotype_messages <- combineBatchTablesMethylationModels(
-            batchResults = batch_results, field = "modelMessages",
-            empty = emptyModelMessagesDnaEpico()
-        )
-        phenotype_failures <- combineBatchTablesMethylationModels(
-            batchResults = batch_results, field = "fitFailures",
-            empty = emptyFitFailuresMethylationModels()
-        )
-        phenotype_messages <- phenotype_messages[
-            match(cpg_columns, phenotype_messages$CpG), ,
-            drop = FALSE
-        ]
-        rownames(phenotype_messages) <- NULL
-        error_counts <- if (nrow(phenotype_failures) == 0L) {
-            integer(0)
-        } else {
-            sort(table(phenotype_failures$Error), decreasing = TRUE)
-        }
-        fits[phenotype] <- list(structure(
-            list(),
-            class = "dnaEPICO_compact_fit_index"
-        ))
-        summary_cache[[phenotype]] <- phenotype_summary_cache
-        coefficient_results[[phenotype]] <- phenotype_coefficients
-        omnibus_tests[[phenotype]] <- phenotype_omnibus
-        phenotype_model_messages[[phenotype]] <- phenotype_messages
-        phenotype_fit_failures[[phenotype]] <- phenotype_failures
-        formulas[[phenotype]] <- display_formula_text
-        p_value_available <- phenotype_messages$P.Value.Available
-        failure_counts[[phenotype]] <- sum(!p_value_available)
-        failure_reasons[[phenotype]] <- error_counts
-        rm(batch_results, combined_summaries)
-        invisible(gc(FALSE))
-        artifact <- assemblePhenotypeSummaryMethylationModels(
-            analysis = "lme", engine = lme_engine, phenotype = phenotype,
-            signature = signature, cpgOrder = cpg_columns,
-            coefficientResults = phenotype_coefficients,
-            targetSummary = phenotype_summary_cache,
-            omnibusTests = phenotype_omnibus,
-            modelMessages = phenotype_messages,
-            fitFailures = phenotype_failures,
-            failureCount = failure_counts[[phenotype]],
-            failureReasons = error_counts,
-            formulaText = display_formula_text,
-            settings = list(
-                fittedFormula = formula_text,
-                methylationScale = preparedData$methylationScale,
-                responseLabel = preparedData$responseLabel,
-                interactionTerm = preparedData$interactionTerm,
-                covariates = covariates,
-                factorVars = preparedData$factorVars,
-                factorLevels = lapply(
-                    preparedData$data[preparedData$factorVars[
-                        preparedData$factorVars %in%
-                            colnames(preparedData$data)
-                    ]],
-                    levels
-                ),
-                scaleVars = preparedData$scaleVars,
-                scalingMetadata = preparedData$scalingMetadata,
-                personVar = person_var, timeVar = preparedData$timeVar,
-                random = paste0("~ 1 | ", person_var), REML = TRUE,
-                correlationStructure = correlation_structure,
-                correlationVar = if (identical(
-                    correlation_structure,
-                    "none"
-                )) NULL else correlation_var,
-                omnibusTest = omnibus_config$test,
-                omnibusDdf = omnibus_config$ddf,
-                omnibusTerm = omnibus_target,
-                omnibusRhs = 0, omnibusJoint = TRUE
-            )
-        )
-        phenotype_summaries[[phenotype]] <- artifact
-        if (!is.null(summary_path)) {
-            savePhenotypeSummaryMethylationModels(
-                object = artifact,
-                path = summary_path
-            )
-            summary_files[[phenotype]] <- summary_path
-        }
-
-        emitLogMinfiEwasWater(
-            c(
-                "============================================================",
-                paste("Fitted phenotype:            ", phenotype),
-                paste("Formula:                     ", display_formula_text),
-                paste("Correlation structure:       ", correlation_structure),
-                paste("Correlation variable:        ", if (identical(
-                    correlation_structure,
-                    "none"
-                )) {
-                    "None"
-                } else {
-                    correlation_var
-                }), paste(
-                    "CpGs attempted:              ",
-                    length(cpg_columns)
-                ), paste(
-                    "CpGs without p-values:       ",
-                    failure_counts[[phenotype]]
-                ), paste(
-                    "Omnibus tests requested:     ",
-                    isTRUE(omnibus_config$test)
-                ), paste(
-                    "Omnibus target term:         ",
-                    if (is.null(omnibus_target)) "None" else omnibus_target
-                ), paste(
-                    "Omnibus denominator DF:      ",
-                    if (isTRUE(omnibus_config$test)) {
-                        omnibus_config$ddf
-                    } else {
-                        "None"
-                    }
-                ), paste(
-                    "Successful omnibus tests:    ",
-                    sum(phenotype_omnibus$Omnibus.Status == "tested")
-                ), paste(
-                    "Unavailable omnibus tests:   ",
-                    sum(phenotype_omnibus$Omnibus.Status != "tested")
-                ), paste(
-                    "Top fit errors:              ",
-                    formatFitErrorsMethylationModels(error_counts)
-                ),
-                paste("Parallel backend:            ", backend),
-                paste("Effective workers:           ", worker_count),
-                paste("Parallel crossover CpGs:     ",
-                    parallel_plan$crossoverCpGs),
-                paste("Parallel selection:          ", parallel_plan$reason),
-                paste("Available memory (MB):       ",
-                    if (is.finite(parallel_plan$availableMemoryMB)) {
-                        round(parallel_plan$availableMemoryMB)
-                    } else {
-                        "unknown"
-                    }),
-                paste("Estimated memory per worker: ",
-                    round(parallel_plan$estimatedWorkerMemoryMB), "MB"),
-                paste("Pilot incremental memory:    ",
-                    if (is.finite(parallel_plan$pilotMemoryMB)) {
-                        paste(round(parallel_plan$pilotMemoryMB), "MB")
-                    } else {
-                        "not required"
-                    }),
-                paste("Memory worker cap:           ",
-                    parallel_plan$memoryWorkerCap),
-                paste("Fit batches:                 ", length(cpg_batches)),
-                paste("Fit batch size:              ",
-                    if (length(cpg_batches) ==
-                    0L) {
-                    0L
-                } else {
-                    max(vapply(cpg_batches, length, integer(1)))
-                }),
-                paste("Fit-time summary rows cached:",
-                    nrow(phenotype_summary_cache)),
-                "============================================================"
-            ),
-            verbose = verbose, log_path = log_path
-        )
-
-        if (length(cpg_columns) > 0L && !any(p_value_available)) {
-            warning("No CpG ", toupper(lme_engine),
-                " p-values were available for phenotype '",
-                phenotype, "'. Top failure reasons: ",
-                    formatFitErrorsMethylationModels(error_counts),
-                ". The failure inventory was retained and the analysis continued.",
-                call. = FALSE
-            )
-        }
-    }
-
-    fit_failures <- combineBatchTablesMethylationModels(
-        batchResults = lapply(phenotype_fit_failures, function(x) {
-            list(table = x)
-        }),
-        field = "table", empty = emptyFitFailuresMethylationModels()
-    )
-    model_messages <- combineBatchTablesMethylationModels(
-        batchResults = lapply(phenotype_model_messages, function(x) {
-            list(table = x)
-        }),
-        field = "table", empty = emptyModelMessagesDnaEpico()
-    )
-
-    if (!is.null(psock_cluster)) {
-        parallel::stopCluster(psock_cluster)
-        psock_cluster <- NULL
-    }
-
-    structure(
-        list(
-            fits = fits, summaryCache = summary_cache,
-            coefficientResults = coefficient_results,
-            phenotypeSummaries = phenotype_summaries,
-            summaryFiles = summary_files,
-            resumedPhenotypes = resumed_phenotypes,
-            fittedPhenotypes = fitted_phenotypes,
-            omnibusTests = omnibus_tests, omnibusTargets = omnibus_targets,
-            formulas = formulas, phenotypes = names(fits),
-            failureCounts = failure_counts,
-            failureReasons = failure_reasons, fitFailures = fit_failures,
-            modelMessages = model_messages,
-            settings = list(
-                nCores = n_cores, parallelBackend = backend,
-                workerCount = worker_count,
-                    resourceWorkerCap = parallel_plan$resourceWorkerCap,
-                parallelCrossoverCpGs = parallel_plan$crossoverCpGs,
-                parallelSelectionReason = parallel_plan$reason,
-                availableMemoryMB = parallel_plan$availableMemoryMB,
-                reservedMemoryMB = parallel_plan$reservedMemoryMB,
-                estimatedWorkerMemoryMB =
-                    parallel_plan$estimatedWorkerMemoryMB,
-                pilotIncrementalMemoryMB = parallel_plan$pilotMemoryMB,
-                memoryWorkerCap = parallel_plan$memoryWorkerCap,
-                    clusterReusedAcrossPhenotypes =
-                        psock_cluster_use_count > 1L,
-                    fitBatchCount = length(cpg_batches), libPath = libPath,
-                lmeLibs = lme_lib_list, lmeEngine = lme_engine,
-                    correlationStructure = correlation_structure,
-                correlationVar = if (identical(
-                    correlation_structure,
-                    "none"
-                )) {
-                    NULL
-                } else {
-                    correlation_var
-                }, methylationScale = preparedData$methylationScale,
-                methylationObjectPrefix = preparedData$methylationObjectPrefix,
-                responseLabel = preparedData$responseLabel,
-                    internalResponseColumn = preparedData$internalResponseColumn,
-                interactionTerm = preparedData$interactionTerm,
-                omnibusTest = omnibus_config$test,
-                omnibusDdf = omnibus_config$ddf,
-                omnibusRhs = 0,
-                omnibusJoint = TRUE,
-                phenotypes = preparedData$phenotypes,
-                covariates = preparedData$covariates,
-                    factorVars = preparedData$factorVars,
-                factorLevels = lapply(stats::setNames(
-                    preparedData$factorVars,
-                    preparedData$factorVars
-                ), function(variable) levels(preparedData$data[[variable]])),
-                scaleVars = preparedData$scaleVars,
-                    scalingMetadata = preparedData$scalingMetadata,
-                sampleCount = nrow(preparedData$data),
-                    personVar = preparedData$personVar,
-                timeVar = preparedData$timeVar
-            ), responseLabel = preparedData$responseLabel
-        ),
-        class = "dnaEPICO_methylationLME_models"
-    )
+    state <- newLmeFitStateDnaEpico(preparedData, config)
+    on.exit(stopLmeFitClusterDnaEpico(state), add = TRUE)
+    fitAllLmePhenotypesDnaEpico(state, preparedData, model_data, config)
+    stopLmeFitClusterDnaEpico(state)
+    newMethylationLMEModelsDnaEpico(state, preparedData, config)
 }
 
 summarizeOmnibusTestsMethylationLME <- function(
     modelResults, padjmethod = "fdr"
 ) {
     adjustment_method <- validatePAdjustmentMethodMethylationModels(
-        padjmethod
+    padjmethod
     )
     omnibus_tables <- modelResults$omnibusTests
     if (!is.list(omnibus_tables)) {
-        omnibus_tables <- list()
+    omnibus_tables <- list()
     }
 
     phenotype_names <- modelResults$phenotypes
     if (is.null(phenotype_names)) {
-        phenotype_names <- names(modelResults$fits)
+    phenotype_names <- names(modelResults$fits)
     }
     summaries <- lapply(phenotype_names, function(phenotype) {
-        table <- omnibus_tables[[phenotype]]
-        if (!is.data.frame(table) || nrow(table) == 0L) {
-            return(data.frame())
-        }
+    table <- omnibus_tables[[phenotype]]
+    if (!is.data.frame(table) || nrow(table) == 0L) {
+        return(data.frame())
+    }
 
-        table$Omnibus.Adjusted.P.Value <- NA_real_
-        valid <- table$Omnibus.Status == "tested" &
-            is.finite(table$Omnibus.P.Value)
-        table$Omnibus.Adjusted.P.Value[valid] <- stats::p.adjust(
-            table$Omnibus.P.Value[valid],
-            method = adjustment_method
-        )
-        table
+    table$Omnibus.Adjusted.P.Value <- NA_real_
+    valid <- table$Omnibus.Status == "tested" &
+        is.finite(table$Omnibus.P.Value)
+    table$Omnibus.Adjusted.P.Value[valid] <- stats::p.adjust(
+        table$Omnibus.P.Value[valid],
+        method = adjustment_method
+    )
+    table
     })
     names(summaries) <- phenotype_names
     summaries
+}
+
+normalizeLmeSummaryConfigDnaEpico <- function(config) {
+    config$logPath <- resolveLogPathMinfiEwasWater(
+    logs = config$logs, log_dir = config$log_dir,
+    log_file = config$log_file
+    )
+    config$pValueFilter <- validateProbabilityDnaEpico(
+    normalizeOptionalNumericMethylationGLM(config$summaryPval),
+    "summaryPval",
+    allowNA = TRUE
+    )
+    config$chunkSizeValue <- normalizeChunkSizeMethylationGLM(config$chunkSize)
+    config$nCoresValue <- validatePositiveIntegerMethylationModels(
+    config$nCores, "nCores"
+    )
+    config$adjustmentMethod <- validatePAdjustmentMethodMethylationModels(
+    config$padjmethod
+    )
+    config
+}
+
+summarizeLmeChunkDnaEpico <- function(
+    chunk, fits, phenotype, interactionTerm, worker
+) {
+    rows <- lapply(chunk, function(cpg) {
+    worker(
+        cpg = cpg, modelObj = fits[[cpg]], phenotype = phenotype,
+        interactionTerm = interactionTerm
+    )
+    })
+    rows <- Filter(Negate(is.null), rows)
+    if (!length(rows)) NULL else do.call(rbind, rows)
+}
+
+runLmeSummaryChunksDnaEpico <- function(
+    fits, phenotype, interactionTerm, nCores, chunkSize
+) {
+    cpg_names <- names(fits)
+    local_size <- chunkSize
+    if (is.null(local_size)) {
+    local_size <- max(
+        10L, floor(length(cpg_names) / max(nCores * 4L, 1L))
+    )
+    }
+    local_size <- max(1L, as.integer(local_size))
+    chunks <- split(
+    cpg_names, ceiling(seq_along(cpg_names) / local_size)
+    )
+    worker <- summarizeCpGFitMethylationLME
+    chunk_worker <- summarizeLmeChunkDnaEpico
+    run_chunk <- function(chunk) {
+    chunk_worker(
+        chunk, fits, phenotype, interactionTerm, worker
+    )
+    }
+    if (nCores > 1L && length(chunks) > 1L) {
+    environment(worker) <- .GlobalEnv
+    environment(chunk_worker) <- .GlobalEnv
+    cluster <- parallel::makeCluster(min(nCores, length(chunks)))
+    on.exit(parallel::stopCluster(cluster), add = TRUE)
+    parallel::clusterExport(cluster, varlist = c(
+        "fits", "phenotype", "interactionTerm", "worker", "chunk_worker",
+        "summarizeLmeChunkDnaEpico", "findCoefficientRowsMethylationLME",
+        "findCoefficientRowsMethylationGLM", "modelMessageDnaEpico"
+    ), envir = environment())
+    results <- parallel::parLapplyLB(cluster, chunks, run_chunk)
+    } else {
+    results <- lapply(chunks, run_chunk)
+    }
+    results <- Filter(Negate(is.null), results)
+    summary <- if (!length(results)) data.frame() else do.call(rbind, results)
+    rownames(summary) <- NULL
+    list(summary = summary, chunkSize = local_size)
+}
+
+summarizeLmePhenotypeDnaEpico <- function(
+    modelResults, preparedData, phenotype, config
+) {
+    cached <- modelResults$summaryCache[[phenotype]]
+    if (!is.null(cached)) {
+    diagnostic <- filterSummaryByPvalueMethylationLME(cached, NA_real_)
+    summary <- filterSummaryByPvalueMethylationLME(
+        diagnostic, config$pValueFilter
+    )
+    return(list(
+        summary = summary, diagnostic = diagnostic,
+        source = "fit-time cache", chunkSize = NULL
+    ))
+    }
+    chunked <- runLmeSummaryChunksDnaEpico(
+    fits = modelResults$fits[[phenotype]], phenotype = phenotype,
+    interactionTerm = preparedData$interactionTerm,
+    nCores = config$nCoresValue, chunkSize = config$chunkSizeValue
+    )
+    diagnostic <- chunked$summary
+    summary <- filterSummaryByPvalueMethylationLME(
+    diagnostic, config$pValueFilter
+    )
+    list(
+    summary = summary, diagnostic = diagnostic,
+    source = "model fits", chunkSize = chunked$chunkSize
+    )
+}
+
+logLmePhenotypeSummaryDnaEpico <- function(phenotype, result, config) {
+    lines <- c(
+    "============================================================",
+    paste("Summarized phenotype:        ", phenotype),
+    paste("LME summary rows returned:   ", nrow(result$summary)),
+    paste("Summary source:              ", result$source)
+    )
+    if (!is.null(result$chunkSize)) {
+    lines <- c(lines, paste(
+        "Summary chunk size:          ", result$chunkSize
+    ))
+    }
+    lines <- c(
+    lines,
+    if (is.na(config$pValueFilter)) {
+        "P-value filter:              none"
+    } else {
+        paste("P-value filter:              ", config$pValueFilter)
+    },
+    "============================================================"
+    )
+    emitLogMinfiEwasWater(
+    lines,
+    verbose = config$verbose, log_path = config$logPath
+    )
+}
+
+newMethylationLMESummariesDnaEpico <- function(
+    summaries, diagnostics, omnibus, modelResults, preparedData, config
+) {
+    messages <- modelResults$modelMessages
+    if (is.null(messages)) {
+    messages <- collectModelMessagesMethylationLME(modelResults$fits)
+    }
+    structure(list(
+    summaries = summaries, diagnosticSummaries = diagnostics,
+    omnibusTests = omnibus, phenotypes = names(summaries),
+    fitFailures = modelResults$fitFailures, modelMessages = messages,
+    settings = list(
+        summaryPval = config$pValueFilter,
+        padjmethod = config$adjustmentMethod,
+        chunkSize = config$chunkSizeValue,
+        interactionTerm = preparedData$interactionTerm,
+        lmeEngine = modelResults$settings$lmeEngine,
+        omnibusTest = isTRUE(modelResults$settings$omnibusTest),
+        factorLevels = modelResults$settings$factorLevels
+    )
+    ), class = "dnaEPICO_methylationLME_summaries")
 }
 
 #' Summarize CpG-wise mixed-effects results for longitudinal analyses
@@ -2176,12 +2419,12 @@ summarizeOmnibusTestsMethylationLME <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 #' summary_results <- summarizeMethylationLMEModels(
-#'     modelResults = ex$modelResults,
-#'     preparedData = ex$preparedData,
-#'     summaryPval = NA,
-#'     nCores = 1,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   modelResults = ex$modelResults,
+#'   preparedData = ex$preparedData,
+#'   summaryPval = NA,
+#'   nCores = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(summary_results$summaries)
 #'
@@ -2192,173 +2435,119 @@ summarizeMethylationLMEModels <- function(
     verbose = FALSE, logs = FALSE,
     log_dir = NULL, log_file = "log_methylationLME.txt"
 ) {
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
-    )
-    p_value_filter <- normalizeOptionalNumericMethylationGLM(summaryPval)
-    p_value_filter <- validateProbabilityDnaEpico(p_value_filter,
-        "summaryPval",
-        allowNA = TRUE
-    )
-    chunk_size <- normalizeChunkSizeMethylationGLM(chunkSize)
-    n_cores <- validatePositiveIntegerMethylationModels(
-        nCores,
-        "nCores"
-    )
-    adjustment_method <- validatePAdjustmentMethodMethylationModels(
-        padjmethod
+    config <- normalizeLmeSummaryConfigDnaEpico(
+    as.list(environment(), all.names = TRUE)
     )
     summaries <- list()
     diagnostic_summaries <- list()
     for (phenotype in names(modelResults$fits)) {
-        if (!is.null(modelResults$summaryCache) &&
-            !is.null(modelResults$summaryCache[[phenotype]])) {
-            diagnostic_df <- filterSummaryByPvalueMethylationLME(
-                summaryDf = modelResults$summaryCache[[phenotype]],
-                pValueFilter = NA_real_
-            )
-            summary_df <- filterSummaryByPvalueMethylationLME(
-                summaryDf = diagnostic_df,
-                pValueFilter = p_value_filter
-            )
-            diagnostic_summaries[[phenotype]] <- diagnostic_df
-            summaries[[phenotype]] <- summary_df
-
-            emitLogMinfiEwasWater(
-                c(
-                    "============================================================",
-                    paste("Summarized phenotype:        ", phenotype),
-                    paste("LME summary rows returned:   ", nrow(summary_df)),
-                    "Summary source:              fit-time cache",
-                    if (is.na(p_value_filter)) {
-                        "P-value filter:              none"
-                    } else {
-                        paste("P-value filter:              ", p_value_filter)
-                    }, "============================================================"
-                ),
-                verbose = verbose, log_path = log_path
-            )
-            next
-        }
-
-        fit_list <- modelResults$fits[[phenotype]]
-        cpg_names <- names(fit_list)
-
-        local_chunk_size <- chunk_size
-        if (is.null(local_chunk_size)) {
-            local_chunk_size <- max(10L, floor(length(cpg_names) / max(n_cores *
-                4L, 1L)))
-        }
-        local_chunk_size <- max(1L, as.integer(local_chunk_size))
-        cpg_chunks <- split(cpg_names,
-            ceiling(seq_along(cpg_names) / local_chunk_size))
-
-        summary_worker <- summarizeCpGFitMethylationLME
-        resolved_interaction <- preparedData$interactionTerm
-
-        if (n_cores > 1L && length(cpg_chunks) > 1L) {
-            cluster_size <- min(n_cores, length(cpg_chunks))
-            cl <- parallel::makeCluster(cluster_size)
-            on.exit(parallel::stopCluster(cl), add = TRUE)
-
-            parallel::clusterExport(cl, varlist = c(
-                "fit_list",
-                "phenotype", "resolved_interaction", "summary_worker",
-                "modelMessageDnaEpico"
-            ), envir = environment())
-
-            result_chunks <- parallel::parLapplyLB(
-                cl, cpg_chunks,
-                function(chunk) {
-                    rows <- lapply(chunk, function(cpg) {
-                        summary_worker(
-                            cpg = cpg, modelObj = fit_list[[cpg]],
-                            phenotype = phenotype,
-                                interactionTerm = resolved_interaction
-                        )
-                    })
-                    rows <- Filter(Negate(is.null), rows)
-                    if (length(rows) == 0L) {
-                        return(NULL)
-                    }
-                    do.call(rbind, rows)
-                }
-            )
-            parallel::stopCluster(cl)
-            on.exit(NULL, add = FALSE)
-        } else {
-            result_chunks <- lapply(cpg_chunks, function(chunk) {
-                rows <- lapply(chunk, function(cpg) {
-                    summary_worker(
-                        cpg = cpg, modelObj = fit_list[[cpg]],
-                        phenotype = phenotype,
-                            interactionTerm = resolved_interaction
-                    )
-                })
-                rows <- Filter(Negate(is.null), rows)
-                if (length(rows) == 0L) {
-                    return(NULL)
-                }
-                do.call(rbind, rows)
-            })
-        }
-
-        result_chunks <- Filter(Negate(is.null), result_chunks)
-        if (length(result_chunks) == 0L) {
-            summary_df <- data.frame()
-        } else {
-            summary_df <- do.call(rbind, result_chunks)
-            rownames(summary_df) <- NULL
-        }
-
-        diagnostic_summaries[[phenotype]] <- summary_df
-        if (nrow(summary_df) > 0L && !is.na(p_value_filter)) {
-            keep <- is.finite(summary_df$P.value) & summary_df$P.value <
-                p_value_filter
-            summary_df <- summary_df[keep, , drop = FALSE]
-            rownames(summary_df) <- NULL
-        }
-
-        summaries[[phenotype]] <- summary_df
-
-        emitLogMinfiEwasWater(
-            c(
-                "============================================================",
-                paste("Summarized phenotype:        ", phenotype),
-                paste("LME summary rows returned:   ", nrow(summary_df)),
-                paste("Summary chunk size:          ", local_chunk_size),
-                if (is.na(p_value_filter)) {
-                    "P-value filter:              none"
-                } else {
-                    paste("P-value filter:              ", p_value_filter)
-                }, "============================================================"
-            ),
-            verbose = verbose, log_path = log_path
-        )
-    }
-
-    omnibus_summaries <- summarizeOmnibusTestsMethylationLME(
-        modelResults = modelResults, padjmethod = adjustment_method
+    result <- summarizeLmePhenotypeDnaEpico(
+        modelResults, preparedData, phenotype, config
     )
+    summaries[[phenotype]] <- result$summary
+    diagnostic_summaries[[phenotype]] <- result$diagnostic
+    logLmePhenotypeSummaryDnaEpico(phenotype, result, config)
+    }
+    omnibus <- summarizeOmnibusTestsMethylationLME(
+    modelResults = modelResults, padjmethod = config$adjustmentMethod
+    )
+    newMethylationLMESummariesDnaEpico(
+    summaries, diagnostic_summaries, omnibus,
+    modelResults, preparedData, config
+    )
+}
 
-    structure(list(
-        summaries = summaries, diagnosticSummaries = diagnostic_summaries,
-        omnibusTests = omnibus_summaries,
-        phenotypes = names(summaries), fitFailures = modelResults$fitFailures,
-        modelMessages = if (!is.null(modelResults$modelMessages)) {
-            modelResults$modelMessages
-        } else {
-            collectModelMessagesMethylationLME(modelResults$fits)
-        },
-        settings = list(
-            summaryPval = p_value_filter,
-            padjmethod = adjustment_method,
-            chunkSize = chunk_size,
-                interactionTerm = preparedData$interactionTerm,
-            lmeEngine = modelResults$settings$lmeEngine
-        )
-    ), class = "dnaEPICO_methylationLME_summaries")
+lmeCoefficientTableForCpgDnaEpico <- function(modelResults, phenotype, cpg) {
+    table <- coefficientTableFromCompactMethylationModels(
+    modelResults$coefficientResults[[phenotype]], cpg
+    )
+    if (!is.null(table)) {
+    return(table)
+    }
+    fit <- modelResults$fits[[phenotype]][[cpg]]
+    if (is.null(fit) || inherits(fit, "dnaEPICO_methylationLME_fit_error") ||
+    is.null(fit$coef)) {
+    return(NULL)
+    }
+    as.data.frame(fit$coef)
+}
+
+collectOmnibusLmeHitsDnaEpico <- function(
+    modelResults, phenotype, threshold
+) {
+    table <- modelResults$omnibusTests[[phenotype]]
+    if (is.data.frame(table) && nrow(table) > 0L) {
+    hit_cpgs <- table$CpG[
+        table$Omnibus.Status == "tested" &
+        is.finite(table$Omnibus.P.Value) &
+        table$Omnibus.P.Value < threshold
+    ]
+    } else {
+    fits <- modelResults$fits[[phenotype]]
+    tested <- vapply(fits, function(fit) {
+        !is.null(fit) && !is.null(fit$omnibus) &&
+        identical(fit$omnibus$status, "tested") &&
+        is.finite(fit$omnibus$pValue) &&
+        fit$omnibus$pValue < threshold
+    }, logical(1))
+    hit_cpgs <- names(fits)[tested]
+    }
+    hits <- lapply(unique(hit_cpgs), function(cpg) {
+    lmeCoefficientTableForCpgDnaEpico(modelResults, phenotype, cpg)
+    })
+    stats::setNames(Filter(Negate(is.null), hits), unique(hit_cpgs)[
+    !vapply(hits, is.null, logical(1))
+    ])
+}
+
+collectCachedLmeHitsDnaEpico <- function(
+    modelResults, phenotype, threshold, interactionTerm
+) {
+    cached <- modelResults$summaryCache[[phenotype]]
+    if (is.null(cached) || !optionalTermMatchesMethylationModels(
+    requested = interactionTerm,
+    cached = modelResults$settings$interactionTerm
+    )) {
+    return(NULL)
+    }
+    hit_cpgs <- character(0)
+    if (nrow(cached) > 0L && !is.na(threshold)) {
+    hit_cpgs <- unique(cached$CpG[cached$P.value < threshold])
+    hit_cpgs <- hit_cpgs[!is.na(hit_cpgs)]
+    }
+    hits <- lapply(hit_cpgs, function(cpg) {
+    lmeCoefficientTableForCpgDnaEpico(modelResults, phenotype, cpg)
+    })
+    stats::setNames(Filter(Negate(is.null), hits), hit_cpgs[
+    !vapply(hits, is.null, logical(1))
+    ])
+}
+
+collectDirectLmeHitsDnaEpico <- function(
+    modelResults, phenotype, threshold, interactionTerm
+) {
+    fits <- modelResults$fits[[phenotype]]
+    hits <- list()
+    for (cpg in names(fits)) {
+    fit <- fits[[cpg]]
+    if (is.null(fit) || inherits(
+        fit, "dnaEPICO_methylationLME_fit_error"
+    ) || is.null(fit$coef)) {
+        next
+    }
+    matched <- findCoefficientRowsMethylationLME(
+        coefNames = rownames(fit$coef), phenotype = phenotype,
+        interactionTerm = interactionTerm,
+        coefficientTerms = fit$coefficientTerms
+    )
+    if (length(matched) && any(
+        fit$coef[matched, "Pr(>|t|)", drop = TRUE] < threshold,
+        na.rm = TRUE
+    )) {
+        hits[[cpg]] <- as.data.frame(fit$coef)
+    }
+    }
+    hits
 }
 
 #' Collect significant longitudinal terms from compact mixed-effects results
@@ -2384,10 +2573,10 @@ summarizeMethylationLMEModels <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 #' significant_hits <- collectSignificantInteractionsMethylationLME(
-#'     modelResults = ex$modelResults,
-#'     pvalThreshold = 1,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   modelResults = ex$modelResults,
+#'   pvalThreshold = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(significant_hits)
 #'
@@ -2399,151 +2588,192 @@ collectSignificantInteractionsMethylationLME <- function(
     log_dir = NULL, log_file = "log_methylationLME.txt"
 ) {
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    logs = logs, log_dir = log_dir, log_file = log_file
     )
     threshold <- validateProbabilityDnaEpico(pvalThreshold, "pvalThreshold")
-    retained <- list()
-
-    phenotype_names <- modelResults$phenotypes
-    if (is.null(phenotype_names)) {
-        phenotype_names <- names(modelResults$fits)
+    phenotypes <- modelResults$phenotypes
+    if (is.null(phenotypes)) {
+    phenotypes <- names(modelResults$fits)
     }
-    for (phenotype in phenotype_names) {
-        fit_list <- modelResults$fits[[phenotype]]
-        phenotype_hits <- list()
-        use_omnibus <- isTRUE(modelResults$settings$omnibusTest)
-        if (isTRUE(use_omnibus) && !optionalTermMatchesMethylationModels(
-            requested = interactionTerm,
-            cached = modelResults$settings$interactionTerm
-        )) {
-            stop(
-                "interactionTerm does not match the term used for the fitted omnibus tests.",
-                call. = FALSE
-            )
-        }
-        if (isTRUE(use_omnibus)) {
-            omnibus_table <- modelResults$omnibusTests[[phenotype]]
-            if (is.data.frame(omnibus_table) && nrow(omnibus_table) > 0L) {
-                hit_cpgs <- omnibus_table$CpG[
-                    omnibus_table$Omnibus.Status == "tested" &
-                        is.finite(omnibus_table$Omnibus.P.Value) &
-                        omnibus_table$Omnibus.P.Value < threshold
-                ]
-                for (cpg in unique(hit_cpgs)) {
-                    coefficient_table <-
-                        coefficientTableFromCompactMethylationModels(
-                            modelResults$coefficientResults[[phenotype]],
-                            cpg
-                        )
-                    if (!is.null(coefficient_table)) {
-                        phenotype_hits[[cpg]] <- coefficient_table
-                    } else if (!is.null(fit_list[[cpg]]) &&
-                        !is.null(fit_list[[cpg]]$coef)) {
-                        phenotype_hits[[cpg]] <-
-                            as.data.frame(fit_list[[cpg]]$coef)
-                    }
-                }
-            } else {
-                for (cpg in names(fit_list)) {
-                    model_obj <- fit_list[[cpg]]
-                    if (is.null(model_obj) ||
-                        is.null(model_obj$omnibus) ||
-                        !identical(model_obj$omnibus$status, "tested") ||
-                        !is.finite(model_obj$omnibus$pValue) ||
-                        model_obj$omnibus$pValue >= threshold) {
-                        next
-                    }
-                    if (!is.null(model_obj$coef)) {
-                        phenotype_hits[[cpg]] <-
-                            as.data.frame(model_obj$coef)
-                    }
-                }
-            }
-            retained[[phenotype]] <- phenotype_hits
-            next
-        }
-        if (!is.null(modelResults$summaryCache) &&
-            !is.null(modelResults$summaryCache[[phenotype]]) &&
-            optionalTermMatchesMethylationModels(
-                requested = interactionTerm,
-                cached = modelResults$settings$interactionTerm
-            )) {
-            cached_summary <- modelResults$summaryCache[[phenotype]]
-            if (nrow(cached_summary) > 0L && !is.na(threshold)) {
-                hit_cpgs <- unique(cached_summary$CpG[cached_summary$P.value <
-                    threshold])
-                hit_cpgs <- hit_cpgs[!is.na(hit_cpgs)]
-                for (cpg in hit_cpgs) {
-                    coefficient_table <-
-                        coefficientTableFromCompactMethylationModels(
-                            modelResults$coefficientResults[[phenotype]],
-                            cpg
-                        )
-                    if (!is.null(coefficient_table)) {
-                        phenotype_hits[[cpg]] <- coefficient_table
-                    } else if (!is.null(fit_list[[cpg]]) &&
-                        !inherits(
-                            fit_list[[cpg]],
-                            "dnaEPICO_methylationLME_fit_error"
-                        ) && !is.null(fit_list[[cpg]]$coef)) {
-                        phenotype_hits[[cpg]] <-
-                            as.data.frame(fit_list[[cpg]]$coef)
-                    }
-                }
-            }
-
-            retained[[phenotype]] <- phenotype_hits
-            next
-        }
-
-        for (cpg in names(fit_list)) {
-            model_obj <- fit_list[[cpg]]
-            if (is.null(model_obj) || inherits(model_obj,
-                "dnaEPICO_methylationLME_fit_error")) {
-                next
-            }
-            coef_table <- model_obj$coef
-            if (is.null(coef_table)) {
-                next
-            }
-
-            matched_rows <- findCoefficientRowsMethylationLME(
-                coefNames = rownames(coef_table),
-                phenotype = phenotype, interactionTerm = interactionTerm,
-                coefficientTerms = model_obj$coefficientTerms
-            )
-            if (length(matched_rows) == 0L) {
-                next
-            }
-
-            matched_pvals <- coef_table[matched_rows, "Pr(>|t|)",
-                drop = TRUE
-            ]
-            if (any(matched_pvals < threshold, na.rm = TRUE)) {
-                phenotype_hits[[cpg]] <- as.data.frame(coef_table)
-            }
-        }
-
-        retained[[phenotype]] <- phenotype_hits
+    use_omnibus <- isTRUE(modelResults$settings$omnibusTest)
+    if (use_omnibus && length(phenotypes) &&
+        !optionalTermMatchesMethylationModels(
+    requested = interactionTerm,
+    cached = modelResults$settings$interactionTerm
+    )) {
+    stop(
+        "interactionTerm does not match the term used for the fitted ",
+        "omnibus tests.",
+        call. = FALSE
+    ) }
+    retained <- stats::setNames(lapply(phenotypes, function(phenotype) {
+    if (use_omnibus) {
+        return(collectOmnibusLmeHitsDnaEpico(
+        modelResults, phenotype, threshold
+        ))
     }
-
-    hit_counts <- vapply(retained, length, integer(1))
-    emitLogMinfiEwasWater(
-        c(
-            "============================================================",
-            paste(
-                "Significant longitudinal terms retained at p <",
-                threshold, ":"
-            ), paste(names(hit_counts), hit_counts,
-                sep = ": ", collapse = "; "
-            ), "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
+    cached <- collectCachedLmeHitsDnaEpico(
+        modelResults, phenotype, threshold, interactionTerm
     )
-
+    if (!is.null(cached)) {
+        return(cached)
+    }
+    collectDirectLmeHitsDnaEpico(
+        modelResults, phenotype, threshold, interactionTerm
+    )
+    }), phenotypes)
+    hit_counts <- vapply(retained, length, integer(1))
+    emitLogMinfiEwasWater(c(
+    "============================================================",
+    paste("Significant longitudinal terms retained at p <", threshold, ":"),
+    paste(names(hit_counts), hit_counts, sep = ": ", collapse = "; "),
+    "============================================================"
+    ), verbose = verbose, log_path = log_path)
     structure(retained, class = "dnaEPICO_methylationLME_significant")
 }
+lmeDiagnosticFilesDnaEpico <- function(outputDir, fileKey, plots) {
+    files <- list(
+    qqplot = NULL, standardError = NULL,
+    standardErrorSignificance = NULL, volcano = NULL,
+    effectForest = NULL
+    )
+    if (is.null(outputDir)) {
+    return(files)
+    }
+    files$qqplot <- file.path(
+    outputDir, paste0("qqplot_", fileKey, "_coefficientPvalue.tiff")
+    )
+    files$standardError <- file.path(
+    outputDir,
+    paste0("standardError_", fileKey, "_byAverageMethylation.tiff")
+    )
+    files$standardErrorSignificance <- file.path(
+    outputDir,
+    paste0("standardErrorSignificance_", fileKey, "_byPvalue.tiff")
+    )
+    if (!is.null(plots$volcano)) {
+    files$volcano <- file.path(
+        outputDir, paste0("volcano_", fileKey, "_coefficientEstimate.tiff")
+    )
+    }
+    if (!is.null(plots$effectForest)) {
+    files$effectForest <- file.path(
+        outputDir,
+        paste0("effectForest_", fileKey, "_coefficientEstimate95CI.tiff")
+    )
+    }
+    files
+}
+
+drawLmeDiagnosticPlotsDnaEpico <- function(plots, files, config) {
+    for (plot_name in names(plots)) {
+    plot_object <- plots[[plot_name]]
+    if (is.null(plot_object)) {
+        next
+    }
+    square <- identical(plot_name, "qqplot")
+    height <- if (square) {
+        max(config$plotWidth, config$plotHeight)
+    } else if (identical(plot_name, "effectForest")) {
+        max(config$plotHeight, 1400L)
+    } else {
+        config$plotHeight
+    }
+    runPlotMinfiEwasWater(
+        draw_fun = function() drawPlotObjectMinfiEwasWater(plot_object),
+        display = config$display, file = files[[plot_name]],
+        width = if (square) height else config$plotWidth,
+        height = height, res = config$plotDPI
+    )
+    }
+    invisible(NULL)
+}
+
+buildLmeTermDiagnosticDnaEpico <- function(
+    summaryData, phenotype, term, termIndex, multipleTerms, diagnosticMean,
+    config
+) {
+    diagnostic <- buildMethylationTermDiagnosticsDnaEpico(
+    summaryData = summaryData, phenotype = phenotype, term = term,
+    termColumn = "Interaction.Term", pValueColumn = "P.value",
+    yColumn = "Std.Error", yLabel = "Standard Error",
+    diagnosticMean = diagnosticMean,
+    fdrThreshold = config$fdrThreshold,
+    estimateColumn = "Value", standardErrorColumn = "Std.Error"
+    )
+    if (is.null(diagnostic)) {
+    return(NULL)
+    }
+    names(diagnostic$plots)[names(diagnostic$plots) == "residualSD"] <-
+    "standardError"
+    names(diagnostic$plots)[
+    names(diagnostic$plots) == "residualSignificance"
+    ] <- "standardErrorSignificance"
+    file_key <- phenotype
+    if (multipleTerms) {
+    file_key <- paste0(
+        phenotype, "_", sprintf("%02d", termIndex), "_",
+        sanitizeDiagnosticTermDnaEpico(term)
+    )
+    }
+    files <- lmeDiagnosticFilesDnaEpico(
+    config$outputDir, file_key, diagnostic$plots
+    )
+    drawLmeDiagnosticPlotsDnaEpico(diagnostic$plots, files, config)
+    list(plots = diagnostic$plots, files = files, lambda = diagnostic$lambda)
+}
+
+buildLmePhenotypeDiagnosticsDnaEpico <- function(
+    summaryData, phenotype, diagnosticMean, config
+) {
+    if (is.null(summaryData) || !nrow(summaryData)) {
+    return(NULL)
+    }
+    summaryData$FDR <- adjustPvaluesByTermMethylationModels(
+    pValues = summaryData$P.value,
+    terms = summaryData$Interaction.Term, method = config$padjmethod
+    )
+    terms <- unique(as.character(summaryData$Interaction.Term))
+    terms <- terms[!is.na(terms)]
+    multiple <- length(terms) > 1L
+    results <- lapply(seq_along(terms), function(index) {
+    buildLmeTermDiagnosticDnaEpico(
+        summaryData, phenotype, terms[[index]], index, multiple,
+        diagnosticMean, config
+    )
+    })
+    names(results) <- terms
+    results <- Filter(Negate(is.null), results)
+    if (!length(results)) {
+    return(NULL)
+    }
+    if (multiple) {
+    return(list(
+        plots = lapply(results, `[[`, "plots"),
+        files = lapply(results, `[[`, "files"),
+        lambda = vapply(results, `[[`, numeric(1), "lambda")
+    ))
+    }
+    list(
+    plots = results[[1L]]$plots, files = results[[1L]]$files,
+    lambda = results[[1L]]$lambda
+    )
+}
+
+normalizeLmeDiagnosticConfigDnaEpico <- function(config) {
+    config$logPath <- resolveLogPathMinfiEwasWater(
+    logs = config$logs, log_dir = config$log_dir,
+    log_file = config$log_file
+    )
+    config$fdrThreshold <- validateProbabilityDnaEpico(
+    config$fdrThreshold, "fdrThreshold"
+    )
+    config$padjmethod <- validatePAdjustmentMethodMethylationModels(
+    config$padjmethod
+    )
+    config
+}
+
 #' Plot longitudinal mixed-effects model diagnostics
 #'
 #' @param modelSummaries Object returned by `summarizeMethylationLMEModels()`.
@@ -2578,11 +2808,11 @@ collectSignificantInteractionsMethylationLME <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 #' diagnostic_plots <- plotMethylationLMEDiagnostics(
-#'     modelSummaries = ex$modelSummaries,
-#'     preparedData = ex$preparedData,
-#'     display = FALSE,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   modelSummaries = ex$modelSummaries,
+#'   preparedData = ex$preparedData,
+#'   display = FALSE,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(diagnostic_plots$plots)
 #'
@@ -2592,179 +2822,214 @@ plotMethylationLMEDiagnostics <- function(
     fdrThreshold = 0.05, padjmethod = "fdr", outputDir = NULL,
     plotWidth = 2000L, plotHeight = 1000L, plotDPI = 150L, display = FALSE,
     verbose = FALSE, logs = FALSE, log_dir = NULL,
-        log_file = "log_methylationLME.txt"
+    log_file = "log_methylationLME.txt"
 ) {
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    config <- normalizeLmeDiagnosticConfigDnaEpico(
+    as.list(environment(), all.names = TRUE)
     )
-    fdrThreshold <- validateProbabilityDnaEpico(
-        fdrThreshold,
-        "fdrThreshold"
-    )
-    padjmethod <- validatePAdjustmentMethodMethylationModels(padjmethod)
-    summary_list <- if (!is.null(modelSummaries$diagnosticSummaries)) {
-        modelSummaries$diagnosticSummaries
+    summaries <- if (is.null(modelSummaries$diagnosticSummaries)) {
+    modelSummaries$summaries
     } else {
-        modelSummaries$summaries
+    modelSummaries$diagnosticSummaries
     }
     diagnostic_mean <- diagnosticMeanMethylationModels(preparedData)
-    plot_list <- list()
-    inflation_factors <- list()
-    saved_files <- list()
-
-    for (phenotype in names(summary_list)) {
-        summary_df <- summary_list[[phenotype]]
-        if (is.null(summary_df) || nrow(summary_df) == 0L) {
-            next
-        }
-
-        summary_df$FDR <- adjustPvaluesByTermMethylationModels(
-            pValues = summary_df$P.value,
-            terms = summary_df$Interaction.Term, method = padjmethod
-        )
-        interaction_terms <- unique(as.character(summary_df$Interaction.Term))
-        interaction_terms <- interaction_terms[!is.na(interaction_terms)]
-        multiple_terms <- length(interaction_terms) > 1L
-        phenotype_plots <- phenotype_files <- list()
-        phenotype_inflation <- numeric(0)
-
-        for (term_index in seq_along(interaction_terms)) {
-            term <- interaction_terms[[term_index]]
-            term_diagnostics <- buildMethylationTermDiagnosticsDnaEpico(
-                summaryData = summary_df,
-                phenotype = phenotype, term = term,
-                    termColumn = "Interaction.Term",
-                pValueColumn = "P.value", yColumn = "Std.Error",
-                yLabel = "Standard Error", diagnosticMean = diagnostic_mean,
-                fdrThreshold = fdrThreshold
-            )
-            if (is.null(term_diagnostics)) {
-                next
-            }
-
-            file_key <- phenotype
-            if (multiple_terms) {
-                file_key <- paste0(phenotype, "_", sprintf(
-                    "%02d",
-                    term_index
-                ), "_", sanitizeDiagnosticTermDnaEpico(term))
-            }
-            term_files <- list(
-                qqplot = NULL, residualSD = NULL,
-                residualSignificance = NULL
-            )
-            if (!is.null(outputDir)) {
-                term_files <- list(
-                    qqplot = file.path(
-                        outputDir,
-                        paste0("qqplot_", file_key, ".tiff")
-                    ), residualSD = file.path(
-                        outputDir,
-                        paste0("residualSD_", file_key, ".tiff")
-                    ),
-                    residualSignificance = file.path(
-                        outputDir,
-                        paste0(
-                            "residualSignificance_", file_key,
-                            ".tiff"
-                        )
-                    )
-                )
-            }
-
-            for (plot_name in names(term_diagnostics$plots)) {
-                plot_object <- term_diagnostics$plots[[plot_name]]
-                if (is.null(plot_object)) {
-                    next
-                }
-                runPlotMinfiEwasWater(
-                    draw_fun = function() drawPlotObjectMinfiEwasWater(plot_object),
-                    display = display, file = term_files[[plot_name]],
-                    width = plotWidth, height = plotHeight, res = plotDPI
-                )
-            }
-
-            phenotype_inflation[[term]] <- term_diagnostics$lambda
-            if (multiple_terms) {
-                phenotype_plots[[term]] <- term_diagnostics$plots
-                phenotype_files[[term]] <- term_files
-            } else {
-                phenotype_plots <- term_diagnostics$plots
-                phenotype_files <- term_files
-            }
-        }
-
-        if (length(phenotype_inflation) > 0L) {
-            inflation_factors[[phenotype]] <- if (multiple_terms) {
-                phenotype_inflation
-            } else {
-                unname(phenotype_inflation[[1L]])
-            }
-            plot_list[[phenotype]] <- phenotype_plots
-            saved_files[[phenotype]] <- phenotype_files
-        }
-    }
-
-    emitLogMinfiEwasWater(
-        c(
-            "============================================================",
-            paste("Diagnostic plots generated for phenotypes:",
-                length(plot_list)),
-            if (is.null(outputDir)) {
-                "Diagnostic plots were returned in memory only."
-            } else {
-                paste("Diagnostic plots saved to:    ", outputDir)
-            }, "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
+    results <- lapply(names(summaries), function(phenotype) {
+    buildLmePhenotypeDiagnosticsDnaEpico(
+        summaries[[phenotype]], phenotype, diagnostic_mean, config
     )
-
+    })
+    names(results) <- names(summaries)
+    results <- Filter(Negate(is.null), results)
+    plots <- lapply(results, `[[`, "plots")
+    files <- lapply(results, `[[`, "files")
+    inflation <- lapply(results, `[[`, "lambda")
+    emitLogMinfiEwasWater(c(
+    "============================================================",
+    paste("Diagnostic plots generated for phenotypes:", length(plots)),
+    if (is.null(config$outputDir)) {
+        "Diagnostic plots were returned in memory only."
+    } else {
+        paste("Diagnostic plots saved to:    ", config$outputDir)
+    },
+    "============================================================"
+    ), verbose = config$verbose, log_path = config$logPath)
     structure(list(
-        plots = plot_list, inflationFactors = inflation_factors,
-        files = saved_files
+    plots = plots, inflationFactors = inflation, files = files
     ), class = "dnaEPICO_methylationLME_diagnostic_plots")
 }
 
 buildAnnotationOmnibusTablesMethylationLME <- function(modelSummaries) {
     omnibus_tables <- modelSummaries$omnibusTests
     if (!is.list(omnibus_tables) || length(omnibus_tables) == 0L) {
-        return(list())
+    return(list())
     }
     interaction_term <- modelSummaries$settings$interactionTerm
 
     tables <- lapply(names(omnibus_tables), function(phenotype) {
-        table <- omnibus_tables[[phenotype]]
-        required <- c(
-            "CpG", "Omnibus.F.Value", "Omnibus.Num.DF",
-            "Omnibus.Den.DF", "Omnibus.P.Value",
-            "Omnibus.Adjusted.P.Value", "Omnibus.Method"
-        )
-        if (!is.data.frame(table) || nrow(table) == 0L ||
-            !all(required %in% colnames(table))) {
-            return(NULL)
-        }
+    table <- omnibus_tables[[phenotype]]
+    required <- c(
+        "CpG", "Omnibus.F.Value", "Omnibus.Num.DF",
+        "Omnibus.Den.DF", "Omnibus.P.Value",
+        "Omnibus.Adjusted.P.Value", "Omnibus.Method"
+    )
+    if (!is.data.frame(table) || nrow(table) == 0L ||
+        !all(required %in% colnames(table))) {
+        return(NULL)
+    }
 
-        prefix_parts <- phenotype
-        if (!is.null(interaction_term) && nzchar(interaction_term)) {
-            prefix_parts <- c(prefix_parts, interaction_term)
-        }
-        prefix <- paste(gsub("`", "", prefix_parts, fixed = TRUE),
-            collapse = "_"
-        )
-        result <- table[, required, drop = FALSE]
-        colnames(result) <- c(
-            "CpG", paste0(prefix, "_Omnibus_F.Value"),
-            paste0(prefix, "_Omnibus_Num.DF"),
-            paste0(prefix, "_Omnibus_Den.DF"),
-            paste0(prefix, "_Omnibus_P.Value"),
-            paste0(prefix, "_Omnibus_Adjusted.P.Value"),
-            paste0(prefix, "_Omnibus_Method")
-        )
-        result
+    prefix_parts <- phenotype
+    if (!is.null(interaction_term) && nzchar(interaction_term)) {
+        prefix_parts <- c(prefix_parts, interaction_term)
+    }
+    prefix <- paste(gsub("`", "", prefix_parts, fixed = TRUE),
+        collapse = "_"
+    )
+    result <- table[, required, drop = FALSE]
+    colnames(result) <- c(
+        "CpG", paste0(prefix, "_Omnibus_F.Value"),
+        paste0(prefix, "_Omnibus_Num.DF"),
+        paste0(prefix, "_Omnibus_Den.DF"),
+        paste0(prefix, "_Omnibus_P.Value"),
+        paste0(prefix, "_Omnibus_Adjusted.P.Value"),
+        paste0(prefix, "_Omnibus_Method")
+    )
+    result
     })
     names(tables) <- names(omnibus_tables)
     Filter(Negate(is.null), tables)
+}
+
+cleanLmeModelSummaryDnaEpico <- function(data, modelName) {
+    required <- c("CpG", "Interaction.Term", "P.value")
+    if (is.null(data) || !nrow(data) || !all(required %in% colnames(data))) {
+    return(NULL)
+    }
+    split_data <- split(data, data$Interaction.Term)
+    tables <- lapply(names(split_data), function(term) {
+    output <- split_data[[term]][, c("CpG", "P.value"), drop = FALSE]
+    clean_term <- gsub("`", "", term, fixed = TRUE)
+    suffix <- clean_term
+    prefix <- paste0(modelName, ".")
+    if (startsWith(clean_term, prefix)) {
+        suffix <- sub(
+        paste0("^", escapeRegexMethylationGLM(modelName), "\\."),
+        "", clean_term
+        )
+    }
+    colnames(output)[2L] <- paste0(modelName, "_", suffix, "_P.Value")
+    output
+    })
+    Reduce(function(x, y) merge(x, y, by = "CpG", all = TRUE), tables)
+}
+
+mergeLmeSummaryTablesDnaEpico <- function(summaryList, modelSummaries) {
+    cleaned <- lapply(names(summaryList), function(name) {
+    cleanLmeModelSummaryDnaEpico(summaryList[[name]], name)
+    })
+    cleaned <- Filter(Negate(is.null), cleaned)
+    merged <- if (!length(cleaned)) {
+    data.frame(CpG = character(0))
+    } else {
+    Reduce(function(x, y) merge(x, y, by = "CpG", all = TRUE), cleaned)
+    }
+    omnibus <- buildAnnotationOmnibusTablesMethylationLME(modelSummaries)
+    for (table in omnibus) {
+    merged <- merge(merged, table, by = "CpG", all = TRUE)
+    }
+    p_columns <- grep("P\\.Value$|P\\.value$", names(merged), value = TRUE)
+    if (length(p_columns) && nrow(merged)) {
+    has_p <- apply(merged[, p_columns, drop = FALSE], 1L, function(values) {
+        any(is.finite(as.numeric(values)))
+    })
+    merged <- merged[has_p, , drop = FALSE]
+    }
+    messages <- buildAnnotationModelMessagesDnaEpico(
+    modelSummaries$modelMessages
+    )
+    if (nrow(messages)) {
+    merged <- merge(merged, messages, by = "CpG", all.x = TRUE)
+    }
+    merged
+}
+
+appendLmeGencodeDnaEpico <- function(data, annotationObject, enabled) {
+    if (!enabled) {
+    return(list(data = data, columns = character(0), result = NULL))
+    }
+    validateGencodeHubArrayCompatibilityDnaEpico(annotationObject)
+    resource <- resolveGencodeHubResourceDnaEpico()
+    result <- appendGencodeHubAnnotationDnaEpico(data, resource)
+    result$resource <- resource
+    result$dictionaryRows <- buildGencodeHubDictionaryDnaEpico(result$release)
+    result$metadataRows <- buildGencodeHubMetadataDnaEpico(
+    resource, result$counts
+    )
+    list(
+    data = result$data, columns = result$annotationColumns,
+    result = result
+    )
+}
+
+annotateLmeSummaryDataDnaEpico <- function(
+    merged, annotationData, annotationCols, annotationObject,
+    gencodeHub, modelNames
+) {
+    requested <- unique(c(
+    annotationCols, if (gencodeHub) c("chr", "pos") else character(0)
+    ))
+    available <- intersect(requested, colnames(annotationData))
+    missing <- setdiff(annotationCols, colnames(annotationData))
+    annotated <- merge(
+    merged, annotationData[, c("CpG", available), drop = FALSE],
+    by = "CpG", all.x = TRUE
+    )
+    if ("CpG" %in% colnames(annotated)) {
+    colnames(annotated)[colnames(annotated) == "CpG"] <- "IlmnID"
+    }
+    gencode <- appendLmeGencodeDnaEpico(
+    annotated, annotationObject, gencodeHub
+    )
+    used <- c(available, gencode$columns)
+    data <- orderAnnotatedModelColumnsDnaEpico(
+    data = gencode$data, annotationCols = used, modelNames = modelNames
+    )
+    list(
+    data = data, used = used, missing = missing,
+    gencode = gencode$result
+    )
+}
+
+logLmeAnnotationDnaEpico <- function(result, gencodeHub, verbose, logPath) {
+    gencode_line <- if (gencodeHub) {
+    paste0(
+        "GENCODEHub resource:          ",
+        result$gencode$resource$annotationHubId,
+        " (GENCODE release ", result$gencode$release, "; ",
+        "direct=", result$gencode$counts[["annotated"]], ", ",
+        "nearest=", result$gencode$counts[["non_annotated"]], ", ",
+        "unassigned=", result$gencode$counts[["unassigned"]], ")"
+    )
+    } else {
+    "GENCODEHub resource:          disabled"
+    }
+    missing_line <- if (!length(result$missing)) {
+    "Missing annotation columns:   none"
+    } else {
+    paste(
+        "Missing annotation columns:   ",
+        paste(result$missing, collapse = ", ")
+    )
+    }
+    emitLogMinfiEwasWater(c(
+    "============================================================",
+    paste("Annotated CpG rows:          ", nrow(result$data)),
+    paste(
+        "Annotation columns used:      ",
+        paste(result$used, collapse = ", ")
+    ),
+    gencode_line, missing_line,
+    "============================================================"
+    ), verbose = verbose, log_path = logPath)
 }
 
 #' Annotate longitudinal mixed-effects summary tables with array annotation
@@ -2778,6 +3043,9 @@ buildAnnotationOmnibusTablesMethylationLME <- function(modelSummaries) {
 #' @param annotationCols Character vector or comma-separated string of
 #' annotation
 #'   columns to append.
+#' @param gencodeHub Logical. If `TRUE`, retrieve the package-managed GENCODE
+#'   gene resource from AnnotationHub and append direct gene-body and nearest
+#'   transcription-start-site annotations. This requires GRCh38 coordinates.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
 #' @param logs Logical. If `TRUE`, write the same messages to a log file.
 #' @param log_dir Character or `NULL`. Directory used for the log file when
@@ -2795,11 +3063,11 @@ buildAnnotationOmnibusTablesMethylationLME <- function(modelSummaries) {
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 #' annotation_data <- annotateMethylationLMESummaries(
-#'     modelSummaries = ex$modelSummaries,
-#'     annotationObject = ex$annotationData,
-#'     annotationCols = "Name,chr,pos",
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   modelSummaries = ex$modelSummaries,
+#'   annotationObject = ex$annotationData,
+#'   annotationCols = "Name,chr,pos",
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(annotation_data)
 #'
@@ -2807,156 +3075,264 @@ buildAnnotationOmnibusTablesMethylationLME <- function(modelSummaries) {
 annotateMethylationLMESummaries <- function(
     modelSummaries, annotationObject,
     annotationCols = c(
-        "Name", "chr", "pos", "UCSC_RefGene_Group",
-        "UCSC_RefGene_Name", "Relation_to_Island", "GencodeV41_Group"
+    "Name", "chr", "pos", "UCSC_RefGene_Group",
+    "UCSC_RefGene_Name", "Relation_to_Island", "GencodeV41_Group"
     ),
+    gencodeHub = FALSE,
     verbose = FALSE, logs = FALSE, log_dir = NULL,
-        log_file = "log_methylationLME.txt"
+    log_file = "log_methylationLME.txt"
 ) {
+    gencodeHub <- validateLogicalScalarDnaEpico(gencodeHub, "gencodeHub")
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    logs = logs, log_dir = log_dir, log_file = log_file
     )
-    fit_failures <- modelSummaries$fitFailures
-    summary_phenotypes <- modelSummaries$phenotypes
     summary_list <- modelSummaries
     if (!is.null(modelSummaries$diagnosticSummaries)) {
-        summary_list <- modelSummaries$diagnosticSummaries
+    summary_list <- modelSummaries$diagnosticSummaries
     } else if (!is.null(modelSummaries$summaries)) {
-        summary_list <- modelSummaries$summaries
+    summary_list <- modelSummaries$summaries
     }
-    if (is.null(summary_phenotypes)) {
-        summary_phenotypes <- names(summary_list)
+    phenotypes <- modelSummaries$phenotypes
+    if (is.null(phenotypes)) {
+    phenotypes <- names(summary_list)
     }
-    model_messages <- buildAnnotationModelMessagesDnaEpico(
-        modelSummaries$modelMessages
+    annotation_cols <- splitOptionMinfiEwasWater(annotationCols, sep = ",")
+    annotation_data <- coerceAnnotationDataMethylationGLM(annotationObject)
+    merged <- mergeLmeSummaryTablesDnaEpico(summary_list, modelSummaries)
+    result <- annotateLmeSummaryDataDnaEpico(
+    merged, annotation_data, annotation_cols, annotationObject,
+    gencodeHub, phenotypes
     )
-
-    annotation_cols <- splitOptionMinfiEwasWater(annotationCols,
-        sep = ","
-    )
-    annotation_df <- coerceAnnotationDataMethylationGLM(annotationObject)
-
-    cleaned_summaries <- lapply(names(summary_list), function(model_name) {
-        df <- summary_list[[model_name]]
-        if (is.null(df) || nrow(df) == 0L) {
-            return(NULL)
-        }
-        if (!all(c("CpG", "Interaction.Term", "P.value") %in%
-            colnames(df))) {
-            return(NULL)
-        }
-
-        df_split <- split(df, df$Interaction.Term)
-        model_tables <- lapply(names(df_split), function(term) {
-            sub_df <- df_split[[term]][, c("CpG", "P.value"),
-                drop = FALSE
-            ]
-            clean_term <- gsub("`", "", term, fixed = TRUE)
-            interaction_suffix <- clean_term
-            if (startsWith(clean_term, paste0(model_name, "."))) {
-                interaction_suffix <- sub(paste0(
-                    "^", escapeRegexMethylationGLM(model_name),
-                    "\\."
-                ), "", clean_term)
-            }
-            p_col <- paste0(
-                model_name, "_", interaction_suffix,
-                "_P.Value"
-            )
-            colnames(sub_df)[2] <- p_col
-            sub_df
-        })
-
-        Reduce(
-            function(x, y) merge(x, y, by = "CpG", all = TRUE),
-            model_tables
-        )
-    })
-    cleaned_summaries <- Filter(Negate(is.null), cleaned_summaries)
-
-    if (length(cleaned_summaries) == 0L) {
-        merged_summary <- data.frame(CpG = character(0))
-    } else if (length(cleaned_summaries) == 1L) {
-        merged_summary <- cleaned_summaries[[1L]]
-    } else {
-        merged_summary <- Reduce(function(x, y) {
-            merge(x, y,
-                by = "CpG",
-                all = TRUE
-            )
-        }, cleaned_summaries)
-    }
-    omnibus_tables <- buildAnnotationOmnibusTablesMethylationLME(
-        modelSummaries
-    )
-    for (omnibus_table in omnibus_tables) {
-        merged_summary <- merge(
-            merged_summary, omnibus_table,
-            by = "CpG", all = TRUE
-        )
-    }
-    p_value_columns <- grep("P\\.Value$|P\\.value$", names(merged_summary),
-        value = TRUE
-    )
-    if (length(p_value_columns) > 0L && nrow(merged_summary) > 0L) {
-        has_p_value <- apply(merged_summary[, p_value_columns, drop = FALSE],
-            1L, function(values) any(is.finite(as.numeric(values)))
-        )
-        merged_summary <- merged_summary[has_p_value, , drop = FALSE]
-    }
-    if (nrow(model_messages) > 0L) {
-        merged_summary <- merge(merged_summary, model_messages,
-            by = "CpG", all.x = TRUE
-        )
-    }
-
-    available_annotation_cols <- intersect(annotation_cols,
-        colnames(annotation_df))
-    missing_annotation_cols <- setdiff(annotation_cols, colnames(annotation_df))
-    annotated_results <- merge(merged_summary, annotation_df[,
-        c("CpG", available_annotation_cols),
-        drop = FALSE
-    ],
-    by = "CpG",
-    all.x = TRUE
-    )
-    if ("CpG" %in% colnames(annotated_results)) {
-        colnames(annotated_results)[colnames(annotated_results) ==
-            "CpG"] <- "IlmnID"
-    }
-    annotated_results <- orderAnnotatedModelColumnsDnaEpico(
-        data = annotated_results,
-        annotationCols = available_annotation_cols,
-        modelNames = summary_phenotypes
-    )
-
-    emitLogMinfiEwasWater(
-        c(
-            "============================================================",
-            paste("Annotated CpG rows:          ", nrow(annotated_results)),
-            paste("Annotation columns used:      ",
-                paste(available_annotation_cols,
-                collapse = ", "
-            )), if (length(missing_annotation_cols) ==
-                0L) {
-                "Missing annotation columns:   none"
-            } else {
-                paste("Missing annotation columns:   ",
-                    paste(missing_annotation_cols,
-                    collapse = ", "
-                ))
-            }, "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
-    )
-
+    logLmeAnnotationDnaEpico(result, gencodeHub, verbose, log_path)
     structure(list(
-        data = annotated_results, fitFailures = fit_failures,
-        modelMessages = modelSummaries$modelMessages,
-            annotationColumnsUsed = available_annotation_cols,
-        missingAnnotationCols = missing_annotation_cols
+    data = result$data, fitFailures = modelSummaries$fitFailures,
+    modelMessages = modelSummaries$modelMessages,
+    annotationColumnsUsed = result$used,
+    missingAnnotationCols = result$missing,
+    gencodeHub = result$gencode
     ), class = "dnaEPICO_methylationLME_annotation")
+}
+
+validateLmeReportAssetsDirDnaEpico <- function(reportAssetsDir) {
+    if (!is.null(reportAssetsDir) &&
+    (!is.character(reportAssetsDir) || length(reportAssetsDir) != 1L ||
+        is.na(reportAssetsDir) || !nzchar(reportAssetsDir))) {
+    stop("reportAssetsDir must be NULL or one non-empty directory path.",
+        call. = FALSE
+    )
+    }
+    invisible(TRUE)
+}
+
+saveLmePhenotypeSummariesDnaEpico <- function(
+    modelResults, modelSummaries, outputDir
+) {
+    files <- stats::setNames(
+    character(length(modelSummaries$summaries)),
+    names(modelSummaries$summaries)
+    )
+    phenotypes <- modelResults$phenotypes
+    if (is.null(phenotypes)) {
+    phenotypes <- names(modelResults$summaryCache)
+    }
+    for (phenotype in phenotypes) {
+    file <- file.path(outputDir, paste0(phenotype, "SummaryLME.rds"))
+    artifact <- modelResults$phenotypeSummaries[[phenotype]]
+    if (is.null(artifact)) {
+        stop(
+        "A complete compact phenotype summary is unavailable for ",
+        phenotype, ".",
+        call. = FALSE
+        )
+    }
+    existing <- loadPhenotypeSummaryMethylationModels(
+        path = file, expectedSignature = artifact$signature
+    )
+    if (is.null(existing$object)) {
+        savePhenotypeSummaryMethylationModels(artifact, file)
+    }
+    files[[phenotype]] <- file
+    }
+    files
+}
+
+writeLmeTextSummariesDnaEpico <- function(
+    summaries, outputDir, enabled
+) {
+    files <- list()
+    if (!isTRUE(enabled)) {
+    return(files)
+    }
+    dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
+    for (phenotype in names(summaries)) {
+    data <- summaries[[phenotype]]
+    if (is.null(data) || !nrow(data)) {
+        next
+    }
+    if ("P.value" %in% colnames(data)) {
+        data <- data[order(data$P.value), , drop = FALSE]
+    }
+    file <- file.path(outputDir, paste0(phenotype, "SummaryLME.txt"))
+    utils::write.table(
+        data,
+        file = file, sep = "\t", row.names = FALSE, quote = FALSE
+    )
+    files[[phenotype]] <- file
+    }
+    files
+}
+
+writeSignificantLmeTablesDnaEpico <- function(
+    significant, outputDir, enabled
+) {
+    files <- list()
+    if (!isTRUE(enabled) || is.null(significant)) {
+    return(files)
+    }
+    dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
+    for (phenotype in names(significant)) {
+    hits <- significant[[phenotype]]
+    if (!length(hits)) {
+        next
+    }
+    phenotype_dir <- file.path(outputDir, phenotype)
+    dir.create(phenotype_dir, recursive = TRUE, showWarnings = FALSE)
+    files[[phenotype]] <- vapply(names(hits), function(cpg) {
+        cpg_dir <- file.path(phenotype_dir, cpg)
+        dir.create(cpg_dir, recursive = TRUE, showWarnings = FALSE)
+        file <- file.path(cpg_dir, paste0(cpg, ".txt"))
+        utils::write.table(hits[[cpg]], file = file, sep = "\t", quote = FALSE)
+        file
+    }, character(1))
+    }
+    files
+}
+
+addLmeGencodeWorkbookRowsDnaEpico <- function(
+    dictionary, metadata, annotatedResults
+) {
+    gencode <- annotatedResults$gencodeHub
+    if (is.null(gencode)) {
+    return(list(dictionary = dictionary, metadata = metadata))
+    }
+    gencode_dictionary <- gencode$dictionaryRows
+    if (is.data.frame(gencode_dictionary) && nrow(gencode_dictionary)) {
+    dictionary <- dictionary[
+        !(dictionary$Column %in% gencode_dictionary$Column), ,
+        drop = FALSE
+    ]
+    dictionary <- rbind(dictionary, gencode_dictionary)
+    }
+    gencode_metadata <- gencode$metadataRows
+    if (is.data.frame(gencode_metadata) && nrow(gencode_metadata)) {
+    metadata <- metadata[
+        !startsWith(metadata$Key, "gencode."), ,
+        drop = FALSE
+    ]
+    metadata <- rbind(metadata, gencode_metadata)
+    }
+    list(dictionary = dictionary, metadata = metadata)
+}
+
+addLmeVennWorkbookRowsDnaEpico <- function(
+    dictionary, metadata, vennDResults
+) {
+    if (is.null(vennDResults)) {
+    return(list(
+        dictionary = dictionary, metadata = metadata, sheets = list()
+    ))
+    }
+    if (!inherits(vennDResults, "dnaEPICO_vennD_plots")) {
+    stop("vennDResults must be a model-level Venn result.", call. = FALSE)
+    }
+    if (is.data.frame(vennDResults$metadataRows) &&
+    nrow(vennDResults$metadataRows)) {
+    metadata <- rbind(metadata, vennDResults$metadataRows)
+    }
+    if (is.data.frame(vennDResults$dictionaryRows) &&
+    nrow(vennDResults$dictionaryRows)) {
+    dictionary <- rbind(dictionary, vennDResults$dictionaryRows)
+    }
+    list(
+    dictionary = dictionary, metadata = metadata,
+    sheets = vennDResults$sheets
+    )
+}
+
+writeLmeAnnotatedWorkbookDnaEpico <- function(
+    modelResults, modelSummaries, annotatedResults, annotatedLMEOut,
+    reportAssetsDir, vennDResults
+) {
+    annotated <- if (is.null(annotatedResults$data)) {
+    annotatedResults
+    } else {
+    annotatedResults$data
+    }
+    report_table <- sortReportTableDnaEpico(annotated)
+    annotated <- report_table$data
+    file <- file.path(annotatedLMEOut, "annotatedLME.xlsx")
+    dictionary <- buildAnnotatedWorkbookDictionaryMethylationGLM(
+    columns = colnames(annotated), modelDescription = "Pvalue from LME model",
+    formulaText = modelResults$formulas, modelLabel = "LME",
+    responseLabel = inferMethylationValueLabelMethylationGLM(modelResults)
+    )
+    metadata <- buildModelWorkbookMetadataDnaEpico(
+    modelResults, modelSummaries, annotatedResults,
+    analysis = "lme"
+    )
+    rows <- addLmeGencodeWorkbookRowsDnaEpico(
+    dictionary, metadata, annotatedResults
+    )
+    rows <- addLmeVennWorkbookRowsDnaEpico(
+    rows$dictionary, rows$metadata, vennDResults
+    )
+    writeAnnotatedWorkbookMethylationGLM(
+    annotated_df = annotated, file = file, resultSheet = "annotatedLME",
+    dictionary = rows$dictionary, metadata = rows$metadata,
+    extraSheets = rows$sheets
+    )
+    sidecar <- list(
+    table = NULL, metadata = NULL, dictionary = NULL,
+    workbookMetadata = NULL
+    )
+    if (!is.null(reportAssetsDir)) {
+    sidecar <- writeReportTableSidecarDnaEpico(
+        tableData = annotated, workbookFile = file,
+        sidecarDir = reportAssetsDir, sheet = "annotatedLME",
+        idColumn = report_table$idColumn, dictionary = rows$dictionary,
+        workbookMetadata = rows$metadata
+    )
+    }
+    list(file = file, sidecar = sidecar, sheets = names(rows$sheets))
+}
+
+logLmeOutputFilesDnaEpico <- function(
+    summaryFiles, textFiles, significantFiles, workbook,
+    fitFailures, saveTxtSummaries, saveSignificantInteractions,
+    verbose, logPath
+) {
+    sidecar_line <- if (is.null(workbook$sidecar$table)) {
+    "Report table sidecar:          not requested"
+    } else {
+    paste("Report table sidecar:         ", workbook$sidecar$table)
+    }
+    text_count <- if (isTRUE(saveTxtSummaries)) length(textFiles) else 0L
+    significant_count <- if (isTRUE(saveSignificantInteractions)) {
+    sum(vapply(significantFiles, length, integer(1)))
+    } else {
+    0L
+    }
+    emitLogMinfiEwasWater(c(
+    "============================================================",
+    "Full model files written:       0",
+    paste("Compact phenotype summaries: ", length(summaryFiles)),
+    paste("Annotated results file:      ", workbook$file),
+    sidecar_line,
+    paste("Hard model errors retained:  ", nrow(fitFailures)),
+    paste("Summary text files written:   ", text_count),
+    paste("Significant interaction files:", significant_count),
+    "============================================================"
+    ), verbose = verbose, log_path = logPath)
 }
 
 #' Write optional disk outputs for longitudinal mixed-effects analyses
@@ -2977,6 +3353,8 @@ annotateMethylationLMESummaries <- function(
 #'   XLSX workbook.
 #' @param reportAssetsDir Character or `NULL`. Report results directory used for
 #'   the compressed TSV table and compact metadata sidecars.
+#' @param vennDResults Optional model-level Venn result. Its configuration
+#'   metadata and threshold tables are added before the workbook dictionary.
 #' @param saveTxtSummaries Logical. If `TRUE`, write tab-delimited summary
 #' tables.
 #' @param saveSignificantInteractions Logical. If `TRUE`, write significant
@@ -2998,31 +3376,31 @@ annotateMethylationLMESummaries <- function(
 #' @examples
 #' ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 #' annotation_data <- annotateMethylationLMESummaries(
-#'     modelSummaries = ex$modelSummaries,
-#'     annotationObject = ex$annotationData,
-#'     annotationCols = "Name,chr,pos",
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   modelSummaries = ex$modelSummaries,
+#'   annotationObject = ex$annotationData,
+#'   annotationCols = "Name,chr,pos",
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' significant_hits <- collectSignificantInteractionsMethylationLME(
-#'     modelResults = ex$modelResults,
-#'     pvalThreshold = 1,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   modelResults = ex$modelResults,
+#'   pvalThreshold = 1,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' output_paths <- writeMethylationLMEOutputs(
-#'     modelResults = ex$modelResults,
-#'     modelSummaries = ex$modelSummaries,
-#'     annotatedResults = annotation_data,
-#'     significantInteractions = significant_hits,
-#'     outputRData = file.path(ex$tempDir, "models"),
-#'     summaryTxtDir = file.path(ex$tempDir, "summary"),
-#'     significantInteractionDir = file.path(ex$tempDir, "significant"),
-#'     annotatedLMEOut = file.path(ex$tempDir, "annotated"),
-#'     saveTxtSummaries = TRUE,
-#'     saveSignificantInteractions = TRUE,
-#'     verbose = FALSE,
-#'     logs = FALSE
+#'   modelResults = ex$modelResults,
+#'   modelSummaries = ex$modelSummaries,
+#'   annotatedResults = annotation_data,
+#'   significantInteractions = significant_hits,
+#'   outputRData = file.path(ex$tempDir, "models"),
+#'   summaryTxtDir = file.path(ex$tempDir, "summary"),
+#'   significantInteractionDir = file.path(ex$tempDir, "significant"),
+#'   annotatedLMEOut = file.path(ex$tempDir, "annotated"),
+#'   saveTxtSummaries = TRUE,
+#'   saveSignificantInteractions = TRUE,
+#'   verbose = FALSE,
+#'   logs = FALSE
 #' )
 #' names(output_paths)
 #'
@@ -3031,207 +3409,49 @@ writeMethylationLMEOutputs <- function(
     modelResults, modelSummaries,
     annotatedResults, significantInteractions = NULL, outputRData,
     summaryTxtDir, significantInteractionDir, annotatedLMEOut,
-    reportAssetsDir = NULL, saveTxtSummaries = TRUE,
+    reportAssetsDir = NULL, vennDResults = NULL, saveTxtSummaries = TRUE,
     saveSignificantInteractions = FALSE,
     verbose = FALSE, logs = FALSE, log_dir = NULL,
-        log_file = "log_methylationLME.txt"
+    log_file = "log_methylationLME.txt"
 ) {
-    if (!is.null(reportAssetsDir) &&
-        (!is.character(reportAssetsDir) || length(reportAssetsDir) != 1L ||
-            is.na(reportAssetsDir) || !nzchar(reportAssetsDir))) {
-        stop("reportAssetsDir must be NULL or one non-empty directory path.",
-            call. = FALSE
-        )
-    }
+    validateLmeReportAssetsDirDnaEpico(reportAssetsDir)
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = log_dir,
-        log_file = log_file
+    logs = logs, log_dir = log_dir, log_file = log_file
     )
     dir.create(outputRData, recursive = TRUE, showWarnings = FALSE)
     dir.create(annotatedLMEOut, recursive = TRUE, showWarnings = FALSE)
-
-    model_files <- character(0)
-    summary_files <- stats::setNames(
-        character(length(modelSummaries$summaries)),
-        names(modelSummaries$summaries)
+    summary_files <- saveLmePhenotypeSummariesDnaEpico(
+    modelResults, modelSummaries, outputRData
     )
-    summary_txt_files <- list()
-    significant_files <- list()
-
-    phenotype_names <- modelResults$phenotypes
-    if (is.null(phenotype_names)) {
-        phenotype_names <- names(modelResults$summaryCache)
-    }
-    for (phenotype in phenotype_names) {
-        summary_file <- file.path(outputRData, paste0(
-            phenotype,
-            "SummaryLME.rds"
-        ))
-        artifact <- modelResults$phenotypeSummaries[[phenotype]]
-        if (is.null(artifact)) {
-            stop(
-                "A complete compact phenotype summary is unavailable for ",
-                phenotype, ".", call. = FALSE
-            )
-        }
-        existing <- loadPhenotypeSummaryMethylationModels(
-            path = summary_file,
-            expectedSignature = artifact$signature
-        )
-        if (is.null(existing$object)) {
-            savePhenotypeSummaryMethylationModels(
-                object = artifact,
-                path = summary_file
-            )
-        }
-        summary_files[[phenotype]] <- summary_file
-    }
-
-    if (isTRUE(saveTxtSummaries)) {
-        dir.create(summaryTxtDir, recursive = TRUE, showWarnings = FALSE)
-        for (phenotype in names(modelSummaries$summaries)) {
-            summary_df <- modelSummaries$summaries[[phenotype]]
-            if (is.null(summary_df) || nrow(summary_df) == 0L) {
-                next
-            }
-
-            if ("P.value" %in% colnames(summary_df)) {
-                summary_df <- summary_df[order(summary_df$P.value), ,
-                    drop = FALSE
-                ]
-            }
-
-            output_file <- file.path(summaryTxtDir, paste0(
-                phenotype,
-                "SummaryLME.txt"
-            ))
-            utils::write.table(summary_df,
-                file = output_file,
-                sep = "\t", row.names = FALSE, quote = FALSE
-            )
-            summary_txt_files[[phenotype]] <- output_file
-        }
-    }
-
-    if (isTRUE(saveSignificantInteractions) &&
-        !is.null(significantInteractions)) {
-        dir.create(significantInteractionDir,
-            recursive = TRUE,
-            showWarnings = FALSE
-        )
-        for (phenotype in names(significantInteractions)) {
-            phenotype_hits <- significantInteractions[[phenotype]]
-            if (length(phenotype_hits) == 0L) {
-                next
-            }
-
-            significant_files[[phenotype]] <- character(0)
-            phenotype_dir <- file.path(
-                significantInteractionDir,
-                phenotype
-            )
-            dir.create(phenotype_dir, recursive = TRUE, showWarnings = FALSE)
-
-            for (cpg in names(phenotype_hits)) {
-                cpg_dir <- file.path(phenotype_dir, cpg)
-                dir.create(cpg_dir, recursive = TRUE, showWarnings = FALSE)
-                output_file <- file.path(cpg_dir, paste0(
-                    cpg,
-                    ".txt"
-                ))
-                utils::write.table(phenotype_hits[[cpg]],
-                    file = output_file,
-                    sep = "\t", quote = FALSE
-                )
-                significant_files[[phenotype]] <- c(
-                    significant_files[[phenotype]],
-                    output_file
-                )
-            }
-        }
-    }
-
-    annotated_df <- annotatedResults
-    if (!is.null(annotatedResults$data)) {
-        annotated_df <- annotatedResults$data
-    }
-    report_table <- sortReportTableDnaEpico(annotated_df)
-    annotated_df <- report_table$data
-    annotated_file <- file.path(annotatedLMEOut, "annotatedLME.xlsx")
+    text_files <- writeLmeTextSummariesDnaEpico(
+    modelSummaries$summaries, summaryTxtDir, saveTxtSummaries
+    )
+    significant_files <- writeSignificantLmeTablesDnaEpico(
+    significantInteractions, significantInteractionDir,
+    saveSignificantInteractions
+    )
+    workbook <- writeLmeAnnotatedWorkbookDnaEpico(
+    modelResults, modelSummaries, annotatedResults, annotatedLMEOut,
+    reportAssetsDir, vennDResults
+    )
     fit_failures <- modelSummaries$fitFailures
     if (is.null(fit_failures)) {
-        fit_failures <- modelResults$fitFailures
+    fit_failures <- modelResults$fitFailures
     }
-    dictionary <- buildAnnotatedWorkbookDictionaryMethylationGLM(
-        columns = colnames(annotated_df),
-        modelDescription = "Pvalue from LME model",
-            formulaText = modelResults$formulas,
-        modelLabel = "LME",
-            responseLabel = inferMethylationValueLabelMethylationGLM(modelResults)
+    logLmeOutputFilesDnaEpico(
+    summary_files, text_files, significant_files, workbook,
+    fit_failures, saveTxtSummaries, saveSignificantInteractions,
+    verbose, log_path
     )
-    metadata <- buildModelWorkbookMetadataDnaEpico(
-        modelResults = modelResults,
-        modelSummaries = modelSummaries, annotatedResults = annotatedResults,
-        analysis = "lme"
-    )
-    writeAnnotatedWorkbookMethylationGLM(
-        annotated_df = annotated_df,
-        file = annotated_file, resultSheet = "annotatedLME",
-        dictionary = dictionary, metadata = metadata
-    )
-    report_sidecar <- list(
-        table = NULL, metadata = NULL, dictionary = NULL,
-        workbookMetadata = NULL
-    )
-    if (!is.null(reportAssetsDir)) {
-        report_sidecar <- writeReportTableSidecarDnaEpico(
-            tableData = annotated_df,
-            workbookFile = annotated_file, sidecarDir = reportAssetsDir,
-            sheet = "annotatedLME", idColumn = report_table$idColumn,
-            dictionary = dictionary, workbookMetadata = metadata
-        )
-    }
-
-    emitLogMinfiEwasWater(
-        c(
-            "============================================================",
-            paste("Full model files written:      ", length(model_files)),
-            paste("Compact phenotype summaries: ", length(summary_files)),
-            paste("Annotated results file:      ", annotated_file),
-            if (is.null(report_sidecar$table)) {
-                "Report table sidecar:          not requested"
-            } else {
-                paste("Report table sidecar:         ", report_sidecar$table)
-            },
-            paste("Hard model errors retained:  ", nrow(fit_failures)),
-            if (isTRUE(saveTxtSummaries)) {
-                paste("Summary text files written:   ",
-                    length(summary_txt_files))
-            } else {
-                "Summary text files written:   0"
-            }, if (isTRUE(saveSignificantInteractions)) {
-                paste("Significant interaction files:", sum(vapply(
-                    significant_files,
-                    length, integer(1)
-                )))
-            } else {
-                "Significant interaction files: 0"
-            }, "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
-    )
-
-    structure(
-        list(
-            modelFiles = model_files, summaryFiles = summary_files,
-            summaryTxtFiles = summary_txt_files,
-                significantInteractionFiles = significant_files,
-            annotatedLME = annotated_file,
-            annotatedLMEText = report_sidecar$table,
-                annotatedLMEReportMetadata = report_sidecar$metadata,
-            annotatedLMEDictionary = report_sidecar$dictionary,
-                annotatedLMEMetadata = report_sidecar$workbookMetadata
-        ),
-        class = "dnaEPICO_methylationLME_paths"
-    )
+    structure(list(
+    modelFiles = character(0), summaryFiles = summary_files,
+    summaryTxtFiles = text_files,
+    significantInteractionFiles = significant_files,
+    annotatedLME = workbook$file,
+    annotatedLMEText = workbook$sidecar$table,
+    annotatedLMEReportMetadata = workbook$sidecar$metadata,
+    annotatedLMEDictionary = workbook$sidecar$dictionary,
+    annotatedLMEMetadata = workbook$sidecar$workbookMetadata,
+    vennDSheets = workbook$sheets
+    ), class = "dnaEPICO_methylationLME_paths")
 }

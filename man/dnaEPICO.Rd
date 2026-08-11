@@ -40,7 +40,12 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Paul Ruiz \email{ruizpint@qut.edu.au} (\href{https://orcid.org/0009-0007-6714-3566}{ORCID})
+\strong{Maintainer}: Paul Ruiz Pinto \email{ruizpint@qut.edu.au} (\href{https://orcid.org/0009-0007-6714-3566}{ORCID})
+
+Authors:
+\itemize{
+  \item Paul Ruiz Pinto \email{ruizpint@qut.edu.au} (\href{https://orcid.org/0009-0007-6714-3566}{ORCID})
+}
 
 }
 \keyword{package}

@@ -70,13 +70,13 @@ results produced by \code{fitMethylationGLMModels()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 summary_results <- summarizeMethylationGLMModels(
-    modelResults = ex$modelResults,
-    preparedData = ex$preparedData,
-    summaryResidualSD = TRUE,
-    summaryPval = NA,
-    nCores = 1,
-    verbose = FALSE,
-    logs = FALSE
+  modelResults = ex$modelResults,
+  preparedData = ex$preparedData,
+  summaryResidualSD = TRUE,
+  summaryPval = NA,
+  nCores = 1,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(summary_results$summaries)
 

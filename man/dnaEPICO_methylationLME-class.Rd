@@ -24,9 +24,14 @@ annotations, and optional saved files.
 \code{\link[=plotMethylationLMEDiagnostics]{plotMethylationLMEDiagnostics()}}.}
 \item{annotation}{Object returned by
 \code{\link[=annotateMethylationLMESummaries]{annotateMethylationLMESummaries()}}.}
+\item{manhattanPlots}{Versioned circular and rectangular Manhattan plots
+for every raw p-value column in the annotated results.}
+\item{vennDPlots}{Requested coefficient and omnibus model-level Venn plots,
+worksheet tables, and label mappings.}
 \item{savedFiles}{Object returned by
 \code{\link[=writeMethylationLMEOutputs]{writeMethylationLMEOutputs()}} when \code{saveOutputs = TRUE}, otherwise
 \code{NULL}.}
+\item{runSettings}{High-level settings recorded for the analysis.}
 }
 }
 

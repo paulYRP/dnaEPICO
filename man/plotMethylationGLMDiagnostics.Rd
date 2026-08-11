@@ -66,11 +66,11 @@ by \code{summarizeMethylationGLMModels()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 diagnostic_plots <- plotMethylationGLMDiagnostics(
-    modelSummaries = ex$modelSummaries,
-    preparedData = ex$preparedData,
-    display = FALSE,
-    verbose = FALSE,
-    logs = FALSE
+  modelSummaries = ex$modelSummaries,
+  preparedData = ex$preparedData,
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(diagnostic_plots$plots)
 

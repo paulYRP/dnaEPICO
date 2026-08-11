@@ -1,38 +1,44 @@
 ---
 title: "Pipeline Use of dnaEPICO"
 author:
-  - name: Paul Ruiz
-    affiliation:
-      - Queensland University of Technology
-    email: ruizpint@qut.edu.au
+    -
+        name: Paul Ruiz
+        affiliation:
+            - Queensland University of Technology
+        email: ruizpint@qut.edu.au
 output:
-  BiocStyle::html_document:
-    self_contained: yes
-    toc: true
-    toc_float: true
-    toc_depth: 2
+    BiocStyle::html_document:
+        self_contained: yes
+        toc: true
+        toc_float: true
+        toc_depth: 2
 date: "`r Sys.Date()`"
 package: dnaEPICO
 bibliography: dnaEPICO.bib
 vignette: >
-  %\VignetteIndexEntry{3. Pipeline Use of dnaEPICO}
-  %\VignetteEncoding{UTF-8}
-  %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{3. Pipeline Use of dnaEPICO}
+    %\VignetteEncoding{UTF-8}
+    %\VignetteEngine{knitr::rmarkdown}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 startTime <- Sys.time()
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>",
-    crop = NULL
+    crop = NULL,
+    message = FALSE,
+    warning = FALSE
 )
 
 library(dnaEPICO)
 
 can_run_preprocessing <- requireNamespace("minfiData", quietly = TRUE) &&
     requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
-    requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)
+    requireNamespace(
+        "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+        quietly = TRUE
+    )
 
 can_run_sva <- can_run_preprocessing
 can_run_glm <- requireNamespace(
@@ -58,7 +64,7 @@ below explains how to cite `dnaEPICO` depending on the functions you use.
 This citation guidance is adapted from the vignettes and user guides of
 [minfi](https://github.com/hansenlab/minfi/blob/devel/vignettes/minfi.Rmd),
 [ENmix](https://github.com/xuz1/ENmix/blob/master/vignettes/ENmix.Rmd), and
-[wateRmelon](https://github.com/schalkwyk/wateRmelon/blob/master/vignettes/references.bib).
+[wateRmelon](https://github.com/schalkwyk/wateRmelon).
 
 - If you use `make f3 MODEL=model1`, please cite @minfi; @minfiEPIC; @ENmix;
     @wateRmelon; @SWAN; @funnorm; @noob; @quantile; @ewastools.
@@ -74,9 +80,9 @@ This citation guidance is adapted from the vignettes and user guides of
 `r Biocpkg("dnaEPICO")` is built on core Bioconductor infrastructure for
 high-dimensional genomic data, with a focus on Illumina DNA methylation arrays.
 This vignette assumes familiarity with a general DNA methylation workflow. For
-an introduction, see
-[this tutorial](https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html),
-which covers the main concepts and analysis steps.
+an introduction, see this tutorial:
+<https://paulyrp.github.io/2025-cpgpneurogenomics-workshop/tutorial.html>.
+It covers the main concepts and analysis steps.
 
 Preprocessing and quality control are performed using established Bioconductor
 tools, including `r Biocpkg("minfi")`, `r Biocpkg("ENmix")`, and
@@ -93,22 +99,44 @@ For an introduction to Bioconductor, see the
 
 The lists of excluded probes depend on the Illumina methylation-array platform.
 
-- For **Illumina HumanMethylationEPIC v2.0**, use the cross-reactive probe-exclusion file from [Peters et al. (2024)](https://springernature.figshare.com/articles/dataset/Additional_file_8_of_Characterisation_and_reproducibility_of_the_HumanMethylationEPIC_v2_0_BeadChip_for_DNA_methylation_profiling/26689706?file=48531323).
+- For **Illumina HumanMethylationEPIC v2.0**, use the cross-reactive
+    probe-exclusion file from
+    [Peters et al. (2024)](https://doi.org/10.1186/s12864-024-10027-5).
 
-- For **Illumina MethylationEPIC**, also known as the **850k array**, use the probe-exclusion resources from [Pidsley et al. (2016)](https://springernature.figshare.com/articles/dataset/Additional_file_1_Table_S1_of_Critical_evaluation_of_the_Illumina_MethylationEPIC_BeadChip_microarray_for_whole-genome_DNA_methylation_profiling/4405946?file=7132334). The supplementary files commonly used together are [13059_2016_1066_MOESM1_ESM.csv](https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM1_ESM.csv), [13059_2016_1066_MOESM4_ESM.csv](https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM4_ESM.csv), [13059_2016_1066_MOESM5_ESM.csv](https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM5_ESM.csv), and [13059_2016_1066_MOESM6_ESM.csv](https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-016-1066-1/MediaObjects/13059_2016_1066_MOESM6_ESM.csv).
+- For **Illumina MethylationEPIC**, also known as the **850k array**, use
+    the probe-exclusion resources from
+    [Pidsley et al. (2016)](https://doi.org/10.1186/s13059-016-1066-1).
+    The supporting files commonly used together are
+    `13059_2016_1066_MOESM1_ESM.csv`,
+    `13059_2016_1066_MOESM4_ESM.csv`,
+    `13059_2016_1066_MOESM5_ESM.csv`, and
+    `13059_2016_1066_MOESM6_ESM.csv`.
 
-- For **Illumina HumanMethylation450k**, use the cross-reactive and polymorphic probe resources from [Chen et al. (2013)](https://figshare.com/articles/dataset/methylAnalysisDataV3_tar_gz/4800970?file=7896205).
+- For **Illumina HumanMethylation450k**, use the cross-reactive and
+    polymorphic probe resources from
+    [Chen et al. (2013)](https://doi.org/10.4161/epi.23470).
 
-- Multiple probe-exclusion files can be supplied as a semicolon-separated value in `probeExclusionPath`. `dnaEPICO` reads probe IDs from each file, uses `probeExclusionIdColumn` when supplied, or otherwise auto-detects common probe-ID columns such as `ProbeID`, `TargetID`, `IlmnID`, and `Name`. The unique union of all probe IDs is then used to filter the normalised object.
+- Multiple probe-exclusion files can be supplied as a semicolon-separated
+    value in `probeExclusionPath`. `dnaEPICO` reads probe IDs from each file,
+    uses `probeExclusionIdColumn` when supplied, or otherwise auto-detects
+    common probe-ID columns such as `ProbeID`, `TargetID`, `IlmnID`, and
+    `Name`. The unique union of all probe IDs is then used to filter the
+    normalised object.
 
-- For **EPICv2**, setting `useEpicV2Manifest = TRUE` also retrieves the expanded Peters et al. manifest from AnnotationHub resource [AH116484](https://bioconductor.org/packages/release/data/annotation/vignettes/EPICv2manifest/inst/doc/EPICv2manifest.html). Probes flagged in selected manifest columns are added to the same exclusion set. By default, probes flagged by `CH_WGBS_evidence`, `CH_BLAT`, or `MissingPos` are removed, while `MismatchPos` is retained unless explicitly enabled.
+- For **EPICv2**, setting `useEpicV2Manifest = TRUE` also retrieves the
+    expanded Peters et al. manifest from AnnotationHub resource
+    [AH116484](https://bioconductor.org/packages/EPICv2manifest). Probes
+    flagged in selected manifest columns are added to the same exclusion set.
+    By default, probes flagged by `CH_WGBS_evidence`, `CH_BLAT`, or
+    `MissingPos` are removed, while `MismatchPos` is retained unless explicitly
+    enabled.
 
 # Installation
 
 Install the development version of `r Biocpkg("dnaEPICO")` and its dependencies
 with BiocManager:
 
-```{r, eval = FALSE}
+```{r install-dnaepico, eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
     install.packages("BiocManager")
 }
@@ -118,7 +146,7 @@ BiocManager::install("paulYRP/dnaEPICO")
 BiocManager::valid()
 ```
 
-```{r, eval = FALSE, message = FALSE}
+```{r load-dnaepico, eval = FALSE, message = FALSE}
 library("dnaEPICO")
 ```
 
@@ -156,13 +184,19 @@ It writes a small phenotype table to a temporary directory, copies a small set
 of IDAT files, and records the probe-exclusion reference used during probe
 filtering.
 
-```{r preprocessing-pipeline-inputs, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
+```{r preprocessing-pipeline-inputs, eval = can_run_preprocessing}
 preprocessing_inputs <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 6L)
 
 names(preprocessing_inputs)
 preprocessing_inputs$tempDir
 basename(preprocessing_inputs$phenoFile)
-head(basename(list.files(preprocessing_inputs$idatFolder, full.names = TRUE)), 4)
+head(
+    basename(list.files(
+        preprocessing_inputs$idatFolder,
+        full.names = TRUE
+    )),
+    4
+)
 basename(preprocessing_inputs$probeExclusionPath)
 ```
 
@@ -174,7 +208,7 @@ same phenotype information already loaded into memory, `arrayType` and
 `annotationVersion` describe the array platform, and `probeExclusionPath`
 points to the probe-exclusion reference used during probe filtering.
 
-```{r preprocessing-pipeline, eval = can_run_preprocessing, message = FALSE, warning = FALSE}
+```{r preprocessing-pipeline, eval = can_run_preprocessing}
 preprocessPipelineResult <- preprocessingMinfiEwasWater(
     phenoFile = preprocessing_inputs$phenoFile,
     idatFolder = preprocessing_inputs$idatFolder,
@@ -436,7 +470,8 @@ basename(unlist(phenoPipelineResult$savedFiles[c(
 
 These outputs are the files most commonly consumed by downstream modeling
 functions. `names(phenoPipelineResult$savedFiles)` shows the high-level output
-groups returned by the function. `names(phenoPipelineResult$savedFiles$timepoints)`
+groups returned by the function.
+`names(phenoPipelineResult$savedFiles$timepoints)`
 lists the available timepoint-specific subsets. The `basename(...)` calls then
 show examples of the concrete files written for one timepoint and for the
 combined outputs. In this structure, `combinedPhenoMethylation` is the merged
@@ -547,6 +582,11 @@ Arguments:
     workload, detected CPUs, and available memory.
 - `annotationPackage` and `annotationCols` control which array annotation is
     merged into the final summary tables.
+- `gencodeHub = TRUE` retrieves the package-managed gene resource from
+    AnnotationHub and adds direct gene-body and nearest strand-specific TSS
+    annotations. This option requires a GRCh38 array annotation; the GENCODE
+    release is read from the resource metadata and retained in the output
+    column names, workbook metadata, and dictionary.
 - `outputRData`, `outputPlots`, `significantCpGDir`, `summaryTxtDir`, and
     `annotatedGLMOut` define where compact phenotype summaries, plots, text
     summaries, and the
@@ -667,6 +707,8 @@ Arguments:
 - `annotationPackage`, `annotationCols`, and `annotatedLMEOut` define the
     annotation resources and output location for the final longitudinal summary
     workbook.
+- `gencodeHub = TRUE` applies the same release-aware AnnotationHub annotation
+    to lmerTest/lme4 and nlme results when the array coordinates use GRCh38.
 - `reportAssetsDir` writes the compressed longitudinal report table directly
     into the report project rather than beside the workbook.
 - `resumeFromSummary = TRUE` reuses a complete phenotype summary only when it
@@ -713,7 +755,9 @@ be passed directly.
 
 When running this section from an R session, `dnamReport()` still needs the
 Quarto command line interface because the function renders the `.qmd` files into
-the final website. Check whether R can find Quarto with:
+the final website. Quarto is not required to install or load `dnaEPICO`, or to
+run its preprocessing and statistical-modeling functions. Check whether R can
+find Quarto with:
 
 ```{r quarto-check-r, eval = FALSE}
 Sys.which("quarto")
@@ -890,7 +934,8 @@ Common arguments in this longitudinal stage are:
 - `inputPheno` for the combined longitudinal phenotype-plus-beta object
 - `personVar` for the participant identifier used in the random effect
 - `timeVar` for repeated-measures summaries and preprocessing checks
-- `phenotypes`, `covariates`, and optional `interactionTerm` for the fixed-effect
+- `phenotypes`, `covariates`, and optional `interactionTerm` for the
+    fixed-effect
     structure
 - `prsMap` for phenotype-specific PRS terms
 - `cpgLimit` and `nCores` for computational control
@@ -898,9 +943,11 @@ Common arguments in this longitudinal stage are:
 
 # Makefile use
 
-The workflow requires GNU Make 4.3 or later and `Rscript` on the system path.
-Report targets also require Quarto. The exported rules use relative paths and
-support project directories containing spaces. A minimal layout is:
+Running the exported workflow requires GNU Make 4.3 or later and `Rscript` on
+the system path. Report targets also require Quarto. GNU Make and Quarto are not
+required to install or load `dnaEPICO`; they support the exported workflow and
+report-rendering features, respectively. The exported rules use relative paths
+and support project directories containing spaces. A minimal layout is:
 
 ```text
 my_project/
@@ -973,6 +1020,38 @@ These targets dispatch every model listed in `MODELS`:
 - `make f3lme_models` runs the `f3lme` route for each declared model.
 - `make models` runs the full `all` pipeline for each declared model.
 
+Model-level Venn output is disabled when its Makefile values are `NULL`. Set
+`VENND_GLM_PHENOTYPES` or `VENND_LME_PHENOTYPES` to comma-separated phenotype
+names to compare all coefficient p-value columns generated for those
+phenotypes. A factor or interaction phenotype therefore contributes every
+applicable coefficient column; the interaction variable is not repeated in the
+selection. Optional `VENND_GLM_LABELS` and `VENND_LME_LABELS` values are applied
+in that expanded coefficient order and retain their supplied letter case.
+
+Omnibus p-values are selected independently with
+`VENND_GLM_OMNIBUS_PHENOTYPES` or `VENND_LME_OMNIBUS_PHENOTYPES`, with optional
+positional labels in the corresponding `*_OMNIBUS_LABELS` value. These options
+require the relevant omnibus test to be enabled. Each requested analysis writes
+nominal and genome-wide UCSC and release-labelled GENCODE figures in
+`figures/<model>/methylationGLM` or `figures/<model>/methylationLME`. Nominal,
+suggestive, and genome-wide membership tables are added to the annotated
+workbook between `metadata` and the final `dictionary` sheet. Venn progress and
+errors are retained in the corresponding model-analysis log. When four or more
+sets are resolved, a ranked intersection figure accompanies each Venn diagram
+to keep the overlap counts readable.
+
+Manhattan plots and Venn membership use the same `9e-8` genome-wide
+significance threshold. This threshold controls figure classifications and
+membership tables; it does not alter model p-values or their FDR adjustment.
+
+Set `GENCODE_HUB = TRUE` for a GRCh38 model when GENCODE output is required.
+The R functions retrieve the internal AnnotationHub resource ID, validate its
+assembly and gene-level schema, and derive the release label from the resource
+metadata. Users do not provide a separate release value or local annotation
+file. AnnotationHub uses its normal local cache after the first retrieval.
+`GENCODE_HUB = FALSE` performs no GENCODE retrieval. Models using an hg19 array
+annotation, including the 450K hg19 example, must keep this value `FALSE`.
+
 Status and cleanup targets are available for routine use:
 
 ```bash
@@ -982,8 +1061,9 @@ make clean_models
 ```
 
 `status` reports available outputs, `clean` removes one model, and
-`clean_models` removes every model listed in `MODELS`. Cleanup preserves the
-shared raw input directory.
+`clean_models` removes every model listed in `MODELS`. Cleanup removes the
+corresponding directories under `data`, `rData`, `reports`, `logs`, `figures`,
+and `results`, and removes empty output roots.
 
 Each step writes outputs consumed by downstream targets. Step 2 creates
 `data/<model>/svaEnmix/.sva_complete` only after the updated `phenoLC.csv` has
@@ -1000,11 +1080,34 @@ that file target directly: the grouped targets above depend on it, so Make
 refreshes the report automatically after the required pipeline outputs are
 available.
 
-For example, the `f3` route builds the report from the Data, ENmix QC, Quality
-Control, Batch Effect, Metrics, Report, and Logs inputs. The `f4` route adds only
+For example, the `f3` route builds the report from the Data, Quality Control,
+Batch Effect, Metrics, Report, and Logs inputs; Quality Control contains both
+ENmix controls and methylation quality-control outputs. The `f4` route adds only
 the GLM page and GLM log, the `f3lme` route adds only the LME page and LME log,
 and `all` includes both modeling sections. Each report contains the model
 sections defined by its route.
+
+The report uses a responsive three-panel dashboard. The dark left panel holds
+the persistent tab navigation and the dnaEPICORM logo, the centre panel uses
+the available page width for the selected table or figure, and the right panel
+shows section notes that update for the selected figure or workbook sheet. On
+smaller displays the navigation becomes a compact top menu and the notes move
+below the main content.
+
+Figure-bearing tabs display one selected image at a time with previous/next,
+mouse-controlled zoom, scrolling, one card expansion control, and a download
+link outside the image region. Workbook tabs provide a sheet selector without
+loading every sheet into one visible panel. Package-generated plots adapt point
+density, labels, dimensions, and longitudinal traces to the number of samples
+or CpGs, while minfi, limma, and ENmix plots retain their established plotting
+methods.
+
+The generated figures contain axis labels, legends, thresholds, and statistical
+data labels where required, but no embedded title or descriptive caption. The
+corresponding report card supplies the figure title, and explicit file names
+identify the analysis, variable, diagnostic, annotation source, and version as
+applicable. SVA technical-factor association figures are omitted when no
+association can be estimated, with the condition retained in the analysis log.
 
 The report target reads the same types of outputs generated in the examples
 above, organised under the Makefile project layout: the phenotype table in
@@ -1039,7 +1142,8 @@ export QUARTO_BIN=/full/path/to/quarto
 
 # Full exported Makefile
 
-The full Makefile exported by `extractMake()` is shown below. Adapt this template
+The full Makefile exported by `extractMake()` is shown below. Adapt this
+template
 for the project before running the pipeline in the target analysis environment.
 
 ```{r makefile-template-full, echo = FALSE, results = "asis"}
@@ -1095,7 +1199,7 @@ These parameters are shared across multiple workflow steps.
 
 ### Step 1 to Step 5 shared parameters
 
-- `PHENO_FILE`: input phenotype table used to start the workflow.
+- `SEED`: seed used for reproducible operations in the workflow.
 - `SEP_TYPE`: optional separator used when reading text files; `NULL` uses the
     default comma separator.
 - `SAMPLE_ID`: phenotype column used to align samples.
@@ -1107,6 +1211,9 @@ These parameters are shared across multiple workflow steps.
 - `TIFF_WIDTH`, `TIFF_HEIGHT`, and `TIFF_RES`: default plot dimensions and
     resolution.
 - `SEX_COLUMN`: phenotype column used for sex-based checks and prediction.
+- `REMOVE_SEX_MISMATCH`: `FALSE` retains and reports confirmed sex mismatches;
+    `TRUE` removes samples only when reported and methylation-predicted sex are
+    both known and disagree. Samples with missing or unknown sex are retained.
 - `SENTRIX_ID_COLUMN` and `SENTRIX_POSITION_COLUMN`: chip-position metadata
     used by the SVA stage.
 - `BASENAME_COLUMN`: column holding the array basename.
@@ -1119,13 +1226,6 @@ These parameters are shared across multiple workflow steps.
 
 ### Step 4 and Step 5 modeling parameters
 
-- `COVARIATES_GLM` and `COVARIATES_LME`: comma-separated adjustment variables
-    included in the GLM and LME analyses, respectively.
-- `FACTOR_VARS_GLM` and `FACTOR_VARS_LME`: variables treated as categorical in
-    the GLM and LME analyses, respectively.
-- `SCALE_VARS_GLM` and `SCALE_VARS_LME`: numeric fixed-effect variables centred
-    and divided by their sample standard deviations in the corresponding
-    analysis; `NULL` keeps the variables on their original scales.
 - `CPG_PREFIX`: prefix used to identify CpG columns.
 - `CPG_LIMIT`: optional cap on the number of CpGs processed; `NA` uses all.
 - `PRS_MAP`: optional mapping from phenotype names to PRS variables; `NULL`
@@ -1144,6 +1244,9 @@ These parameters are shared across multiple workflow steps.
 - `PADJ_METHOD`: multiple-testing correction method.
 - `ANNOTATION_PACKAGE`: array annotation package used for annotated summaries.
 - `ANNOTATION_COLS`: annotation fields to merge into output tables.
+- `GENCODE_HUB`: `TRUE` adds the package-managed release-aware GENCODE
+    AnnotationHub resource to GRCh38 GLM and LME workbooks; `FALSE` leaves the
+    array annotation unchanged.
 
 ## Step 1 parameters
 
@@ -1164,9 +1267,6 @@ These parameters are shared across multiple workflow steps.
 - `MAF_THRESHOLD`: minor-allele-frequency threshold used during SNP filtering.
 - `PLOT_GROUP_VAR`: phenotype variable used for grouped QC plots.
 - `LC_REF`: reference panel used for cell-type estimation.
-- `REMOVE_SEX_MISMATCH`: `FALSE` retains and reports confirmed sex mismatches;
-    `TRUE` removes samples only when reported and methylation-predicted sex are
-    both known and disagree. Samples with missing or unknown sex are retained.
 
 These values control the main preprocessing and filtering choices in
 `preprocessingMinfiEwasWater()`.
@@ -1187,17 +1287,19 @@ phenotype file.
 - `TIMEPOINTS`: comma-separated timepoints exported separately.
 - `COMBINE_TIMEPOINTS`: comma-separated timepoints combined into the
     longitudinal object, or `NULL` to skip the combined object.
-- `METHYLATION_SCALE`: methylation metric used for the merged GLM/LME input.
-    `Beta` writes `phenoB*`, `M` writes `phenoM*`, and `CN` writes `phenoCN*`;
-    scale input is case-insensitive.
 
 These values determine how `preprocessingPheno()` splits and recombines the
-phenotype-methylation data.
+phenotype-methylation data. The shared `METHYLATION_SCALE` value selects beta,
+M-value, or copy-number inputs and is interpreted case-insensitively.
 
 ## Step 4 parameters
 
 - `PHENOTYPES_GLM`: comma-separated phenotype variables that will be modelled
     one at a time by `methylationGLM()`.
+- `COVARIATES_GLM`: comma-separated adjustment variables included in each GLM.
+- `FACTOR_VARS_GLM`: GLM variables treated as categorical.
+- `SCALE_VARS_GLM`: numeric GLM fixed-effect variables centred and divided by
+    their sample standard deviations; `NULL` retains their original scales.
 - `GLM_LIBS`: GLM implementation used by `methylationGLM()`.
 - `INTERACTION_GLM`: optional interaction term added to the fixed-effect part
     of the GLM; `NULL` omits the interaction.
@@ -1208,6 +1310,12 @@ phenotype-methylation data.
 - `SAVE_SIGNIFICANT_CPGS`: whether tables of significant CpGs are exported.
 - `SIGNIFICANT_CPG_PVAL`: p-value threshold used for those significant-CpG
     exports.
+- `VENND_GLM_PHENOTYPES`: phenotype names whose coefficient p-value columns are
+    compared in GLM Venn outputs; `NULL` disables coefficient Venn output.
+- `VENND_GLM_LABELS`: optional labels applied in the expanded coefficient order.
+- `VENND_GLM_OMNIBUS_PHENOTYPES`: phenotype names whose omnibus p-values are
+    compared; `NULL` disables omnibus Venn output.
+- `VENND_GLM_OMNIBUS_LABELS`: optional labels for the selected omnibus sets.
 - Annotated GLM rows require at least one returned coefficient or omnibus
     p-value. Native glm2 and omnibus-test conditions are written to the
     phenotype-specific `Model.Message` column and aggregate availability counts
@@ -1217,6 +1325,10 @@ phenotype-methylation data.
 
 - `PHENOTYPES_LME`: comma-separated phenotype variables that will be modelled
     one at a time by `methylationLME()`.
+- `COVARIATES_LME`: comma-separated adjustment variables included in each LME.
+- `FACTOR_VARS_LME`: LME variables treated as categorical.
+- `SCALE_VARS_LME`: numeric LME fixed-effect variables centred and divided by
+    their sample standard deviations; `NULL` retains their original scales.
 - `PERSON_VAR`: participant identifier used as the random effect grouping
     factor.
 - `LME_LIBS`: mixed-effects libraries used by `methylationLME()`.
@@ -1234,18 +1346,24 @@ phenotype-methylation data.
     exported.
 - `SIGNIFICANT_INTERACTION_PVAL`: p-value threshold for those exported
     interaction results.
+- `VENND_LME_PHENOTYPES`: phenotype names whose coefficient p-value columns are
+    compared in LME Venn outputs; `NULL` disables coefficient Venn output.
+- `VENND_LME_LABELS`: optional labels applied in the expanded coefficient order.
+- `VENND_LME_OMNIBUS_PHENOTYPES`: phenotype names whose omnibus p-values are
+    compared; `NULL` disables omnibus Venn output.
+- `VENND_LME_OMNIBUS_LABELS`: optional labels for the selected omnibus sets.
 - Annotated LME rows require at least one returned coefficient or omnibus
     p-value. Native lmerTest/lme4 or nlme conditions are written to the
     phenotype-specific `Model.Message` column and aggregate availability counts
     are written to metadata.
 
-## Template convention 
+## Template convention
 
-The template uses `NA` for optional numeric limits or filters where the meaning 
-is "use all" or "keep all", and use `NULL` when an optional separator, variable, 
-path, mapping, or model term should be absent. `CHUNK_SIZE` uses `NULL` for 
-automatic chunking because it disables a user-specified tuning value rather than 
-applying a filter.
+The template uses `NA` for optional numeric limits or filters where the meaning
+is "use all" or "keep all", and `NULL` when an optional separator, variable,
+path, mapping, or model term should be absent. `CHUNK_SIZE` uses `NULL` for
+automatic chunking because this disables a user-specified tuning value rather
+than applying a filter.
 
 ## Include pipeline from dnaEPICO
 
@@ -1272,20 +1390,20 @@ file-based workflow supports reproducible multi-step execution.
 
 Date the vignette was generated.
 
-```{r, echo = FALSE}
+```{r vignette-date, echo = FALSE}
 Sys.time()
 ```
 
 Wallclock time spent generating the vignette.
 
-```{r, echo = FALSE}
+```{r vignette-wallclock, echo = FALSE}
 totalTime <- diff(c(startTime, Sys.time()))
 round(totalTime, digits = 3)
 ```
 
 `R` session information.
 
-```{r, echo = FALSE}
+```{r vignette-session-info, echo = FALSE}
 sessionInfo()
 ```
 

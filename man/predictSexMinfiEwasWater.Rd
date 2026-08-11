@@ -48,12 +48,12 @@ plotted or merged into downstream phenotype tables.
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
 sex_data <- predictSexMinfiEwasWater(
-    rawData = ex$rawFiltered,
-    targets = ex$sampleData$targets,
-    SampleID = "Sample_Name",
-    sexColumn = "Sex",
-    verbose = FALSE,
-    logs = FALSE
+  rawData = ex$rawFiltered,
+  targets = ex$sampleData$targets,
+  SampleID = "Sample_Name",
+  sexColumn = "Sex",
+  verbose = FALSE,
+  logs = FALSE
 )
 names(sex_data)
 \dontshow{\}) # examplesIf}

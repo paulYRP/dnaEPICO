@@ -154,32 +154,48 @@
     viewer.dataset.initialized = "true";
 
     var key = viewer.dataset.resultKey;
+    var controlsRoot = Array.from(
+      document.querySelectorAll(".dnaepico-cpg-viewer[data-result-key]")
+    ).find(function (candidate) {
+      return candidate.dataset.resultKey === key;
+    });
+    function query(selector) {
+      return viewer.querySelector(selector) ||
+        (controlsRoot ? controlsRoot.querySelector(selector) : null);
+    }
+    function queryAll(selector) {
+      var matches = Array.from(viewer.querySelectorAll(selector));
+      if (controlsRoot) {
+        matches = matches.concat(Array.from(controlsRoot.querySelectorAll(selector)));
+      }
+      return matches;
+    }
     var manifest = window.dnaEPICOResultManifests[key];
-    var status = viewer.querySelector('[data-role="status"]');
+    var status = query('[data-role="status"]');
     if (!manifest) {
       status.textContent = "Result metadata could not be loaded.";
       status.classList.add("dnaepico-viewer-error");
       return;
     }
 
-    var head = viewer.querySelector('[data-role="head"]');
-    var body = viewer.querySelector('[data-role="body"]');
-    var pageSizeControl = viewer.querySelector('[data-role="page-size"]');
-    var pageNumberControls = Array.from(viewer.querySelectorAll('[data-role="page-number"]'));
-    var pageCounts = Array.from(viewer.querySelectorAll('[data-role="page-count"]'));
-    var identifierSearch = viewer.querySelector('[data-role="cpg-search"]');
-    var filterColumn = viewer.querySelector('[data-role="filter-column"]');
-    var filterOperator = viewer.querySelector('[data-role="filter-operator"]');
-    var filterValue = viewer.querySelector('[data-role="filter-value"]');
-    var filterSummary = viewer.querySelector('[data-role="filter-summary"]');
+    var head = query('[data-role="head"]');
+    var body = query('[data-role="body"]');
+    var pageSizeControl = query('[data-role="page-size"]');
+    var pageNumberControls = queryAll('[data-role="page-number"]');
+    var pageCounts = queryAll('[data-role="page-count"]');
+    var identifierSearch = query('[data-role="cpg-search"]');
+    var filterColumn = query('[data-role="filter-column"]');
+    var filterOperator = query('[data-role="filter-operator"]');
+    var filterValue = query('[data-role="filter-value"]');
+    var filterSummary = query('[data-role="filter-summary"]');
     var buttons = {
-      first: Array.from(viewer.querySelectorAll('[data-role="first"]')),
-      previous: Array.from(viewer.querySelectorAll('[data-role="previous"]')),
-      next: Array.from(viewer.querySelectorAll('[data-role="next"]')),
-      last: Array.from(viewer.querySelectorAll('[data-role="last"]')),
-      find: viewer.querySelector('[data-role="find-cpg"]'),
-      applyFilter: viewer.querySelector('[data-role="apply-filter"]'),
-      clearFilter: viewer.querySelector('[data-role="clear-filter"]')
+      first: queryAll('[data-role="first"]'),
+      previous: queryAll('[data-role="previous"]'),
+      next: queryAll('[data-role="next"]'),
+      last: queryAll('[data-role="last"]'),
+      find: query('[data-role="find-cpg"]'),
+      applyFilter: query('[data-role="apply-filter"]'),
+      clearFilter: query('[data-role="clear-filter"]')
     };
     var itemSingular = manifest.itemSingular || "row";
     var itemPlural = manifest.itemPlural || "rows";
@@ -210,7 +226,7 @@
       filterOperator.value = "lte";
     }
 
-    var downloads = viewer.querySelector('[data-role="downloads"]');
+    var downloads = query('[data-role="downloads"]');
     (manifest.downloads || []).forEach(function (download) {
       downloads.appendChild(makeDownloadLink(download.href, download.label));
     });
@@ -260,7 +276,7 @@
       return loadIndexedRows(manifest, filteredIndices.slice(start, end));
     }
 
-    async function renderPage(requestedPage) {
+    async function renderPage(requestedPage, revealGlobalIndex) {
       var count = totalPages();
       currentPage = Math.min(Math.max(1, Number(requestedPage) || 1), count);
       updateControls();
@@ -278,8 +294,13 @@
           return;
         }
         var fragment = document.createDocumentFragment();
-        rows.forEach(function (row) {
+        rows.forEach(function (row, rowOffset) {
           var tr = document.createElement("tr");
+          var visibleIndex = start + rowOffset;
+          var globalIndex = filteredIndices === null ?
+            visibleIndex : filteredIndices[visibleIndex];
+          tr.dataset.globalIndex = String(globalIndex);
+          tr.tabIndex = -1;
           row.forEach(function (value) {
             var td = document.createElement("td");
             td.textContent = value == null ? "" : String(value);
@@ -288,6 +309,25 @@
           fragment.appendChild(tr);
         });
         body.replaceChildren(fragment);
+        if (Number.isInteger(revealGlobalIndex)) {
+          var matchedRow = body.querySelector(
+            '[data-global-index="' + String(revealGlobalIndex) + '"]'
+          );
+          if (matchedRow) {
+            matchedRow.classList.add("dnaepico-viewer-match");
+            matchedRow.setAttribute("aria-current", "true");
+            window.requestAnimationFrame(function () {
+              var reduceMotion = window.matchMedia &&
+                window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+              matchedRow.scrollIntoView({
+                block: "center",
+                inline: "nearest",
+                behavior: reduceMotion ? "auto" : "smooth"
+              });
+              matchedRow.focus({ preventScroll: true });
+            });
+          }
+        }
         if (rowCount) {
           var label = rowCount === 1 ? itemSingular : itemPlural;
           status.textContent = "Showing " + formatCount(start + 1) + "–" +
@@ -410,7 +450,12 @@
             status.textContent = "The identifier exists but is excluded by the current filter.";
             return;
           }
-          await renderPage(Math.floor(visibleIndex / pageSize()) + 1);
+          await renderPage(
+            Math.floor(visibleIndex / pageSize()) + 1,
+            globalIndex
+          );
+          status.textContent = "Found " +
+            String(rows[localIndex][idIndex]) + ".";
           return;
         }
       }
@@ -451,9 +496,26 @@
         buttons.applyFilter.click();
       }
     });
+    function commitPageNumber(control) {
+      var value = Number(control.value);
+      if (!Number.isFinite(value) || value < 1 || value > totalPages()) {
+        updateControls();
+        status.textContent = "Enter a page from 1 to " +
+          formatCount(totalPages()) + ".";
+        return;
+      }
+      renderPage(Math.floor(value));
+    }
+
     pageNumberControls.forEach(function (control) {
       control.addEventListener("change", function () {
-        renderPage(control.value);
+        commitPageNumber(control);
+      });
+      control.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          commitPageNumber(control);
+        }
       });
     });
     pageSizeControl.addEventListener("change", function () {
@@ -464,7 +526,14 @@
   }
 
   function initializeAll() {
-    document.querySelectorAll(".dnaepico-cpg-viewer").forEach(initializeViewer);
+    document.querySelectorAll(".dnaepico-result-content[data-result-key]").forEach(function (viewer) {
+      viewer.addEventListener("dnaepico:activate-viewer", function () {
+        initializeViewer(viewer);
+      });
+      if (!viewer.closest("[hidden]")) {
+        initializeViewer(viewer);
+      }
+    });
   }
 
   if (document.readyState === "loading") {

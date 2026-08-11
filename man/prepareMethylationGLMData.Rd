@@ -75,13 +75,13 @@ single in-memory object for downstream helpers.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 prepared_data <- prepareMethylationGLMData(
-    inputPheno = ex$inputPath,
-    phenotypes = "status",
-    covariates = "sex,age",
-    factorVars = "status,sex",
-    cpgLimit = 2,
-    verbose = FALSE,
-    logs = FALSE
+  inputPheno = ex$inputPath,
+  phenotypes = "status",
+  covariates = "sex,age",
+  factorVars = "status,sex",
+  cpgLimit = 2,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(prepared_data)
 

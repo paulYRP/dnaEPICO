@@ -54,10 +54,10 @@ from the object returned by \code{prepareMethylationGLMData()}.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 distribution_plots <- plotMethylationGLMDistributions(
-    preparedData = ex$preparedData,
-    display = FALSE,
-    verbose = FALSE,
-    logs = FALSE
+  preparedData = ex$preparedData,
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(distribution_plots)
 

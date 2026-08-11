@@ -55,7 +55,9 @@ test_that("methylationGLM returns in-memory results quietly by default", {
     expect_equal(result$modelFits$settings$parallelBackend, "serial")
     expect_equal(nrow(result$modelFits$summaryCache$status), 2)
     expect_s3_class(result$distributionPlots$phenotypes$status, "ggplot")
+    expect_s3_class(result$designPlots$plots$missingness, "ggplot")
     expect_s3_class(result$diagnosticPlots$plots$status$qqplot, "ggplot")
+    expect_s3_class(result$manhattanPlots, "dnaEPICO_manhattan_plots")
     expect_true("IlmnID" %in% colnames(result$annotation$data))
     expect_equal(result$runSettings$analysisLabel, "methylationGLM")
     expect_equal(result$runSettings$internalResponseColumn, "beta")
@@ -200,8 +202,23 @@ test_that("methylationGLM can write outputs and logs on request", {
     )
     expect_equal(metadata$Value[metadata$Key == "backend"], "glm2")
     expect_equal(metadata$Value[metadata$Key == "fitting_function"], "glm2::glm2")
-    expect_true(file.exists(file.path(tmp, "figures", "methylationGLM", "bar_status.tiff")))
-    expect_true(file.exists(file.path(tmp, "figures", "methylationGLM", "qqplot_status.tiff")))
+    expect_true(file.exists(file.path(
+        tmp, "figures", "methylationGLM",
+        "distribution_status_categorical.tiff"
+    )))
+    expect_true(file.exists(file.path(
+        tmp, "figures", "methylationGLM",
+        "modelVariables_missingnessPercentage.tiff"
+    )))
+    expect_true(file.exists(file.path(
+        tmp, "figures", "methylationGLM",
+        "qqplot_status_coefficientPvalue.tiff"
+    )))
+    manhattan_files <- list.files(
+        file.path(tmp, "figures", "methylationGLM"),
+        pattern = "^manhattan_.*_v[12]\\.tiff$"
+    )
+    expect_gte(length(manhattan_files), 2L)
     expect_true(length(result$savedFiles$significantCpGFiles$status) >= 1)
     expect_true(all(file.exists(result$savedFiles$significantCpGFiles$status)))
 })

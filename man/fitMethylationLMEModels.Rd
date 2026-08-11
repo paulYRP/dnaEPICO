@@ -79,10 +79,10 @@ returned.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 model_results <- fitMethylationLMEModels(
-    preparedData = ex$preparedData,
-    nCores = 1,
-    verbose = FALSE,
-    logs = FALSE
+  preparedData = ex$preparedData,
+  nCores = 1,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(model_results$fits)
 

@@ -29,6 +29,16 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
     )))
     expect_true(any(makefile == "MODEL ?= model1"))
     expect_true(any(makefile == "MODELS = modelA modelB modelC"))
+    expect_true(all(c(
+        "VENND_GLM_PHENOTYPES = NULL",
+        "VENND_GLM_LABELS = NULL",
+        "VENND_GLM_OMNIBUS_PHENOTYPES = NULL",
+        "VENND_GLM_OMNIBUS_LABELS = NULL",
+        "VENND_LME_PHENOTYPES = NULL",
+        "VENND_LME_LABELS = NULL",
+        "VENND_LME_OMNIBUS_PHENOTYPES = NULL",
+        "VENND_LME_OMNIBUS_LABELS = NULL"
+    ) %in% makefile))
     expect_false(any(grepl(
         "^[A-Za-z0-9_ ?:+.-]+=[^#]*#",
         makefile
@@ -58,6 +68,44 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         fixed = TRUE
     )))
 
+    ordered_variables <- c(
+        "SEED", "SEP_TYPE", "SAMPLE_ID", "N_SAMPLES", "ARRAY_TYPE",
+        "ANNOTATION_VERSION", "IDAT_FORCE", "TIFF_WIDTH", "TIFF_HEIGHT",
+        "TIFF_RES", "SEX_COLUMN", "REMOVE_SEX_MISMATCH",
+        "SENTRIX_ID_COLUMN", "SENTRIX_POSITION_COLUMN", "BASENAME_COLUMN",
+        "TIME_VAR", "METHYLATION_SCALE", "PHENO_ORDER", "CPG_PREFIX",
+        "CPG_LIMIT", "PRS_MAP", "SUMMARY_PVAL", "N_CORES",
+        "SAVE_TXT_SUMMARIES", "RESUME_FROM_SUMMARY", "CHUNK_SIZE",
+        "FDR_THRESHOLD", "PADJ_METHOD", "ANNOTATION_PACKAGE",
+        "ANNOTATION_COLS", "GENCODE_HUB", "QC_CUTOFF", "DET_PTYPE",
+        "DET_PTHRESHOLD", "PVAL_THRESHOLD", "CHR_TO_REMOVE",
+        "SNPS_TO_REMOVE", "PROBE_EXCLUSION_FILE",
+        "PROBE_EXCLUSION_ID_COLUMN", "USE_EPICV2_MANIFEST",
+        "EPICV2_MANIFEST_CH_WGBS_EVIDENCE", "EPICV2_MANIFEST_CH_BLAT",
+        "EPICV2_MANIFEST_MISSING_POS", "EPICV2_MANIFEST_MISMATCH_POS",
+        "MAF_THRESHOLD", "PLOT_GROUP_VAR", "LC_REF", "CTRL_SVA_PERC_VAR",
+        "CTRL_SVA_FLAG", "TIMEPOINTS", "COMBINE_TIMEPOINTS",
+        "PHENOTYPES_GLM", "COVARIATES_GLM", "FACTOR_VARS_GLM",
+        "SCALE_VARS_GLM", "GLM_LIBS", "INTERACTION_GLM",
+        "GLM_OMNIBUS_TEST", "SUMMARY_RESIDUAL_SD",
+        "SAVE_SIGNIFICANT_CPGS", "SIGNIFICANT_CPG_PVAL",
+        "VENND_GLM_PHENOTYPES", "VENND_GLM_LABELS",
+        "VENND_GLM_OMNIBUS_PHENOTYPES", "VENND_GLM_OMNIBUS_LABELS",
+        "PHENOTYPES_LME", "COVARIATES_LME", "FACTOR_VARS_LME",
+        "SCALE_VARS_LME", "PERSON_VAR", "LME_LIBS",
+        "LME_CORRELATION_STRUCTURE", "LME_CORRELATION_VAR",
+        "INTERACTION_LME", "LME_OMNIBUS_TEST", "LME_OMNIBUS_DDF",
+        "SAVE_SIGNIFICANT_INTERACTIONS", "SIGNIFICANT_INTERACTION_PVAL",
+        "VENND_LME_PHENOTYPES", "VENND_LME_LABELS",
+        "VENND_LME_OMNIBUS_PHENOTYPES", "VENND_LME_OMNIBUS_LABELS"
+    )
+    variable_lines <- vapply(ordered_variables, function(variable) {
+        matches <- grep(sprintf("^%s[[:space:]]*[?]?=", variable), makefile)
+        if (length(matches)) matches[[1L]] else NA_integer_
+    }, integer(1))
+    expect_false(anyNA(variable_lines))
+    expect_identical(unname(variable_lines), sort(unname(variable_lines)))
+
     rules_file <- system.file(
         "extdata", "make", "Makefile.rules.pipeline",
         package = "dnaEPICO",
@@ -76,6 +124,16 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         rules, fixed = TRUE
     )))
     expect_true(any(grepl("$(STEP3_DERIVED): $(STEP3_PRIMARY)", rules, fixed = TRUE)))
+    expect_true(any(grepl(
+        "VENND_GLM_PHENOTYPES_ARG ?= $(call optional_text_arg,$(VENND_GLM_PHENOTYPES))",
+        rules, fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        "VENND_LME_OMNIBUS_LABELS_ARG ?= $(call optional_text_arg,$(VENND_LME_OMNIBUS_LABELS))",
+        rules, fixed = TRUE
+    )))
+    expect_false(any(grepl("report-vennD", rules, fixed = TRUE)))
+    expect_false(any(grepl("VENND_GLM_MODELS", rules, fixed = TRUE)))
     expect_true(any(grepl("dir.create", rules, fixed = TRUE)))
     expect_true(any(grepl(
         "identical(result[['status']], 'rendered')",
@@ -218,6 +276,14 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         fixed = TRUE
     )))
     expect_true(any(grepl(
+        "vennDPhenotypes = $(GLM_VENND_PHENOTYPES_RUNTIME_ARG)",
+        rules, fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        "vennDOmnibusLabels = $(LME_VENND_OMNIBUS_LABELS_RUNTIME_ARG)",
+        rules, fixed = TRUE
+    )))
+    expect_true(any(grepl(
         "resumeFromSummary = $(RESUME_FROM_SUMMARY)",
         rules,
         fixed = TRUE
@@ -240,7 +306,7 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
     expect_true(any(grepl("commandArgs(trailingOnly = TRUE)", rules,
         fixed = TRUE
     )))
-    expect_true(any(grepl("unlink(file.path(roots, model)", rules,
+    expect_true(any(grepl("statuses <- vapply(targets, unlink", rules,
         fixed = TRUE
     )))
     expect_false(any(grepl("$(abspath $(LOGS_DIR)", rules, fixed = TRUE)))

@@ -43,10 +43,10 @@ requested interaction p-value passes the chosen threshold.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 significant_hits <- collectSignificantInteractionsMethylationLME(
-    modelResults = ex$modelResults,
-    pvalThreshold = 1,
-    verbose = FALSE,
-    logs = FALSE
+  modelResults = ex$modelResults,
+  pvalThreshold = 1,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(significant_hits)
 

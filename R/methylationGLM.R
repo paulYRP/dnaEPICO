@@ -1,3 +1,291 @@
+glmInputLogLinesDnaEpico <- function(config) {
+    c(
+        "==== Starting DNAm GLM Analysis ====",
+        paste("Start time:                ", format(Sys.time())),
+        paste("Input phenotype + methylation:", config$inputPheno),
+        paste("Merged modeling object:    ",
+            config$methylationObjectPrefix, "*"
+        ),
+        paste("Output RData folder:       ", config$outputRData),
+        paste("Output logs folder:        ", config$outputLogs),
+        paste("Output plots folder:       ", config$outputPlots),
+        paste("Report assets folder:      ",
+            if (is.null(config$reportAssetsDir)) {
+                "None"
+            } else {
+                config$reportAssetsDir
+            }
+        ),
+        paste("Phenotypes:                ", config$phenotypes),
+        paste("Covariates:                ", config$covariates),
+        paste("Factor variables:          ", config$factorVars),
+        paste("Scale variables:           ",
+            if (length(normalizeScaleVariablesDnaEpico(config$scaleVars))) {
+                paste(normalizeScaleVariablesDnaEpico(config$scaleVars),
+                    collapse = ","
+                )
+            } else {
+                "None"
+            }
+        )
+    )
+}
+
+glmModelLogLinesDnaEpico <- function(config) {
+    c(
+        paste("CpG column prefix:         ", config$cpgPrefix),
+        paste("CpG limit:                 ",
+            if (is.na(config$cpgLimit)) "All" else config$cpgLimit
+        ),
+        paste("Number of cores:           ", as.integer(config$nCores)),
+        paste("Interaction term:          ",
+            if (is.null(config$interactionTerm)) {
+                "None"
+            } else {
+                config$interactionTerm
+            }
+        ),
+        paste("Omnibus test:             ", config$omnibusTest),
+        paste("Venn coefficient phenotypes:",
+            if (is.null(config$vennDPhenotypes)) "None" else {
+                paste(config$vennDPhenotypes, collapse = ",")
+            }
+        ),
+        paste("Venn omnibus phenotypes:  ",
+            if (is.null(config$vennDOmnibusPhenotypes)) "None" else {
+                paste(config$vennDOmnibusPhenotypes, collapse = ",")
+            }
+        ),
+        paste("GLM libraries:             ", config$glmLibs),
+        paste("PRS mapping:               ",
+            if (is.null(config$prsMap)) "None" else config$prsMap
+        ),
+        paste("Summary p-value filter:    ",
+            if (is.na(config$summaryPval)) "None" else config$summaryPval
+        ),
+        paste("Include Residual SD:       ",
+            isTRUE(config$summaryResidualSD)
+        ),
+        paste("Chunk size:                ",
+            if (is.null(config$chunkSize)) "Auto" else config$chunkSize
+        ),
+        paste("FDR threshold:             ", config$fdrThreshold),
+        paste("P-value adjustment method: ", config$padjmethod),
+        paste("Display plots:             ", isTRUE(config$display)),
+        paste("Save outputs:              ", isTRUE(config$saveOutputs)),
+        "============================================================"
+    )
+}
+
+logMethylationGLMStartDnaEpico <- function(config) {
+    emitLogMinfiEwasWater(
+        c(glmInputLogLinesDnaEpico(config), glmModelLogLinesDnaEpico(config)),
+        verbose = config$verbose, log_path = config$log_path
+    )
+}
+
+prepareMethylationGLMWorkflowDnaEpico <- function(config) {
+    prepared <- prepareMethylationGLMData(
+        inputPheno = config$inputPheno, phenotypes = config$phenotypes,
+        covariates = config$covariates, factorVars = config$factorVars,
+        scaleVars = config$scaleVars, cpgPrefix = config$cpgPrefix,
+        cpgLimit = config$cpgLimit,
+        methylationScale = config$methylationScale,
+        interactionTerm = config$interactionTerm, prsMap = config$prsMap,
+        verbose = config$verbose, logs = config$logs,
+        log_dir = config$outputLogs, log_file = config$log_file
+    )
+    output_dir <- if (isTRUE(config$saveOutputs)) config$outputPlots else NULL
+    distributions <- plotMethylationGLMDistributions(
+        preparedData = prepared, plotWidth = config$plotWidth,
+        plotHeight = config$plotHeight, plotDPI = config$plotDPI,
+        outputDir = output_dir, display = config$display,
+        verbose = config$verbose, logs = config$logs,
+        log_dir = config$outputLogs, log_file = config$log_file
+    )
+    design <- plotModelDesignDnaEpico(
+        preparedData = prepared, analysis = "GLM", outputDir = output_dir,
+        plotWidth = config$plotWidth, plotHeight = config$plotHeight,
+        plotDPI = config$plotDPI, display = config$display
+    )
+    list(
+        preparedData = prepared, distributionPlots = distributions,
+        designPlots = design
+    )
+}
+
+fitMethylationGLMWorkflowDnaEpico <- function(prepared, config) {
+    summary_dir <- if (isTRUE(config$saveOutputs)) config$outputRData else NULL
+    fits <- fitMethylationGLMModels(
+        preparedData = prepared, nCores = config$nCores,
+        libPath = config$libPath, glmLibs = config$glmLibs,
+        omnibusTest = config$omnibusTest, summaryDir = summary_dir,
+        resumeFromSummary = config$resumeFromSummary,
+        verbose = config$verbose, logs = config$logs,
+        log_dir = config$outputLogs, log_file = config$log_file
+    )
+    summaries <- summarizeMethylationGLMModels(
+        modelResults = fits, preparedData = prepared,
+        summaryResidualSD = config$summaryResidualSD,
+        summaryPval = config$summaryPval, padjmethod = config$padjmethod,
+        nCores = config$nCores, libPath = config$libPath,
+        glmLibs = config$glmLibs, chunkSize = config$chunkSize,
+        verbose = config$verbose, logs = config$logs,
+        log_dir = config$outputLogs, log_file = config$log_file
+    )
+    significant <- if (!isTRUE(config$saveSignificantCpGs)) NULL else {
+        collectSignificantCpGsMethylationGLM(
+            modelResults = fits, pvalThreshold = config$significantCpGPval,
+            interactionTerm = prepared$interactionTerm,
+            verbose = config$verbose, logs = config$logs,
+            log_dir = config$outputLogs, log_file = config$log_file
+        )
+    }
+    list(
+        modelFits = fits, modelSummaries = summaries,
+        significantCpGs = significant
+    )
+}
+
+diagnoseMethylationGLMWorkflowDnaEpico <- function(stages, config) {
+    output_dir <- if (isTRUE(config$saveOutputs)) config$outputPlots else NULL
+    diagnostics <- plotMethylationGLMDiagnostics(
+        modelSummaries = stages$modelSummaries,
+        preparedData = stages$preparedData,
+        fdrThreshold = config$fdrThreshold, padjmethod = config$padjmethod,
+        outputDir = output_dir, plotWidth = config$plotWidth,
+        plotHeight = config$plotHeight, plotDPI = config$plotDPI,
+        display = config$display, verbose = config$verbose,
+        logs = config$logs, log_dir = config$outputLogs,
+        log_file = config$log_file
+    )
+    annotation <- annotateMethylationGLMSummaries(
+        modelSummaries = stages$modelSummaries,
+        annotationObject = config$annotationPackage,
+        annotationCols = config$annotationCols, gencodeHub = config$gencodeHub,
+        verbose = config$verbose, logs = config$logs,
+        log_dir = config$outputLogs, log_file = config$log_file
+    )
+    list(diagnosticPlots = diagnostics, annotation = annotation)
+}
+
+plotMethylationGLMResultsDnaEpico <- function(stages, config) {
+    output_dir <- if (isTRUE(config$saveOutputs)) config$outputPlots else NULL
+    manhattan <- plotAnnotatedManhattanDnaEpico(
+        annotatedResults = stages$annotation, analysis = "GLM",
+        outputDir = output_dir, plotWidth = config$plotWidth,
+        plotHeight = config$plotHeight, plotDPI = config$plotDPI,
+        display = config$display
+    )
+    venn <- generateModelVennDDnaEpico(
+        annotatedResults = stages$annotation,
+        modelSummaries = stages$modelSummaries, analysis = "GLM",
+        vennDPhenotypes = config$vennDPhenotypes,
+        vennDLabels = config$vennDLabels,
+        vennDOmnibusPhenotypes = config$vennDOmnibusPhenotypes,
+        vennDOmnibusLabels = config$vennDOmnibusLabels,
+        outputDir = output_dir, plotWidth = config$plotWidth,
+        plotHeight = config$plotHeight, plotDPI = config$plotDPI,
+        display = config$display, verbose = config$verbose,
+        logs = config$logs, log_dir = config$outputLogs,
+        log_file = config$log_file
+    )
+    list(manhattanPlots = manhattan, vennDPlots = venn)
+}
+
+saveMethylationGLMWorkflowDnaEpico <- function(stages, config) {
+    if (!isTRUE(config$saveOutputs)) {
+        return(NULL)
+    }
+    writeMethylationGLMOutputs(
+        modelResults = stages$modelFits,
+        modelSummaries = stages$modelSummaries,
+        annotatedResults = stages$annotation,
+        significantCpGs = stages$significantCpGs,
+        outputRData = config$outputRData,
+        summaryTxtDir = config$summaryTxtDir,
+        significantCpGDir = config$significantCpGDir,
+        annotatedGLMOut = config$annotatedGLMOut,
+        reportAssetsDir = config$reportAssetsDir,
+        vennDResults = stages$vennDPlots,
+        saveTxtSummaries = config$saveTxtSummaries,
+        saveSignificantCpGs = config$saveSignificantCpGs,
+        verbose = config$verbose, logs = config$logs,
+        log_dir = config$outputLogs, log_file = config$log_file
+    )
+}
+
+newMethylationGLMResultDnaEpico <- function(stages, config, savedFiles) {
+    structure(c(stages, list(
+        savedFiles = savedFiles,
+        runSettings = list(
+            analysisLabel = "methylationGLM",
+            methylationScale = config$methylationScale,
+            methylationLabel = config$methylationLabel,
+            methylationObjectPrefix = config$methylationObjectPrefix,
+            internalResponseColumn = config$responseColumn,
+            scaleVars = stages$preparedData$scaleVars,
+            scalingMetadata = stages$preparedData$scalingMetadata,
+            omnibusTest = config$omnibusTest,
+            vennDPhenotypes = config$vennDPhenotypes,
+            vennDOmnibusPhenotypes = config$vennDOmnibusPhenotypes,
+            gencodeHub = config$gencodeHub,
+            reportAssetsDir = config$reportAssetsDir
+        )
+    )), class = "dnaEPICO_methylationGLM")
+}
+
+runMethylationGLMWorkflowDnaEpico <- function(config) {
+    prepared <- prepareMethylationGLMWorkflowDnaEpico(config)
+    fitted <- fitMethylationGLMWorkflowDnaEpico(prepared$preparedData, config)
+    stages <- c(prepared, fitted)
+    stages <- c(stages, diagnoseMethylationGLMWorkflowDnaEpico(stages, config))
+    stages <- c(stages, plotMethylationGLMResultsDnaEpico(stages, config))
+    saved_files <- saveMethylationGLMWorkflowDnaEpico(stages, config)
+    emitLogMinfiEwasWater(c(
+        "============================================================",
+        paste("Finished DNAm GLM Analysis:", format(Sys.time())),
+        if (isTRUE(config$saveOutputs)) {
+            paste("Annotated GLM output:         ", saved_files$annotatedGLM)
+        } else {
+            "Outputs were returned in memory only."
+        }, "============================================================"
+    ), verbose = config$verbose, log_path = config$log_path)
+    newMethylationGLMResultDnaEpico(stages, config, saved_files)
+}
+
+normalizeMethylationGLMConfigDnaEpico <- function(config) {
+    config$resumeFromSummary <- validateLogicalScalarDnaEpico(
+        config$resumeFromSummary, "resumeFromSummary"
+    )
+    config$gencodeHub <- validateLogicalScalarDnaEpico(
+        config$gencodeHub, "gencodeHub"
+    )
+    config$omnibusTest <-
+        validateOmnibusConfigurationMethylationGLM(config$omnibusTest)
+    config$cpgLimit <- normalizeOptionalNumericMethylationGLM(config$cpgLimit)
+    config$summaryPval <-
+        normalizeOptionalNumericMethylationGLM(config$summaryPval)
+    config$chunkSize <- normalizeChunkSizeMethylationGLM(config$chunkSize)
+    config$methylationScale <-
+        normalizeMethylationScaleDnaEpico(config$methylationScale)
+    config$methylationLabel <-
+        methylationScaleResponseLabelDnaEpico(config$methylationScale)
+    config$methylationObjectPrefix <-
+        methylationScaleObjectPrefixDnaEpico(config$methylationScale)
+    config$responseColumn <-
+        methylationScaleResponseColumnDnaEpico(config$methylationScale)
+    if (is.null(config$libPath)) {
+        config$libPath <- .libPaths()
+    }
+    config$log_file <- "log_methylationGLM.txt"
+    config$log_path <- resolveLogPathMinfiEwasWater(
+        logs = config$logs, log_dir = config$outputLogs,
+        log_file = config$log_file
+    )
+    config
+}
+
 #' Fit CpG-wise GLMs for one-timepoint methylation analyses
 #'
 #' @param inputPheno Character. Path to the merged phenotype-plus-methylation
@@ -41,6 +329,16 @@
 #'   the complete phenotype-by-interaction term, or the phenotype main effect
 #'   when `interactionTerm = NULL`, once per CpG. One-degree-of-freedom terms
 #'   are tested and therefore reproduce the corresponding coefficient p-value.
+#' @param vennDPhenotypes Character vector, comma-separated phenotype names, or
+#'   `NULL`. Selected phenotypes are expanded to all coefficient p-value
+#'   columns for model-level Venn diagrams and workbook tables.
+#' @param vennDLabels Character vector, comma-separated display labels, or
+#'   `NULL`. Labels follow the resolved coefficient order and preserve case.
+#' @param vennDOmnibusPhenotypes Character vector, comma-separated phenotype
+#'   names, or `NULL`. These use only omnibus p-value columns and require
+#'   `omnibusTest = TRUE`.
+#' @param vennDOmnibusLabels Character vector, comma-separated display labels,
+#'   or `NULL`, supplied in the resolved omnibus phenotype order.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded
 #' to
 #'   worker processes. By default, the current `.libPaths()` are used.
@@ -77,6 +375,9 @@
 #' @param annotationCols Character vector or comma-separated annotation columns
 #'   to append to the combined GLM summary table. Available columns depend on
 #'   the selected annotation package.
+#' @param gencodeHub Logical. If `TRUE`, append release-aware GENCODE gene-body
+#'   and nearest-TSS annotations obtained through AnnotationHub. The selected
+#'   array annotation must use GRCh38 coordinates.
 #' @param annotatedGLMOut Character. Directory used for the optional annotated
 #'   GLM summary XLSX workbook.
 #' @param reportAssetsDir Character or `NULL`. Report results directory used for
@@ -104,6 +405,8 @@
 #'   \item{distributionPlots}{Object returned by
 #'   [plotMethylationGLMDistributions()] describing any exploratory plots that
 #'   were generated or written.}
+#'   \item{designPlots}{Missingness and numeric-correlation plots for the
+#'   variables used in the model.}
 #'   \item{modelFits}{Object returned by [fitMethylationGLMModels()]
 #'   containing compact per-phenotype coefficient, omnibus, and condition
 #'   results.}
@@ -119,6 +422,10 @@
 #'   \item{annotation}{Object returned by
 #'   [annotateMethylationGLMSummaries()] containing the annotated combined
 #'   summary table.}
+#'   \item{manhattanPlots}{Versioned circular and rectangular Manhattan plots
+#'   for every raw p-value column in the annotated results.}
+#'   \item{vennDPlots}{Requested coefficient and omnibus model-level Venn plots,
+#'   worksheet tables, and label mappings.}
 #'   \item{savedFiles}{Object returned by [writeMethylationGLMOutputs()] when
 #'   `saveOutputs = TRUE`, otherwise `NULL`.}
 #'   \item{runSettings}{High-level run metadata including the generic analysis
@@ -140,7 +447,10 @@
 #' metadata.
 #'
 #' @examples
-#' if (requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
+#' if (requireNamespace(
+#'     "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+#'     quietly = TRUE
+#' )) {
 #'     tmp <- tempdir()
 #'     toy_path <- file.path(tmp, "phenoBT1.RData")
 #'     phenoBT1 <- data.frame(
@@ -178,244 +488,45 @@
 methylationGLM <- function(
     inputPheno = "rData/preprocessingPheno/mergeData/phenoBT1.RData",
     outputLogs = "logs", outputRData = "rData/methylationGLM/models",
-    outputPlots = "figures/methylationGLM", phenotypes = c(
-        "DASS_Depression",
-        "DASS_Anxiety", "DASS_Stress", "PCL5_TotalScore", "MHCSF_TotalScore",
-        "BRS_TotalScore"
-    ), covariates = "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,Epithelial.cells",
+    outputPlots = "figures/methylationGLM",
+    phenotypes = c(
+        "DASS_Depression", "DASS_Anxiety", "DASS_Stress",
+        "PCL5_TotalScore", "MHCSF_TotalScore", "BRS_TotalScore"
+    ),
+    covariates = paste0(
+        "Sex,Age,Ethnicity,TraumaDefinition,Leukocytes,",
+        "Epithelial.cells"
+    ),
     factorVars = "Sex,Ethnicity,TraumaDefinition", scaleVars = NULL,
     cpgPrefix = "cg", cpgLimit = NA, methylationScale = "beta",
     nCores = 32, plotWidth = 2000, plotHeight = 1000, plotDPI = 150,
     interactionTerm = NULL, omnibusTest = FALSE,
-    libPath = NULL, glmLibs = "glm2",
-    prsMap = NULL, summaryPval = NA, summaryResidualSD = TRUE,
+    vennDPhenotypes = NULL, vennDLabels = NULL,
+    vennDOmnibusPhenotypes = NULL, vennDOmnibusLabels = NULL,
+    libPath = NULL, glmLibs = "glm2", prsMap = NULL,
+    summaryPval = NA, summaryResidualSD = TRUE,
     saveSignificantCpGs = FALSE,
     significantCpGDir = "preliminaryResults/cpgs/methylationGLM",
     significantCpGPval = 0.05, saveTxtSummaries = TRUE, chunkSize = NULL,
     summaryTxtDir = "preliminaryResults/summary/methylationGLM",
     fdrThreshold = 0.05, padjmethod = "fdr",
-        annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
+    annotationPackage = "IlluminaHumanMethylationEPICv2anno.20a1.hg38",
     annotationCols = c(
         "Name", "chr", "pos", "UCSC_RefGene_Group",
         "UCSC_RefGene_Name", "Relation_to_Island", "GencodeV41_Group"
     ),
+    gencodeHub = FALSE,
     annotatedGLMOut = "data/methylationGLM", reportAssetsDir = NULL,
-    display = FALSE,
-    verbose = FALSE, logs = FALSE, saveOutputs = FALSE,
+    display = FALSE, verbose = FALSE, logs = FALSE, saveOutputs = FALSE,
     resumeFromSummary = TRUE
 ) {
-    resumeFromSummary <- validateLogicalScalarDnaEpico(
-        resumeFromSummary,
-        "resumeFromSummary"
+    config <- normalizeMethylationGLMConfigDnaEpico(
+        as.list(environment(), all.names = TRUE)
     )
-    omnibusTest <- validateOmnibusConfigurationMethylationGLM(omnibusTest)
-    cpgLimit <- normalizeOptionalNumericMethylationGLM(cpgLimit)
-    summaryPval <- normalizeOptionalNumericMethylationGLM(summaryPval)
-    chunkSize <- normalizeChunkSizeMethylationGLM(chunkSize)
-    methylationScale <- normalizeMethylationScaleDnaEpico(methylationScale)
-    methylationLabel <- methylationScaleResponseLabelDnaEpico(methylationScale)
-    methylationObjectPrefix <-
-        methylationScaleObjectPrefixDnaEpico(methylationScale)
-    responseColumn <- methylationScaleResponseColumnDnaEpico(methylationScale)
-    log_file <- "log_methylationGLM.txt"
-
-    if (is.null(libPath)) {
-        libPath <- .libPaths()
-    }
-
-    log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = outputLogs,
-        log_file = log_file
+    logMethylationGLMStartDnaEpico(config)
+    withLoggedErrorsMinfiEwasWater(
+        expr = runMethylationGLMWorkflowDnaEpico(config),
+        log_path = config$log_path, verbose = config$verbose,
+        context = "methylationGLM"
     )
-
-    emitLogMinfiEwasWater(
-        c(
-            "==== Starting DNAm GLM Analysis ====",
-            paste("Start time:                ", format(Sys.time())),
-            paste("Input phenotype + methylation:", inputPheno),
-            paste(
-                "Merged modeling object:    ", methylationObjectPrefix,
-                "*"
-            ), paste("Output RData folder:       ", outputRData),
-            paste("Output logs folder:        ", outputLogs), paste(
-                "Output plots folder:       ",
-                outputPlots
-            ), paste(
-                "Report assets folder:      ",
-                if (is.null(reportAssetsDir)) "None" else reportAssetsDir
-            ), paste(
-                "Phenotypes:                ",
-                phenotypes
-            ), paste(
-                "Covariates:                ",
-                covariates
-            ), paste(
-                "Factor variables:          ",
-                factorVars
-            ), paste(
-                "Scale variables:           ",
-                if (length(normalizeScaleVariablesDnaEpico(scaleVars))) {
-                    paste(normalizeScaleVariablesDnaEpico(scaleVars),
-                        collapse = ","
-                    )
-                } else {
-                    "None"
-                }
-            ), paste("CpG column prefix:         ", cpgPrefix),
-            paste("CpG limit:                 ",
-                if (is.na(cpgLimit)) "All" else cpgLimit),
-            paste("Number of cores:           ", as.integer(nCores)),
-            paste("Interaction term:          ",
-                if (is.null(interactionTerm)) "None" else interactionTerm),
-            paste("Omnibus test:             ", omnibusTest),
-            paste("GLM libraries:             ", glmLibs), paste(
-                "PRS mapping:               ",
-                if (is.null(prsMap)) "None" else prsMap
-            ), paste(
-                "Summary p-value filter:    ",
-                if (is.na(summaryPval)) "None" else summaryPval
-            ),
-            paste("Include Residual SD:       ", isTRUE(summaryResidualSD)),
-            paste("Chunk size:                ",
-                if (is.null(chunkSize)) "Auto" else chunkSize),
-            paste("FDR threshold:             ", fdrThreshold), paste(
-                "P-value adjustment method: ",
-                padjmethod
-            ), paste(
-                "Display plots:             ",
-                isTRUE(display)
-            ), paste(
-                "Save outputs:              ",
-                isTRUE(saveOutputs)
-            ), "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
-    )
-
-    withLoggedErrorsMinfiEwasWater(expr = {
-        preparedData <- prepareMethylationGLMData(
-            inputPheno = inputPheno,
-            phenotypes = phenotypes, covariates = covariates,
-            factorVars = factorVars, scaleVars = scaleVars,
-                cpgPrefix = cpgPrefix,
-            cpgLimit = cpgLimit, methylationScale = methylationScale,
-            interactionTerm = interactionTerm, prsMap = prsMap,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        distributionPlots <- plotMethylationGLMDistributions(
-            preparedData = preparedData,
-            plotWidth = plotWidth, plotHeight = plotHeight, plotDPI = plotDPI,
-            outputDir = if (isTRUE(saveOutputs)) {
-                outputPlots
-            } else {
-                NULL
-            }, display = display, verbose = verbose,
-            logs = logs, log_dir = outputLogs, log_file = log_file
-        )
-
-        modelFits <- fitMethylationGLMModels(
-            preparedData = preparedData,
-            nCores = nCores, libPath = libPath, glmLibs = glmLibs,
-            omnibusTest = omnibusTest,
-            summaryDir = if (isTRUE(saveOutputs)) outputRData else NULL,
-            resumeFromSummary = resumeFromSummary,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        modelSummaries <- summarizeMethylationGLMModels(
-            modelResults = modelFits,
-            preparedData = preparedData, summaryResidualSD = summaryResidualSD,
-            summaryPval = summaryPval, padjmethod = padjmethod,
-            nCores = nCores, libPath = libPath, glmLibs = glmLibs,
-            chunkSize = chunkSize, verbose = verbose, logs = logs,
-            log_dir = outputLogs, log_file = log_file
-        )
-
-        significantCpGs <- NULL
-        if (isTRUE(saveSignificantCpGs)) {
-            significantCpGs <- collectSignificantCpGsMethylationGLM(
-                modelResults = modelFits,
-                pvalThreshold = significantCpGPval,
-                    interactionTerm = preparedData$interactionTerm,
-                verbose = verbose,
-                logs = logs, log_dir = outputLogs, log_file = log_file
-            )
-        }
-
-        diagnosticPlots <- plotMethylationGLMDiagnostics(
-            modelSummaries = modelSummaries,
-            preparedData = preparedData, fdrThreshold = fdrThreshold,
-            padjmethod = padjmethod, outputDir = if (isTRUE(saveOutputs)) {
-                outputPlots
-            } else {
-                NULL
-            }, plotWidth = plotWidth, plotHeight = plotHeight,
-            plotDPI = plotDPI, display = display, verbose = verbose,
-            logs = logs, log_dir = outputLogs, log_file = log_file
-        )
-
-        annotation <- annotateMethylationGLMSummaries(
-            modelSummaries = modelSummaries,
-            annotationObject = annotationPackage,
-                annotationCols = annotationCols,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        savedFiles <- NULL
-        if (isTRUE(saveOutputs)) {
-            savedFiles <- writeMethylationGLMOutputs(
-                modelResults = modelFits,
-                modelSummaries = modelSummaries, annotatedResults = annotation,
-                significantCpGs = significantCpGs, outputRData = outputRData,
-                summaryTxtDir = summaryTxtDir,
-                    significantCpGDir = significantCpGDir,
-                annotatedGLMOut = annotatedGLMOut,
-                    reportAssetsDir = reportAssetsDir,
-                    saveTxtSummaries = saveTxtSummaries,
-                saveSignificantCpGs = saveSignificantCpGs, verbose = verbose,
-                logs = logs, log_dir = outputLogs, log_file = log_file
-            )
-        }
-
-        emitLogMinfiEwasWater(
-            c(
-                "============================================================",
-                paste("Finished DNAm GLM Analysis:", format(Sys.time())),
-                if (isTRUE(saveOutputs)) {
-                    paste("Annotated GLM output:         ",
-                        savedFiles$annotatedGLM)
-                } else {
-                    "Outputs were returned in memory only."
-                }, "============================================================"
-            ),
-            verbose = verbose, log_path = log_path
-        )
-
-        structure(
-            list(
-                preparedData = preparedData,
-                    distributionPlots = distributionPlots,
-                modelFits = modelFits, modelSummaries = modelSummaries,
-                significantCpGs = significantCpGs,
-                    diagnosticPlots = diagnosticPlots,
-                annotation = annotation, savedFiles = savedFiles,
-                runSettings = list(
-                    analysisLabel = "methylationGLM",
-                    methylationScale = methylationScale,
-                        methylationLabel = methylationLabel,
-                    methylationObjectPrefix = methylationObjectPrefix,
-                    internalResponseColumn = responseColumn,
-                    scaleVars = preparedData$scaleVars,
-                    scalingMetadata = preparedData$scalingMetadata,
-                    omnibusTest = omnibusTest,
-                    reportAssetsDir = reportAssetsDir
-                )
-            ),
-            class = "dnaEPICO_methylationGLM"
-        )
-    }, log_path = log_path, verbose = verbose, context = "methylationGLM")
 }

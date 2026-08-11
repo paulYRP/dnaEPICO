@@ -34,9 +34,9 @@ Extract beta, M, and copy-number matrices from a filtered object
 \examples{
 ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 metrics_data <- extractMetricsMinfiEwasWater(
-    filteredData = ex$filteredData,
-    verbose = FALSE,
-    logs = FALSE
+  filteredData = ex$filteredData,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(metrics_data)
 

@@ -106,8 +106,13 @@ NULL
 #'   [plotMethylationGLMDiagnostics()].}
 #'   \item{annotation}{Object returned by
 #'   [annotateMethylationGLMSummaries()].}
+#'   \item{manhattanPlots}{Versioned circular and rectangular Manhattan plots
+#'   for every raw p-value column in the annotated results.}
+#'   \item{vennDPlots}{Requested coefficient and omnibus model-level Venn plots,
+#'   worksheet tables, and label mappings.}
 #'   \item{savedFiles}{Object returned by [writeMethylationGLMOutputs()] when
 #'   `saveOutputs = TRUE`, otherwise `NULL`.}
+#'   \item{runSettings}{High-level settings recorded for the analysis.}
 #' }
 #'
 #' @seealso [methylationGLM()]
@@ -135,9 +140,14 @@ NULL
 #'   [plotMethylationLMEDiagnostics()].}
 #'   \item{annotation}{Object returned by
 #'   [annotateMethylationLMESummaries()].}
+#'   \item{manhattanPlots}{Versioned circular and rectangular Manhattan plots
+#'   for every raw p-value column in the annotated results.}
+#'   \item{vennDPlots}{Requested coefficient and omnibus model-level Venn plots,
+#'   worksheet tables, and label mappings.}
 #'   \item{savedFiles}{Object returned by
 #'   [writeMethylationLMEOutputs()] when `saveOutputs = TRUE`, otherwise
 #'   `NULL`.}
+#'   \item{runSettings}{High-level settings recorded for the analysis.}
 #' }
 #'
 #' @seealso [methylationLME()]

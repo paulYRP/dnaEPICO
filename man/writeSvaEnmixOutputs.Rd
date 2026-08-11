@@ -62,16 +62,16 @@ temp_dir <- tempdir()
 pheno_file <- file.path(temp_dir, "phenoLC.csv")
 utils::write.csv(ex$targets, pheno_file, row.names = FALSE)
 output_paths <- writeSvaEnmixOutputs(
-    svaData = list(sva = ex$sva),
-    mergedPheno = ex$mergedPheno,
-    analysisData = ex$analysisData,
-    phenoFile = pheno_file,
-    SampleID = "Sample_Name",
-    dataBaseDir = file.path(temp_dir, "data"),
-    rBaseDir = file.path(temp_dir, "rData"),
-    scriptLabel = "svaEnmixExample",
-    verbose = FALSE,
-    logs = FALSE
+  svaData = list(sva = ex$sva),
+  mergedPheno = ex$mergedPheno,
+  analysisData = ex$analysisData,
+  phenoFile = pheno_file,
+  SampleID = "Sample_Name",
+  dataBaseDir = file.path(temp_dir, "data"),
+  rBaseDir = file.path(temp_dir, "rData"),
+  scriptLabel = "svaEnmixExample",
+  verbose = FALSE,
+  logs = FALSE
 )
 names(output_paths)
 

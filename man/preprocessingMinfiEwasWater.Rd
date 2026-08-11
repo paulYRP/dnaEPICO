@@ -30,14 +30,16 @@ preprocessingMinfiEwasWater(
   chrToRemove = "chrX,chrY",
   snpsToRemove = "SBE,CpG",
   mafThreshold = 0.1,
-  probeExclusionPath = "data/preprocessingMinfiEwasWater/12864_2024_10027_MOESM8_ESM.csv",
+  probeExclusionPath = paste0("data/preprocessingMinfiEwasWater/",
+    "12864_2024_10027_MOESM8_ESM.csv"),
   probeExclusionIdColumn = NULL,
   useEpicV2Manifest = FALSE,
   epicV2ManifestFlags = c(CH_WGBS_evidence = TRUE, CH_BLAT = TRUE, MissingPos = TRUE,
     MismatchPos = FALSE),
   plotGroupVar = "Sex",
   lcRef = "salivaEPIC",
-  phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
+  phenoOrder = paste0("Sample_Name;Timepoint;Sex;PredSex;Basename;",
+    "Sentrix_ID;Sentrix_Position"),
   lcPhenoDir = "data/preprocessingMinfiEwasWater",
   display = FALSE,
   verbose = FALSE,
@@ -191,7 +193,7 @@ those proportions.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when
 logging was disabled.}
 }
-See \linkS4class{dnaEPICO_preprocessingMinfiEwasWater} for a class-level overview.
+See \link[=dnaEPICO_preprocessingMinfiEwasWater-class]{dnaEPICO_preprocessingMinfiEwasWater} for a class-level overview.
 }
 \description{
 Run the \code{dnaEPICO} preprocessing workflow with the package's
@@ -200,40 +202,46 @@ each stage and writes files only when \code{saveOutputs = TRUE}.
 }
 \examples{
 if (requireNamespace("minfiData", quietly = TRUE) &&
-    requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
-    requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
-    ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
-    result <- preprocessingMinfiEwasWater(
-        phenoFile = ex$phenoFile,
-        idatFolder = ex$idatFolder,
-        outputLogs = file.path(ex$tempDir, "logs"),
-        nSamples = 4,
-        SampleID = "Sample_Name",
-        arrayType = ex$arrayType,
-        annotationVersion = ex$annotationVersion,
-        scriptLabel = "preprocessingMinfiEwasWater",
-        baseDataFolder = file.path(ex$tempDir, "rData"),
-        figureBaseDir = file.path(ex$tempDir, "figures"),
-        detPThreshold = 1,
-        normMethods = "quantile",
-        sexColumn = "Sex",
-        pvalThreshold = 1,
-        chrToRemove = "",
-        snpsToRemove = "SBE",
-        mafThreshold = 1,
-        probeExclusionPath = ex$probeExclusionPath,
-        plotGroupVar = "Sex",
-        lcRef = "saliva",
-        phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
-        lcPhenoDir = ex$tempDir,
-        saveOutputs = FALSE,
-        verbose = FALSE,
-        logs = FALSE
-    )
-    inherits(result, "dnaEPICO_preprocessingMinfiEwasWater")
+  requireNamespace(
+    "IlluminaHumanMethylation450kmanifest",
+    quietly = TRUE
+  ) &&
+  requireNamespace(
+    "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+    quietly = TRUE
+  )) {
+  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
+  result <- preprocessingMinfiEwasWater(
+    phenoFile = ex$phenoFile,
+    idatFolder = ex$idatFolder,
+    outputLogs = file.path(ex$tempDir, "logs"),
+    nSamples = 4,
+    SampleID = "Sample_Name",
+    arrayType = ex$arrayType,
+    annotationVersion = ex$annotationVersion,
+    scriptLabel = "preprocessingMinfiEwasWater",
+    baseDataFolder = file.path(ex$tempDir, "rData"),
+    figureBaseDir = file.path(ex$tempDir, "figures"),
+    detPThreshold = 1,
+    normMethods = "quantile",
+    sexColumn = "Sex",
+    pvalThreshold = 1,
+    chrToRemove = "",
+    snpsToRemove = "SBE",
+    mafThreshold = 1,
+    probeExclusionPath = ex$probeExclusionPath,
+    plotGroupVar = "Sex",
+    lcRef = "saliva",
+    phenoOrder = "Sample_Name;Sex;Basename;Sentrix_ID;Sentrix_Position",
+    lcPhenoDir = ex$tempDir,
+    saveOutputs = FALSE,
+    verbose = FALSE,
+    logs = FALSE
+  )
+  inherits(result, "dnaEPICO_preprocessingMinfiEwasWater")
 }
 
 }
 \seealso{
-\linkS4class{dnaEPICO_preprocessingMinfiEwasWater}
+\link[=dnaEPICO_preprocessingMinfiEwasWater-class]{dnaEPICO_preprocessingMinfiEwasWater}
 }

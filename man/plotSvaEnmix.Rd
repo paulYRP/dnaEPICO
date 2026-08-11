@@ -6,7 +6,7 @@
 \usage{
 plotSvaEnmix(
   analysisData,
-  plot = c("sentrix_id", "sentrix_position", "matrix"),
+  plot = c("sentrix_id", "sentrix_position", "matrix", "association"),
   display = FALSE,
   file = NULL,
   width = 2000L,
@@ -22,7 +22,7 @@ plotSvaEnmix(
 \item{analysisData}{Object returned by \code{analyzeSvaEnmix()}.}
 
 \item{plot}{Character. Plot type: \code{'sentrix_id'}, \code{'sentrix_position'}, or
-\code{'matrix'}.}
+\code{'matrix'}, or \code{'association'}.}
 
 \item{display}{Logical. If \code{TRUE}, draw the plot on the active graphics
 device.}
@@ -45,19 +45,22 @@ device.}
 \item{log_file}{Character. File name used when \code{logs = TRUE}.}
 }
 \value{
-Invisibly returns saved TIFF path(s), otherwise \code{NULL}.
+Invisibly returns saved TIFF path(s), otherwise \code{NULL}. Association
+output is omitted when no technical-factor association is estimable.
 }
 \description{
 Draw one of the standard surrogate-variable plots used by \code{svaEnmix()}.
+An empty association result is recorded in the log without creating a
+placeholder figure.
 }
 \examples{
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 plotSvaEnmix(
-    analysisData = ex$analysisData,
-    plot = "sentrix_id",
-    display = FALSE,
-    verbose = FALSE,
-    logs = FALSE
+  analysisData = ex$analysisData,
+  plot = "sentrix_id",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
 )
 
 }

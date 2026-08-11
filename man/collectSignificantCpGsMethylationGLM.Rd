@@ -44,10 +44,10 @@ p-values otherwise.
 \examples{
 ex <- dnaEPICO:::exampleMethylationGLMStateDnaEpico()
 significant_cpgs <- collectSignificantCpGsMethylationGLM(
-    modelResults = ex$modelResults,
-    pvalThreshold = 1,
-    verbose = FALSE,
-    logs = FALSE
+  modelResults = ex$modelResults,
+  pvalThreshold = 1,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(significant_cpgs)
 

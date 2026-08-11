@@ -32,6 +32,63 @@ exampleTempDirDnaEpico <- function(prefix) {
     temp_dir
 }
 
+completeExampleMinfiTargetsDnaEpico <- function(targets) {
+    if (!("Sex" %in% colnames(targets))) {
+        if ("sex" %in% colnames(targets)) {
+            sex_values <- as.character(targets$sex)
+            targets$Sex <- ifelse(
+                sex_values %in% c("0", "F", "Female"), "F", "M"
+            )
+        } else {
+            targets$Sex <- rep(c("F", "M"), length.out = nrow(targets))
+        }
+    }
+    if (!("Sentrix_ID" %in% colnames(targets))) {
+        targets$Sentrix_ID <- if ("Slide" %in% colnames(targets)) {
+            as.character(targets$Slide)
+        } else {
+            paste0("Slide", seq_len(nrow(targets)))
+        }
+    }
+    if (!("Sentrix_Position" %in% colnames(targets))) {
+        targets$Sentrix_Position <- if ("Array" %in% colnames(targets)) {
+            as.character(targets$Array)
+        } else {
+            paste0("Position", seq_len(nrow(targets)))
+        }
+    }
+    if (!("Timepoint" %in% colnames(targets))) {
+        targets$Timepoint <- rep(c("1", "2"), length.out = nrow(targets))
+    }
+    targets
+}
+
+setExampleMinfiColDataDnaEpico <- function(rgset, targets) {
+    col_data <- SummarizedExperiment::colData(rgset)
+    col_data$Sex <- targets$Sex
+    col_data$Sentrix_ID <- targets$Sentrix_ID
+    col_data$Sentrix_Position <- targets$Sentrix_Position
+    col_data$Timepoint <- targets$Timepoint
+    SummarizedExperiment::colData(rgset) <- col_data
+    rgset
+}
+
+copyExampleMinfiIdatsDnaEpico <- function(targets, baseDir, tempDir) {
+    idat_dir <- file.path(tempDir, "idats")
+    dir.create(idat_dir, recursive = TRUE, showWarnings = FALSE)
+    available_idats <- list.files(baseDir,
+        pattern = "[.]idat$", recursive = TRUE, full.names = TRUE
+    )
+    for (basename_value in targets$Basename) {
+        matched_files <- grep(
+            paste0(basename_value, ".*[.]idat$"),
+            available_idats, value = TRUE
+        )
+        file.copy(matched_files, idat_dir, overwrite = TRUE)
+    }
+    idat_dir
+}
+
 exampleMinfiBaseDataDnaEpico <- function() {
     getCachedExampleDnaEpico(key = "minfi_base", builder = function() {
         requireExamplePackageDnaEpico("minfiData")
@@ -45,54 +102,16 @@ exampleMinfiBaseDataDnaEpico <- function() {
         targets <- as.data.frame(SummarizedExperiment::colData(rgset))
 
         targets$Sample_Name <- colnames(rgset)
+        targets <- completeExampleMinfiTargetsDnaEpico(targets)
+        rgset <- setExampleMinfiColDataDnaEpico(rgset, targets)
 
-        if (!("Sex" %in% colnames(targets))) {
-            if ("sex" %in% colnames(targets)) {
-                sex_values <- as.character(targets$sex)
-                targets$Sex <- ifelse(sex_values %in% c(
-                    "0",
-                    "F", "Female"
-                ), "F", "M")
-            } else {
-                targets$Sex <- rep(c("F", "M"), length.out = nrow(targets))
-            }
-        }
-
-        if (!("Sentrix_ID" %in% colnames(targets))) {
-            if ("Slide" %in% colnames(targets)) {
-                targets$Sentrix_ID <- as.character(targets$Slide)
-            } else {
-                targets$Sentrix_ID <- paste0("Slide", seq_len(nrow(targets)))
-            }
-        }
-
-        if (!("Sentrix_Position" %in% colnames(targets))) {
-            if ("Array" %in% colnames(targets)) {
-                targets$Sentrix_Position <- as.character(targets$Array)
-            } else {
-                targets$Sentrix_Position <- paste0(
-                    "Position",
-                    seq_len(nrow(targets))
-                )
-            }
-        }
-
-        if (!("Timepoint" %in% colnames(targets))) {
-            targets$Timepoint <- rep(c("1", "2"), length.out = nrow(targets))
-        }
-
-        rgset_col_data <- SummarizedExperiment::colData(rgset)
-        rgset_col_data$Sex <- targets$Sex
-        rgset_col_data$Sentrix_ID <- targets$Sentrix_ID
-        rgset_col_data$Sentrix_Position <- targets$Sentrix_Position
-        rgset_col_data$Timepoint <- targets$Timepoint
-        SummarizedExperiment::colData(rgset) <- rgset_col_data
-
-        list(RGSet = rgset, targets = targets,
+        list(
+            RGSet = rgset, targets = targets,
             probeExclusionPath = system.file("extdata",
-            "12864_2024_10027_MOESM8_ESM.csv",
-            package = "dnaEPICO"
-        ))
+                "12864_2024_10027_MOESM8_ESM.csv",
+                package = "dnaEPICO"
+            )
+        )
     })
 }
 
@@ -101,8 +120,12 @@ exampleMinfiIdatInputsDnaEpico <- function(n = 6L) {
         key = paste0("minfi_idat_", as.integer(n)),
         builder = function() {
             requireExamplePackageDnaEpico("minfiData")
-            requireExamplePackageDnaEpico("IlluminaHumanMethylation450kmanifest")
-            requireExamplePackageDnaEpico("IlluminaHumanMethylation450kanno.ilmn12.hg19")
+            requireExamplePackageDnaEpico(
+                "IlluminaHumanMethylation450kmanifest"
+            )
+            requireExamplePackageDnaEpico(
+                "IlluminaHumanMethylation450kanno.ilmn12.hg19"
+            )
 
             base_dir <- system.file("extdata", package = "minfiData")
             targets <- utils::read.csv(file.path(base_dir, "SampleSheet.csv"),
@@ -120,31 +143,18 @@ exampleMinfiIdatInputsDnaEpico <- function(n = 6L) {
             }
 
             temp_dir <- exampleTempDirDnaEpico("dnaEPICO-idat-example-")
-            idat_dir <- file.path(temp_dir, "idats")
-            dir.create(idat_dir, recursive = TRUE, showWarnings = FALSE)
-
-            available_idats <- list.files(base_dir,
-                pattern = "[.]idat$",
-                recursive = TRUE, full.names = TRUE
+            idat_dir <- copyExampleMinfiIdatsDnaEpico(
+                targets, base_dir, temp_dir
             )
-
-            for (basename_value in targets$Basename) {
-                matched_files <- grep(paste0(
-                    basename_value,
-                    ".*[.]idat$"
-                ), available_idats, value = TRUE)
-                file.copy(matched_files, idat_dir, overwrite = TRUE)
-            }
-
             pheno_file <- file.path(temp_dir, "pheno.csv")
             utils::write.csv(targets, pheno_file, row.names = FALSE)
 
             list(
                 tempDir = temp_dir, idatFolder = idat_dir,
-                    phenoFile = pheno_file,
+                phenoFile = pheno_file,
                 targets = targets, arrayType = "IlluminaHumanMethylation450k",
                 annotationVersion = "ilmn12.hg19",
-                    probeExclusionPath = system.file("extdata",
+                probeExclusionPath = system.file("extdata",
                     "12864_2024_10027_MOESM8_ESM.csv",
                     package = "dnaEPICO"
                 )
@@ -197,7 +207,7 @@ exampleMinfiMetricsStateDnaEpico <- function() {
         list(
             filteredData = filtered_data, metricsData = metrics_data,
             rawData = list(MSet = methyl_set),
-                normData = list(primary = ratio_set),
+            normData = list(primary = ratio_set),
             beta = beta, targets = targets
         )
     })
@@ -228,145 +238,161 @@ exampleSexPlotStateDnaEpico <- function() {
     })
 }
 
+buildExampleMinfiAssessmentDnaEpico <- function(exampleData) {
+    rgset <- exampleData$RGSet
+    targets <- exampleData$targets
+    raw_data <- buildRawMinfiEwasWater(
+        RGSet = rgset, verbose = FALSE, logs = FALSE
+    )
+    assessment <- assessSamplesMinfiEwasWater(
+        rawData = raw_data, RGSet = rgset, detPThreshold = 1,
+        verbose = FALSE, logs = FALSE
+    )
+    sample_data <- filterSamplesMinfiEwasWater(
+        RGSet = rgset, targets = targets, failedSamples = character(0),
+        SampleID = "Sample_Name", verbose = FALSE, logs = FALSE
+    )
+    raw_filtered <- buildRawMinfiEwasWater(
+        RGSet = sample_data$RGSet, verbose = FALSE, logs = FALSE
+    )
+    sex_data <- predictSexMinfiEwasWater(
+        rawData = raw_filtered, targets = sample_data$targets,
+        SampleID = "Sample_Name", sexColumn = "Sex",
+        verbose = FALSE, logs = FALSE
+    )
+    col_data <- SummarizedExperiment::colData(sample_data$RGSet)
+    col_data$Sex <- sample_data$targets$Sex
+    col_data$PredSex <- sample_data$targets$PredSex
+    SummarizedExperiment::colData(sample_data$RGSet) <- col_data
+    list(
+        rawData = raw_data, assessment = assessment,
+        sampleData = sample_data, rawFiltered = raw_filtered,
+        sexData = sex_data
+    )
+}
+
+buildExampleMinfiNormalizedDnaEpico <- function(sampleData, exclusionPath) {
+    norm_data <- normalizeMinfiEwasWater(
+        sampleData = sampleData, sexColumn = "Sex",
+        normMethods = "quantile", verbose = FALSE, logs = FALSE
+    )
+    filtered_data <- filterProbesMinfiEwasWater(
+        normData = norm_data, RGSet = sampleData$RGSet,
+        pvalThreshold = 1, chrToRemove = "chrY", snpsToRemove = "SBE",
+        mafThreshold = 1, probeExclusionPath = exclusionPath,
+        detPtype = "m+u", verbose = FALSE, logs = FALSE
+    )
+    list(
+        normData = norm_data, filteredData = filtered_data,
+        metricsData = extractMetricsMinfiEwasWater(
+            filteredData = filtered_data, verbose = FALSE, logs = FALSE
+        )
+    )
+}
+
 exampleMinfiWorkflowStateDnaEpico <- function() {
     getCachedExampleDnaEpico(key = "minfi_workflow", builder = function() {
         example_data <- exampleMinfiBaseDataDnaEpico()
 
-        rgset <- example_data$RGSet
-        targets <- example_data$targets
-
-        raw_data <- buildRawMinfiEwasWater(
-            RGSet = rgset, verbose = FALSE,
-            logs = FALSE
-        )
-        assessment <- assessSamplesMinfiEwasWater(
-            rawData = raw_data,
-            RGSet = rgset, detPThreshold = 1, verbose = FALSE,
-            logs = FALSE
-        )
-        sample_data <- filterSamplesMinfiEwasWater(
-            RGSet = rgset,
-            targets = targets, failedSamples = character(0),
-            SampleID = "Sample_Name", verbose = FALSE, logs = FALSE
-        )
-        raw_filtered <- buildRawMinfiEwasWater(
-            RGSet = sample_data$RGSet,
-            verbose = FALSE, logs = FALSE
-        )
-        sex_data <- predictSexMinfiEwasWater(
-            rawData = raw_filtered,
-            targets = sample_data$targets, SampleID = "Sample_Name",
-            sexColumn = "Sex", verbose = FALSE, logs = FALSE
-        )
-
-        rgset_col_data <- SummarizedExperiment::colData(sample_data$RGSet)
-        rgset_col_data$Sex <- sample_data$targets$Sex
-        rgset_col_data$PredSex <- sample_data$targets$PredSex
-        SummarizedExperiment::colData(sample_data$RGSet) <- rgset_col_data
-
-        norm_data <- normalizeMinfiEwasWater(
-            sampleData = sample_data,
-            sexColumn = "Sex", normMethods = "quantile", verbose = FALSE,
-            logs = FALSE
-        )
-        filtered_data <- filterProbesMinfiEwasWater(
-            normData = norm_data,
-            RGSet = sample_data$RGSet, pvalThreshold = 1, chrToRemove = "chrY",
-            snpsToRemove = "SBE", mafThreshold = 1,
-                probeExclusionPath = example_data$probeExclusionPath,
-            detPtype = "m+u", verbose = FALSE, logs = FALSE
-        )
-        metrics_data <- extractMetricsMinfiEwasWater(
-            filteredData = filtered_data,
-            verbose = FALSE, logs = FALSE
+        assessed <- buildExampleMinfiAssessmentDnaEpico(example_data)
+        normalized <- buildExampleMinfiNormalizedDnaEpico(
+            assessed$sampleData, example_data$probeExclusionPath
         )
 
         list(
-            RGSet = rgset, targets = targets, rawData = raw_data,
-            assessment = assessment, sampleData = sample_data,
-            rawFiltered = raw_filtered, sexData = sex_data,
-                normData = norm_data,
-            filteredData = filtered_data, metricsData = metrics_data,
+            RGSet = example_data$RGSet, targets = example_data$targets,
+            rawData = assessed$rawData, assessment = assessed$assessment,
+            sampleData = assessed$sampleData,
+            rawFiltered = assessed$rawFiltered, sexData = assessed$sexData,
+            normData = normalized$normData,
+            filteredData = normalized$filteredData,
+            metricsData = normalized$metricsData,
             probeExclusionPath = example_data$probeExclusionPath
         )
     })
 }
 
+createExamplePreprocessingPhenoInputsDnaEpico <- function() {
+    temp_dir <- exampleTempDirDnaEpico(
+        "dnaEPICO-preprocessingPheno-example-"
+    )
+    pheno <- data.frame(
+        Sample_Name = c("S1", "S2", "S3", "S4"),
+        Timepoint = c("1", "1", "2", "2"),
+        Sex = c("Female", "Male", "Female", "Male"),
+        Age = c(20, 22, 21, 23), stringsAsFactors = FALSE
+    )
+    beta <- matrix(
+        c(
+            0.2, 0.25, 0.22, 0.27, 0.6, 0.55, 0.52,
+            0.58, 0.1, 0.15, 0.12, 0.16
+        ),
+        nrow = 3, byrow = TRUE,
+        dimnames = list(
+            c("cg00000029", "cg00000108", "cg00000109"),
+            pheno$Sample_Name
+        )
+    )
+    paths <- list(
+        pheno = file.path(temp_dir, "phenoLC.csv"),
+        beta = file.path(temp_dir, "beta.RData"),
+        m = file.path(temp_dir, "m.RData"),
+        cn = file.path(temp_dir, "cn.RData")
+    )
+    utils::write.csv(pheno, paths$pheno, row.names = FALSE)
+    saveNamedObjectMinfiEwasWater(beta, "beta", paths$beta)
+    saveNamedObjectMinfiEwasWater(log2(beta / (1 - beta)), "m", paths$m)
+    cn <- matrix(1, nrow = nrow(beta), ncol = ncol(beta),
+        dimnames = dimnames(beta)
+    )
+    saveNamedObjectMinfiEwasWater(cn, "cn", paths$cn)
+    list(tempDir = temp_dir, pheno = pheno, paths = paths)
+}
+
+runExamplePreprocessingPhenoDnaEpico <- function(inputs) {
+    metrics_data <- loadMetricsPreprocessingPheno(
+        betaPath = inputs$paths$beta, mPath = inputs$paths$m,
+        cnPath = inputs$paths$cn, verbose = FALSE, logs = FALSE
+    )
+    timepoint_data <- splitTimepointsPreprocessingPheno(
+        pheno = inputs$pheno, metricsData = metrics_data,
+        SampleID = "Sample_Name", timeVar = "Timepoint",
+        timepoints = "1,2", verbose = FALSE, logs = FALSE
+    )
+    combined_data <- combineTimepointsPreprocessingPheno(
+        timepointData = timepoint_data, combineTimepoints = "1,2",
+        verbose = FALSE, logs = FALSE
+    )
+    clock_foundation <- buildClockFoundationInputsPreprocessingPheno(
+        beta = timepoint_data$data[["1"]]$beta,
+        pheno = timepoint_data$data[["1"]]$pheno,
+        SampleID = "Sample_Name", sexColumn = "Sex",
+        verbose = FALSE, logs = FALSE
+    )
+    list(
+        metricsData = metrics_data, timepointData = timepoint_data,
+        combinedData = combined_data, clockFoundation = clock_foundation
+    )
+}
+
 examplePreprocessingPhenoStateDnaEpico <- function() {
     getCachedExampleDnaEpico(key = "preprocessing_pheno", builder = function() {
-        temp_dir <-
-            exampleTempDirDnaEpico("dnaEPICO-preprocessingPheno-example-")
-
-        pheno <- data.frame(
-            Sample_Name = c(
-                "S1", "S2", "S3",
-                "S4"
-            ), Timepoint = c("1", "1", "2", "2"), Sex = c(
-                "Female",
-                "Male", "Female", "Male"
-            ), Age = c(20, 22, 21, 23),
-            stringsAsFactors = FALSE
-        )
-
-        beta <- matrix(
-            c(
-                0.2, 0.25, 0.22, 0.27, 0.6, 0.55, 0.52,
-                0.58, 0.1, 0.15, 0.12, 0.16
-            ),
-            nrow = 3, byrow = TRUE,
-            dimnames = list(
-                c("cg00000029", "cg00000108", "cg00000109"),
-                pheno$Sample_Name
-            )
-        )
-        m <- log2(beta / (1 - beta))
-        cn <- matrix(1,
-            nrow = nrow(beta), ncol = ncol(beta),
-            dimnames = dimnames(beta)
-        )
-
-        pheno_path <- file.path(temp_dir, "phenoLC.csv")
-        beta_path <- file.path(temp_dir, "beta.RData")
-        m_path <- file.path(temp_dir, "m.RData")
-        cn_path <- file.path(temp_dir, "cn.RData")
-
-        utils::write.csv(pheno, pheno_path, row.names = FALSE)
-        saveNamedObjectMinfiEwasWater(beta, "beta", beta_path)
-        saveNamedObjectMinfiEwasWater(m, "m", m_path)
-        saveNamedObjectMinfiEwasWater(cn, "cn", cn_path)
-
-        metrics_data <- loadMetricsPreprocessingPheno(
-            betaPath = beta_path,
-            mPath = m_path, cnPath = cn_path, verbose = FALSE,
-            logs = FALSE
-        )
-        timepoint_data <- splitTimepointsPreprocessingPheno(
-            pheno = pheno,
-            metricsData = metrics_data, SampleID = "Sample_Name",
-            timeVar = "Timepoint", timepoints = "1,2", verbose = FALSE,
-            logs = FALSE
-        )
-        combined_data <- combineTimepointsPreprocessingPheno(
-            timepointData = timepoint_data,
-            combineTimepoints = "1,2", verbose = FALSE, logs = FALSE
-        )
-        clock_foundation <- buildClockFoundationInputsPreprocessingPheno(
-            beta = timepoint_data$data[["1"]]$beta,
-            pheno = timepoint_data$data[["1"]]$pheno, SampleID = "Sample_Name",
-            sexColumn = "Sex", verbose = FALSE, logs = FALSE
-        )
-
+        inputs <- createExamplePreprocessingPhenoInputsDnaEpico()
+        workflow <- runExamplePreprocessingPhenoDnaEpico(inputs)
         preprocessing_data <- list(
-            pheno = pheno, metrics = metrics_data,
-            timepointData = timepoint_data, combinedData = combined_data,
-            clockFoundation = clock_foundation
+            pheno = inputs$pheno, metrics = workflow$metricsData,
+            timepointData = workflow$timepointData,
+            combinedData = workflow$combinedData,
+            clockFoundation = workflow$clockFoundation
         )
-
         list(
-            tempDir = temp_dir, pheno = pheno, phenoPath = pheno_path,
-            betaPath = beta_path, mPath = m_path, cnPath = cn_path,
-            metricsData = metrics_data, timepointData = timepoint_data,
-            combinedData = combined_data, clockFoundation = clock_foundation,
+            tempDir = inputs$tempDir, pheno = inputs$pheno,
+            phenoPath = inputs$paths$pheno, betaPath = inputs$paths$beta,
+            mPath = inputs$paths$m, cnPath = inputs$paths$cn,
+            metricsData = workflow$metricsData,
+            timepointData = workflow$timepointData,
+            combinedData = workflow$combinedData,
+            clockFoundation = workflow$clockFoundation,
             preprocessingData = preprocessing_data
         )
     })
@@ -382,12 +408,14 @@ exampleSvaAnalysisStateDnaEpico <- function() {
             "R01C01",
             "R02C01", "R03C01", "R04C01"
         ), 2L), stringsAsFactors = FALSE)
-        RGSet <- SummarizedExperiment::SummarizedExperiment(assays = list(signal = matrix(0,
+        RGSet <- SummarizedExperiment::SummarizedExperiment(
+            assays = list(signal = matrix(
+                0,
             nrow = 2L, ncol = length(sample_names)
         )), colData = S4Vectors::DataFrame(
             Sentrix_ID = targets$Sentrix_ID,
             Sentrix_Position = targets$Sentrix_Position,
-                row.names = sample_names
+            row.names = sample_names
         ))
         colnames(RGSet) <- sample_names
 
@@ -408,16 +436,25 @@ exampleSvaAnalysisStateDnaEpico <- function() {
         analysis_data <- analyzeSvaEnmix(
             sva = sva, RGSet = RGSet,
             SentrixIDColumn = "Sentrix_ID",
-                SentrixPositionColumn = "Sentrix_Position",
+            SentrixPositionColumn = "Sentrix_Position",
             verbose = FALSE, logs = FALSE
         )
 
         list(
             RGSet = RGSet, targets = targets, sva = sva,
-                mergedPheno = merged_pheno,
+            mergedPheno = merged_pheno,
             analysisData = analysis_data
         )
     })
+}
+
+exampleModelAnnotationDataDnaEpico <- function() {
+    data.frame(
+        CpG = c("cg00000029", "cg00000108"),
+        Name = c("cg00000029", "cg00000108"),
+        chr = c("chr1", "chr2"), pos = c(100L, 200L),
+        stringsAsFactors = FALSE
+    )
 }
 
 exampleMethylationGLMStateDnaEpico <- function() {
@@ -444,7 +481,7 @@ exampleMethylationGLMStateDnaEpico <- function() {
         prepared_data <- prepareMethylationGLMData(
             inputPheno = input_path,
             phenotypes = "status", covariates = "sex,age",
-                factorVars = "status,sex",
+            factorVars = "status,sex",
             cpgLimit = 2, verbose = FALSE, logs = FALSE
         )
         model_results <- fitMethylationGLMModels(
@@ -459,16 +496,9 @@ exampleMethylationGLMStateDnaEpico <- function() {
 
         list(
             tempDir = temp_dir, inputPath = input_path,
-                preparedData = prepared_data,
+            preparedData = prepared_data,
             modelResults = model_results, modelSummaries = model_summaries,
-            annotationData = data.frame(
-                CpG = c(
-                    "cg00000029",
-                    "cg00000108"
-                ), Name = c("cg00000029", "cg00000108"),
-                chr = c("chr1", "chr2"), pos = c(100L, 200L),
-                stringsAsFactors = FALSE
-            )
+            annotationData = exampleModelAnnotationDataDnaEpico()
         )
     })
 }
@@ -514,16 +544,9 @@ exampleMethylationLMEStateDnaEpico <- function() {
 
         list(
             tempDir = temp_dir, inputPath = input_path,
-                preparedData = prepared_data,
+            preparedData = prepared_data,
             modelResults = model_results, modelSummaries = model_summaries,
-            annotationData = data.frame(
-                CpG = c(
-                    "cg00000029",
-                    "cg00000108"
-                ), Name = c("cg00000029", "cg00000108"),
-                chr = c("chr1", "chr2"), pos = c(100L, 200L),
-                stringsAsFactors = FALSE
-            )
+            annotationData = exampleModelAnnotationDataDnaEpico()
         )
     })
 }

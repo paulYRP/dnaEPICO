@@ -6,6 +6,9 @@
 #' The exported workflow requires GNU Make 4.3 or later and `Rscript` on the
 #' system path. Quarto is also required for report targets. The rules use
 #' relative project paths and support project directories containing spaces.
+#' GNU Make and Quarto are not required to install or load `dnaEPICO`; they are
+#' used only when running the exported workflow and rendering its report,
+#' respectively.
 #'
 #' @param destDir Character. Destination directory for the Makefile.
 #' @param overwrite Logical. Whether to overwrite an existing `Makefile` in

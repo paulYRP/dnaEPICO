@@ -117,7 +117,7 @@ SVA figures. When \code{saveOutputs = FALSE}, the entries are typically \code{NU
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when
 logging was disabled.}
 }
-See \linkS4class{dnaEPICO_svaEnmix} for a class-level overview.
+See \link[=dnaEPICO_svaEnmix-class]{dnaEPICO_svaEnmix} for a class-level overview.
 }
 \description{
 Estimate surrogate variables from ENmix control probes and analyze their
@@ -154,5 +154,5 @@ if (requireNamespace("minfiData", quietly = TRUE)) {
 
 }
 \seealso{
-\linkS4class{dnaEPICO_svaEnmix}
+\link[=dnaEPICO_svaEnmix-class]{dnaEPICO_svaEnmix}
 }

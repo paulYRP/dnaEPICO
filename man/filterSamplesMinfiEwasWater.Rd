@@ -45,12 +45,12 @@ filtered \code{RGChannelSet} together with the aligned phenotype table.
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 filtered_samples <- filterSamplesMinfiEwasWater(
-    RGSet = ex$RGSet,
-    targets = ex$targets,
-    failedSamples = ex$targets$Sample_Name[1],
-    SampleID = "Sample_Name",
-    verbose = FALSE,
-    logs = FALSE
+  RGSet = ex$RGSet,
+  targets = ex$targets,
+  failedSamples = ex$targets$Sample_Name[1],
+  SampleID = "Sample_Name",
+  verbose = FALSE,
+  logs = FALSE
 )
 nrow(filtered_samples$targets)
 \dontshow{\}) # examplesIf}

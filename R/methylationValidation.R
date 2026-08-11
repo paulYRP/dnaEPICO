@@ -43,102 +43,107 @@ normalizeScaleVariablesDnaEpico <- function(scaleVars = NULL) {
     variables
 }
 
+emptyScalingMetadataDnaEpico <- function() {
+    data.frame(
+        Variable = character(0), Center = numeric(0),
+        Scale = numeric(0), Finite.Values = integer(0),
+        Missing.Values = integer(0),
+        stringsAsFactors = FALSE, check.names = FALSE
+    )
+}
+
+validateScaleVariableSelectionDnaEpico <- function(
+    data, scaleVars, factorVars, eligibleVars, protectedVars
+) {
+    scale_vars <- normalizeScaleVariablesDnaEpico(scaleVars)
+    factor_vars <- unique(splitOptionMinfiEwasWater(factorVars, sep = ","))
+    checks <- list(
+        list(setdiff(scale_vars, colnames(data)),
+            "Scale columns not found in inputPheno"),
+        list(intersect(scale_vars, factor_vars),
+            "Variables cannot be listed in both factorVars and scaleVars"),
+        list(intersect(scale_vars, unique(as.character(protectedVars))),
+            "Identifier or protected variables cannot be scaled"),
+        list(setdiff(scale_vars, unique(as.character(eligibleVars))),
+            paste("scaleVars must contain fixed-effect variables used by",
+                "at least one model"
+            ))
+    )
+    for (check in checks) {
+        if (length(check[[1L]]) > 0L) {
+            values_text <- paste(check[[1L]], collapse = ", ")
+            stop(sprintf("%s: %s", check[[2L]], values_text),
+                call. = FALSE
+            )
+        }
+    }
+    scale_vars
+}
+
+scaleOneModelVariableDnaEpico <- function(values, variable) {
+    if (!is.numeric(values)) {
+        stop("scaleVars must be numeric: ", variable, call. = FALSE)
+    }
+    if (any(is.infinite(values))) {
+        stop("scaleVars contains infinite values: ", variable,
+            call. = FALSE
+        )
+    }
+    finite_values <- values[is.finite(values)]
+    if (length(finite_values) < 2L) {
+        stop("scaleVars requires at least two finite observations: ",
+            variable, call. = FALSE
+        )
+    }
+    center <- mean(finite_values)
+    scale_value <- stats::sd(finite_values)
+    if (!is.finite(scale_value) || scale_value <= 0) {
+        stop("scaleVars has zero or undefined variance: ", variable,
+            call. = FALSE
+        )
+    }
+    transformed <- values
+    finite_index <- is.finite(values)
+    transformed[finite_index] <-
+        (values[finite_index] - center) / scale_value
+    list(
+        values = transformed,
+        metadata = data.frame(
+            Variable = variable, Center = center, Scale = scale_value,
+            Finite.Values = length(finite_values),
+            Missing.Values = sum(is.na(values)), stringsAsFactors = FALSE,
+            check.names = FALSE
+        )
+    )
+}
+
 scaleModelVariablesDnaEpico <- function(
     data, scaleVars = NULL,
     factorVars = NULL, eligibleVars, protectedVars = NULL
 ) {
-    scale_vars <- normalizeScaleVariablesDnaEpico(scaleVars)
-    factor_vars <- unique(splitOptionMinfiEwasWater(factorVars,
-        sep = ","
-    ))
-    eligible_vars <- unique(as.character(eligibleVars))
-    protected_vars <- unique(as.character(protectedVars))
-
-    empty_metadata <- data.frame(
-        Variable = character(0), Center = numeric(0),
-        Scale = numeric(0), Finite.Values = integer(0),
-            Missing.Values = integer(0),
-        stringsAsFactors = FALSE, check.names = FALSE
+    scale_vars <- validateScaleVariableSelectionDnaEpico(
+        data, scaleVars, factorVars, eligibleVars, protectedVars
     )
     if (length(scale_vars) == 0L) {
-        return(list(data = data, scaleVars = scale_vars,
-            metadata = empty_metadata))
+        return(list(
+            data = data, scaleVars = scale_vars,
+            metadata = emptyScalingMetadataDnaEpico()
+        ))
     }
-
-    missing_vars <- setdiff(scale_vars, colnames(data))
-    if (length(missing_vars) > 0L) {
-        stop("Scale columns not found in inputPheno: ", paste(missing_vars,
-            collapse = ", "
-        ), call. = FALSE)
-    }
-    factor_overlap <- intersect(scale_vars, factor_vars)
-    if (length(factor_overlap) > 0L) {
-        stop("Variables cannot be listed in both factorVars and scaleVars: ",
-            paste(factor_overlap, collapse = ", "),
-            call. = FALSE
-        )
-    }
-    protected_overlap <- intersect(scale_vars, protected_vars)
-    if (length(protected_overlap) > 0L) {
-        stop("Identifier or protected variables cannot be scaled: ",
-            paste(protected_overlap, collapse = ", "),
-            call. = FALSE
-        )
-    }
-    unused_vars <- setdiff(scale_vars, eligible_vars)
-    if (length(unused_vars) > 0L) {
-        stop("scaleVars must contain fixed-effect variables used by at least one model: ",
-            paste(unused_vars, collapse = ", "),
-            call. = FALSE
-        )
-    }
-
     model_data <- data
     metadata_rows <- vector("list", length(scale_vars))
     for (index in seq_along(scale_vars)) {
         variable <- scale_vars[[index]]
-        values <- model_data[[variable]]
-        if (!is.numeric(values)) {
-            stop("scaleVars must be numeric: ", variable, call. = FALSE)
-        }
-        if (any(is.infinite(values))) {
-            stop("scaleVars contains infinite values: ", variable,
-                call. = FALSE
-            )
-        }
-        finite_values <- values[is.finite(values)]
-        if (length(finite_values) < 2L) {
-            stop("scaleVars requires at least two finite observations: ",
-                variable,
-                call. = FALSE
-            )
-        }
-        center <- mean(finite_values)
-        scale_value <- stats::sd(finite_values)
-        if (!is.finite(scale_value) || scale_value <= 0) {
-            stop("scaleVars has zero or undefined variance: ",
-                variable,
-                call. = FALSE
-            )
-        }
-        transformed <- values
-        finite_index <- is.finite(values)
-        transformed[finite_index] <- (values[finite_index] -
-            center) / scale_value
-        model_data[[variable]] <- transformed
-        metadata_rows[[index]] <- data.frame(
-            Variable = variable,
-            Center = center, Scale = scale_value,
-                Finite.Values = length(finite_values),
-            Missing.Values = sum(is.na(values)), stringsAsFactors = FALSE,
-            check.names = FALSE
+        scaled <- scaleOneModelVariableDnaEpico(
+            model_data[[variable]], variable
         )
+        model_data[[variable]] <- scaled$values
+        metadata_rows[[index]] <- scaled$metadata
     }
-
-    list(data = model_data, scaleVars = scale_vars, metadata = do.call(
-        rbind,
-        metadata_rows
-    ))
+    list(
+        data = model_data, scaleVars = scale_vars,
+        metadata = do.call(rbind, metadata_rows)
+    )
 }
 
 formatScalingMetadataLogDnaEpico <- function(metadata) {
@@ -170,8 +175,11 @@ validateMethylationProbeIdentifiersDnaEpico <- function(
     }
     duplicated_ids <- unique(probe_ids[duplicated(probe_ids)])
     if (length(duplicated_ids) > 0L) {
-        stop(label, " contains duplicate CpG identifiers: ",
-            paste(duplicated_ids, collapse = ", "),
+        duplicated_ids_text <- paste(duplicated_ids, collapse = ", ")
+        stop(sprintf(
+            "%s contains duplicate CpG identifiers: %s",
+            label, duplicated_ids_text
+        ),
             call. = FALSE
         )
     }

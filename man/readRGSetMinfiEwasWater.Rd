@@ -56,17 +56,23 @@ return the resulting \code{RGChannelSet}.
 }
 \examples{
 if (requireNamespace("minfiData", quietly = TRUE) &&
-    requireNamespace("IlluminaHumanMethylation450kmanifest", quietly = TRUE) &&
-    requireNamespace("IlluminaHumanMethylation450kanno.ilmn12.hg19", quietly = TRUE)) {
-    ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
-    rgset <- readRGSetMinfiEwasWater(
-        idatFolder = ex$idatFolder,
-        targets = ex$targets,
-        SampleID = "Sample_Name",
-        arrayType = ex$arrayType,
-        annotationVersion = ex$annotationVersion
-    )
-    class(rgset)
+  requireNamespace(
+    "IlluminaHumanMethylation450kmanifest",
+    quietly = TRUE
+  ) &&
+  requireNamespace(
+    "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+    quietly = TRUE
+  )) {
+  ex <- dnaEPICO:::exampleMinfiIdatInputsDnaEpico(n = 4)
+  rgset <- readRGSetMinfiEwasWater(
+    idatFolder = ex$idatFolder,
+    targets = ex$targets,
+    SampleID = "Sample_Name",
+    arrayType = ex$arrayType,
+    annotationVersion = ex$annotationVersion
+  )
+  class(rgset)
 }
 
 }

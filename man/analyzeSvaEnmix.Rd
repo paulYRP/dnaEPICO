@@ -49,12 +49,12 @@ is retained.
 \examples{
 ex <- dnaEPICO:::exampleSvaAnalysisStateDnaEpico()
 analysis_data <- analyzeSvaEnmix(
-    sva = ex$sva,
-    RGSet = ex$RGSet,
-    SentrixIDColumn = "Sentrix_ID",
-    SentrixPositionColumn = "Sentrix_Position",
-    verbose = FALSE,
-    logs = FALSE
+  sva = ex$sva,
+  RGSet = ex$RGSet,
+  SentrixIDColumn = "Sentrix_ID",
+  SentrixPositionColumn = "Sentrix_Position",
+  verbose = FALSE,
+  logs = FALSE
 )
 analysis_data$K
 

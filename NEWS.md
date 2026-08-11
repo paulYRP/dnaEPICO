@@ -3,8 +3,25 @@ CHANGES IN VERSION 0.99.37
 
 NEW FEATURES
 
-    o [05-08-2026] GLM analyses now support optional omnibus F tests for phenotype and
-      phenotype-by-interaction terms.
+    o [09-08-2026] Added GENCODEHub annotation through AnnotationHub and
+      rebuilt the Quarto report dashboard with contextual figure and
+      workbook notes.
+
+    o [08-08-2026] Added SVA, GLM, LME, Manhattan, Venn/intersection, and
+      model-variable figures with selectable report browsers and ENmix controls
+      integrated into Quality Control.
+
+    o [08-08-2026] GLM and LME models now support optional coefficient and
+      omnibus phenotype Venn outputs with expanded factor terms, positional
+      labels, UCSC and GENCODE v50 figures, and ordered workbook sheets.
+
+    o [07-08-2026] Expanded GLM, lmerTest/lme4, and nlme visualisations and the
+      Quarto report with model-design and distribution diagnostics,
+      annotated-result Manhattan and optional model-level Venn plots,
+      selectable workbook sheets, and right-aligned navigation.
+
+    o [05-08-2026] GLM analyses now support optional omnibus F tests for
+      phenotype and phenotype-by-interaction terms.
 
     o [05-08-2026] The Makefile configuration now uses model-specific
       covariate, factor, and scaling variables for GLM and LME analyses.

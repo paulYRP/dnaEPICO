@@ -22,6 +22,9 @@ Copy the example Makefile supplied with \code{dnaEPICO} to a user directory.
 The exported workflow requires GNU Make 4.3 or later and \code{Rscript} on the
 system path. Quarto is also required for report targets. The rules use
 relative project paths and support project directories containing spaces.
+GNU Make and Quarto are not required to install or load \code{dnaEPICO}; they are
+used only when running the exported workflow and rendering its report,
+respectively.
 }
 \examples{
 tmp <- file.path(tempdir(), "dnaEPICO-make-example")

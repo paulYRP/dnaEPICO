@@ -10,6 +10,7 @@ annotateMethylationLMESummaries(
   annotationObject,
   annotationCols = c("Name", "chr", "pos", "UCSC_RefGene_Group", "UCSC_RefGene_Name",
     "Relation_to_Island", "GencodeV41_Group"),
+  gencodeHub = FALSE,
   verbose = FALSE,
   logs = FALSE,
   log_dir = NULL,
@@ -27,6 +28,10 @@ or annotation object understood by \code{minfi::getAnnotation()}.}
 \item{annotationCols}{Character vector or comma-separated string of
 annotation
 columns to append.}
+
+\item{gencodeHub}{Logical. If \code{TRUE}, retrieve the package-managed GENCODE
+gene resource from AnnotationHub and append direct gene-body and nearest
+transcription-start-site annotations. This requires GRCh38 coordinates.}
 
 \item{verbose}{Logical. If \code{TRUE}, emit progress messages with \code{message()}.}
 
@@ -49,11 +54,11 @@ metadata and return a single annotated result table.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 annotation_data <- annotateMethylationLMESummaries(
-    modelSummaries = ex$modelSummaries,
-    annotationObject = ex$annotationData,
-    annotationCols = "Name,chr,pos",
-    verbose = FALSE,
-    logs = FALSE
+  modelSummaries = ex$modelSummaries,
+  annotationObject = ex$annotationData,
+  annotationCols = "Name,chr,pos",
+  verbose = FALSE,
+  logs = FALSE
 )
 names(annotation_data)
 

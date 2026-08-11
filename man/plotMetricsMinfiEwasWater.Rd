@@ -63,14 +63,14 @@ Plot multidimensional scaling or density summaries from final metrics
 \examples{
 ex <- dnaEPICO:::exampleMinfiMetricsStateDnaEpico()
 plotMetricsMinfiEwasWater(
-    metricsData = ex$metricsData,
-    targets = ex$targets,
-    plot = "density",
-    plotGroupVar = "Sex",
-    sexColumn = "Sex",
-    display = FALSE,
-    verbose = FALSE,
-    logs = FALSE
+  metricsData = ex$metricsData,
+  targets = ex$targets,
+  plot = "density",
+  plotGroupVar = "Sex",
+  sexColumn = "Sex",
+  display = FALSE,
+  verbose = FALSE,
+  logs = FALSE
 )
 
 }

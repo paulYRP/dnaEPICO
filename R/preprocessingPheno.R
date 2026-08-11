@@ -1,3 +1,112 @@
+logPreprocessingPhenoStartDnaEpico <- function(config) {
+    separator <- resolveSeparatorMinfiEwasWater(config$sepType)
+    emitLogMinfiEwasWater(c(
+        "==== Starting preprocessingPheno ====",
+        paste("Start Time:               ", format(Sys.time())),
+        paste("Log file path:            ",
+            if (is.null(config$log_path)) "disabled" else config$log_path
+        ),
+        paste("Phenotype file:           ", config$phenoFile),
+        paste("Separator type:           ",
+            if (is.null(separator)) "default (',')" else config$sepType
+        ),
+        paste("Beta path:                ", config$betaPath),
+        paste("M-values path:            ", config$mPath),
+        paste("CN path:                  ", config$cnPath),
+        paste("Identifier column:        ", config$SampleID),
+        paste("Timepoint column:         ", config$timeVar),
+        paste("Timepoints:               ", config$timepoints),
+        paste("Combine timepoints:       ",
+            if (is.null(config$combineTimepoints)) "disabled" else {
+                paste(config$combineTimepoints, collapse = ", ")
+            }
+        ),
+        paste("Merged modeling object:   ",
+            config$methylationObjectPrefix, "*"
+        ),
+        "Clock Foundation scale:     Beta values",
+        paste("Sex column:               ", config$sexColumn),
+        paste("Output phenotype dir:     ", config$outputPheno),
+        paste("RData metrics dir:        ", config$outputRData),
+        paste("RData merge dir:          ", config$outputRDataMerge),
+        paste("Clock Foundation dir:     ", config$outputDir),
+        paste("Save outputs:             ", config$saveOutputs),
+        "============================================================"
+    ), verbose = config$verbose, log_path = config$log_path)
+}
+
+preparePreprocessingPhenoStagesDnaEpico <- function(config) {
+    pheno <- readPhenotypeTargets(
+        phenoFile = config$phenoFile, sepType = config$sepType,
+        SampleID = config$SampleID, verbose = config$verbose,
+        logs = config$logs, log_dir = config$outputLogs,
+        log_file = config$log_file
+    )
+    metrics <- loadMetricsPreprocessingPheno(
+        betaPath = config$betaPath, mPath = config$mPath,
+        cnPath = config$cnPath, verbose = config$verbose,
+        logs = config$logs, log_dir = config$outputLogs,
+        log_file = config$log_file
+    )
+    timepoints <- splitTimepointsPreprocessingPheno(
+        pheno = pheno, metricsData = metrics, SampleID = config$SampleID,
+        timeVar = config$timeVar, timepoints = config$timepoints,
+        methylationScale = config$methylationScale,
+        verbose = config$verbose, logs = config$logs,
+        log_dir = config$outputLogs, log_file = config$log_file
+    )
+    combined <- if (is.null(config$combineTimepoints)) NULL else {
+        combineTimepointsPreprocessingPheno(
+            timepointData = timepoints,
+            combineTimepoints = config$combineTimepoints,
+            methylationScale = config$methylationScale,
+            verbose = config$verbose, logs = config$logs,
+            log_dir = config$outputLogs, log_file = config$log_file
+        )
+    }
+    list(
+        pheno = pheno, metricsData = metrics,
+        timepointData = timepoints, combinedData = combined
+    )
+}
+
+buildPreprocessingPhenoResultDnaEpico <- function(stages, config) {
+    result <- c(stages, list(
+        methylationScale = config$methylationScale,
+        methylationLabel = config$methylationLabel,
+        methylationObjectPrefix = config$methylationObjectPrefix,
+        clockFoundation = buildClockFoundationInputsPreprocessingPheno(
+            beta = stages$metricsData$beta, pheno = stages$pheno,
+            SampleID = config$SampleID, sexColumn = config$sexColumn,
+            verbose = config$verbose, logs = config$logs,
+            log_dir = config$outputLogs, log_file = config$log_file
+        ),
+        savedFiles = NULL, logFile = config$log_path
+    ))
+    if (isTRUE(config$saveOutputs)) {
+        result$savedFiles <- writePreprocessingPhenoOutputs(
+            preprocessingData = result, outputPheno = config$outputPheno,
+            outputRData = config$outputRData,
+            outputRDataMerge = config$outputRDataMerge,
+            outputDir = config$outputDir, verbose = config$verbose,
+            logs = config$logs, log_dir = config$outputLogs,
+            log_file = config$log_file
+        )
+    }
+    result
+}
+
+runPreprocessingPhenoDnaEpico <- function(config) {
+    stages <- preparePreprocessingPhenoStagesDnaEpico(config)
+    result <- buildPreprocessingPhenoResultDnaEpico(stages, config)
+    emitLogMinfiEwasWater(c(
+        "==== Finished preprocessingPheno ====",
+        paste("End Time:                 ", format(Sys.time())),
+        "============================================================"
+    ), verbose = config$verbose, log_path = config$log_path)
+    structure(result, class = "dnaEPICO_preprocessingPheno")
+}
+
 #' Prepare phenotype and methylation matrices for downstream modeling
 #'
 #' Align the phenotype table with preprocessed beta, M-value, and copy-number
@@ -103,7 +212,9 @@
 #'     combineTimepoints = "1,2",
 #'     outputPheno = file.path(tmp, "data", "preprocessingPheno"),
 #'     outputRData = file.path(tmp, "rData", "preprocessingPheno", "metrics"),
-#'     outputRDataMerge = file.path(tmp, "rData", "preprocessingPheno", "mergeData"),
+#'     outputRDataMerge = file.path(
+#'         tmp, "rData", "preprocessingPheno", "mergeData"
+#'     ),
 #'     sexColumn = "Sex",
 #'     outputLogs = file.path(tmp, "logs"),
 #'     outputDir = file.path(tmp, "clockFoundation"),
@@ -117,16 +228,25 @@
 preprocessingPheno <- function(
     phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
     sepType = NULL,
-        betaPath = "rData/preprocessingMinfiEwasWater/metrics/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
-    mPath = "rData/preprocessingMinfiEwasWater/metrics/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
-    cnPath = "rData/preprocessingMinfiEwasWater/metrics/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData",
+    betaPath = paste0(
+        "rData/preprocessingMinfiEwasWater/metrics/",
+        "beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+    ),
+    mPath = paste0(
+        "rData/preprocessingMinfiEwasWater/metrics/",
+        "m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+    ),
+    cnPath = paste0(
+        "rData/preprocessingMinfiEwasWater/metrics/",
+        "cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+    ),
     SampleID = "Sample_Name", timeVar = "Timepoint", timepoints = "1,2",
     combineTimepoints = "1,2", methylationScale = "beta",
-        outputPheno = "data/preprocessingPheno",
+    outputPheno = "data/preprocessingPheno",
     outputRData = "rData/preprocessingPheno/metrics",
-        outputRDataMerge = "rData/preprocessingPheno/mergeData",
+    outputRDataMerge = "rData/preprocessingPheno/mergeData",
     sexColumn = "Sex", outputLogs = "logs",
-        outputDir = "data/preprocessingPheno",
+    outputDir = "data/preprocessingPheno",
     verbose = FALSE, logs = FALSE, saveOutputs = FALSE
 ) {
     methylationScale <- normalizeMethylationScaleDnaEpico(methylationScale)
@@ -135,125 +255,12 @@ preprocessingPheno <- function(
         methylationScaleObjectPrefixDnaEpico(methylationScale)
     log_file <- "log_preprocessingPheno.txt"
     log_path <- resolveLogPathMinfiEwasWater(
-        logs = logs, log_dir = outputLogs,
-        log_file = log_file
+        logs = logs, log_dir = outputLogs, log_file = log_file
     )
-
-    emitLogMinfiEwasWater(
-        c(
-            "==== Starting preprocessingPheno ====",
-            paste("Start Time:               ", format(Sys.time())),
-            paste("Log file path:            ",
-                if (is.null(log_path)) "disabled" else log_path),
-            paste("Phenotype file:           ", phenoFile), paste(
-                "Separator type:           ",
-                if (is.null(resolveSeparatorMinfiEwasWater(sepType))) {
-                    "default (',')"
-                } else {
-                    sepType
-                }
-            ), paste("Beta path:                ", betaPath),
-            paste("M-values path:            ", mPath), paste(
-                "CN path:                  ",
-                cnPath
-            ), paste("Identifier column:        ", SampleID),
-            paste("Timepoint column:         ", timeVar), paste(
-                "Timepoints:               ",
-                timepoints
-            ), paste(
-                "Combine timepoints:       ",
-                if (is.null(combineTimepoints)) {
-                    "disabled"
-                } else {
-                    paste(combineTimepoints, collapse = ", ")
-                }
-            ), paste(
-                "Merged modeling object:   ",
-                methylationObjectPrefix, "*"
-            ), "Clock Foundation scale:     Beta values",
-            paste("Sex column:               ", sexColumn), paste(
-                "Output phenotype dir:     ",
-                outputPheno
-            ), paste(
-                "RData metrics dir:        ",
-                outputRData
-            ), paste(
-                "RData merge dir:          ",
-                outputRDataMerge
-            ), paste(
-                "Clock Foundation dir:     ",
-                outputDir
-            ), paste("Save outputs:             ", saveOutputs),
-            "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
+    config <- as.list(environment(), all.names = TRUE)
+    logPreprocessingPhenoStartDnaEpico(config)
+    withLoggedErrorsMinfiEwasWater(
+        expr = runPreprocessingPhenoDnaEpico(config),
+        log_path = log_path, verbose = verbose, context = "preprocessingPheno"
     )
-
-    withLoggedErrorsMinfiEwasWater(expr = {
-        pheno <- readPhenotypeTargets(
-            phenoFile = phenoFile,
-            sepType = sepType, SampleID = SampleID, verbose = verbose,
-            logs = logs, log_dir = outputLogs, log_file = log_file
-        )
-        metricsData <- loadMetricsPreprocessingPheno(
-            betaPath = betaPath,
-            mPath = mPath, cnPath = cnPath, verbose = verbose,
-            logs = logs, log_dir = outputLogs, log_file = log_file
-        )
-        timepointData <- splitTimepointsPreprocessingPheno(
-            pheno = pheno,
-            metricsData = metricsData, SampleID = SampleID, timeVar = timeVar,
-            timepoints = timepoints, methylationScale = methylationScale,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-        combinedData <- if (is.null(combineTimepoints)) {
-            NULL
-        } else {
-            combineTimepointsPreprocessingPheno(
-                timepointData = timepointData,
-                combineTimepoints = combineTimepoints,
-                methylationScale = methylationScale,
-                verbose = verbose, logs = logs, log_dir = outputLogs,
-                log_file = log_file
-            )
-        }
-        clockFoundation <- buildClockFoundationInputsPreprocessingPheno(
-            beta = metricsData$beta,
-            pheno = pheno, SampleID = SampleID, sexColumn = sexColumn,
-            verbose = verbose, logs = logs, log_dir = outputLogs,
-            log_file = log_file
-        )
-
-        result <- list(
-            pheno = pheno, metricsData = metricsData,
-            timepointData = timepointData, combinedData = combinedData,
-            methylationScale = methylationScale,
-                methylationLabel = methylationLabel,
-            methylationObjectPrefix = methylationObjectPrefix,
-            clockFoundation = clockFoundation, savedFiles = NULL,
-            logFile = log_path
-        )
-
-        if (isTRUE(saveOutputs)) {
-            result$savedFiles <- writePreprocessingPhenoOutputs(
-                preprocessingData = result,
-                outputPheno = outputPheno, outputRData = outputRData,
-                outputRDataMerge = outputRDataMerge, outputDir = outputDir,
-                verbose = verbose, logs = logs, log_dir = outputLogs,
-                log_file = log_file
-            )
-        }
-
-        emitLogMinfiEwasWater(
-            c(
-                "==== Finished preprocessingPheno ====",
-                paste("End Time:                 ", format(Sys.time())),
-                "============================================================"
-            ),
-            verbose = verbose, log_path = log_path
-        )
-
-        structure(result, class = "dnaEPICO_preprocessingPheno")
-    }, log_path = log_path, verbose = verbose, context = "preprocessingPheno")
 }

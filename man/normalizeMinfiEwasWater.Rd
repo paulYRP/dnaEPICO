@@ -45,19 +45,19 @@ return all normalized objects together in a single result object.
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiBaseDataDnaEpico()
 sample_data <- filterSamplesMinfiEwasWater(
-    RGSet = ex$RGSet,
-    targets = ex$targets,
-    failedSamples = character(0),
-    SampleID = "Sample_Name",
-    verbose = FALSE,
-    logs = FALSE
+  RGSet = ex$RGSet,
+  targets = ex$targets,
+  failedSamples = character(0),
+  SampleID = "Sample_Name",
+  verbose = FALSE,
+  logs = FALSE
 )
 norm_data <- normalizeMinfiEwasWater(
-    sampleData = sample_data,
-    sexColumn = "Sex",
-    normMethods = "quantile",
-    verbose = FALSE,
-    logs = FALSE
+  sampleData = sample_data,
+  sexColumn = "Sex",
+  normMethods = "quantile",
+  verbose = FALSE,
+  logs = FALSE
 )
 names(norm_data$normalized)
 \dontshow{\}) # examplesIf}

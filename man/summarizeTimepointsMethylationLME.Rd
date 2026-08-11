@@ -44,11 +44,11 @@ phenotypes are reported with non-missing counts and the observed levels.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 timepoint_summary <- summarizeTimepointsMethylationLME(
-    data = ex$preparedData$data,
-    timeVar = "Timepoint",
-    phenotypes = "score",
-    verbose = FALSE,
-    logs = FALSE
+  data = ex$preparedData$data,
+  timeVar = "Timepoint",
+  phenotypes = "score",
+  verbose = FALSE,
+  logs = FALSE
 )
 nrow(timepoint_summary)
 

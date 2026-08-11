@@ -54,26 +54,26 @@ Prepare inputs for a DNA methylation report
 \examples{
 report_root <- file.path(tempdir(), "dnaepico-report-inputs")
 prepared <- prepareDnamReportInputs(
-    outputDir = file.path(report_root, "reports"),
-    qcDir = file.path(
-        report_root,
-        "figures",
-        "preprocessingMinfiEwasWater",
-        "enmix"
-    ),
-    preprocessingDir = file.path(
-        report_root,
-        "figures",
-        "preprocessingMinfiEwasWater",
-        "qc"
-    ),
-    postprocessingDir = file.path(
-        report_root,
-        "figures",
-        "preprocessingMinfiEwasWater",
-        "metrics"
-    ),
-    svaDir = file.path(report_root, "figures", "svaEnmix")
+  outputDir = file.path(report_root, "reports"),
+  qcDir = file.path(
+    report_root,
+    "figures",
+    "preprocessingMinfiEwasWater",
+    "enmix"
+  ),
+  preprocessingDir = file.path(
+    report_root,
+    "figures",
+    "preprocessingMinfiEwasWater",
+    "qc"
+  ),
+  postprocessingDir = file.path(
+    report_root,
+    "figures",
+    "preprocessingMinfiEwasWater",
+    "metrics"
+  ),
+  svaDir = file.path(report_root, "figures", "svaEnmix")
 )
 inherits(prepared, "dnaEPICO_dnamReport_prepared")
 

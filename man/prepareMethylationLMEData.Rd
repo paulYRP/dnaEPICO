@@ -82,15 +82,15 @@ for downstream mixed-effects modeling helpers.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 prepared_data <- prepareMethylationLMEData(
-    inputPheno = ex$inputPath,
-    personVar = "person",
-    timeVar = "Timepoint",
-    phenotypes = "score",
-    covariates = "sex",
-    factorVars = "sex",
-    cpgLimit = 2,
-    verbose = FALSE,
-    logs = FALSE
+  inputPheno = ex$inputPath,
+  personVar = "person",
+  timeVar = "Timepoint",
+  phenotypes = "score",
+  covariates = "sex",
+  factorVars = "sex",
+  cpgLimit = 2,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(prepared_data)
 

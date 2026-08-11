@@ -1,3 +1,102 @@
+prepareCellCompositionInputsDnaEpico <- function(
+    beta, targets, SampleID, lcRef, constrained
+) {
+    constrained <- validateLogicalScalarDnaEpico(constrained, "constrained")
+    if (!is.character(lcRef) || length(lcRef) != 1L || is.na(lcRef) ||
+        !nzchar(trimws(lcRef))) {
+        stop("lcRef must be one non-empty reference name.", call. = FALSE)
+    }
+    validateCellCompositionBetaStructureDnaEpico(
+        beta = beta, requireSampleNames = TRUE, objectName = "beta"
+    )
+    if (!(SampleID %in% colnames(targets))) {
+        stop("SampleID column not found in targets: ", SampleID,
+            call. = FALSE
+        )
+    }
+    beta_sample_ids <- as.character(colnames(beta))
+    target_sample_ids <- validateSampleIdentifiersDnaEpico(
+        targets[[SampleID]], paste0("Phenotype column '", SampleID, "'")
+    )
+    target_match <- matchSampleIdentifiersDnaEpico(
+        query = beta_sample_ids, reference = target_sample_ids,
+        queryLabel = "Beta-matrix sample identifiers",
+        referenceLabel = paste0("phenotype column '", SampleID, "'"),
+        requireSameSet = TRUE
+    )
+    list(
+        constrained = constrained,
+        internal = lcRef %in% c("saliva", "salivaEPIC"),
+        sampleIDs = beta_sample_ids,
+        range = summarizeMethylationRangeDnaEpico(beta, "beta"),
+        targets = targets[target_match, , drop = FALSE]
+    )
+}
+
+estimateCellCompositionDnaEpico <- function(
+    beta, lcRef, constrained, internal
+) {
+    if (isTRUE(internal)) {
+        return(list(
+            values = estimateLCFromBetaDnaEpico(
+                meth = beta, ref = lcRef, constrained = constrained
+            ),
+            method = "estimateLC"
+        ))
+    }
+    list(
+        values = ENmix::estimateCellProp(
+            userdata = beta, refdata = lcRef,
+            nonnegative = TRUE, normalize = FALSE, nProbes = 50,
+            refplot = FALSE
+        ),
+        method = "ENmix::estimateCellProp"
+    )
+}
+
+mergeCellCompositionDnaEpico <- function(targets, lc, phenoOrder) {
+    rownames(targets) <- NULL
+    pheno_lc <- cbind(targets, as.data.frame(lc, stringsAsFactors = FALSE))
+    pheno_lc <- pheno_lc[, !duplicated(colnames(pheno_lc)), drop = FALSE]
+    lead_cols <- splitOptionMinfiEwasWater(phenoOrder, sep = ";")
+    lead_cols <- lead_cols[lead_cols %in% colnames(pheno_lc)]
+    remaining_cols <- setdiff(colnames(pheno_lc), lead_cols)
+    pheno_lc[, c(lead_cols, remaining_cols), drop = FALSE]
+}
+
+logCellCompositionStartDnaEpico <- function(inputs, lcRef, verbose, logPath) {
+    emitLogMinfiEwasWater(c(
+        paste("Cell composition reference:", lcRef),
+        if (inputs$internal) {
+            "Using internal Houseman implementation (estimateLC)."
+        } else {
+            "Using ENmix Houseman-based cell composition."
+        },
+        formatMethylationRangeLogDnaEpico(inputs$range)
+    ), verbose = verbose, log_path = logPath)
+}
+
+logCellCompositionResultDnaEpico <- function(
+    phenoLC, method, verbose, logPath
+) {
+    emitLogMinfiEwasWater(c(
+        paste("Cell composition method:   ", method),
+        paste("phenoLC columns:           ", ncol(phenoLC)),
+        paste("phenoLC rows:              ", nrow(phenoLC)),
+        "============================================================"
+    ), verbose = verbose, log_path = logPath)
+}
+
+newCellCompositionResultDnaEpico <- function(
+    estimate, phenoLC, inputs, SampleID, lcRef
+) {
+    structure(list(
+        lc = estimate$values, phenoLC = phenoLC,
+        sampleIDs = inputs$sampleIDs, SampleID = SampleID, ref = lcRef,
+        method = estimate$method, methylationRange = inputs$range
+    ), class = "dnaEPICO_minfiEwasWater_lc")
+}
+
 #' Estimate cell composition for preprocessingMinfiEwasWater
 #'
 #' Estimate cell proportions from beta values using `estimateLC()` for saliva
@@ -47,7 +146,10 @@
 estimateLCMinfiEwasWater <- function(
     beta, targets, SampleID = "Sample_Name",
     lcRef = "salivaEPIC",
-        phenoOrder = "Sample_Name;Timepoint;Sex;PredSex;Basename;Sentrix_ID;Sentrix_Position",
+    phenoOrder = paste0(
+        "Sample_Name;Timepoint;Sex;PredSex;Basename;",
+        "Sentrix_ID;Sentrix_Position"
+    ),
     constrained = FALSE, verbose = FALSE, logs = FALSE, log_dir = NULL,
     log_file = "log_estimateLCMinfiEwasWater.txt"
 ) {
@@ -56,104 +158,31 @@ estimateLCMinfiEwasWater <- function(
         log_file = log_file
     )
 
-    constrained <- validateLogicalScalarDnaEpico(
-        constrained,
-        "constrained"
+    inputs <- prepareCellCompositionInputsDnaEpico(
+        beta, targets, SampleID, lcRef, constrained
     )
-    if (!is.character(lcRef) || length(lcRef) != 1L || is.na(lcRef) ||
-        !nzchar(trimws(lcRef))) {
-        stop("lcRef must be one non-empty reference name.", call. = FALSE)
-    }
-    ewas_refs <- c("saliva", "salivaEPIC")
-    use_internal <- lcRef %in% ewas_refs
 
-    validateCellCompositionBetaStructureDnaEpico(
-        beta = beta,
-        requireSampleNames = TRUE, objectName = "beta"
+    logCellCompositionStartDnaEpico(inputs, lcRef, verbose, log_path)
+
+    estimate <- estimateCellCompositionDnaEpico(
+        beta, lcRef, inputs$constrained, inputs$internal
     )
-    beta_sample_ids <- as.character(colnames(beta))
-    beta_range <- summarizeMethylationRangeDnaEpico(beta, "beta")
-    if (!(SampleID %in% colnames(targets))) {
-        stop("SampleID column not found in targets: ", SampleID,
-            call. = FALSE
-        )
-    }
-    target_sample_ids <- validateSampleIdentifiersDnaEpico(
-        targets[[SampleID]],
-        paste0("Phenotype column '", SampleID, "'")
-    )
-    target_match <- matchSampleIdentifiersDnaEpico(
-        query = beta_sample_ids,
-        reference = target_sample_ids,
-            queryLabel = "Beta-matrix sample identifiers",
-        referenceLabel = paste0(
-            "phenotype column '", SampleID,
-            "'"
-        ), requireSameSet = TRUE
-    )
-    targets <- targets[target_match, , drop = FALSE]
-    rownames(targets) <- NULL
-
-    emitLogMinfiEwasWater(c(
-        paste(
-            "Cell composition reference:",
-            lcRef
-        ), if (use_internal) {
-            "Using internal Houseman implementation (estimateLC)."
-        } else {
-            "Using ENmix Houseman-based cell composition."
-        }, formatMethylationRangeLogDnaEpico(beta_range)
-    ), verbose = verbose, log_path = log_path)
-
-    if (use_internal) {
-        lc <- estimateLCFromBetaDnaEpico(
-            meth = beta,
-            ref = lcRef, constrained = constrained
-        )
-        method <- "estimateLC"
-    } else {
-        lc <- ENmix::estimateCellProp(
-            userdata = beta, refdata = lcRef,
-            nonnegative = TRUE, normalize = FALSE, nProbes = 50,
-            refplot = FALSE
-        )
-        method <- "ENmix::estimateCellProp"
-    }
-
-    if (nrow(lc) != ncol(beta)) {
-        stop("Cell-composition output has ", nrow(lc), " rows for ",
+    if (nrow(estimate$values) != ncol(beta)) {
+        stop("Cell-composition output has ", nrow(estimate$values),
+            " rows for ",
             ncol(beta), " beta-matrix samples.",
             call. = FALSE
         )
     }
-
-    phenoLC <- cbind(targets, as.data.frame(lc, stringsAsFactors = FALSE))
-    phenoLC <- phenoLC[, !duplicated(colnames(phenoLC)), drop = FALSE]
-
-    lead_cols <- splitOptionMinfiEwasWater(phenoOrder, sep = ";")
-    lead_cols <- lead_cols[lead_cols %in% colnames(phenoLC)]
-    remaining_cols <- setdiff(colnames(phenoLC), lead_cols)
-    phenoLC <- phenoLC[, c(lead_cols, remaining_cols), drop = FALSE]
-
-    emitLogMinfiEwasWater(
-        c(
-            paste(
-                "Cell composition method:   ",
-                method
-            ), paste("phenoLC columns:           ", ncol(phenoLC)),
-            paste("phenoLC rows:              ", nrow(phenoLC)),
-            "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
+    phenoLC <- mergeCellCompositionDnaEpico(
+        inputs$targets, estimate$values, phenoOrder
     )
 
-    structure(
-        list(
-            lc = lc, phenoLC = phenoLC, sampleIDs = beta_sample_ids,
-            SampleID = SampleID, ref = lcRef, method = method,
-            methylationRange = beta_range
-        ),
-        class = "dnaEPICO_minfiEwasWater_lc"
+    logCellCompositionResultDnaEpico(
+        phenoLC, estimate$method, verbose, log_path
+    )
+    newCellCompositionResultDnaEpico(
+        estimate, phenoLC, inputs, SampleID, lcRef
     )
 }
 

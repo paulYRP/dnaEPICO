@@ -56,7 +56,10 @@ formatCallStackMinfiEwasWater <- function(calls) {
     }, character(1))
 
     keep <- !grepl(
-        "^(tryCatch|tryCatchList|tryCatchOne|doTryCatch|withCallingHandlers)\\b",
+        paste0(
+            "^(tryCatch|tryCatchList|tryCatchOne|doTryCatch|withC",
+            "allingHandlers)\\b"
+        ),
         call_text
     )
     keep <- keep & !grepl(
@@ -107,7 +110,7 @@ withLoggedErrorsMinfiEwasWater <- function(
                         width.cutoff = 500L
                     ), collapse = " "))
                 }, call_lines,
-                    "============================================================"
+                "============================================================"
             ),
             verbose = verbose, log_path = log_path
         )
@@ -253,8 +256,11 @@ validateSampleIdentifiersDnaEpico <- function(ids, label) {
 
     duplicated_ids <- unique(ids[duplicated(ids)])
     if (length(duplicated_ids) > 0L) {
-        stop(label, " contains duplicate sample identifiers: ",
-            paste(duplicated_ids, collapse = ", "),
+        duplicated_ids_text <- paste(duplicated_ids, collapse = ", ")
+        stop(sprintf(
+            "%s contains duplicate sample identifiers: %s",
+            label, duplicated_ids_text
+        ),
             call. = FALSE
         )
     }
@@ -269,7 +275,7 @@ validateSampleIdentifiersDnaEpico <- function(ids, label) {
 matchSampleIdentifiersDnaEpico <- function(
     query, reference,
     queryLabel = "query sample identifiers",
-        referenceLabel = "reference sample identifiers",
+    referenceLabel = "reference sample identifiers",
     requireSameSet = FALSE
 ) {
     query <- validateSampleIdentifiersDnaEpico(query, queryLabel)
@@ -280,25 +286,32 @@ matchSampleIdentifiersDnaEpico <- function(
 
     matched <- match(query, reference)
     if (anyNA(matched)) {
-        stop(queryLabel, " not found in ", referenceLabel, ": ",
-            paste(query[is.na(matched)], collapse = ", "),
+        missing_query_text <- paste(query[is.na(matched)], collapse = ", ")
+        stop(sprintf(
+            "%s not found in %s: %s",
+            queryLabel, referenceLabel, missing_query_text
+        ),
             call. = FALSE
         )
     }
 
     if (isTRUE(requireSameSet) && length(query) != length(reference)) {
         extra_reference <- setdiff(reference, query)
-        stop(queryLabel, " and ", referenceLabel,
-            " do not contain the same samples",
-            if (length(extra_reference) > 0L) {
-                paste0(": extra reference samples are ", paste(extra_reference,
-                    collapse = ", "
-                ))
-            } else {
-                "."
-            },
-            call. = FALSE
-        )
+        condition_message <- if (length(extra_reference) > 0L) {
+            extra_reference_text <- paste(extra_reference, collapse = ", ")
+            sprintf(
+                "%s and %s %s: %s are %s",
+                queryLabel, referenceLabel,
+                "do not contain the same samples",
+                "extra reference samples", extra_reference_text
+            )
+        } else {
+            sprintf(
+                "%s and %s do not contain the same samples.",
+                queryLabel, referenceLabel
+            )
+        }
+        stop(condition_message, call. = FALSE)
     }
 
     matched
@@ -346,14 +359,22 @@ resolveNormalizationSexDnaEpico <- function(colData, sexColumn) {
     }
 
     if (anyNA(sex_labels)) {
-        stop("The normalization sex information contains missing or unsupported values",
-            if (length(reported_sex$unknown) > 0L) {
-                paste0(": ", paste(reported_sex$unknown, collapse = ", "))
-            } else {
-                "."
-            },
-            call. = FALSE
-        )
+        condition_message <- if (length(reported_sex$unknown) > 0L) {
+            unknown_sex_text <- paste(reported_sex$unknown, collapse = ", ")
+            sprintf(
+                paste0(
+                    "The normalization sex information contains missing or ",
+                    "unsupported values: %s"
+                ),
+                unknown_sex_text
+            )
+        } else {
+            paste(
+                "The normalization sex information contains missing or",
+                "unsupported values."
+            )
+        }
+        stop(condition_message, call. = FALSE)
     }
 
     sex_labels
@@ -432,7 +453,8 @@ runPlotMinfiEwasWater <- function(
         save_plot <- function() {
             grDevices::tiff(
                 filename = file, width = width, height = height,
-                res = res, type = "cairo"
+                res = res, type = "cairo", compression = "lzw",
+                bg = "white"
             )
             on.exit(grDevices::dev.off(), add = TRUE)
             draw_fun()

@@ -1,3 +1,92 @@
+validateReadPhenotypeInputsDnaEpico <- function(phenoFile, SampleID, nSamples) {
+    if (!file.exists(phenoFile)) {
+        stop("phenoFile does not exist: ", phenoFile, call. = FALSE)
+    }
+    if (!is.character(SampleID) || length(SampleID) != 1L ||
+        is.na(SampleID) || !nzchar(trimws(SampleID))) {
+        stop("SampleID must be a single, non-empty character string.",
+            call. = FALSE
+        )
+    }
+    if (length(nSamples) != 1L || (!is.na(nSamples) &&
+        (!is.numeric(nSamples) || !is.finite(nSamples) || nSamples < 1L ||
+            nSamples != floor(nSamples)))) {
+        stop("nSamples must be a single positive integer or NA.",
+            call. = FALSE
+        )
+    }
+    if (is.na(nSamples)) NA_integer_ else as.integer(nSamples)
+}
+
+logPhenotypeReadStartDnaEpico <- function(
+    phenoFile, sepType, SampleID, nSamples, verbose, logPath
+) {
+    resolved_separator <- resolveSeparatorMinfiEwasWater(sepType)
+    emitLogMinfiEwasWater(lines = c(
+        "============================================================",
+        paste("Phenotype file:           ", phenoFile),
+        paste("Separator type:           ", if (is.null(resolved_separator)) {
+            "default (',')"
+        } else {
+            sepType
+        }),
+        paste("SampleID column:          ", SampleID),
+        paste("nSamples limit:           ", if (is.na(nSamples)) {
+            "all"
+        } else {
+            nSamples
+        })
+    ), verbose = verbose, log_path = logPath)
+}
+
+readPhenotypeFileDnaEpico <- function(phenoFile, sepType) {
+    separator <- resolveSeparatorMinfiEwasWater(sepType)
+    if (is.null(separator)) {
+        return(utils::read.csv(phenoFile, stringsAsFactors = FALSE))
+    }
+    utils::read.csv(phenoFile, sep = separator, stringsAsFactors = FALSE)
+}
+
+preparePhenotypeTargetsDnaEpico <- function(targets, SampleID, nSamples) {
+    if (!(SampleID %in% colnames(targets))) {
+        stop("SampleID column not found in phenotype data: ", SampleID,
+            call. = FALSE
+        )
+    }
+    if (nrow(targets) == 0L) {
+        stop("The phenotype file contains no sample rows.", call. = FALSE)
+    }
+    targets[[SampleID]] <- validateSampleIdentifiersDnaEpico(
+        targets[[SampleID]], paste0("Phenotype column '", SampleID, "'")
+    )
+    if (!is.na(nSamples) && nSamples < nrow(targets)) {
+        return(list(
+            targets = targets[seq_len(nSamples), , drop = FALSE],
+            subsetLine = paste("Using the first", nSamples, "samples.")
+        ))
+    }
+    list(
+        targets = targets,
+        subsetLine = paste("Using all", nrow(targets), "samples.")
+    )
+}
+
+logPhenotypeReadResultDnaEpico <- function(prepared, verbose, logPath) {
+    targets <- prepared$targets
+    preview_cols <- seq_len(min(ncol(targets), 5L))
+    preview_lines <- utils::capture.output(utils::head(
+        targets[, preview_cols, drop = FALSE]
+    ))
+    emitLogMinfiEwasWater(lines = c(
+        prepared$subsetLine,
+        paste("Phenotype file loaded with", nrow(targets), "samples and",
+            ncol(targets), "columns."
+        ),
+        "Preview of targets:", preview_lines,
+        "============================================================"
+    ), verbose = verbose, log_path = logPath)
+}
+
 #' Read phenotype targets for shared dnaEPICO workflows
 #'
 #' Read the phenotype table used by shared `dnaEPICO` workflows, validate the
@@ -51,100 +140,15 @@ readPhenotypeTargets <- function(
         log_file = log_file
     )
 
-    if (!file.exists(phenoFile)) {
-        stop("phenoFile does not exist: ", phenoFile, call. = FALSE)
-    }
-
-    if (!is.character(SampleID) || length(SampleID) != 1L ||
-        is.na(SampleID) || !nzchar(trimws(SampleID))) {
-        stop("SampleID must be a single, non-empty character string.",
-            call. = FALSE
-        )
-    }
-
-    if (length(nSamples) != 1L) {
-        stop("nSamples must be a single positive integer or NA.",
-            call. = FALSE
-        )
-    }
-    if (!is.na(nSamples)) {
-        if (!is.numeric(nSamples) || !is.finite(nSamples) ||
-            nSamples < 1L || nSamples != floor(nSamples)) {
-            stop("nSamples must be a single positive integer or NA.",
-                call. = FALSE
-            )
-        }
-
-        nSamples <- as.integer(nSamples)
-    }
-
-    emitLogMinfiEwasWater(lines = c(
-        "============================================================",
-        paste("Phenotype file:           ", phenoFile), paste(
-            "Separator type:           ",
-            if (is.null(resolveSeparatorMinfiEwasWater(sepType))) {
-                "default (',')"
-            } else {
-                sepType
-            }
-        ), paste("SampleID column:          ", SampleID),
-        paste("nSamples limit:           ", if (is.na(nSamples)) {
-            "all"
-        } else {
-            nSamples
-        })
-    ), verbose = verbose, log_path = log_path)
-
-    sep_char <- resolveSeparatorMinfiEwasWater(sepType)
-
-    if (is.null(sep_char)) {
-        targets <- utils::read.csv(phenoFile, stringsAsFactors = FALSE)
-    } else {
-        targets <- utils::read.csv(phenoFile,
-            sep = sep_char,
-            stringsAsFactors = FALSE
-        )
-    }
-
-    if (!(SampleID %in% colnames(targets))) {
-        stop("SampleID column not found in phenotype data: ",
-            SampleID,
-            call. = FALSE
-        )
-    }
-    if (nrow(targets) == 0L) {
-        stop("The phenotype file contains no sample rows.", call. = FALSE)
-    }
-
-    targets[[SampleID]] <- validateSampleIdentifiersDnaEpico(
-        targets[[SampleID]],
-        paste0("Phenotype column '", SampleID, "'")
+    nSamples <- validateReadPhenotypeInputsDnaEpico(
+        phenoFile, SampleID, nSamples
     )
-
-    if (!is.na(nSamples) && nSamples < nrow(targets)) {
-        targets <- targets[seq_len(nSamples), , drop = FALSE]
-        subset_line <- paste("Using the first", nSamples, "samples.")
-    } else {
-        subset_line <- paste("Using all", nrow(targets), "samples.")
-    }
-
-    preview_cols <- seq_len(min(ncol(targets), 5L))
-    preview_lines <- utils::capture.output(utils::head(targets[,
-        preview_cols,
-        drop = FALSE
-    ]))
-
-    emitLogMinfiEwasWater(
-        lines = c(
-            subset_line, paste(
-                "Phenotype file loaded with",
-                nrow(targets), "samples and", ncol(targets), "columns."
-            ),
-            "Preview of targets:", preview_lines,
-                "============================================================"
-        ),
-        verbose = verbose, log_path = log_path
+    logPhenotypeReadStartDnaEpico(
+        phenoFile, sepType, SampleID, nSamples, verbose, log_path
     )
-
-    targets
+    prepared <- preparePhenotypeTargetsDnaEpico(
+        readPhenotypeFileDnaEpico(phenoFile, sepType), SampleID, nSamples
+    )
+    logPhenotypeReadResultDnaEpico(prepared, verbose, log_path)
+    prepared$targets
 }

@@ -87,16 +87,16 @@ primary normalized object and return the filtered result.
 \dontshow{if (requireNamespace("minfiData", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ex <- dnaEPICO:::exampleMinfiWorkflowStateDnaEpico()
 filtered_data <- filterProbesMinfiEwasWater(
-    normData = ex$normData,
-    RGSet = ex$sampleData$RGSet,
-    pvalThreshold = 1,
-    chrToRemove = "chrY",
-    snpsToRemove = "SBE",
-    mafThreshold = 1,
-    probeExclusionPath = ex$probeExclusionPath,
-    detPtype = "m+u",
-    verbose = FALSE,
-    logs = FALSE
+  normData = ex$normData,
+  RGSet = ex$sampleData$RGSet,
+  pvalThreshold = 1,
+  chrToRemove = "chrY",
+  snpsToRemove = "SBE",
+  mafThreshold = 1,
+  probeExclusionPath = ex$probeExclusionPath,
+  detPtype = "m+u",
+  verbose = FALSE,
+  logs = FALSE
 )
 filtered_data$counts[["probeExclusion"]]
 \dontshow{\}) # examplesIf}

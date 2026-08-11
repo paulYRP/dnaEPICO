@@ -156,3 +156,22 @@ test_that("EPICv2 manifest extraction can use an IlmnID column", {
 
     expect_identical(result$ids, c("cgWGBS", "cgBLAT"))
 })
+test_that("adaptive preprocessing summaries omit embedded plot titles", {
+    retention <- dnaEPICO:::plotRetentionMinfiEwasWater(
+        c(Read = 100, Detection = 96, Sex = 94),
+        unit = "samples", display = FALSE
+    )
+    composition <- dnaEPICO:::plotCellCompositionMinfiEwasWater(
+        list(lc = matrix(
+            c(0.2, 0.3, 0.5, 0.4, 0.35, 0.25), nrow = 2,
+            dimnames = list(c("S1", "S2"), c("CellA", "CellB", "CellC"))
+        )), display = FALSE
+    )
+
+    expect_s3_class(retention, "ggplot")
+    expect_s3_class(composition, "ggplot")
+    expect_null(retention$labels$title)
+    expect_null(composition$labels$title)
+    expect_null(retention$labels$caption)
+    expect_null(composition$labels$caption)
+})

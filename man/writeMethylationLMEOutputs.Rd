@@ -14,6 +14,7 @@ writeMethylationLMEOutputs(
   significantInteractionDir,
   annotatedLMEOut,
   reportAssetsDir = NULL,
+  vennDResults = NULL,
   saveTxtSummaries = TRUE,
   saveSignificantInteractions = FALSE,
   verbose = FALSE,
@@ -48,6 +49,9 @@ XLSX workbook.}
 \item{reportAssetsDir}{Character or \code{NULL}. Report results directory used for
 the compressed TSV table and compact metadata sidecars.}
 
+\item{vennDResults}{Optional model-level Venn result. Its configuration
+metadata and threshold tables are added before the workbook dictionary.}
+
 \item{saveTxtSummaries}{Logical. If \code{TRUE}, write tab-delimited summary
 tables.}
 
@@ -75,31 +79,31 @@ tables, and annotated results from the longitudinal mixed-effects workflow.
 \examples{
 ex <- dnaEPICO:::exampleMethylationLMEStateDnaEpico()
 annotation_data <- annotateMethylationLMESummaries(
-    modelSummaries = ex$modelSummaries,
-    annotationObject = ex$annotationData,
-    annotationCols = "Name,chr,pos",
-    verbose = FALSE,
-    logs = FALSE
+  modelSummaries = ex$modelSummaries,
+  annotationObject = ex$annotationData,
+  annotationCols = "Name,chr,pos",
+  verbose = FALSE,
+  logs = FALSE
 )
 significant_hits <- collectSignificantInteractionsMethylationLME(
-    modelResults = ex$modelResults,
-    pvalThreshold = 1,
-    verbose = FALSE,
-    logs = FALSE
+  modelResults = ex$modelResults,
+  pvalThreshold = 1,
+  verbose = FALSE,
+  logs = FALSE
 )
 output_paths <- writeMethylationLMEOutputs(
-    modelResults = ex$modelResults,
-    modelSummaries = ex$modelSummaries,
-    annotatedResults = annotation_data,
-    significantInteractions = significant_hits,
-    outputRData = file.path(ex$tempDir, "models"),
-    summaryTxtDir = file.path(ex$tempDir, "summary"),
-    significantInteractionDir = file.path(ex$tempDir, "significant"),
-    annotatedLMEOut = file.path(ex$tempDir, "annotated"),
-    saveTxtSummaries = TRUE,
-    saveSignificantInteractions = TRUE,
-    verbose = FALSE,
-    logs = FALSE
+  modelResults = ex$modelResults,
+  modelSummaries = ex$modelSummaries,
+  annotatedResults = annotation_data,
+  significantInteractions = significant_hits,
+  outputRData = file.path(ex$tempDir, "models"),
+  summaryTxtDir = file.path(ex$tempDir, "summary"),
+  significantInteractionDir = file.path(ex$tempDir, "significant"),
+  annotatedLMEOut = file.path(ex$tempDir, "annotated"),
+  saveTxtSummaries = TRUE,
+  saveSignificantInteractions = TRUE,
+  verbose = FALSE,
+  logs = FALSE
 )
 names(output_paths)
 
