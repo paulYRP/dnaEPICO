@@ -16,7 +16,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 <!-- badges: end -->
 
-<br clear="right" /> <br /> <br />
+<br clear="right" />
 
 <p align="center">
 

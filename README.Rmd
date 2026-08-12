@@ -16,8 +16,6 @@ output: github_document
 <!-- badges: end -->
 
 <br clear="right" />
-<br />
-<br />
 
 <p align="center"><img src="https://raw.githubusercontent.com/paulYRP/dnaEPICO/devel/inst/extdata/dnaEPICO.gif" alt="dnaEPICO workflow preview" width="650" /></p>
 
