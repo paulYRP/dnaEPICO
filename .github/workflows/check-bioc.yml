@@ -209,6 +209,38 @@ jobs:
           remotes::install_local(dependencies = TRUE, repos = BiocManager::repositories(), build_vignettes = TRUE, upgrade = TRUE, force = TRUE)
         shell: Rscript {0}
 
+      # Temporary compatibility pin. methylumi imports the retired
+      # lattice::parallel symbol, which lattice 0.23-1 no longer exports.
+      # Remove this step after methylumi switches to lattice::parallelplot.
+      - name: Pin lattice for methylumi compatibility
+        run: |
+          required_version <- package_version("0.22-9")
+
+          remotes::install_version(
+            package = "lattice",
+            version = as.character(required_version),
+            repos = "https://cloud.r-project.org",
+            upgrade = "never"
+          )
+
+          installed_version <- packageVersion("lattice")
+
+          if (installed_version != required_version) {
+            stop(
+              "Expected lattice ", required_version,
+              ", but installed ", installed_version
+            )
+          }
+
+          stopifnot(requireNamespace("methylumi", quietly = TRUE))
+          stopifnot(requireNamespace("wateRmelon", quietly = TRUE))
+
+          message(
+            "methylumi/wateRmelon compatibility verified with lattice ",
+            installed_version
+          )
+        shell: Rscript {0}
+
       - name: Install BiocGenerics
         if:  env.has_RUnit == 'true'
         run: |
