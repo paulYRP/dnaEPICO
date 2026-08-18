@@ -3,6 +3,10 @@
 # ===============================================
 MAKEFLAGS += --output-sync
 
+# Rscript from the R installation that exported this Makefile.
+# Override this value when using another R installation.
+RSCRIPT ?= @DNAEPICO_RSCRIPT@
+
 # ===============================================
 # MODEL SELECTION
 # ===============================================
@@ -171,7 +175,7 @@ VENND_LME_OMNIBUS_LABELS = NULL
 # ===============================================
 DNAPIPE_EMPTY :=
 DNAPIPE_SPACE := $(DNAPIPE_EMPTY) $(DNAPIPE_EMPTY)
-DNAPIPE_MK_RAW := $(shell Rscript -e "cat(system.file('extdata','make','Makefile.rules.pipeline',package='dnaEPICO'))")
+DNAPIPE_MK_RAW := $(shell "$(RSCRIPT)" -e "cat(system.file('extdata','make','Makefile.rules.pipeline',package='dnaEPICO'))")
 DNAPIPE_MK := $(subst $(DNAPIPE_SPACE),\ ,$(DNAPIPE_MK_RAW))
 include $(DNAPIPE_MK)
 

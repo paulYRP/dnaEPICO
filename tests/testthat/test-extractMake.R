@@ -14,6 +14,20 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
     expect_true(file.exists(makefile_path))
     expect_match(basename(makefile_path), "^Makefile$")
     makefile <- readLines(makefile_path, warn = FALSE)
+    rscript_name <- if (.Platform$OS.type == "windows") {
+        "Rscript.exe"
+    } else {
+        "Rscript"
+    }
+    rscript_path <- normalizePath(
+        file.path(R.home("bin"), rscript_name),
+        winslash = "/",
+        mustWork = TRUE
+    )
+    rscript_path <- gsub("$", "$$", rscript_path, fixed = TRUE)
+    rscript_path <- gsub("#", "\\#", rscript_path, fixed = TRUE)
+    expect_true(any(makefile == paste("RSCRIPT ?=", rscript_path)))
+    expect_false(any(grepl("@DNAEPICO_RSCRIPT@", makefile, fixed = TRUE)))
     expect_true(all(c(
         "COVARIATES_GLM = Sex",
         "COVARIATES_LME = Sex",
@@ -61,6 +75,9 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         fixed = TRUE
     )))
     expect_true(any(grepl("Makefile.rules.pipeline", makefile, fixed = TRUE)))
+    expect_true(any(grepl(
+        '$(shell "$(RSCRIPT)" -e', makefile, fixed = TRUE
+    )))
     expect_false(any(grepl("ARGUMENT NORMALISATION", makefile, fixed = TRUE)))
     expect_true(any(grepl(
         "DNAPIPE_MK := $(subst $(DNAPIPE_SPACE),\\ ,$(DNAPIPE_MK_RAW))",
@@ -225,10 +242,10 @@ test_that("extractMake copies the packaged Makefile and returns its path", {
         fixed = TRUE
     )))
     validation_lines <- rules[grepl(
-        "Rscript -e \"invisible\\(NULL\\)\".*require_model_config",
-        rules
+        '"$(RSCRIPT)" -e "invisible(NULL)"', rules, fixed = TRUE
     )]
     expect_length(validation_lines, 2L)
+    expect_false(any(grepl("\t@Rscript -e", rules, fixed = TRUE)))
     expect_true(all(c(
         "COVARIATES_GLM", "FACTOR_VARS_GLM", "SCALE_VARS_GLM",
         "GLM_OMNIBUS_TEST", "COVARIATES_LME", "FACTOR_VARS_LME",
@@ -330,6 +347,20 @@ test_that("model-specific Make configuration validation is explicit", {
     make_command <- Sys.which("make")
     skip_if(!nzchar(make_command), "GNU Make is not available")
 
+    rscript_name <- if (.Platform$OS.type == "windows") {
+        "Rscript.exe"
+    } else {
+        "Rscript"
+    }
+    rscript_path <- normalizePath(
+        file.path(R.home("bin"), rscript_name),
+        winslash = "/",
+        mustWork = TRUE
+    )
+    rscript_path <- gsub("$", "$$", rscript_path, fixed = TRUE)
+    rscript_path <- gsub("#", "\\#", rscript_path, fixed = TRUE)
+    rscript_config <- paste("RSCRIPT :=", rscript_path)
+
     rules_file <- system.file(
         "extdata", "make", "Makefile.rules.pipeline",
         package = "dnaEPICO",
@@ -358,11 +389,15 @@ test_that("model-specific Make configuration validation is explicit", {
         rules[lme_start:lme_end],
         ".PHONY: f3",
         "f3:",
-        "\t@Rscript -e \"invisible(NULL)\""
+        "\t@\"$(RSCRIPT)\" -e \"invisible(NULL)\""
     )
     run_make <- function(config, target) {
         makefile <- file.path(withr::local_tempdir(), "Makefile")
-        writeLines(c(config, validation_rules), makefile, useBytes = TRUE)
+        writeLines(
+            c(rscript_config, config, validation_rules),
+            makefile,
+            useBytes = TRUE
+        )
         output <- suppressWarnings(system2(
             make_command,
             c("--no-print-directory", "-f", makefile, target),
@@ -438,7 +473,23 @@ test_that("model-specific Make configuration validation is explicit", {
 test_that("the exported Makefile runs from a project path containing spaces", {
     make_command <- Sys.which("make")
     skip_if(!nzchar(make_command), "GNU Make is not available")
-    skip_if(!nzchar(Sys.which("Rscript")), "Rscript is not available")
+
+    path_entries <- strsplit(
+        Sys.getenv("PATH"), .Platform$path.sep, fixed = TRUE
+    )[[1L]]
+    contains_rscript <- vapply(path_entries, function(path) {
+        if (!nzchar(path)) {
+            return(FALSE)
+        }
+        any(file.exists(file.path(path, c("Rscript", "Rscript.exe"))))
+    }, logical(1))
+    restricted_path <- paste(
+        path_entries[!contains_rscript], collapse = .Platform$path.sep
+    )
+    withr::local_envvar(c(PATH = restricted_path))
+    if (.Platform$OS.type != "windows") {
+        expect_false(nzchar(Sys.which("Rscript")))
+    }
 
     tmp <- file.path(withr::local_tempdir(), "dnaEPICO project with spaces")
     dir.create(tmp, recursive = TRUE)

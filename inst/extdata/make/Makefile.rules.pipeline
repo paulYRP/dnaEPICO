@@ -209,7 +209,7 @@ step1:
 	  MODEL=$(MODEL)
 
 $(STEP1_PRIMARY): $(PHENO_FILE)
-	@Rscript -e "$(SET_SEED_EXPR) suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingMinfiEwasWater( \
+	@"$(RSCRIPT)" -e "$(SET_SEED_EXPR) suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingMinfiEwasWater( \
 	  phenoFile = '$(PHENO_FILE)', \
 	  sepType = $(SEP_TYPE_ARG), \
 	  idatFolder = '$(DATA_DIR)/$(STEP1)/$(IDAT_DIR)/', \
@@ -250,7 +250,7 @@ $(STEP1_PRIMARY): $(PHENO_FILE)
 	  saveOutputs = TRUE ))"
 
 $(STEP1_DERIVED): $(STEP1_PRIMARY)
-	@Rscript -e "target <- commandArgs(trailingOnly = TRUE)[[1L]]; if (!file.exists(target)) stop('Step 1 did not create expected output: ', target, call. = FALSE)" "$@"
+	@"$(RSCRIPT)" -e "target <- commandArgs(trailingOnly = TRUE)[[1L]]; if (!file.exists(target)) stop('Step 1 did not create expected output: ', target, call. = FALSE)" "$@"
 
 # =================================================================================================================================
 # Step 2: Surrogate Variable Analysis
@@ -260,8 +260,8 @@ step2:
 	@$(MAKE) -j1 $(SVA_MARKER) MODEL=$(MODEL)
 
 $(SVA_MARKER): $(PHENO_LC) $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData
-	@Rscript -e "if (file.exists('$(SVA_MARKER)')) unlink('$(SVA_MARKER)')"
-	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(svaEnmix( \
+	@"$(RSCRIPT)" -e "if (file.exists('$(SVA_MARKER)')) unlink('$(SVA_MARKER)')"
+	@"$(RSCRIPT)" -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(svaEnmix( \
 	  phenoFile = '$(PHENO_LC)', \
 	  rgsetData = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData', \
 	  sepType = $(SEP_TYPE_ARG), \
@@ -283,7 +283,7 @@ $(SVA_MARKER): $(PHENO_LC) $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData
 	  tiffRes = $(TIFF_RES), \
 	  logs = TRUE, \
 	  saveOutputs = TRUE ))"
-	@Rscript -e "if (!file.exists('$(PHENO_LC)')) stop('SVA phenotype file is missing.', call. = FALSE); dir.create(dirname('$(SVA_MARKER)'), recursive = TRUE, showWarnings = FALSE); if (!file.create('$(SVA_MARKER)')) stop('Could not create the SVA completion marker.', call. = FALSE)"
+	@"$(RSCRIPT)" -e "if (!file.exists('$(PHENO_LC)')) stop('SVA phenotype file is missing.', call. = FALSE); dir.create(dirname('$(SVA_MARKER)'), recursive = TRUE, showWarnings = FALSE); if (!file.create('$(SVA_MARKER)')) stop('Could not create the SVA completion marker.', call. = FALSE)"
 
 # =================================================================================================================================
 # Step 3: Prepare phenotype and methylation data
@@ -304,7 +304,7 @@ $(STEP3_PRIMARY): $(SVA_MARKER) $(PHENO_LC) \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/m_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData \
 	$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/cn_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData
-	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingPheno( \
+	@"$(RSCRIPT)" -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(preprocessingPheno( \
 	  phenoFile = '$(PHENO_LC)', \
 	  sepType = $(SEP_TYPE_ARG), \
 	  betaPath = '$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData', \
@@ -325,17 +325,17 @@ $(STEP3_PRIMARY): $(SVA_MARKER) $(PHENO_LC) \
 	  saveOutputs = TRUE ))"  
 
 $(STEP3_DERIVED): $(STEP3_PRIMARY)
-	@Rscript -e "target <- commandArgs(trailingOnly = TRUE)[[1L]]; if (!file.exists(target)) stop('Step 3 did not create expected output: ', target, call. = FALSE)" "$@"
+	@"$(RSCRIPT)" -e "target <- commandArgs(trailingOnly = TRUE)[[1L]]; if (!file.exists(target)) stop('Step 3 did not create expected output: ', target, call. = FALSE)" "$@"
 	  
 # =================================================================================================================================
 # Step 4: methylationGLM
 # =================================================================================================================================
 .PHONY: validate-glm-config
 validate-glm-config:
-	@Rscript -e "invisible(NULL)" $(call require_model_config,COVARIATES_GLM) $(call require_model_config,FACTOR_VARS_GLM) $(call require_model_config,SCALE_VARS_GLM) $(call require_model_config,GLM_OMNIBUS_TEST)
+	@"$(RSCRIPT)" -e "invisible(NULL)" $(call require_model_config,COVARIATES_GLM) $(call require_model_config,FACTOR_VARS_GLM) $(call require_model_config,SCALE_VARS_GLM) $(call require_model_config,GLM_OMNIBUS_TEST)
 
 $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION) | validate-glm-config
-	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationGLM( \
+	@"$(RSCRIPT)" -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationGLM( \
 	  inputPheno = '$(GLM_PHENO_METHYLATION)', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP4)/$(MODEL_DIR)', \
@@ -384,11 +384,11 @@ $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION) | validate-glm-config
 # =================================================================================================================================
 .PHONY: validate-lme-config
 validate-lme-config:
-	@Rscript -e "if (!$(if $(COMBINED_PHENO_METHYLATION),TRUE,FALSE)) stop('COMBINE_TIMEPOINTS must contain at least one timepoint.', call. = FALSE)"
-	@Rscript -e "invisible(NULL)" $(call require_model_config,COVARIATES_LME) $(call require_model_config,FACTOR_VARS_LME) $(call require_model_config,SCALE_VARS_LME)
+	@"$(RSCRIPT)" -e "if (!$(if $(COMBINED_PHENO_METHYLATION),TRUE,FALSE)) stop('COMBINE_TIMEPOINTS must contain at least one timepoint.', call. = FALSE)"
+	@"$(RSCRIPT)" -e "invisible(NULL)" $(call require_model_config,COVARIATES_LME) $(call require_model_config,FACTOR_VARS_LME) $(call require_model_config,SCALE_VARS_LME)
 
 $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION) | validate-lme-config
-	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationLME( \
+	@"$(RSCRIPT)" -e "suppressPackageStartupMessages(library(dnaEPICO)); invisible(methylationLME( \
 	  inputPheno = '$(COMBINED_PHENO_METHYLATION)', \
 	  outputLogs = '$(MODEL_LOG_DIR)', \
 	  outputRData = '$(RDATA_DIR)/$(MODEL)/$(STEP5)/$(MODEL_DIR)', \
@@ -451,8 +451,8 @@ report-f3lme: $(F3LME)
 report-all: $(FIRST4) $(LME_OUTPUTS)
 
 report-f3 report-f4 report-f3lme report-all:
-	@Rscript -e "dirs <- commandArgs(trailingOnly = TRUE); ok <- vapply(dirs, dir.create, logical(1), recursive = TRUE, showWarnings = FALSE); if (!all(ok | dir.exists(dirs))) stop('Could not create report directories.', call. = FALSE)" "$(STEP6)/$(MODEL)" "$(MODEL_LOG_DIR)"
-	@Rscript -e "suppressPackageStartupMessages(library(dnaEPICO)); result <- dnamReport( \
+	@"$(RSCRIPT)" -e "dirs <- commandArgs(trailingOnly = TRUE); ok <- vapply(dirs, dir.create, logical(1), recursive = TRUE, showWarnings = FALSE); if (!all(ok | dir.exists(dirs))) stop('Could not create report directories.', call. = FALSE)" "$(STEP6)/$(MODEL)" "$(MODEL_LOG_DIR)"
+	@"$(RSCRIPT)" -e "suppressPackageStartupMessages(library(dnaEPICO)); result <- dnamReport( \
 	  outputDir = '$(STEP6)/$(MODEL)', \
 	  phenoTab = '$(PHENO_LC)', \
 	  enmixTab = '$(FIGURES_DIR)/$(MODEL)/$(STEP1)/$(ENMIX_DIR)', \
@@ -477,9 +477,9 @@ report-f3 report-f4 report-f3lme report-all:
 # =================================================================================================================================
 clean_models:
 	@echo "===== Cleaning all models ====="
-	@Rscript -e "models <- trimws(commandArgs(trailingOnly = TRUE)[[1L]]); if (!nzchar(models)) stop('MODELS must contain at least one model directory name.', call. = FALSE)" "$(MODELS)"
+	@"$(RSCRIPT)" -e "models <- trimws(commandArgs(trailingOnly = TRUE)[[1L]]); if (!nzchar(models)) stop('MODELS must contain at least one model directory name.', call. = FALSE)" "$(MODELS)"
 	@$(MAKE) -j1 $(addprefix clean-model-,$(MODELS))
-	@Rscript -e "args <- commandArgs(trailingOnly = TRUE); models <- strsplit(trimws(args[[1L]]), '[[:space:]]+')[[1L]]; roots <- args[2:7]; targets <- unlist(lapply(models, function(model) file.path(roots, model)), use.names = FALSE); remaining <- unique(targets[file.exists(targets)]); if (length(remaining)) stop('Cleanup incomplete because outputs were recreated while clean_models was running:\n  - ', paste(remaining, collapse = '\n  - '), call. = FALSE)" "$(MODELS)" "$(DATA_DIR)" "$(RDATA_DIR)" "$(STEP6)" "$(LOGS_DIR)" "$(FIGURES_DIR)" "$(RESULTS_DIR)"
+	@"$(RSCRIPT)" -e "args <- commandArgs(trailingOnly = TRUE); models <- strsplit(trimws(args[[1L]]), '[[:space:]]+')[[1L]]; roots <- args[2:7]; targets <- unlist(lapply(models, function(model) file.path(roots, model)), use.names = FALSE); remaining <- unique(targets[file.exists(targets)]); if (length(remaining)) stop('Cleanup incomplete because outputs were recreated while clean_models was running:\n  - ', paste(remaining, collapse = '\n  - '), call. = FALSE)" "$(MODELS)" "$(DATA_DIR)" "$(RDATA_DIR)" "$(STEP6)" "$(LOGS_DIR)" "$(FIGURES_DIR)" "$(RESULTS_DIR)"
 	@echo "Cleanup completed for all models. Kept $(DATA_DIR)/$(STEP1)/."
 
 clean-model-%: FORCE
@@ -490,7 +490,7 @@ ifeq ($(MODEL),all)
 	@$(MAKE) -j1 clean_models
 else
 	@echo "Cleaning outputs for: $(MODEL)"
-	@Rscript -e "args <- commandArgs(trailingOnly = TRUE); model <- trimws(args[[1L]]); backslash <- intToUtf8(92L); if (!nzchar(model) || model %in% c('.', '..', 'all') || grepl('/', model, fixed = TRUE) || grepl(backslash, model, fixed = TRUE) || basename(model) != model) stop('MODEL must be a single safe directory name.', call. = FALSE); workspace <- normalizePath(args[[2L]], winslash = '/', mustWork = TRUE); roots <- stats::setNames(args[3:8], c('data', 'rData', 'reports', 'logs', 'figures', 'results')); roots <- vapply(roots, normalizePath, character(1), winslash = '/', mustWork = FALSE); compare_path <- function(path) if (identical(getElement(.Platform, 'OS.type'), 'windows')) tolower(path) else path; trim_path <- function(path) { while (nchar(path) > 1L && endsWith(path, '/')) path <- substr(path, 1L, nchar(path) - 1L); path }; workspace_compare <- trim_path(compare_path(workspace)); root_compare <- vapply(compare_path(roots), trim_path, character(1)); inside <- startsWith(root_compare, paste0(workspace_compare, '/')) & root_compare != workspace_compare; if (!all(inside)) stop('Cleanup output roots must be distinct directories inside the Make workspace: ', paste(names(roots)[!inside], collapse = ', '), call. = FALSE); if (anyDuplicated(root_compare)) stop('Cleanup output roots must resolve to distinct directories.', call. = FALSE); targets <- unique(file.path(roots, model)); existing <- targets[file.exists(targets)]; statuses <- vapply(targets, unlink, integer(1), recursive = TRUE, force = TRUE); remaining <- targets[file.exists(targets)]; if (any(statuses != 0L) || length(remaining)) stop('Cleanup incomplete. Close open output files and ensure no pipeline is running. Paths not removed:\n  - ', paste(remaining, collapse = '\n  - '), call. = FALSE); pruned <- character(); for (root in roots[names(roots) != 'data']) if (dir.exists(root) && !length(list.files(root, all.files = TRUE, no.. = TRUE))) { root_status <- unlink(root, recursive = TRUE, force = TRUE); if (root_status != 0L || dir.exists(root)) stop('Could not remove empty output root: ', root, call. = FALSE); pruned <- c(pruned, root) }; if (length(existing)) cat('Removed package outputs:\n  - ', paste(existing, collapse = '\n  - '), '\n', sep = '') else cat('No package outputs were present for: ', model, '\n', sep = ''); if (length(pruned)) cat('Removed empty output roots:\n  - ', paste(pruned, collapse = '\n  - '), '\n', sep = ''); cat('Preserved user input root: ', roots[['data']], '\n', sep = '')" "$(MODEL)" "$(CURDIR)" "$(DATA_DIR)" "$(RDATA_DIR)" "$(STEP6)" "$(LOGS_DIR)" "$(FIGURES_DIR)" "$(RESULTS_DIR)"
+	@"$(RSCRIPT)" -e "args <- commandArgs(trailingOnly = TRUE); model <- trimws(args[[1L]]); backslash <- intToUtf8(92L); if (!nzchar(model) || model %in% c('.', '..', 'all') || grepl('/', model, fixed = TRUE) || grepl(backslash, model, fixed = TRUE) || basename(model) != model) stop('MODEL must be a single safe directory name.', call. = FALSE); workspace <- normalizePath(args[[2L]], winslash = '/', mustWork = TRUE); roots <- stats::setNames(args[3:8], c('data', 'rData', 'reports', 'logs', 'figures', 'results')); roots <- vapply(roots, normalizePath, character(1), winslash = '/', mustWork = FALSE); compare_path <- function(path) if (identical(getElement(.Platform, 'OS.type'), 'windows')) tolower(path) else path; trim_path <- function(path) { while (nchar(path) > 1L && endsWith(path, '/')) path <- substr(path, 1L, nchar(path) - 1L); path }; workspace_compare <- trim_path(compare_path(workspace)); root_compare <- vapply(compare_path(roots), trim_path, character(1)); inside <- startsWith(root_compare, paste0(workspace_compare, '/')) & root_compare != workspace_compare; if (!all(inside)) stop('Cleanup output roots must be distinct directories inside the Make workspace: ', paste(names(roots)[!inside], collapse = ', '), call. = FALSE); if (anyDuplicated(root_compare)) stop('Cleanup output roots must resolve to distinct directories.', call. = FALSE); targets <- unique(file.path(roots, model)); existing <- targets[file.exists(targets)]; statuses <- vapply(targets, unlink, integer(1), recursive = TRUE, force = TRUE); remaining <- targets[file.exists(targets)]; if (any(statuses != 0L) || length(remaining)) stop('Cleanup incomplete. Close open output files and ensure no pipeline is running. Paths not removed:\n  - ', paste(remaining, collapse = '\n  - '), call. = FALSE); pruned <- character(); for (root in roots[names(roots) != 'data']) if (dir.exists(root) && !length(list.files(root, all.files = TRUE, no.. = TRUE))) { root_status <- unlink(root, recursive = TRUE, force = TRUE); if (root_status != 0L || dir.exists(root)) stop('Could not remove empty output root: ', root, call. = FALSE); pruned <- c(pruned, root) }; if (length(existing)) cat('Removed package outputs:\n  - ', paste(existing, collapse = '\n  - '), '\n', sep = '') else cat('No package outputs were present for: ', model, '\n', sep = ''); if (length(pruned)) cat('Removed empty output roots:\n  - ', paste(pruned, collapse = '\n  - '), '\n', sep = ''); cat('Preserved user input root: ', roots[['data']], '\n', sep = '')" "$(MODEL)" "$(CURDIR)" "$(DATA_DIR)" "$(RDATA_DIR)" "$(STEP6)" "$(LOGS_DIR)" "$(FIGURES_DIR)" "$(RESULTS_DIR)"
 	@echo "Cleanup completed for: $(MODEL)"
 endif
 
@@ -499,12 +499,12 @@ endif
 # =================================================================================================================================
 status:
 	@echo "===== Pipeline Status ====="
-	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 1: preprocessingMinfiEwasWater done\n' else '[MISSING] Step 1: preprocessingMinfiEwasWater output\n')" "$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
-	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 2: SVA done\n' else '[MISSING] Step 2: SVA output\n')" "$(SVA_MARKER)" "$(PHENO_LC)"
-	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 3: preprocessingPheno done\n' else '[MISSING] Step 3: preprocessingPheno output\n')" "$(COMBINED_PHENO_TARGET)"
-	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 4: methylationGLM done\n' else '[MISSING] Step 4: methylationGLM output\n')" "$(GLM_WORKBOOK)" "$(GLM_REPORT_ASSET_DIR)/annotatedGLM.tsv.gz"
-	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 5: methylationLME done\n' else '[MISSING] Step 5: methylationLME output\n')" "$(LME_WORKBOOK)" "$(LME_REPORT_ASSET_DIR)/annotatedLME.tsv.gz"
-	@Rscript -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 6: Report generated\n' else '[MISSING] Step 6: Report output\n')" "$(STEP6)/$(MODEL)/docs/index.html"
+	@"$(RSCRIPT)" -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 1: preprocessingMinfiEwasWater done\n' else '[MISSING] Step 1: preprocessingMinfiEwasWater output\n')" "$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
+	@"$(RSCRIPT)" -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 2: SVA done\n' else '[MISSING] Step 2: SVA output\n')" "$(SVA_MARKER)" "$(PHENO_LC)"
+	@"$(RSCRIPT)" -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 3: preprocessingPheno done\n' else '[MISSING] Step 3: preprocessingPheno output\n')" "$(COMBINED_PHENO_TARGET)"
+	@"$(RSCRIPT)" -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 4: methylationGLM done\n' else '[MISSING] Step 4: methylationGLM output\n')" "$(GLM_WORKBOOK)" "$(GLM_REPORT_ASSET_DIR)/annotatedGLM.tsv.gz"
+	@"$(RSCRIPT)" -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 5: methylationLME done\n' else '[MISSING] Step 5: methylationLME output\n')" "$(LME_WORKBOOK)" "$(LME_REPORT_ASSET_DIR)/annotatedLME.tsv.gz"
+	@"$(RSCRIPT)" -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 6: Report generated\n' else '[MISSING] Step 6: Report output\n')" "$(STEP6)/$(MODEL)/docs/index.html"
 	@echo "============================"
 
 .PHONY: all clean clean_models status models step1 step2 step3 f3 f4 f3lme \

@@ -1,3 +1,10 @@
+CHANGES IN VERSION 0.99.38
+------------------------
+
+    o [18-08-2026] extractMake() now records the current Rscript executable,
+      allowing the exported GNU Make workflow to run when Rscript is not
+      available on PATH.
+
 CHANGES IN VERSION 0.99.37
 ------------------------
 

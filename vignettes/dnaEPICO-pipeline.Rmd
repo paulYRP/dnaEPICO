@@ -949,11 +949,14 @@ Common arguments in this longitudinal stage are:
 
 # Makefile use
 
-Running the exported workflow requires GNU Make 4.3 or later and `Rscript` on
-the system path. Report targets also require Quarto. GNU Make and Quarto are not
-required to install or load `dnaEPICO`; they support the exported workflow and
-report-rendering features, respectively. The exported rules use relative paths
-and support project directories containing spaces. A minimal layout is:
+Running the exported workflow requires GNU Make 4.3 or later. When
+`extractMake()` creates the Makefile, it records the absolute path to the
+`Rscript` executable from the current R installation in the `RSCRIPT` Make
+variable. Therefore, `Rscript` does not need to be on the system path. Report
+targets also require Quarto. GNU Make and Quarto are not required to install or
+load `dnaEPICO`; they support the exported workflow and report-rendering
+features, respectively. The exported rules use relative paths and support
+project directories containing spaces. A minimal layout is:
 
 ```text
 my_project/
@@ -992,6 +995,17 @@ make all MODEL=model1
 make status MODEL=model1
 make clean MODEL=model1
 ```
+
+To use another R installation, override the recorded executable when invoking
+Make. This is useful after loading an R module on a high-performance computing
+system or after moving the Makefile to another computer:
+
+```bash
+make f4 MODEL=model1 RSCRIPT=/path/to/Rscript
+```
+
+Alternatively, regenerate the Makefile with `extractMake()` from the R
+installation that will run the workflow.
 
 The targets run these workflow stages:
 
@@ -1166,6 +1180,8 @@ choices can be edited without changing the pipeline rules themselves.
 
 - `MAKEFLAGS += --output-sync` keeps parallel Make output grouped by recipe,
     which makes logs easier to read.
+- `RSCRIPT` identifies the R installation used by the workflow. Its default is
+    recorded by `extractMake()` and can be overridden when Make is invoked.
 
 ## Models selection and parallel run
 

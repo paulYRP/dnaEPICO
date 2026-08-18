@@ -2,7 +2,7 @@
 % Please edit documentation in R/extractMake.R
 \name{extractMake}
 \alias{extractMake}
-\title{Copy the dnaEPICO Makefile to a user directory}
+\title{Export the dnaEPICO Makefile to a user directory}
 \usage{
 extractMake(destDir, overwrite = FALSE)
 }
@@ -16,15 +16,19 @@ extractMake(destDir, overwrite = FALSE)
 Character scalar containing the path to the copied \code{Makefile}.
 }
 \description{
-Copy the example Makefile supplied with \code{dnaEPICO} to a user directory.
+Export the example Makefile supplied with \code{dnaEPICO} to a user directory.
 }
 \details{
-The exported workflow requires GNU Make 4.3 or later and \code{Rscript} on the
-system path. Quarto is also required for report targets. The rules use
+The exported workflow requires GNU Make 4.3 or later. When the Makefile is
+created, \code{extractMake()} records the absolute path to the \code{Rscript}
+executable from the current R installation in the \code{RSCRIPT} Make variable.
+This value can be overridden when running Make, for example
+\verb{make f4 RSCRIPT=/path/to/Rscript}, when another R installation or an HPC
+module should be used.
+
+Quarto is required only for targets that render reports. The rules use
 relative project paths and support project directories containing spaces.
-GNU Make and Quarto are not required to install or load \code{dnaEPICO}; they are
-used only when running the exported workflow and rendering its report,
-respectively.
+GNU Make and Quarto are not required to install or load \code{dnaEPICO}.
 }
 \examples{
 tmp <- file.path(tempdir(), "dnaEPICO-make-example")
