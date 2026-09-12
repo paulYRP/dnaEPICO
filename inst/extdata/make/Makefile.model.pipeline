@@ -169,7 +169,7 @@ VENND_LME_OMNIBUS_LABELS = NULL
 # ===============================================
 # LOAD dnaEPICO PIPELINE RULES
 # ===============================================
-RSCRIPT ?= Rscript
+RSCRIPT ?= @DNAEPICO_RSCRIPT@
 DNAPIPE_EMPTY :=
 DNAPIPE_SPACE := $(DNAPIPE_EMPTY) $(DNAPIPE_EMPTY)
 DNAPIPE_MK_RAW := $(shell "$(RSCRIPT)" -e "cat(system.file('extdata','make','Makefile.rules.pipeline',package='dnaEPICO'))")
