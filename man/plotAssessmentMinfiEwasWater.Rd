@@ -50,6 +50,9 @@ otherwise \code{NULL}.
 \description{
 Draw either the minfi QC plot or the detection P-value plot from an
 assessment object returned by \code{assessSamplesMinfiEwasWater()}.
+Detection plots show one grey bar per sample in input order, with sample
+labels. Output width expands
+for large sample sets to keep labels readable.
 }
 \examples{
 assessment <- list(

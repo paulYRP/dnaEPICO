@@ -1,3 +1,15 @@
+CHANGES IN VERSION 0.99.39
+------------------------
+
+    o [12-09-2026] Report figures offer PNG, JPEG and TIFF downloads and a
+      persistent light/dark toggle beside the logo. Every timepoint is
+      highlighted and redundant workbook controls are removed.
+
+    o [12-09-2026] Detection QC uses sample-labelled mean-p-value bars.
+      Manhattan points retain chromosome colours; large categorical
+      associations use unlabelled panels with counts CSVs, participant-ID
+      distributions are omitted, and residual diagnostics use scatter plots.
+
 CHANGES IN VERSION 0.99.38
 ------------------------
 

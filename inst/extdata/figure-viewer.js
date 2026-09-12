@@ -4,63 +4,9 @@
   var minimumZoom = 0.25;
   var maximumZoom = 4;
   var zoomStep = 1.15;
-  var zoomStorageKey = "dnaepico.figureZoom";
-  var windowNamePrefix = "dnaepico-figure-zoom:";
 
   function clamp(value, minimum, maximum) {
     return Math.min(maximum, Math.max(minimum, value));
-  }
-
-  function validZoom(value) {
-    if (value === null || value === undefined || value === "") {
-      return null;
-    }
-    var parsed = Number(value);
-    if (!Number.isFinite(parsed)) {
-      return null;
-    }
-    return clamp(parsed, minimumZoom, maximumZoom);
-  }
-
-  function readStoredZoom() {
-    var stored = null;
-    try {
-      stored = validZoom(window.sessionStorage.getItem(zoomStorageKey));
-    } catch (error) {
-      stored = null;
-    }
-    if (stored !== null) {
-      return stored;
-    }
-
-    if (
-      window.location.protocol === "file:" &&
-      window.name.indexOf(windowNamePrefix) === 0
-    ) {
-      stored = validZoom(window.name.slice(windowNamePrefix.length));
-    }
-    return stored === null ? 1 : stored;
-  }
-
-  var sharedZoom = readStoredZoom();
-
-  function storeSharedZoom(value) {
-    sharedZoom = clamp(value, minimumZoom, maximumZoom);
-    try {
-      window.sessionStorage.setItem(zoomStorageKey, String(sharedZoom));
-    } catch (error) {
-      // Storage can be unavailable for local-file reports.
-    }
-    if (
-      window.location.protocol === "file:" &&
-      (!window.name || window.name.indexOf(windowNamePrefix) === 0)
-    ) {
-      window.name = windowNamePrefix + String(sharedZoom);
-    }
-    document.dispatchEvent(new CustomEvent(
-      "dnaepico:figure-zoom-change",
-      { detail: { zoom: sharedZoom } }
-    ));
   }
 
   function parseFigures(controls) {
@@ -74,6 +20,65 @@
     } catch (error) {
       return [];
     }
+  }
+
+  function enableImageDownload(link, format) {
+    if (!/\.(png|jpe?g)$/i.test(format.href)) return;
+    var pending = false;
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (pending) return;
+      pending = true;
+      link.setAttribute("aria-busy", "true");
+      link.setAttribute("aria-disabled", "true");
+      link.textContent = "Preparing " + format.label + "...";
+      var script = document.createElement("script");
+      var timer = window.setTimeout(failed, 30000);
+
+      function finish() {
+        window.clearTimeout(timer);
+        script.onload = script.onerror = null;
+        script.remove();
+        pending = false;
+        link.removeAttribute("aria-busy");
+        link.removeAttribute("aria-disabled");
+      }
+
+      function failed() {
+        finish();
+        link.textContent = "Retry " + format.label + " download";
+        link.title = "The image download could not be prepared. Please try again.";
+      }
+
+      script.onload = function () {
+        try {
+          var binary = window.atob(script.dataset.downloadData);
+          var bytes = new Uint8Array(binary.length);
+          for (var index = 0; index < binary.length; index++) {
+            bytes[index] = binary.charCodeAt(index);
+          }
+          var blob = new Blob([bytes], { type: script.dataset.downloadType });
+          var url = URL.createObjectURL(blob);
+          var save = document.createElement("a");
+          save.href = url;
+          save.download = format.name;
+          save.hidden = true;
+          document.body.appendChild(save);
+          save.click();
+          save.remove();
+          window.setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+          finish();
+          link.textContent = "Download " + format.label;
+          link.removeAttribute("title");
+        } catch (error) {
+          failed();
+        }
+      };
+      script.onerror = failed;
+      script.src = format.href + ".download.js";
+      document.head.appendChild(script);
+    });
   }
 
   function initializeViewer(content) {
@@ -114,8 +119,7 @@
     }
 
     content.dataset.figureViewerInitialized = "true";
-    var zoom = sharedZoom;
-    var geometryFrame = 0;
+    var zoom = 1;
 
     function updateZoomStatus() {
       var percentage = Math.round(zoom * 100);
@@ -127,35 +131,18 @@
       }
     }
 
-    function renderGeometry() {
-      if (!image.naturalWidth || !image.naturalHeight || image.hidden) {
-        return;
-      }
-
-      var availableWidth = Math.max(1, canvas.clientWidth);
-      var availableHeight = Math.max(1, canvas.clientHeight);
-      var fitScale = Math.min(
-        availableWidth / image.naturalWidth,
-        availableHeight / image.naturalHeight
-      );
-      var imageWidth = Math.max(1, image.naturalWidth * fitScale * zoom);
-      var imageHeight = Math.max(1, image.naturalHeight * fitScale * zoom);
-
-      image.style.width = imageWidth + "px";
-      image.style.height = imageHeight + "px";
-      stage.style.width = Math.max(availableWidth, imageWidth) + "px";
-      stage.style.height = Math.max(availableHeight, imageHeight) + "px";
+    function applyZoom() {
+      // Relative sizes cannot feed rounded client dimensions back into layout.
+      canvas.style.setProperty("--dnaepico-stage-size", Math.max(1, zoom) * 100 + "%");
+      canvas.style.setProperty("--dnaepico-image-size", Math.min(1, zoom) * 100 + "%");
       updateZoomStatus();
     }
 
-    function scheduleGeometry() {
-      if (geometryFrame) {
-        window.cancelAnimationFrame(geometryFrame);
+    function updateImageAspect() {
+      if (image.naturalWidth && image.naturalHeight && !image.hidden) {
+        canvas.style.setProperty("--dnaepico-figure-aspect-ratio",
+          image.naturalWidth + " / " + image.naturalHeight);
       }
-      geometryFrame = window.requestAnimationFrame(function () {
-        geometryFrame = 0;
-        renderGeometry();
-      });
     }
 
     function changeZoom(nextZoom, offsetX, offsetY) {
@@ -165,8 +152,7 @@
       var anchorY = (canvas.scrollTop + offsetY) / oldHeight;
 
       zoom = clamp(nextZoom, minimumZoom, maximumZoom);
-      storeSharedZoom(zoom);
-      renderGeometry();
+      applyZoom();
       window.requestAnimationFrame(function () {
         canvas.scrollLeft = anchorX * canvas.scrollWidth - offsetX;
         canvas.scrollTop = anchorY * canvas.scrollHeight - offsetY;
@@ -175,8 +161,7 @@
 
     function resetZoom() {
       zoom = 1;
-      storeSharedZoom(zoom);
-      renderGeometry();
+      applyZoom();
       canvas.scrollTo(0, 0);
     }
 
@@ -184,16 +169,28 @@
       var index = clamp(Number(select.value) - 1, 0, figures.length - 1);
       var item = figures[index];
       title.textContent = item.title;
-      download.href = item.downloadPath;
-      download.download = item.downloadName;
-      download.textContent = "Download " + item.downloadName;
+      download.replaceChildren();
+      var formats = item.downloads && item.downloads.length ? item.downloads : [{
+        href: item.downloadPath, name: item.downloadName, label: "Original"
+      }];
+      formats.forEach(function (format) {
+        var link = document.createElement("a");
+        link.className = "btn btn-sm btn-outline-primary dnaepico-download";
+        link.href = format.href;
+        link.download = format.name;
+        link.textContent = "Download " + format.label;
+        link.setAttribute("aria-label", "Download " + item.title + " as " + format.label);
+        enableImageDownload(link, format);
+        download.appendChild(link);
+      });
       if (description) {
         description.textContent = item.description || "";
       }
       count.textContent = (index + 1) + " of " + figures.length + " figures";
       previous.disabled = index === 0;
       next.disabled = index === figures.length - 1;
-      zoom = sharedZoom;
+      zoom = 1;
+      applyZoom();
 
       if (item.browserReady) {
         fallback.hidden = true;
@@ -201,7 +198,7 @@
         image.alt = item.title;
         image.src = item.previewPath;
         if (image.complete && image.naturalWidth) {
-          scheduleGeometry();
+          updateImageAspect();
         }
       } else {
         image.removeAttribute("src");
@@ -231,7 +228,7 @@
     next.addEventListener("click", function () {
       move(1);
     });
-    image.addEventListener("load", scheduleGeometry);
+    image.addEventListener("load", updateImageAspect);
     image.addEventListener("error", function () {
       image.hidden = true;
       fallback.textContent = "The browser could not display this figure.";
@@ -247,8 +244,8 @@
       var factor = event.deltaY < 0 ? zoomStep : 1 / zoomStep;
       changeZoom(
         zoom * factor,
-        event.clientX - bounds.left,
-        event.clientY - bounds.top
+        (event.clientX - bounds.left) * canvas.offsetWidth / bounds.width,
+        (event.clientY - bounds.top) * canvas.offsetHeight / bounds.height
       );
     }, { passive: false });
 
@@ -278,29 +275,6 @@
         move(1);
       }
     });
-    window.addEventListener("resize", scheduleGeometry);
-    document.addEventListener("shown.bs.tab", scheduleGeometry);
-    document.addEventListener(
-      "dnaepico:figure-zoom-change",
-      function (event) {
-        zoom = validZoom(event.detail && event.detail.zoom) || 1;
-        scheduleGeometry();
-      }
-    );
-
-    if (window.ResizeObserver) {
-      var canvasObserver = new ResizeObserver(scheduleGeometry);
-      canvasObserver.observe(canvas);
-    }
-
-    if (window.MutationObserver) {
-      var expansionObserver = new MutationObserver(scheduleGeometry);
-      expansionObserver.observe(card, {
-        attributes: true,
-        attributeFilter: ["data-full-screen"]
-      });
-    }
-
     showFigure();
   }
 

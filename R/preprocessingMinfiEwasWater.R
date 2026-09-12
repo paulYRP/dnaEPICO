@@ -209,7 +209,7 @@ plotPreprocessingAssessmentDnaEpico <- function(state, config, paths) {
     config,
     preprocessingFigureFileDnaEpico(
         config, paths$qcFigures,
-        "detectionPvalue_sampleMean_byRank.tiff"
+        "detectionPvalue_sampleMean_bySample.tiff"
     )
     )
     do.call(plotAssessmentMinfiEwasWater, c(list(

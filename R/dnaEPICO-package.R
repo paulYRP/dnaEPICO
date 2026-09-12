@@ -34,7 +34,7 @@ utils::globalVariables(c(
     "cumulativePosition", "density", "diagnosticEstimate", "displayCpG",
     "displayLabel", "end", "failed", "group", "intersectionLabel", "label",
     "labelOffset", "lower", "meanDetectionP", "midpoint", "minusLog10P",
-    "observations", "percentage", "proportion", "radius", "sex",
+    "observations", "percentage", "proportion", "radius", "sex", "sampleIndex", "Freq",
     "significance", "stage", "start", "surrogateVariable",
     "technicalFactor", "threshold", "time", "upper", "variable1",
     "variable2", "x", "xMed", "y", "yMed"

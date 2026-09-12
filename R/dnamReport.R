@@ -457,8 +457,24 @@ renderDnamReport <- function(
     title = character(), original_name = character(),
     asset_path = character(), download_path = character(),
     download_name = character(), browser_ready = logical(),
+    png_path = character(), jpeg_path = character(), tiff_path = character(),
+    counts_path = character(),
     converted = logical(), stringsAsFactors = FALSE
     )
+}
+
+.writeReportFigureDownloadDnaEpico <- function(path) {
+    extension <- tolower(tools::file_ext(path))
+    if (!extension %in% c("png", "jpg", "jpeg")) return(invisible(""))
+    type <- if (extension == "png") "image/png" else "image/jpeg"
+    target <- paste0(path, ".download.js")
+    # Classic scripts also load from local reports without a fetch/CORS request.
+    writeLines(c(
+        paste0('document.currentScript.dataset.downloadType = "', type, '";'),
+        paste0('document.currentScript.dataset.downloadData = "',
+            base64enc::base64encode(path), '";')
+    ), target, useBytes = TRUE)
+    invisible(target)
 }
 
 .copyReportFigureFileDnaEpico <- function(
@@ -500,9 +516,34 @@ renderDnamReport <- function(
     message_type <- if (converted) "original figure" else "figure"
     stop("Failed to copy ", message_type, ": ", srcPath)
     }
+    formats <- stats::setNames(rep("", 3L), c("png", "jpeg", "tiff"))
+    if (magickAvailable && file.info(srcPath)$size > 0) {
+        tryCatch({
+            image <- magick::image_read(srcPath)[1]
+            for (format in names(formats)) {
+                target <- file.path(destinationDir, paste0(baseSlug, ".", format))
+                if (identical(format, "png") && converted) {
+                    formats[[format]] <- target
+                    next
+                }
+                export <- if (identical(format, "jpeg")) {
+                    magick::image_background(image, "white", flatten = TRUE)
+                } else image
+                magick::image_write(export, path = target, format = format,
+                    quality = 95, compression = if (format == "tiff") "LZW" else NULL)
+                formats[[format]] <- target
+            }
+        }, error = function(error) {
+            warning("Could not create all figure formats for ", basename(srcPath),
+                ": ", conditionMessage(error), call. = FALSE)
+        })
+    }
+    for (export_path in unique(c(path, formats[nzchar(formats)]))) {
+        .writeReportFigureDownloadDnaEpico(export_path)
+    }
     list(
     name = name, path = path, download = download,
-    browserReady = browser_ready, converted = converted
+    browserReady = browser_ready, converted = converted, formats = formats
     )
 }
 
@@ -514,6 +555,14 @@ renderDnamReport <- function(
     srcPath, base_slug, file.path(assetsFiguresDir, assetSubdir),
     magickAvailable
     )
+    counts_source <- paste0(tools::file_path_sans_ext(srcPath), "_counts.csv")
+    counts_path <- ""
+    if (file.exists(counts_source)) {
+        counts_path <- .slashDnamReport(file.path("assets", "figures", assetSubdir,
+            paste0(base_slug, "-counts.csv")))
+        if (!file.copy(counts_source, file.path(assetsFiguresDir, assetSubdir,
+            basename(counts_path)), overwrite = TRUE)) stop("Failed to copy association counts")
+    }
     data.frame(
     title = .prettyLabelDnamReport(srcPath),
     original_name = basename(srcPath),
@@ -524,9 +573,47 @@ renderDnamReport <- function(
         "assets", "figures", assetSubdir, basename(copied$download)
     )),
     download_name = basename(srcPath),
+    png_path = .reportFigureFormatPathDnaEpico(copied, "png", assetSubdir),
+    jpeg_path = .reportFigureFormatPathDnaEpico(copied, "jpeg", assetSubdir),
+    tiff_path = .reportFigureFormatPathDnaEpico(copied, "tiff", assetSubdir),
+    counts_path = counts_path,
     browser_ready = copied$browserReady, converted = copied$converted,
     stringsAsFactors = FALSE
     )
+}
+
+.reportFigureFormatPathDnaEpico <- function(copied, format, subdir) {
+    path <- copied$formats[[format]]
+    if (!nzchar(path)) return("")
+    .slashDnamReport(file.path("assets", "figures", subdir, basename(path)))
+}
+
+.reportFigureDownloadsJsonDnaEpico <- function(items, index) {
+    formats <- c("png", "jpeg", "tiff")
+    objects <- vapply(formats, function(format) {
+        path <- items[[paste0(format, "_path")]][index]
+        if (!length(path) || is.na(path) || !nzchar(path)) return("")
+        name <- paste0(tools::file_path_sans_ext(items$download_name[index]), ".", format)
+        paste0('{"href":', .dr_js_quote_result_values(path),
+            ',"name":', .dr_js_quote_result_values(name),
+            ',"label":', .dr_js_quote_result_values(toupper(format)), '}')
+    }, character(1))
+    counts <- items$counts_path[index]
+    if (length(counts) && !is.na(counts) && nzchar(counts)) {
+        objects <- c(objects, paste0('{"href":', .dr_js_quote_result_values(counts),
+            ',"name":', .dr_js_quote_result_values(basename(counts)), ',"label":"Counts (CSV)"}'))
+    }
+    paste0("[", paste(objects[nzchar(objects)], collapse = ","), "]")
+}
+
+.excludeParticipantFiguresDnaEpico <- function(items, participant) {
+    if (!nrow(items) || !length(participant)) return(items)
+    stem <- tools::file_path_sans_ext(items$original_name)
+    variable <- sub("^(hist|bar|distribution)_", "", stem, ignore.case = TRUE)
+    variable <- sub("_(continuous|categorical)$", "", variable, ignore.case = TRUE)
+    remove <- grepl("^(hist|bar|distribution)_", stem, ignore.case = TRUE) &
+        tolower(variable) %in% tolower(c(participant, safeFigureComponentDnaEpico(participant)))
+    items[!remove, , drop = FALSE]
 }
 
 .dr_copy_figure_assets <- function(src_dir, asset_subdir) {
@@ -1337,11 +1424,12 @@ renderDnamReport <- function(
     }
 }
 
-.dr_collapse_values <- function(values) {
+.dr_collapse_values <- function(values, highlight = FALSE) {
     values <- sort_values(values)
     if (!length(values)) {
     return("not available")
     }
+    if (highlight) values <- paste0("`", gsub("`", "'", values, fixed = TRUE), "`")
     if (length(values) == 1L) {
     return(values[[1]])
     }
@@ -1790,7 +1878,7 @@ renderDnamReport <- function(
         format_count(summary$n_participants), plural(
         summary$n_participants,
         "participant"
-        ), collapse_values(summary$timepoints)
+        ), collapse_values(summary$timepoints, highlight = TRUE)
     ))
     } else if (!is.null(summary$participant_col)) {
     notes <- c(notes, sprintf(
@@ -2396,6 +2484,12 @@ renderDnamReport <- function(
 
 .dr_model_figure_title <- function(filename, analysis) {
     stem <- tools::file_path_sans_ext(basename(filename))
+    if (grepl("^residualSD_.*_byAverageMethylation$", stem, ignore.case = TRUE)) {
+        term <- sub("^residualSD_", "", stem, ignore.case = TRUE)
+        term <- sub("_byAverageMethylation$", "", term, ignore.case = TRUE)
+        term <- gsub("_[0-9]{2}_", ": ", term)
+        return(paste0("Residual SD vs average methylation: ", gsub("_", " ", term)))
+    }
     cleaned <- gsub("[_.-]+", " ", stem)
     cleaned <- gsub("\\bGLM\\b|\\bLME\\b", "", cleaned,
     ignore.case = TRUE
@@ -2592,6 +2686,8 @@ renderDnamReport <- function(
 
 .dr_build_model_visualisation_tabs <- function(items,
     venn, analysis) {
+    participant <- data_summary$participant_col
+    items <- .excludeParticipantFiguresDnaEpico(items, participant)
     prefix <- tolower(analysis)
     sections <- list(`Model Variables` = subset_figure_items(items,
         "^(hist_|bar_|distribution_)"), `Model Design` = subset_figure_items(
@@ -2973,8 +3069,7 @@ renderDnamReport <- function(
         "</div>", content_description_html(browser_notes,
             dynamic_role = "figure-description"),
         "<div class=\"dnaepico-figure-actions\">",
-        paste0("<a class=\"btn btn-sm btn-outline-primary\" data-role=",
-            "\"figure-download\">Download original figure</a>"),
+        "<div data-role=\"figure-download\" aria-label=\"Download figure\"></div>",
         "</div>", paste0("<script type=\"application/json\" data-role=",
             "\"figure-data\">", figure_data, "</script>"), "</div>", "```",
         "", paste0("::: {.card .dnaepico-selected-figure ",
@@ -3319,13 +3414,7 @@ renderDnamReport <- function(
             model_notes)), "```{=html}", sprintf(
             "<div class=\"dnaepico-workbook-selector\" id=\"%s\">",
             selector_id), "<label>Sheet <select data-role=\"workbook-sheet\">",
-        options, "</select></label>", if (!is.null(
-            workbook_assets$workbookPath) &&
-            nzchar(workbook_assets$workbookPath)) {
-            sprintf(paste0("<a class=\"btn btn-sm btn-outline-primary\" ",
-                "href=\"%s\">", "Download complete workbook (XLSX)</a>"),
-            workbook_assets$workbookPath) } else { ""
-        }, "</div>", "```", "", ":::", "")
+        options, "</select></label>", "</div>", "```", "", ":::", "")
     environment() }
 
 .drs_build_workbook_table_section_part_02DnaEpico <- function() {
@@ -4203,7 +4292,11 @@ renderDnamReport <- function(
             index]]),
         ",\"downloadName\":", js_quote_result_values(items$download_name[[
             index]]),
-        ",\"description\":", js_quote_result_values(descriptions[[index]]),
+        ",\"downloads\":", .reportFigureDownloadsJsonDnaEpico(items, index),
+        ",\"description\":", js_quote_result_values(paste0(
+            if (grepl("SYNTHETIC", items$original_name[[index]], fixed = TRUE))
+                "SYNTHETIC EXAMPLE - display validation only. " else "",
+            descriptions[[index]])),
         ",\"browserReady\":", if (isTRUE(items$browser_ready[[index]])) {
         "true"
         } else {
@@ -4522,6 +4615,8 @@ renderDnamReport <- function(
         log_assets$lme <- copy_first_existing_log_asset(file.path(logs_dir,
             "log_methylationLME.txt"), "methylationLME.txt")
     }; data_summary <- summarize_dataset(pheno_file)
+    glm_items <- .excludeParticipantFiguresDnaEpico(glm_items, data_summary$participant_col)
+    lme_items <- .excludeParticipantFiguresDnaEpico(lme_items, data_summary$participant_col)
     detection_tables <- read_detection_tables(detp_path = detp_path,
         threshold = detPThreshold, cpg_path = cpg_detection_path,
         sample_path = sample_detection_path)
@@ -4593,7 +4688,7 @@ renderDnamReport <- function(
         description = c(paste0(
             "methylation beta-value distributions across samples ",
             "for identifying global patterns and sample outliers"), paste0(
-            "detection p-value distributions across samples for ",
+            "mean detection p-values for individual samples for ",
             "assessing probe-signal reliability and poor ", "detection"),
             paste0("sample-level methylated and unmethylated signal ",
             "intensities for identifying low-quality samples or ",
@@ -5049,6 +5144,8 @@ renderDnamReport <- function(
             "  bread-crumbs: false",
         "  reader-mode: false", "", "format:", "  dashboard:",
             "    theme: cosmo",
+        "    include-in-header:", "      - text: |",
+        "          <meta name=\"darkreader-lock\">",
         "    scrolling: true", "    orientation: columns",
             "    expandable: false",
         "    css:", "      - assets/qpasst.css", "    toc: false", "",
@@ -5487,6 +5584,17 @@ renderDnamReport <- function(
 #' The Quarto command-line interface is required to render the website. It is
 #' not required to install or load `dnaEPICO`, or to use the package's
 #' preprocessing and statistical-modeling functions.
+#' When `magick` is installed, each readable figure is exported as PNG,
+#' JPEG and TIFF at the source image dimensions. Existing raster images are
+#' not upscaled. Exports are independent of the report's light/dark theme;
+#' JPEG transparency is flattened onto white. Without `magick`, original downloads remain
+#' available, but additional formats cannot be generated.
+#' PNG and JPEG downloads include companion scripts containing the original
+#' image bytes, loaded only when requested, so local reports can save these
+#' formats without navigating to an image preview.
+#' The report uses an 80% presentation scale. Further display adjustments use
+#' the browser's zoom controls; figure zoom and downloaded image resolution
+#' are independent.
 #'
 #' @param outputDir Character. Directory where the Quarto project is written.
 #' @param phenoTab Character or `NULL`. CSV file shown in the Data tab.

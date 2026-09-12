@@ -1,4 +1,7 @@
 :root {
+  --dna-report-scale: .8;
+  --dna-viewport-height: calc(100dvh / var(--dna-report-scale));
+  --dna-viewport-width: calc(100vw / var(--dna-report-scale));
   --dna-nav-width: 17rem;
   --dna-bg: #08151f;
   --dna-panel: #0d202d;
@@ -10,9 +13,33 @@
   --dna-blue: #1a81c2;
   --dna-green: #87b13f;
   --dna-danger: #ffb4ab;
+  --dna-nav: #06121b;
+  --dna-heading: #ffffff;
+  --dna-note: #285266;
+  --dna-note-text: #f1f8fa;
+  --dna-download: #55b8ff;
+  --dna-accent: #8ed8f7;
+}
+
+:root[data-dna-theme="light"] {
+  --dna-bg: #eef3f7;
+  --dna-panel: #ffffff;
+  --dna-card: #ffffff;
+  --dna-card-soft: #e8f1f6;
+  --dna-border: #a9c3d2;
+  --dna-text: #17324d;
+  --dna-muted: #3d5d70;
+  --dna-nav: #e4eef4;
+  --dna-heading: #17324d;
+  --dna-note: #dceef5;
+  --dna-note-text: #17324d;
+  --dna-download: #0969b5;
+  --dna-danger: #b42318;
+  --dna-accent: #0969b5;
 }
 
 html {
+  zoom: var(--dna-report-scale);
   overflow-y: scroll;
   scrollbar-gutter: stable;
   scroll-behavior: smooth;
@@ -41,11 +68,12 @@ select:focus-visible,
 
 #quarto-header {
   position: fixed !important;
+  transition: none !important;
   inset: 0 auto 0 0 !important;
   z-index: 1030;
   width: var(--dna-nav-width) !important;
-  height: 100dvh !important;
-  background: #06121b !important;
+  height: var(--dna-viewport-height) !important;
+  background: var(--dna-nav) !important;
   border-right: 1px solid var(--dna-border) !important;
   box-shadow: 12px 0 32px rgba(0, 0, 0, .22) !important;
 }
@@ -72,6 +100,7 @@ select:focus-visible,
 #quarto-header .navbar-brand-container {
   grid-row: 1;
   width: 100%;
+  max-width: none !important;
   margin: 0 auto 1.2rem !important;
   padding: 0 !important;
 }
@@ -88,7 +117,10 @@ select:focus-visible,
 
 #quarto-header .navbar-brand.navbar-brand-logo {
   display: flex !important;
+  flex: 0 0 auto !important;
+  overflow: visible !important;
   justify-content: center;
+  margin: 0 !important;
   padding: 0 !important;
 }
 
@@ -99,6 +131,7 @@ select:focus-visible,
   height: 8.5rem !important;
   max-width: 8.5rem !important;
   max-height: 8.5rem !important;
+  flex: 0 0 auto !important;
   object-fit: contain !important;
 }
 
@@ -147,13 +180,13 @@ select:focus-visible,
 }
 
 #navbarCollapse .nav-link:hover {
-  color: #fff !important;
+  color: var(--dna-heading) !important;
   background: rgba(66, 182, 237, .11);
   border-color: rgba(66, 182, 237, .25);
 }
 
 #navbarCollapse .nav-link.active {
-  color: #fff !important;
+  color: var(--dna-heading) !important;
   background:
     linear-gradient(
       90deg,
@@ -299,7 +332,7 @@ a[href*='bioconductor.org/packages/dnaEPICO']::after {
   padding: .72rem 1rem !important;
   background: var(--dna-card-soft) !important;
   border-bottom: 1px solid var(--dna-border) !important;
-  color: #fff !important;
+  color: var(--dna-heading) !important;
   font-size: 1rem;
   font-weight: 750;
 }
@@ -322,8 +355,8 @@ a[href*='bioconductor.org/packages/dnaEPICO']::after {
   overflow-wrap: anywhere;
   border-left: 3px solid #acd45e;
   border-radius: .3rem;
-  background: #285266;
-  color: #f1f8fa !important;
+  background: var(--dna-note);
+  color: var(--dna-note-text) !important;
   font-size: .86rem !important;
   line-height: 1.5 !important;
 }
@@ -348,7 +381,7 @@ a[href*='bioconductor.org/packages/dnaEPICO']::after {
 
 .dnaepico-content-notes a,
 .dnaepico-content-description a {
-  color: #8ed8f7 !important;
+  color: var(--dna-accent) !important;
 }
 
 .quarto-dashboard .dnaepico-content-notes code,
@@ -482,7 +515,7 @@ button:disabled {
   padding: .6rem;
   border: 1px solid var(--dna-border);
   border-radius: .55rem;
-  background: #0f2837;
+  background: var(--dna-panel);
 }
 
 .dnaepico-viewer-controls button {
@@ -547,7 +580,7 @@ button:disabled {
 .dnaepico-viewer-table-wrap {
   display: block !important;
   width: 100%;
-  height: clamp(24rem, 56vh, 46rem);
+  height: clamp(24rem, calc(var(--dna-viewport-height) * .56), 46rem);
   overflow: auto !important;
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
@@ -597,7 +630,7 @@ button:disabled {
   min-width: 0;
   padding: clamp(.65rem, 1vw, 1rem);
   overflow: hidden;
-  background: #102b3a;
+  background: var(--dna-panel);
   border: 1px solid var(--dna-border);
   border-radius: .8rem;
 }
@@ -611,7 +644,7 @@ button:disabled {
   min-width: 0;
   margin: 0;
   padding: .6rem;
-  background: #0d2432;
+  background: var(--dna-panel);
   border: 1px solid var(--dna-border);
   border-radius: .55rem;
 }
@@ -668,7 +701,7 @@ body.quarto-dashboard div.dnaepico-selected-figure[data-full-screen='false']
 .dnaepico-selected-figure h3 {
   flex: 0 0 auto;
   margin: 0 !important;
-  color: #fff !important;
+  color: var(--dna-heading) !important;
   font-size: 1.15rem;
 }
 
@@ -689,10 +722,11 @@ body.quarto-dashboard div.dnaepico-selected-figure[data-full-screen='false']
   display: block !important;
   width: 100% !important;
   min-width: 0;
-  height: clamp(24rem, 62vh, 52rem);
+  height: auto;
+  min-height: 0;
+  aspect-ratio: var(--dnaepico-figure-aspect-ratio, 16 / 9);
   overflow: auto !important;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable both-edges;
   background: #fff;
   border: 1px solid #bfd2dc;
   border-radius: .5rem;
@@ -711,25 +745,39 @@ body.quarto-dashboard div.dnaepico-selected-figure[data-full-screen='false']
 .dnaepico-figure-canvas {
   display: block !important;
   flex: 0 0 auto !important;
-  height: clamp(24rem, 62vh, 52rem) !important;
+  height: auto !important;
 }
 
 .dnaepico-figure-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: grid;
   place-items: center;
-  min-width: 100%;
-  min-height: 100%;
+  width: var(--dnaepico-stage-size, 100%);
+  height: var(--dnaepico-stage-size, 100%);
   background: #fff;
 }
 
 .dnaepico-figure-stage img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: block;
+  width: var(--dnaepico-image-size, 100%);
+  height: var(--dnaepico-image-size, 100%);
+  margin: 0;
   max-width: none !important;
   max-height: none !important;
   object-fit: contain !important;
   object-position: center;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+.dnaepico-figure-stage img[hidden] {
+  display: none;
 }
 
 .dnaepico-figure-zoom-help,
@@ -758,7 +806,7 @@ body.quarto-dashboard div.dnaepico-selected-figure[data-full-screen='false']
 }
 
 .panel-tabset .nav-tabs .nav-link.active {
-  color: #fff !important;
+  color: var(--dna-heading) !important;
   background: var(--dna-card-soft) !important;
   border-color: var(--dna-green) !important;
 }
@@ -777,7 +825,7 @@ body.quarto-dashboard div.dnaepico-selected-figure[data-full-screen='false']
 .dnaepico-summary-table-wrap {
   display: block !important;
   width: 100%;
-  max-height: min(32rem, 66vh);
+  max-height: min(32rem, calc(var(--dna-viewport-height) * .66));
   overflow: auto !important;
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
@@ -828,7 +876,7 @@ body.quarto-dashboard div.dnaepico-selected-figure[data-full-screen='false']
   margin: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  background: #06121b;
+  background: var(--dna-nav);
   border: 1px solid var(--dna-border);
   color: #d8edf6;
   white-space: pre;
@@ -854,7 +902,7 @@ body.qpasst-report-page .qpasst-report-card {
 body.qpasst-report-page .qpasst-report-sheet h2,
 body.qpasst-report-page .qpasst-report-sheet h3 {
   margin-top: 0;
-  color: #fff;
+  color: var(--dna-heading);
 }
 
 body.qpasst-report-page .qpasst-report-sheet p {
@@ -868,12 +916,12 @@ body.qpasst-report-page .dnaepico-report-section {
   border: 1px solid var(--dna-border);
   border-left: .28rem solid var(--dna-green);
   border-radius: .65rem;
-  background: rgba(23, 54, 71, .44);
+  background: var(--dna-card);
 }
 
 body.qpasst-report-page .dnaepico-report-section h3 {
   margin-bottom: .65rem;
-  color: #8ed8f7;
+  color: var(--dna-accent);
 }
 
 body.qpasst-report-page .dnaepico-report-section ul {
@@ -909,7 +957,7 @@ body.bslib-has-full-screen #quarto-header {
 
 body.bslib-has-full-screen #quarto-content,
 body.bslib-has-full-screen .quarto-dashboard-content {
-  width: 100vw !important;
+  width: var(--dna-viewport-width) !important;
   max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -926,12 +974,15 @@ body.bslib-has-full-screen .bslib-card[data-full-screen='true'] {
   margin: 0 !important;
   overflow: hidden !important;
   background: var(--dna-card) !important;
-  box-shadow: 0 0 0 100vmax #06121b, 0 18px 48px rgba(0, 0, 0, .5) !important;
+  box-shadow: 0 0 0 100vmax var(--dna-nav), 0 18px 48px rgba(0, 0, 0, .5) !important;
 }
 
 body.bslib-has-full-screen #bslib-full-screen-overlay {
-  z-index: 2147482999 !important;
-  background: #06121b !important;
+  z-index: 2147483001 !important;
+  background: transparent !important;
+  pointer-events: none;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   opacity: 1 !important;
 }
 
@@ -976,6 +1027,10 @@ body.bslib-has-full-screen .bslib-card > .card-body {
   overflow: auto !important;
 }
 
+.dnaepico-selected-figure[data-full-screen='true'] .dnaepico-figure-canvas {
+  aspect-ratio: auto;
+}
+
 .dnaepico-summary-table-card[data-full-screen='true']
 .dnaepico-summary-table-wrap {
   max-height: none;
@@ -1016,6 +1071,7 @@ body.bslib-has-full-screen .bslib-card > .card-body {
   #quarto-header .navbar-container {
     display: flex !important;
     flex-direction: row !important;
+    flex-wrap: nowrap !important;
     align-items: center !important;
     padding: .45rem .75rem !important;
   }
@@ -1046,9 +1102,9 @@ body.bslib-has-full-screen .bslib-card > .card-body {
     right: 0;
     left: 0;
     display: none !important;
-    max-height: calc(100dvh - 4.8rem);
+    max-height: calc(var(--dna-viewport-height) - 4.8rem);
     padding: .8rem;
-    background: #06121b;
+    background: var(--dna-nav);
     border-bottom: 1px solid var(--dna-border);
   }
 
@@ -1088,6 +1144,15 @@ body.bslib-has-full-screen .bslib-card > .card-body {
 }
 
 @media (max-width: 600px) {
+  #quarto-header .navbar-container {
+    padding: .45rem .4rem !important;
+  }
+
+  #quarto-header #quarto-search {
+    margin: 0 .2rem !important;
+    padding: .2rem !important;
+  }
+
   .quarto-dashboard-content > .bslib-grid-item,
   .quarto-dashboard-content .sidebar-content {
     padding: .65rem !important;
@@ -1110,9 +1175,8 @@ body.bslib-has-full-screen .bslib-card > .card-body {
     grid-column: 1;
   }
 
-  .dnaepico-figure-canvas,
   .dnaepico-viewer-table-wrap {
-    height: 60vh;
+    height: calc(var(--dna-viewport-height) * .6);
   }
 }
 
@@ -1127,4 +1191,94 @@ body.bslib-has-full-screen .bslib-card > .card-body {
     scroll-behavior: auto !important;
     transition: none !important;
   }
+}
+
+/* Shared download appearance, including dynamically selected figures. */
+body.quarto-dashboard a.btn-outline-primary {
+  background: transparent !important;
+  color: var(--dna-download) !important;
+  border: 1px solid var(--dna-download) !important;
+  border-radius: 0;
+  padding: .5rem .75rem;
+  text-decoration: none;
+}
+body.quarto-dashboard a.btn-outline-primary:hover {
+  background: var(--dna-download) !important;
+  color: var(--dna-bg) !important;
+}
+body.quarto-dashboard a.btn-outline-primary:focus-visible {
+  outline: 3px solid var(--dna-download) !important;
+}
+body.quarto-dashboard a.btn-outline-primary[aria-disabled="true"] {
+  opacity: .5;
+  pointer-events: none;
+}
+[data-role="figure-download"] {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: .55rem;
+}
+#quarto-header .navbar-brand-container {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+}
+#dnaepico-theme-toggle {
+  flex: 0 0 2rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--dna-green);
+  border-radius: 50%;
+  background: var(--dna-card);
+  color: var(--dna-green);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+#dnaepico-theme-toggle svg {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+#dnaepico-theme-toggle .dnaepico-theme-disc {
+  fill: var(--dna-blue);
+}
+#dnaepico-theme-toggle:hover {
+  background: var(--dna-card-soft);
+}
+:root[data-dna-theme="light"] .qpasst-logs-page pre.text {
+  color: var(--dna-text);
+}
+:root[data-dna-theme="light"] .dnaepico-data-value {
+  background: #fff !important;
+}
+
+.card-header .card-title,
+.card-header .card-title span {
+  color: var(--dna-heading) !important;
+}
+body.bslib-has-full-screen .bslib-full-screen-exit {
+  pointer-events: auto;
+  position: fixed !important;
+  top: 1.2rem !important;
+  right: 2rem !important;
+  z-index: 2147483001 !important;
+  color: var(--dna-text) !important;
+  background: var(--dna-card-soft) !important;
+  border: 1px solid var(--dna-border);
+  border-radius: .4rem;
+  padding: .2rem .6rem;
 }

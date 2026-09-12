@@ -313,24 +313,20 @@ createDiagnosticMeanPlotDnaEpico <- function(data, meanInfo, yLabel) {
     plot <- ggplot2::ggplot(
     data, ggplot2::aes(x = meanMethylation, y = diagnosticY)
     )
-    if (nrow(data) > 5000L) {
-    plot <- plot + ggplot2::geom_bin_2d(bins = 55) +
-        ggplot2::scale_fill_gradient(
-        low = "#D8EFF3", high = "#176B87", name = "CpGs"
-        )
-    } else {
     plot <- plot + ggplot2::geom_point(
-        alpha = style$alpha, size = style$size, color = "#243746"
-    )
+        alpha = style$alpha, size = style$size, colour = "#176B87", shape = 16
+    ) + ggplot2::labs(title = NULL, x = meanInfo$label, y = yLabel) +
+        dnaEpicoModelPlotTheme() + ggplot2::theme(legend.position = "none")
+    # A binned median uses all CpGs and remains practical for array-sized data.
+    finite <- data[is.finite(data$meanMethylation) & is.finite(data$diagnosticY), , drop = FALSE]
+    if (nrow(finite) >= 30L && length(unique(finite$meanMethylation)) > 1L) {
+        group <- cut(finite$meanMethylation, breaks = 40L, include.lowest = TRUE)
+        trend <- stats::aggregate(finite[c("meanMethylation", "diagnosticY")],
+            list(bin = group), stats::median)
+        plot <- plot + ggplot2::geom_line(data = trend, colour = "#B42318", linewidth = 0.8) +
+            ggplot2::labs(subtitle = "Red line: median within methylation bins")
     }
-    plot <- plot + ggplot2::labs(
-    title = NULL, x = meanInfo$label, y = yLabel
-    ) + dnaEpicoModelPlotTheme()
-    if (nrow(data) >= 3L && nrow(data) <= 10000L) {
-    plot <- plot + ggplot2::geom_smooth(
-        method = "loess", formula = y ~ x, se = FALSE, color = "red"
-    )
-    }
+
     plot
 }
 
@@ -2905,6 +2901,8 @@ plotMethylationGLMDistributions <- function(preparedData,
     log_path <- resolveLogPathMinfiEwasWater(logs = logs,
         log_dir = log_dir, log_file = log_file)
     data <- preparedData$data
+    participant <- participantColumnDnaEpico(preparedData)
+    data <- data[, setdiff(colnames(data), participant), drop = FALSE]
     factor_vars <- setdiff(intersect(preparedData$factorVars,
         colnames(data)), preparedData$phenotypes)
     numeric_vars <- setdiff(preparedData$covariates, c(preparedData$factorVars,

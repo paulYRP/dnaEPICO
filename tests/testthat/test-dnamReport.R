@@ -535,24 +535,24 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
         'canvas.addEventListener("keydown"',
         figure_viewer_script, fixed = TRUE
     )))
-    expect_true(any(grepl(
+    expect_false(any(grepl(
         "dnaepico.figureZoom", figure_viewer_script, fixed = TRUE
     )))
-    expect_true(any(grepl(
+    expect_false(any(grepl(
         "dnaepico:figure-zoom-change", figure_viewer_script, fixed = TRUE
     )))
-    expect_true(any(grepl(
+    expect_false(any(grepl(
         "window.sessionStorage.setItem", figure_viewer_script,
         fixed = TRUE
     )))
     expect_false(any(grepl(
         "setNormalCanvasHeight", figure_viewer_script, fixed = TRUE
     )))
-    expect_true(any(grepl(
+    expect_false(any(grepl(
         'var expansionObserver = new MutationObserver(scheduleGeometry)',
         figure_viewer_script, fixed = TRUE
     )))
-    expect_true(any(grepl(
+    expect_false(any(grepl(
         "ResizeObserver", figure_viewer_script,
         fixed = TRUE
     )))
@@ -569,12 +569,13 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
     )))
     expect_false(any(grepl("Download all results (XLSX)", glm_qmd, fixed = TRUE)))
     expect_false(any(grepl("Download all results (XLSX)", lme_qmd, fixed = TRUE)))
-    expect_true(any(grepl("Download complete workbook (XLSX)", glm_qmd,
-        fixed = TRUE
-    )))
-    expect_true(any(grepl("Download complete workbook (XLSX)", lme_qmd,
-        fixed = TRUE
-    )))
+    expect_false(any(grepl("Download complete workbook (XLSX)", glm_qmd, fixed = TRUE)))
+    expect_false(any(grepl("Download complete workbook (XLSX)", lme_qmd, fixed = TRUE)))
+    for (analysis in c("glm", "lme")) {
+        manifest <- paste(readLines(file.path(result_assets, paste0(analysis, "_results"),
+            "manifest.js"), warn = FALSE), collapse = "\n")
+        expect_match(manifest, "Download complete workbook (XLSX)", fixed = TRUE)
+    }
 
     quarto_yml <- readLines(file.path(result$projectDir, "_quarto.yml"),
         warn = FALSE
@@ -898,7 +899,7 @@ test_that("dnamReport renders the dashboard and writes logs on request", {
         fixed = TRUE
     )))
     expect_true(any(grepl(
-        "height: clamp(24rem, 62vh, 52rem) !important",
+        "aspect-ratio: var(--dnaepico-figure-aspect-ratio, 16 / 9)",
         site_css,
         fixed = TRUE
     )))

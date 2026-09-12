@@ -255,6 +255,9 @@ assessSamplesMinfiEwasWater <- function(rawData,
 #'
 #' Draw either the minfi QC plot or the detection P-value plot from an
 #' assessment object returned by `assessSamplesMinfiEwasWater()`.
+#' Detection plots show one grey bar per sample in input order, with sample
+#' labels. Output width expands
+#' for large sample sets to keep labels readable.
 #'
 #' @param assessment Object returned by `assessSamplesMinfiEwasWater()`.
 #' @param plot Character. Plot type: `'qc'` or `'detection'`.
@@ -298,35 +301,12 @@ plotAssessmentMinfiEwasWater <- function(assessment,
     draw_fun <- switch(plot, qc = function() {
         minfi::plotQC(assessment$qc, badSampleCutoff = assessment$qcCutoff)
     }, detection = function() {
-        plot_data <- data.frame(sample = names(assessment$meanDetP),
-            meanDetectionP = as.numeric(assessment$meanDetP),
-            failed = !is.finite(assessment$meanDetP) |
-                assessment$meanDetP > assessment$detPThreshold,
-            stringsAsFactors = FALSE)
-        plot_data <- plot_data[order(plot_data$failed,
-            plot_data$meanDetectionP, na.last = TRUE),
-            , drop = FALSE]
-        plot_data$rank <- seq_len(nrow(plot_data))
-        label_data <- plot_data[plot_data$failed, , drop = FALSE]
-        if (nrow(label_data) > 20L) {
-            label_data <- utils::tail(label_data, 20L)
-        }
-        style <- adaptivePointStyleDnaEpico(nrow(plot_data))
-        plot_object <- ggplot2::ggplot(plot_data, ggplot2::aes(x = rank,
-            y = meanDetectionP, colour = failed)) + ggplot2::geom_point(size =
-            style$size,
-            alpha = max(style$alpha, 0.55)) + ggplot2::geom_hline(yintercept =
-            assessment$detPThreshold,
-            colour = "#B42318", linewidth = 0.7, linetype = "dashed") +
-            ggrepel::geom_text_repel(data = label_data,
-                ggplot2::aes(label = sample), size = 3,
-                max.overlaps = 20L, show.legend = FALSE) +
-            ggplot2::scale_colour_manual(values = c(`FALSE` = "#176B87",
-                `TRUE` = "#B42318")) + ggplot2::labs(title = NULL,
-            x = "Samples ranked by mean detection p-value",
-            y = "Mean detection p-value", colour = "Failed") +
-            dnaEpicoModelPlotTheme()
+        plot_object <- sampleDetectionBarPlotDnaEpico(assessment)
         drawPlotObjectMinfiEwasWater(plot_object) })
+    if (identical(plot, "detection")) {
+        width <- max(width, length(assessment$meanDetP) * 48L)
+        height <- max(height, as.integer(res * 5))
+    }
     runPlotMinfiEwasWater(draw_fun = draw_fun, display = display,
         file = file, width = width, height = height,
         res = res)
@@ -2064,4 +2044,19 @@ plotCtrlMinfiEwasWater <- function(
     )
 
     invisible(output_dir)
+}
+
+sampleDetectionBarPlotDnaEpico <- function(assessment) {
+    values <- assessment$meanDetP
+    samples <- names(values)
+    if (is.null(samples)) samples <- paste0("Sample ", seq_along(values))
+    data <- data.frame(sampleIndex = seq_along(values), meanDetectionP = as.numeric(values))
+    ggplot2::ggplot(data, ggplot2::aes(x = factor(sampleIndex), y = meanDetectionP)) +
+        ggplot2::geom_col(fill = "#BDBDBD", colour = "#555555", linewidth = 0.25, width = 0.82) +
+        ggplot2::scale_x_discrete(labels = samples) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.08))) +
+        ggplot2::labs(x = "Sample", y = "Mean detection p-value") +
+        ggplot2::theme_classic(base_size = 11) +
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5),
+            plot.background = ggplot2::element_rect(fill = "white", colour = NA))
 }

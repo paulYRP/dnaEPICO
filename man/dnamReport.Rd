@@ -100,6 +100,17 @@ Generate a DNA methylation dashboard report
 The Quarto command-line interface is required to render the website. It is
 not required to install or load \code{dnaEPICO}, or to use the package's
 preprocessing and statistical-modeling functions.
+When \code{magick} is installed, each readable figure is exported as PNG,
+JPEG and TIFF at the source image dimensions. Existing raster images are
+not upscaled. Exports are independent of the report's light/dark theme;
+JPEG transparency is flattened onto white. Without \code{magick}, original downloads remain
+available, but additional formats cannot be generated.
+PNG and JPEG downloads include companion scripts containing the original
+image bytes, loaded only when requested, so local reports can save these
+formats without navigating to an image preview.
+The report uses an 80% presentation scale. Further display adjustments use
+the browser's zoom controls; figure zoom and downloaded image resolution
+are independent.
 }
 \examples{
 report_root <- file.path(tempdir(), "dnaepico-dnam-report")
