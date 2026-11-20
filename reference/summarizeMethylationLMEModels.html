@@ -108,8 +108,9 @@ for omnibus p-values across CpGs within each phenotype and tested term.</p></dd>
 
 
 <dt id="arg-ncores">nCores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
-<dd><p>Integer. Number of worker processes to use while extracting
-summary rows.</p></dd>
+<dd><p>Integer. Maximum number of R worker processes used to extract
+summary rows, limited by available CPU cores. With the <code>serial</code> setting,
+summarisation uses one process.</p></dd>
 
 
 <dt id="arg-chunksize">chunkSize<a class="anchor" aria-label="anchor" href="#arg-chunksize"></a></dt>
@@ -140,7 +141,7 @@ chunk. <code>NULL</code> chooses a value automatically.</p></dd>
 containing the optionally filtered summary tables in <code>summaries</code> and the
 complete CpG-level tables in <code>diagnosticSummaries</code>. Diagnostics,
 annotation, and report output use the complete tables so <code>summaryPval</code>
-does not remove CpGs from those outputs. <code>modelMessages</code> retains native
+does not remove CpGs from those outputs. <code>modelMessages</code> retains model
 messages, warnings, and errors for every attempted CpG.</p>
     </div>
 

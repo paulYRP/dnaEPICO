@@ -3,8 +3,11 @@
 Gaussian GLM per CpG and phenotype, summarizes and annotates the results, and
 creates optional coefficient tables and diagnostic plots. It writes outputs
 only when saveOutputs = TRUE.
+CpG methylation is the response; each variable in phenotypes is a
+predictor of interest. Saved workbooks, figures and logs can be included
+in a report with dnamReport().
 Numeric CpG columns are passed to glm2::glm2() without a separate
-methylation-domain filter. Native model messages, warnings, and errors are
+methylation-domain filter. Model messages, warnings, and errors are
 recorded in one phenotype-specific Model.Message field. Annotated outputs
 contain CpGs with at least one returned coefficient or omnibus p-value;
 aggregate availability and condition counts are recorded in workbook
@@ -78,8 +81,11 @@ metadata."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
 Gaussian GLM per CpG and phenotype, summarizes and annotates the results, and
 creates optional coefficient tables and diagnostic plots. It writes outputs
 only when <code>saveOutputs = TRUE</code>.
+CpG methylation is the response; each variable in <code>phenotypes</code> is a
+predictor of interest. Saved workbooks, figures and logs can be included
+in a report with <code><a href="dnamReport.html">dnamReport()</a></code>.
 Numeric CpG columns are passed to <code><a href="https://rdrr.io/pkg/glm2/man/glm2.html" class="external-link">glm2::glm2()</a></code> without a separate
-methylation-domain filter. Native model messages, warnings, and errors are
+methylation-domain filter. Model messages, warnings, and errors are
 recorded in one phenotype-specific <code>Model.Message</code> field. Annotated outputs
 contain CpGs with at least one returned coefficient or omnibus p-value;
 aggregate availability and condition counts are recorded in workbook
@@ -163,8 +169,8 @@ phenotype summaries.</p></dd>
 
 
 <dt id="arg-phenotypes">phenotypes<a class="anchor" aria-label="anchor" href="#arg-phenotypes"></a></dt>
-<dd><p>Character vector or comma-separated phenotype variables to
-model.</p></dd>
+<dd><p>Character vector or comma-separated phenotype variables
+used as predictors of interest in separate CpG-wise models.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
@@ -201,9 +207,9 @@ upper- and lower-case letters. The default is <code>'beta'</code>.</p></dd>
 
 
 <dt id="arg-ncores">nCores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
-<dd><p>Integer. Maximum number of worker processes to use while
-fitting models. Automatic fitting remains serial below the glm2 crossover
-and caps workers by the CpG workload, available CPUs, and detected memory.</p></dd>
+<dd><p>Integer. Maximum number of R worker processes for fitting.
+Automatic fitting uses one process for small CpG sets. Multiple workers
+are limited by the CpG count, available CPU cores and detected memory.</p></dd>
 
 
 <dt id="arg-plotwidth">plotWidth<a class="anchor" aria-label="anchor" href="#arg-plotwidth"></a></dt>
@@ -350,7 +356,7 @@ GLM summary XLSX workbook.</p></dd>
 
 <dt id="arg-reportassetsdir">reportAssetsDir<a class="anchor" aria-label="anchor" href="#arg-reportassetsdir"></a></dt>
 <dd><p>Character or <code>NULL</code>. Report results directory used for
-the compressed TSV table and its compact metadata sidecars. <code>NULL</code> writes
+the compressed TSV table and its compact metadata files. <code>NULL</code> writes
 only the model outputs and annotated workbook.</p></dd>
 
 

@@ -3,8 +3,12 @@
 fits one mixed-effects model per CpG and phenotype, summarizes and annotates
 the results, and creates optional interaction tables and diagnostic plots. It
 writes outputs only when saveOutputs = TRUE.
+CpG methylation is the response; each variable in phenotypes is a
+predictor of interest. The participant identifier defines the random
+intercept. Saved workbooks, figures and logs can be included in a report
+with dnamReport().
 Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
-without a separate methylation-domain filter. Native model messages,
+without a separate methylation-domain filter. Model messages,
 warnings, and errors are recorded in one phenotype-specific Model.Message
 field. Annotated outputs contain CpGs with at least one returned coefficient
 or omnibus p-value; aggregate availability and condition counts are recorded
@@ -78,8 +82,12 @@ in workbook metadata."><!-- mathjax --><script src="https://cdnjs.cloudflare.com
 fits one mixed-effects model per CpG and phenotype, summarizes and annotates
 the results, and creates optional interaction tables and diagnostic plots. It
 writes outputs only when <code>saveOutputs = TRUE</code>.
+CpG methylation is the response; each variable in <code>phenotypes</code> is a
+predictor of interest. The participant identifier defines the random
+intercept. Saved workbooks, figures and logs can be included in a report
+with <code><a href="dnamReport.html">dnamReport()</a></code>.
 Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
-without a separate methylation-domain filter. Native model messages,
+without a separate methylation-domain filter. Model messages,
 warnings, and errors are recorded in one phenotype-specific <code>Model.Message</code>
 field. Annotated outputs contain CpGs with at least one returned coefficient
 or omnibus p-value; aggregate availability and condition counts are recorded
@@ -180,8 +188,8 @@ timepoint summaries and preprocessing checks.</p></dd>
 
 
 <dt id="arg-phenotypes">phenotypes<a class="anchor" aria-label="anchor" href="#arg-phenotypes"></a></dt>
-<dd><p>Character vector or comma-separated phenotype variables to
-model.</p></dd>
+<dd><p>Character vector or comma-separated phenotype variables
+used as predictors of interest in separate CpG-wise models.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
@@ -203,8 +211,8 @@ deviations before fitting.</p></dd>
 
 <dt id="arg-lmelibs">lmeLibs<a class="anchor" aria-label="anchor" href="#arg-lmelibs"></a></dt>
 <dd><p>Character. Comma-separated package names to validate on worker
-processes and select the LME backend. Use <code>'lme4,lmerTest'</code> or <code>'lme4'</code>
-for the <code>lmerTest</code>/<code>lme4</code> path, or <code>'nlme'</code> for the <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code> path.</p></dd>
+processes and select the model engine. Use <code>'lme4,lmerTest'</code> or <code>'lme4'</code>
+for <code>lmerTest</code>/<code>lme4</code>, or <code>'nlme'</code> for <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code>.</p></dd>
 
 
 <dt id="arg-correlationstructure">correlationStructure<a class="anchor" aria-label="anchor" href="#arg-correlationstructure"></a></dt>
@@ -248,9 +256,9 @@ upper- and lower-case letters. The default is <code>'beta'</code>.</p></dd>
 
 
 <dt id="arg-ncores">nCores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
-<dd><p>Integer. Maximum number of worker processes to use while
-fitting models. Automatic fitting uses an engine-specific crossover and
-caps workers by the CpG workload, available CPUs, and detected memory.</p></dd>
+<dd><p>Integer. Maximum number of R worker processes for fitting.
+Automatic fitting uses one process for small CpG sets. Multiple workers
+are limited by the CpG count, available CPU cores and detected memory.</p></dd>
 
 
 <dt id="arg-summarypval">summaryPval<a class="anchor" aria-label="anchor" href="#arg-summarypval"></a></dt>
@@ -382,7 +390,7 @@ summary XLSX workbook.</p></dd>
 
 <dt id="arg-reportassetsdir">reportAssetsDir<a class="anchor" aria-label="anchor" href="#arg-reportassetsdir"></a></dt>
 <dd><p>Character or <code>NULL</code>. Report results directory used for
-the compressed TSV table and its compact metadata sidecars. <code>NULL</code> writes
+the compressed TSV table and its compact metadata files. <code>NULL</code> writes
 only the model outputs and annotated workbook.</p></dd>
 
 
