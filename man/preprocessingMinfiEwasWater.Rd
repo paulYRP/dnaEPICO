@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocessingMinfiEwasWater.R
 \name{preprocessingMinfiEwasWater}
 \alias{preprocessingMinfiEwasWater}
-\title{Convenience preprocessing pipeline for Illumina methylation arrays}
+\title{Preprocess and filter Illumina methylation-array data}
 \usage{
 preprocessingMinfiEwasWater(
   phenoFile = "data/preprocessingMinfiEwasWater/pheno.csv",
@@ -197,12 +197,15 @@ those proportions.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when
 logging was disabled.}
 }
-See \linkS4class{dnaEPICO_preprocessingMinfiEwasWater} for a class-level overview.
+See \link[=dnaEPICO_preprocessingMinfiEwasWater-class]{dnaEPICO_preprocessingMinfiEwasWater} for a class-level overview.
 }
 \description{
-Run the \code{dnaEPICO} preprocessing workflow with the package's
-minfi/ENmix/wateRmelon helper functions. The function returns the output from
-each stage and writes files only when \code{saveOutputs = TRUE}.
+Read IDAT files, assess sample quality, normalise methylation values,
+filter probes and estimate cell composition using minfi, ENmix and
+wateRmelon. With \code{saveOutputs = TRUE}, save the methylation matrices,
+quality-control figures and \code{phenoLC.csv} for the next pipeline steps.
+Use the saved \code{RGSet} and phenotype table with \code{\link[=svaEnmix]{svaEnmix()}}, then prepare
+modelling tables with \code{\link[=preprocessingPheno]{preprocessingPheno()}}.
 }
 \examples{
 if (requireNamespace("minfiData", quietly = TRUE) &&
@@ -247,5 +250,5 @@ if (requireNamespace("minfiData", quietly = TRUE) &&
 
 }
 \seealso{
-\linkS4class{dnaEPICO_preprocessingMinfiEwasWater}
+\link[=dnaEPICO_preprocessingMinfiEwasWater-class]{dnaEPICO_preprocessingMinfiEwasWater}
 }

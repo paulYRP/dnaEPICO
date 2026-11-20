@@ -52,7 +52,7 @@ lmeModelLogLinesDnaEpico <- function(config) {
         paste("CpG limit:                      ",
             if (is.na(config$cpgLimit)) "All" else config$cpgLimit
         ),
-        paste("Number of cores:                ", as.integer(config$nCores)),
+        paste("Maximum R workers:              ", as.integer(config$nCores)),
         paste("Summary p-value filter:         ",
             if (is.na(config$summaryPval)) "None" else config$summaryPval
         ),
@@ -367,8 +367,8 @@ normalizeMethylationLMEConfigDnaEpico <- function(config) {
 #'   default, `"SID"`, preserves the package's earlier behavior.
 #' @param timeVar Character. Name of the longitudinal time variable used for
 #'   timepoint summaries and preprocessing checks.
-#' @param phenotypes Character vector or comma-separated phenotype variables to
-#'   model.
+#' @param phenotypes Character vector or comma-separated phenotype variables
+#'   used as predictors of interest in separate CpG-wise models.
 #' @param covariates Character. Comma-separated fixed-effect covariates included
 #'   in every mixed model.
 #' @param factorVars Character. Comma-separated variables to convert to factors
@@ -378,8 +378,8 @@ normalizeMethylationLMEConfigDnaEpico <- function(config) {
 #' Numeric fixed-effect variables to centre and divide by their sample standard
 #'   deviations before fitting.
 #' @param lmeLibs Character. Comma-separated package names to validate on worker
-#'   processes and select the LME backend. Use `'lme4,lmerTest'` or `'lme4'`
-#'   for the `lmerTest`/`lme4` path, or `'nlme'` for the `nlme::lme()` path.
+#'   processes and select the model engine. Use `'lme4,lmerTest'` or `'lme4'`
+#'   for `lmerTest`/`lme4`, or `'nlme'` for `nlme::lme()`.
 #' @param correlationStructure Character. Residual correlation structure used
 #'   when `lmeLibs = 'nlme'`. One of `'none'`, `'AR1'`, or `'CAR1'`. The
 #'   default is `'none'`.
@@ -399,9 +399,9 @@ normalizeMethylationLMEConfigDnaEpico <- function(config) {
 #' @param methylationScale Character. Methylation metric represented by the CpG
 #'   columns. One of `'Beta'`, `'M'`, or `'CN'`, in any combination of
 #'   upper- and lower-case letters. The default is `'beta'`.
-#' @param nCores Integer. Maximum number of worker processes to use while
-#'   fitting models. Automatic fitting uses an engine-specific crossover and
-#'   caps workers by the CpG workload, available CPUs, and detected memory.
+#' @param nCores Integer. Maximum number of R worker processes for fitting.
+#'   Automatic fitting uses one process for small CpG sets. Multiple workers
+#'   are limited by the CpG count, available CPU cores and detected memory.
 #' @param summaryPval Numeric or `NA`. Optional p-value threshold applied to the
 #' returned longitudinal CpG summary tables. Use `NA` to keep all summary rows.
 #' @param plotWidth Integer. TIFF width in pixels when plots are written to
@@ -461,7 +461,7 @@ normalizeMethylationLMEConfigDnaEpico <- function(config) {
 #' LME
 #'   summary XLSX workbook.
 #' @param reportAssetsDir Character or `NULL`. Report results directory used for
-#'   the compressed TSV table and its compact metadata sidecars. `NULL` writes
+#'   the compressed TSV table and its compact metadata files. `NULL` writes
 #'   only the model outputs and annotated workbook.
 #' @param display Logical. If `TRUE`, draw diagnostic plots on the active
 #'   graphics device.
@@ -521,8 +521,12 @@ normalizeMethylationLMEConfigDnaEpico <- function(config) {
 #' fits one mixed-effects model per CpG and phenotype, summarizes and annotates
 #' the results, and creates optional interaction tables and diagnostic plots. It
 #' writes outputs only when `saveOutputs = TRUE`.
+#' CpG methylation is the response; each variable in `phenotypes` is a
+#' predictor of interest. The participant identifier defines the random
+#' intercept. Saved workbooks, figures and logs can be included in a report
+#' with [dnamReport()].
 #' Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
-#' without a separate methylation-domain filter. Native model messages,
+#' without a separate methylation-domain filter. Model messages,
 #' warnings, and errors are recorded in one phenotype-specific `Model.Message`
 #' field. Annotated outputs contain CpGs with at least one returned coefficient
 #' or omnibus p-value; aggregate availability and condition counts are recorded

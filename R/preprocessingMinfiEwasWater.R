@@ -572,11 +572,14 @@ runPreprocessingWorkflowDnaEpico <- function(config) {
     ), class = "dnaEPICO_preprocessingMinfiEwasWater")
 }
 
-#' Convenience preprocessing pipeline for Illumina methylation arrays
+#' Preprocess and filter Illumina methylation-array data
 #'
-#' Run the `dnaEPICO` preprocessing workflow with the package's
-#' minfi/ENmix/wateRmelon helper functions. The function returns the output from
-#' each stage and writes files only when `saveOutputs = TRUE`.
+#' Read IDAT files, assess sample quality, normalise methylation values,
+#' filter probes and estimate cell composition using minfi, ENmix and
+#' wateRmelon. With `saveOutputs = TRUE`, save the methylation matrices,
+#' quality-control figures and `phenoLC.csv` for the next pipeline steps.
+#' Use the saved `RGSet` and phenotype table with [svaEnmix()], then prepare
+#' modelling tables with [preprocessingPheno()].
 #'
 #' @param phenoFile Character. Path to the phenotype CSV file.
 #' @param idatFolder Character. Directory containing the IDAT files.

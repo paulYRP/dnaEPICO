@@ -172,6 +172,31 @@ mixedModelAssociationPlotDnaEpico <- function(
         mixedAssociationAxisThemeDnaEpico(prepared$groupOrder)
 }
 
+categoricalModelAssociationPanelsDnaEpico <- function(counts,
+    phenotype, variable) {
+    # Group columns by their dominant category; retain every observation.
+    order_data <- counts[order(counts$variable, -counts$Freq,
+        counts$phenotype), ]
+    order_data <- order_data[!duplicated(order_data$variable), ]
+    order_data <- order_data[order(order_data$phenotype,
+        order_data$variable), ]
+    ids <- as.character(order_data$variable)
+    counts$variable <- factor(counts$variable, levels = ids)
+    counts$panel <- factor(ceiling(match(counts$variable, ids) / 40L))
+    ggplot2::ggplot(counts, ggplot2::aes(
+        x = variable, y = phenotype, fill = Freq)) +
+        ggplot2::geom_tile(colour = "white", linewidth = 0.15) +
+        ggplot2::facet_wrap(~panel, ncol = 1, scales = "free_x") +
+        ggplot2::scale_fill_gradient(low = "#AFD6E6", high = "#176B87",
+            name = "Observations",
+            breaks = pretty(c(0, max(counts$Freq)), n = 3)) +
+        ggplot2::labs(x = variable, y = phenotype) + dnaEpicoModelPlotTheme() +
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90,
+            hjust = 1, vjust = 0.5, size = 8),
+            strip.text = ggplot2::element_blank(),
+            panel.grid = ggplot2::element_blank(), legend.position = "right")
+}
+
 categoricalModelAssociationPlotDnaEpico <- function(
     phenotypeValues, variableValues, phenotype, variable, identifier = FALSE
 ) {
@@ -193,34 +218,24 @@ categoricalModelAssociationPlotDnaEpico <- function(
     counts$label <- sprintf("%s\n%.1f%%", counts$Freq, counts$percentage)
     many_levels <- identifier || length(unique(counts$variable)) > 30L
     if (many_levels) {
-        # Group columns by their dominant category; retain observations at every category.
-        order_data <- counts[order(counts$variable, -counts$Freq, counts$phenotype), ]
-        order_data <- order_data[!duplicated(order_data$variable), ]
-        order_data <- order_data[order(order_data$phenotype, order_data$variable), ]
-        ids <- as.character(order_data$variable)
-        counts$variable <- factor(counts$variable, levels = ids)
-        counts$panel <- factor(ceiling(match(counts$variable, ids) / 40L))
-        return(ggplot2::ggplot(counts, ggplot2::aes(
-            x = variable, y = phenotype, fill = Freq)) +
-            ggplot2::geom_tile(colour = "white", linewidth = 0.15) +
-            ggplot2::facet_wrap(~panel, ncol = 1, scales = "free_x") +
-            ggplot2::scale_fill_gradient(low = "#AFD6E6", high = "#176B87",
-                name = "Observations", breaks = pretty(c(0, max(counts$Freq)), n = 3)) +
-            ggplot2::labs(x = variable, y = phenotype) + dnaEpicoModelPlotTheme() +
-            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90,
-                hjust = 1, vjust = 0.5, size = 8), strip.text = ggplot2::element_blank(),
-                panel.grid = ggplot2::element_blank(), legend.position = "right"))
+        return(categoricalModelAssociationPanelsDnaEpico(
+            counts, phenotype, variable))
     }
-    ggplot2::ggplot(counts, ggplot2::aes(x = variable, y = phenotype, fill = percentage)) +
+    ggplot2::ggplot(counts, ggplot2::aes(x = variable, y = phenotype,
+        fill = percentage)) +
         ggplot2::geom_tile(colour = "white", linewidth = 0.6) +
         ggplot2::geom_text(ggplot2::aes(label = label), size = 3.5) +
-        ggplot2::scale_fill_gradient(low = "#EAF4F6", high = "#176B87", name = "Row %") +
-        ggplot2::labs(title = NULL, x = variable, y = phenotype) + dnaEpicoModelPlotTheme() +
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 40, hjust = 1))
+        ggplot2::scale_fill_gradient(low = "#EAF4F6", high = "#176B87",
+            name = "Row %") +
+        ggplot2::labs(title = NULL, x = variable, y = phenotype) +
+            dnaEpicoModelPlotTheme() +
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 40,
+            hjust = 1))
 }
 
 createModelAssociationPlotDnaEpico <- function(
-    data, phenotype, variable, maximumPoints = 5000L, identifierColumns = character()
+    data, phenotype, variable, maximumPoints = 5000L,
+        identifierColumns = character()
 ) {
     if (identical(phenotype, variable) ||
     !all(c(phenotype, variable) %in% names(data))) {
@@ -228,7 +243,8 @@ createModelAssociationPlotDnaEpico <- function(
     }
     phenotype_values <- data[[phenotype]]
     variable_values <- data[[variable]]
-    if (variable %in% identifierColumns) variable_values <- as.factor(variable_values)
+    if (variable %in% identifierColumns) variable_values <- as.factor(
+        variable_values)
     phenotype_numeric <- isContinuousModelVariableDnaEpico(phenotype_values)
     variable_numeric <- isContinuousModelVariableDnaEpico(variable_values)
     if (phenotype_numeric && variable_numeric) {
@@ -354,6 +370,25 @@ saveModelDesignPlotDnaEpico <- function(
     invisible(NULL)
 }
 
+modelAssociationFigureSizeDnaEpico <- function(
+    data, phenotype, variable, identifierColumns, plotWidth, plotHeight
+) {
+    levels <- if (is.numeric(data[[variable]]) &&
+        !variable %in% identifierColumns) {
+        1L
+    } else {
+        length(unique(data[[variable]][!is.na(data[[variable]])]))
+    }
+    many_categories <- !isContinuousModelVariableDnaEpico(data[[phenotype]]) &&
+        (levels > 30L || variable %in% identifierColumns)
+    width <- if (many_categories) max(plotWidth, 3000L) else
+        adaptiveFigureDimensionDnaEpico(plotWidth, levels, pixelsPerItem = 170L)
+    height <- if (many_categories) {
+        max(plotHeight, ceiling(levels / 40L) * 700L)
+    } else plotHeight
+    list(width = width, height = height, manyCategories = many_categories)
+}
+
 plotModelAssociationsDnaEpico <- function(
     data, preparedData, variables, analysis, outputDir,
     plotWidth, plotHeight, plotDPI, display
@@ -371,7 +406,8 @@ plotModelAssociationsDnaEpico <- function(
     for (phenotype in intersect(preparedData$phenotypes, variables)) {
     for (variable in setdiff(association_vars, phenotype)) {
         plot <- createModelAssociationPlotDnaEpico(
-        data, phenotype, variable, identifierColumns = participantColumnDnaEpico(preparedData)
+        data, phenotype, variable,
+        identifierColumns = participantColumnDnaEpico(preparedData)
         )
         if (is.null(plot)) {
         next
@@ -381,20 +417,14 @@ plotModelAssociationsDnaEpico <- function(
         "association_", safeFigureComponentDnaEpico(phenotype),
         "_by_", safeFigureComponentDnaEpico(variable), ".tiff"
         )
-        file <- if (is.null(outputDir)) NULL else file.path(outputDir, filename)
-        levels <- if (is.numeric(data[[variable]]) &&
-            !variable %in% participantColumnDnaEpico(preparedData)) {
-        1L
-        } else {
-        length(unique(data[[variable]][!is.na(data[[variable]])]))
-        }
-        many_categories <- !isContinuousModelVariableDnaEpico(data[[phenotype]]) &&
-            (levels > 30L || variable %in% participantColumnDnaEpico(preparedData))
-        width <- if (many_categories) max(plotWidth, 3000L) else
-            adaptiveFigureDimensionDnaEpico(plotWidth, levels, pixelsPerItem = 170L)
-        height <- if (many_categories) max(plotHeight, ceiling(levels / 40L) * 700L) else plotHeight
-        saveModelDesignPlotDnaEpico(plot, file, display, width, height, plotDPI)
-        if (many_categories && !is.null(file)) {
+        file <- if (is.null(outputDir)) NULL else
+            file.path(outputDir, filename)
+        size <- modelAssociationFigureSizeDnaEpico(
+            data, phenotype, variable, participantColumnDnaEpico(preparedData),
+            plotWidth, plotHeight)
+        saveModelDesignPlotDnaEpico(
+            plot, file, display, size$width, size$height, plotDPI)
+        if (size$manyCategories && !is.null(file)) {
             counts <- plot$data[c("phenotype", "variable", "Freq")]
             names(counts) <- c(phenotype, variable, "Observations")
             utils::write.csv(counts,
@@ -710,7 +740,8 @@ plotMethylationLMEDistributions <- function(
         preparedData, includeLongitudinal = TRUE
     )
     result <- plotLmeVariableDistributionsDnaEpico(
-        data, setdiff(variables, c(preparedData$timeVar, participantColumnDnaEpico(preparedData))),
+        data, setdiff(variables, c(preparedData$timeVar,
+            participantColumnDnaEpico(preparedData))),
         preparedData$phenotypes, outputDir, display,
         plotWidth, plotHeight, plotDPI
     )
@@ -2140,10 +2171,14 @@ generateModelVennDDnaEpico <- function(annotatedResults, modelSummaries,
             "dnaEPICO_vennD_plots") }
 
 participantColumnDnaEpico <- function(preparedData) {
-    explicit <- c(preparedData$personVar, preparedData$participantVar, preparedData$participantCol)
+    explicit <- c(preparedData$personVar, preparedData$participantVar,
+        preparedData$participantCol)
     explicit <- intersect(explicit, names(preparedData$data))
     if (length(explicit)) return(explicit)
-    candidates <- c("ParticipantID", "participant_id", "Participant", "Participant_ID",
-        "Person_ID", "person_id", "person", "personID", "subject", "subjectID", "Subject_ID")
-    names(preparedData$data)[tolower(names(preparedData$data)) %in% tolower(candidates)]
+    candidates <- c("ParticipantID", "participant_id", "Participant",
+        "Participant_ID",
+        "Person_ID", "person_id", "person", "personID", "subject",
+            "subjectID", "Subject_ID")
+    names(preparedData$data)[tolower(names(preparedData$data)) %in% tolower(
+        candidates)]
 }

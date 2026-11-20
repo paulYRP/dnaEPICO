@@ -477,18 +477,21 @@ test_that("the exported Makefile runs from a project path containing spaces", {
     path_entries <- strsplit(
         Sys.getenv("PATH"), .Platform$path.sep, fixed = TRUE
     )[[1L]]
-    contains_rscript <- vapply(path_entries, function(path) {
+    contains_tool <- vapply(path_entries, function(path) {
         if (!nzchar(path)) {
             return(FALSE)
         }
-        any(file.exists(file.path(path, c("Rscript", "Rscript.exe"))))
+        any(file.exists(file.path(path,
+            c("Rscript", "Rscript.exe", "make", "make.exe"))))
     }, logical(1))
     restricted_path <- paste(
-        path_entries[!contains_rscript], collapse = .Platform$path.sep
+        path_entries[!contains_tool], collapse = .Platform$path.sep
     )
-    withr::local_envvar(c(PATH = restricted_path))
+    # Preserve the absolute Make executable for recursion with restricted PATH.
+    withr::local_envvar(c(PATH = restricted_path, MAKE = unname(make_command)))
     if (.Platform$OS.type != "windows") {
         expect_false(nzchar(Sys.which("Rscript")))
+        expect_false(nzchar(Sys.which("make")))
     }
 
     tmp <- file.path(withr::local_tempdir(), "dnaEPICO project with spaces")
@@ -506,7 +509,8 @@ test_that("the exported Makefile runs from a project path containing spaces", {
         status <- 0L
     }
 
-    expect_identical(as.integer(status), 0L)
+    expect_identical(as.integer(status), 0L,
+        info = paste(output, collapse = "\n"))
     expect_true(any(grepl("Pipeline Status", output, fixed = TRUE)))
 
     pheno_path <- file.path(
@@ -524,7 +528,8 @@ test_that("the exported Makefile runs from a project path containing spaces", {
     if (is.null(grouped_status)) {
         grouped_status <- 0L
     }
-    expect_identical(as.integer(grouped_status), 0L)
+    expect_identical(as.integer(grouped_status), 0L,
+        info = paste(grouped_output, collapse = "\n"))
     expect_true(any(grepl(
         ">>> Starting f3 for: model1", grouped_output, fixed = TRUE
     )))

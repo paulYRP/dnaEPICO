@@ -26,8 +26,8 @@ prepareMethylationGLMData(
 object
 created by \code{preprocessingPheno()}.}
 
-\item{phenotypes}{Character vector or comma-separated string of phenotype
-variables to model.}
+\item{phenotypes}{Character vector or comma-separated phenotype variables
+used as predictors of interest in separate CpG-wise models.}
 
 \item{covariates}{Character vector or comma-separated string of covariate
 variables to adjust for.}

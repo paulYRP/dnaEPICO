@@ -1293,8 +1293,8 @@ newPreparedMethylationLMEDataDnaEpico <- function(
 #'   derive `personVar` when it is absent. Values must end in `A` or `B` for
 #'   automatic derivation. The default is `"SID"`.
 #' @param timeVar Character. Name of the time variable.
-#' @param phenotypes Character vector or comma-separated string of phenotype
-#'   variables to model.
+#' @param phenotypes Character vector or comma-separated phenotype variables
+#'   used as predictors of interest in separate CpG-wise models.
 #' @param covariates Character vector or comma-separated string of covariate
 #'   variables to adjust for.
 #' @param factorVars Character vector or comma-separated string of variables
@@ -1994,10 +1994,10 @@ storeFittedLmePhenotypeDnaEpico <- function(
 lmeFitResourceLogLinesDnaEpico <- function(state) {
     plan <- state$parallelPlan
     c(
-    paste("Parallel backend:            ", state$backend),
-    paste("Effective workers:           ", state$workerCount),
-    paste("Parallel crossover CpGs:     ", plan$crossoverCpGs),
-    paste("Parallel selection:          ", plan$reason),
+    paste("Parallel method:             ", state$backend),
+    paste("R workers used:              ", state$workerCount),
+    paste("Automatic parallel threshold (CpGs): ", plan$crossoverCpGs),
+    paste("Reason for worker count:     ", plan$reason),
     paste(
         "Available memory (MB):       ",
         if (is.finite(plan$availableMemoryMB)) {
@@ -2217,9 +2217,9 @@ fitAllLmePhenotypesDnaEpico <- function(
 #' Fit CpG-wise mixed-effects models for longitudinal methylation analyses
 #'
 #' @param preparedData Object returned by `prepareMethylationLMEData()`.
-#' @param nCores Integer. Maximum number of worker processes to use. Automatic
-#'   fitting uses the lme4 or nlme crossover and caps workers by available CpGs,
-#'   CPUs, and detected memory.
+#' @param nCores Integer. Maximum number of R worker processes for fitting.
+#'   Automatic fitting uses one process for small CpG sets. Multiple workers
+#'   are limited by the CpG count, available CPU cores and detected memory.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded
 #'   to worker processes.
 #' @param lmeLibs Character vector or comma-separated string of package names to
@@ -2235,7 +2235,7 @@ fitAllLmePhenotypesDnaEpico <- function(
 #' @param omnibusDdf Character. Denominator degrees-of-freedom method used by
 #'   `lmerTest::contestMD()`: `'Satterthwaite'` or `'Kenward-Roger'`.
 #' @param summaryDir Character or `NULL`. Directory used for one complete
-#'   compact summary per phenotype. `NULL` disables disk persistence.
+#'   compact summary per phenotype. `NULL` skips saving summaries.
 #' @param resumeFromSummary Logical. If `TRUE`, reuse a complete summary in
 #'   `summaryDir` when it was generated from the same input file and model
 #'   configuration.
@@ -2246,13 +2246,13 @@ fitAllLmePhenotypesDnaEpico <- function(
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
 #' @return A list with class `'dnaEPICO_methylationLME_models'`
-#'   containing compact coefficient matrices, unfiltered target summaries,
-#'   formulas, model conditions, omnibus results, hard errors, and phenotype
-#'   summary artifacts.
+#'   containing compact coefficient matrices, complete phenotype summaries,
+#'   formulas, model messages, omnibus results, fitting errors, and phenotype
+#'   saved summaries.
 #'
 #' @description
 #' Fit one linear mixed-effects model per CpG for each phenotype requested in
-#' the object returned by `prepareMethylationLMEData()`. Each native fit is
+#' the object returned by `prepareMethylationLMEData()`. Each fitted model is
 #' reduced to compact numerical results and discarded before the next batch is
 #' returned.
 #'
@@ -2361,6 +2361,7 @@ runLmeSummaryChunksDnaEpico <- function(
     fits, phenotype, interactionTerm, nCores, chunkSize
 ) {
     cpg_names <- names(fits)
+    nCores <- summaryWorkersMethylationModels(nCores, length(cpg_names))
     local_size <- chunkSize
     if (is.null(local_size)) {
     local_size <- max(
@@ -2485,8 +2486,9 @@ newMethylationLMESummariesDnaEpico <- function(
 #'   returned summary tables. `NA` keeps all rows.
 #' @param padjmethod Character. Adjustment method passed to `stats::p.adjust()`
 #'   for omnibus p-values across CpGs within each phenotype and tested term.
-#' @param nCores Integer. Number of worker processes to use while extracting
-#'   summary rows.
+#' @param nCores Integer. Maximum number of R worker processes used to extract
+#'   summary rows, limited by available CPU cores. With the `serial` setting,
+#'   summarisation uses one process.
 #' @param chunkSize Integer or `NULL`. Number of CpGs processed per parallel
 #'   chunk. `NULL` chooses a value automatically.
 #' @param verbose Logical. If `TRUE`, emit progress messages with `message()`.
@@ -2499,7 +2501,7 @@ newMethylationLMESummariesDnaEpico <- function(
 #'   containing the optionally filtered summary tables in `summaries` and the
 #'   complete CpG-level tables in `diagnosticSummaries`. Diagnostics,
 #'   annotation, and report output use the complete tables so `summaryPval`
-#'   does not remove CpGs from those outputs. `modelMessages` retains native
+#'   does not remove CpGs from those outputs. `modelMessages` retains model
 #'   messages, warnings, and errors for every attempted CpG.
 #'
 #' @description
@@ -3402,9 +3404,9 @@ logLmeOutputFilesDnaEpico <- function(
     verbose, logPath
 ) {
     sidecar_line <- if (is.null(workbook$sidecar$table)) {
-    "Report table sidecar:          not requested"
+    "Report data file:             not requested"
     } else {
-    paste("Report table sidecar:         ", workbook$sidecar$table)
+    paste("Report data file:            ", workbook$sidecar$table)
     }
     text_count <- if (isTRUE(saveTxtSummaries)) length(textFiles) else 0L
     significant_count <- if (isTRUE(saveSignificantInteractions)) {
@@ -3442,7 +3444,7 @@ logLmeOutputFilesDnaEpico <- function(
 #' @param annotatedLMEOut Character. Directory used for the annotated summary
 #'   XLSX workbook.
 #' @param reportAssetsDir Character or `NULL`. Report results directory used for
-#'   the compressed TSV table and compact metadata sidecars.
+#'   the compressed TSV table and compact metadata files.
 #' @param vennDResults Optional model-level Venn result. Its configuration
 #'   metadata and threshold tables are added before the workbook dictionary.
 #' @param saveTxtSummaries Logical. If `TRUE`, write tab-delimited summary
@@ -3457,7 +3459,7 @@ logLmeOutputFilesDnaEpico <- function(
 #'
 #' @return A list with class `'dnaEPICO_methylationLME_paths'`
 #'   containing the paths of the files written to disk, including the annotated
-#'   workbook and any requested report-table sidecars.
+#'   workbook and any requested report data files.
 #'
 #' @description
 #' Write compact phenotype summaries, optional text and significant-interaction

@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocessingPheno.R
 \name{preprocessingPheno}
 \alias{preprocessingPheno}
-\title{Prepare phenotype and methylation matrices for downstream modeling}
+\title{Prepare phenotype and methylation data for modelling}
 \usage{
 preprocessingPheno(
   phenoFile = "data/preprocessingMinfiEwasWater/phenoLC.csv",
@@ -114,13 +114,15 @@ column preserved as supplied.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when
 logging was disabled.}
 }
-See \linkS4class{dnaEPICO_preprocessingPheno} for a class-level overview.
+See \link[=dnaEPICO_preprocessingPheno-class]{dnaEPICO_preprocessingPheno} for a class-level overview.
 }
 \description{
-Align the phenotype table with preprocessed beta, M-value, and copy-number
-matrices, split the data by timepoint, optionally prepare longitudinal
-objects for the selected modeling scale, and build Clock Foundation export
-tables. The function writes files only when \code{saveOutputs = TRUE}.
+Match samples in the phenotype table to the beta-value, M-value and
+copy-number matrices. Prepare tables for individual timepoints and,
+when selected, combine timepoints for longitudinal analysis. Use the
+resulting tables with \code{\link[=methylationGLM]{methylationGLM()}} or \code{\link[=methylationLME]{methylationLME()}}. The function
+also prepares Clock Foundation export tables and saves outputs when
+\code{saveOutputs = TRUE}.
 }
 \examples{
 tmp <- tempdir()
@@ -168,5 +170,5 @@ stopifnot(inherits(result, "dnaEPICO_preprocessingPheno"))
 
 }
 \seealso{
-\linkS4class{dnaEPICO_preprocessingPheno}
+\link[=dnaEPICO_preprocessingPheno-class]{dnaEPICO_preprocessingPheno}
 }

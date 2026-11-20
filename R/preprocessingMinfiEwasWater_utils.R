@@ -439,7 +439,7 @@ sexAwareNormalizationMethodsDnaEpico <- function() {
     c("adjustedfunnorm", "funnorm", "quantile")
 }
 
-#' Build arguments for a supported normalization backend
+#' Build arguments for a supported normalisation method
 #'
 #' @keywords internal
 #' @noRd

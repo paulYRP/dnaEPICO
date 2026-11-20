@@ -2,7 +2,7 @@
 % Please edit documentation in R/dnamReport.R
 \name{dnamReport}
 \alias{dnamReport}
-\title{Generate a DNA methylation dashboard report}
+\title{Generate an HTML report from saved pipeline outputs}
 \usage{
 dnamReport(
   outputDir = "reports",
@@ -45,13 +45,13 @@ figures.}
 \item{glmTab}{Character or \code{NULL}. XLSX workbook shown in the GLM Analysis
 tab.
 When \code{NULL}, the path is inferred from the Makefile output layout. Report
-sidecars produced by \code{methylationGLM()} are read from this report
+data files produced by \code{methylationGLM()} are read from this report
 project's \code{assets/results/glm_results} directory when available.}
 
 \item{lmeTab}{Character or \code{NULL}. XLSX workbook shown in the LME Analysis
 tab.
 When \code{NULL}, the path is inferred from the Makefile output layout. Report
-sidecars produced by \code{methylationLME()} are read from this report
+data files produced by \code{methylationLME()} are read from this report
 project's \code{assets/results/lme_results} directory when available.}
 
 \item{modelSections}{Character vector containing any of \code{'glm'} and \code{'lme'}.
@@ -94,7 +94,10 @@ files inside the section directories.}
 A list with class \code{'dnaEPICO_dnamReport'}.
 }
 \description{
-Generate a DNA methylation dashboard report
+Combine phenotype data, quality-control figures, annotated model results
+and logs in an HTML report. \code{modelSections} selects the GLM and LME pages;
+\code{character(0)} produces a preprocessing-only report. The returned object
+includes the report path and rendering status.
 }
 \details{
 The Quarto command-line interface is required to render the website. It is
@@ -103,14 +106,11 @@ preprocessing and statistical-modeling functions.
 When \code{magick} is installed, each readable figure is exported as PNG,
 JPEG and TIFF at the source image dimensions. Existing raster images are
 not upscaled. Exports are independent of the report's light/dark theme;
-JPEG transparency is flattened onto white. Without \code{magick}, original downloads remain
+JPEG transparency is flattened onto white. Without \code{magick}, original
+downloads remain
 available, but additional formats cannot be generated.
-PNG and JPEG downloads include companion scripts containing the original
-image bytes, loaded only when requested, so local reports can save these
-formats without navigating to an image preview.
-The report uses an 80% presentation scale. Further display adjustments use
-the browser's zoom controls; figure zoom and downloaded image resolution
-are independent.
+The report opens at an 80\% presentation scale. Browser zoom changes the
+on-screen display; downloaded figures retain their image dimensions.
 }
 \examples{
 report_root <- file.path(tempdir(), "dnaepico-dnam-report")

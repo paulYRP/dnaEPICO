@@ -81,8 +81,8 @@ the package's terminal \code{A}/\code{B} visit naming convention.}
 \item{timeVar}{Character. Name of the longitudinal time variable used for
 timepoint summaries and preprocessing checks.}
 
-\item{phenotypes}{Character vector or comma-separated phenotype variables to
-model.}
+\item{phenotypes}{Character vector or comma-separated phenotype variables
+used as predictors of interest in separate CpG-wise models.}
 
 \item{covariates}{Character. Comma-separated fixed-effect covariates included
 in every mixed model.}
@@ -96,8 +96,8 @@ Numeric fixed-effect variables to centre and divide by their sample standard
 deviations before fitting.}
 
 \item{lmeLibs}{Character. Comma-separated package names to validate on worker
-processes and select the LME backend. Use \code{'lme4,lmerTest'} or \code{'lme4'}
-for the \code{lmerTest}/\code{lme4} path, or \code{'nlme'} for the \code{nlme::lme()} path.}
+processes and select the model engine. Use \code{'lme4,lmerTest'} or \code{'lme4'}
+for \code{lmerTest}/\code{lme4}, or \code{'nlme'} for \code{nlme::lme()}.}
 
 \item{correlationStructure}{Character. Residual correlation structure used
 when \code{lmeLibs = 'nlme'}. One of \code{'none'}, \code{'AR1'}, or \code{'CAR1'}. The
@@ -125,9 +125,9 @@ to keep all CpGs matching \code{cpgPrefix}.}
 columns. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, in any combination of
 upper- and lower-case letters. The default is \code{'beta'}.}
 
-\item{nCores}{Integer. Maximum number of worker processes to use while
-fitting models. Automatic fitting uses an engine-specific crossover and
-caps workers by the CpG workload, available CPUs, and detected memory.}
+\item{nCores}{Integer. Maximum number of R worker processes for fitting.
+Automatic fitting uses one process for small CpG sets. Multiple workers
+are limited by the CpG count, available CPU cores and detected memory.}
 
 \item{summaryPval}{Numeric or \code{NA}. Optional p-value threshold applied to the
 returned longitudinal CpG summary tables. Use \code{NA} to keep all summary rows.}
@@ -211,7 +211,7 @@ LME
 summary XLSX workbook.}
 
 \item{reportAssetsDir}{Character or \code{NULL}. Report results directory used for
-the compressed TSV table and its compact metadata sidecars. \code{NULL} writes
+the compressed TSV table and its compact metadata files. \code{NULL} writes
 only the model outputs and annotated workbook.}
 
 \item{display}{Logical. If \code{TRUE}, draw diagnostic plots on the active
@@ -281,8 +281,12 @@ See \link[=dnaEPICO_methylationLME-class]{dnaEPICO_methylationLME} for a class-l
 fits one mixed-effects model per CpG and phenotype, summarizes and annotates
 the results, and creates optional interaction tables and diagnostic plots. It
 writes outputs only when \code{saveOutputs = TRUE}.
+CpG methylation is the response; each variable in \code{phenotypes} is a
+predictor of interest. The participant identifier defines the random
+intercept. Saved workbooks, figures and logs can be included in a report
+with \code{\link[=dnamReport]{dnamReport()}}.
 Numeric CpG columns are passed to the selected lmerTest/lme4 or nlme engine
-without a separate methylation-domain filter. Native model messages,
+without a separate methylation-domain filter. Model messages,
 warnings, and errors are recorded in one phenotype-specific \code{Model.Message}
 field. Annotated outputs contain CpGs with at least one returned coefficient
 or omnibus p-value; aggregate availability and condition counts are recorded

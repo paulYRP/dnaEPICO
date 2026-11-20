@@ -394,13 +394,14 @@ runSvaEnmixWorkflowDnaEpico <- function(config, logPath) {
 
 #' Estimate surrogate variables from ENmix control probes
 #'
-#' Estimate surrogate variables from ENmix control probes and analyze their
-#' association with Sentrix chip and position factors. The function returns a
-#' structured result and writes files only when `saveOutputs = TRUE`.
+#' Estimate surrogate variables from control probes using ENmix and assess
+#' their associations with Sentrix chip and position. With `saveOutputs = TRUE`,
+#' add the surrogate-variable columns to `phenoFile` and save the SVA results
+#' and figures. The updated phenotype table is used by [preprocessingPheno()].
 #'
 #' @param phenoFile Character. Path to the phenotype file with cell-composition
-#'   data. When `saveOutputs = TRUE`, the validated PC columns are appended to
-#'   this file using a rollback-safe replacement.
+#'   data. When `saveOutputs = TRUE`, add the surrogate-variable columns to
+#'   this file. The original file is restored if saving the replacement fails.
 #' @param rgsetData Character. Path to a saved `RGChannelSet` object. Both
 #'   `.RData` and `.rds` files are supported.
 #' @param sepType Character or `NULL`. Field separator used in `phenoFile`. Use

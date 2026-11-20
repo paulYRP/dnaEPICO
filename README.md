@@ -37,6 +37,25 @@ Optional omnibus F tests jointly evaluate complete phenotype main
 effects or phenotype-by-interaction terms in GLM and lmerTest/lme4
 analyses.
 
+## Workflow
+
+The pipeline follows six steps:
+
+1.  Preprocess and filter methylation data with
+    `preprocessingMinfiEwasWater()`.
+2.  Estimate surrogate variables with `svaEnmix()`.
+3.  Prepare phenotype and methylation tables with
+    `preprocessingPheno()`.
+4.  Fit CpG-wise Gaussian GLMs with `methylationGLM()`.
+5.  Fit CpG-wise mixed-effects models with `methylationLME()`.
+6.  Generate an HTML report with `dnamReport()`.
+
+Run Steps 1-3 first, then choose GLM, mixed-effects modelling, or both.
+With GNU Make, `make f4` runs the GLM route and report; `make f3lme`
+runs the mixed-effects route and report. `N_CORES` limits the total CPU
+cores shared across analyses. See `vignette("dnaEPICO-pipeline")` for
+inputs, commands and output files.
+
 ## Installation
 
 Install a current `R` release from [CRAN](https://cran.r-project.org/),

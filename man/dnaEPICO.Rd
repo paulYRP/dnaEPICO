@@ -18,7 +18,7 @@ The package supports two usage styles:
 \item interactive use, where functions return structured in-memory result
 objects for inspection and composition; and
 \item file-based pipeline use, where the same functions can write logs,
-plots, tables, and serialized objects when \code{saveOutputs = TRUE}.
+plots, tables, and saved R objects when \code{saveOutputs = TRUE}.
 }
 
 The main high-level entry points are:

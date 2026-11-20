@@ -19,7 +19,7 @@ final status metadata into one convenience object.
 \code{'failed'}.}
 \item{outputFile}{Path to \code{docs/index.html}.}
 \item{resultTableSources}{Named character vector identifying whether each
-model table used a streamed sidecar or the compatible XLSX fallback.}
+model table used a report data file read in batches or an XLSX workbook.}
 \item{errorMessage}{Final render error or skip message when available,
 otherwise \code{NULL}.}
 \item{logFile}{Resolved path to the optional log file, or \code{NULL} when

@@ -67,8 +67,8 @@ phenotype summaries.}
 
 \item{outputPlots}{Character. Directory used for optional TIFF plots.}
 
-\item{phenotypes}{Character vector or comma-separated phenotype variables to
-model.}
+\item{phenotypes}{Character vector or comma-separated phenotype variables
+used as predictors of interest in separate CpG-wise models.}
 
 \item{covariates}{Character. Comma-separated covariate variables included in
 each GLM.}
@@ -91,9 +91,9 @@ to keep all CpGs matching \code{cpgPrefix}.}
 columns. One of \code{'Beta'}, \code{'M'}, or \code{'CN'}, in any combination of
 upper- and lower-case letters. The default is \code{'beta'}.}
 
-\item{nCores}{Integer. Maximum number of worker processes to use while
-fitting models. Automatic fitting remains serial below the glm2 crossover
-and caps workers by the CpG workload, available CPUs, and detected memory.}
+\item{nCores}{Integer. Maximum number of R worker processes for fitting.
+Automatic fitting uses one process for small CpG sets. Multiple workers
+are limited by the CpG count, available CPU cores and detected memory.}
 
 \item{plotWidth}{Integer. TIFF width in pixels when plots are written to
 disk.}
@@ -186,7 +186,7 @@ array annotation must use GRCh38 coordinates.}
 GLM summary XLSX workbook.}
 
 \item{reportAssetsDir}{Character or \code{NULL}. Report results directory used for
-the compressed TSV table and its compact metadata sidecars. \code{NULL} writes
+the compressed TSV table and its compact metadata files. \code{NULL} writes
 only the model outputs and annotated workbook.}
 
 \item{display}{Logical. If \code{TRUE}, draw exploratory and diagnostic plots on
@@ -250,8 +250,11 @@ See \link[=dnaEPICO_methylationGLM-class]{dnaEPICO_methylationGLM} for a class-l
 Gaussian GLM per CpG and phenotype, summarizes and annotates the results, and
 creates optional coefficient tables and diagnostic plots. It writes outputs
 only when \code{saveOutputs = TRUE}.
+CpG methylation is the response; each variable in \code{phenotypes} is a
+predictor of interest. Saved workbooks, figures and logs can be included
+in a report with \code{\link[=dnamReport]{dnamReport()}}.
 Numeric CpG columns are passed to \code{glm2::glm2()} without a separate
-methylation-domain filter. Native model messages, warnings, and errors are
+methylation-domain filter. Model messages, warnings, and errors are
 recorded in one phenotype-specific \code{Model.Message} field. Annotated outputs
 contain CpGs with at least one returned coefficient or omnibus p-value;
 aggregate availability and condition counts are recorded in workbook

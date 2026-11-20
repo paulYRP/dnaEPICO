@@ -107,12 +107,14 @@ runPreprocessingPhenoDnaEpico <- function(config) {
     structure(result, class = "dnaEPICO_preprocessingPheno")
 }
 
-#' Prepare phenotype and methylation matrices for downstream modeling
+#' Prepare phenotype and methylation data for modelling
 #'
-#' Align the phenotype table with preprocessed beta, M-value, and copy-number
-#' matrices, split the data by timepoint, optionally prepare longitudinal
-#' objects for the selected modeling scale, and build Clock Foundation export
-#' tables. The function writes files only when `saveOutputs = TRUE`.
+#' Match samples in the phenotype table to the beta-value, M-value and
+#' copy-number matrices. Prepare tables for individual timepoints and,
+#' when selected, combine timepoints for longitudinal analysis. Use the
+#' resulting tables with [methylationGLM()] or [methylationLME()]. The function
+#' also prepares Clock Foundation export tables and saves outputs when
+#' `saveOutputs = TRUE`.
 #'
 #' @param phenoFile Character. Path to the phenotype CSV file.
 #' @param sepType Character or `NULL`. Field separator used in `phenoFile`. Use

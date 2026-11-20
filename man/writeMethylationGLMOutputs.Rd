@@ -47,7 +47,7 @@ coefficient tables.}
 XLSX workbook.}
 
 \item{reportAssetsDir}{Character or \code{NULL}. Report results directory used for
-the compressed TSV table and compact metadata sidecars.}
+the compressed TSV table and compact metadata files.}
 
 \item{vennDResults}{Optional model-level Venn result. Its configuration
 metadata and threshold tables are added before the workbook dictionary.}
@@ -70,7 +70,7 @@ coefficient tables.}
 \value{
 A list with class \code{'dnaEPICO_methylationGLM_paths'} containing
 the paths of the files written to disk, including the annotated workbook
-and any requested report-table sidecars.
+and any requested report data files.
 }
 \description{
 Write compact phenotype summaries, optional text and significant-CpG tables,

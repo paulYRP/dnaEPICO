@@ -1,5 +1,15 @@
 CHANGES IN VERSION 0.99.39
-------------------------
+--------------------------
+
+    o [18-11-2026] Make workflows share N_CORES across analysis configurations
+      and choose how many analyses run at once. Numerical-library threads
+      default to one per R process. CPU detection uses parallelly and respects
+      scheduler and container limits.
+
+    o [18-11-2026] GLM and LME summary workers respect available CPU
+      limits and the selected parallel method. Recursive Make tests preserve
+      the resolved recursive Make executable and report subprocess output
+      when an assertion fails.
 
     o [12-09-2026] Report figures offer PNG, JPEG and TIFF downloads and a
       persistent light/dark toggle beside the logo. Every timepoint is
@@ -11,14 +21,14 @@ CHANGES IN VERSION 0.99.39
       distributions are omitted, and residual diagnostics use scatter plots.
 
 CHANGES IN VERSION 0.99.38
-------------------------
+--------------------------
 
     o [18-08-2026] extractMake() now records the current Rscript executable,
       allowing the exported GNU Make workflow to run when Rscript is not
       available on PATH.
 
 CHANGES IN VERSION 0.99.37
-------------------------
+--------------------------
 
 NEW FEATURES
 
@@ -50,7 +60,7 @@ NEW FEATURES
       default.
 
 CHANGES IN VERSION 0.99.36
-------------------------
+--------------------------
 
 NEW FEATURES
 
@@ -107,14 +117,14 @@ NEW FEATURES
     o [06-06-2026] Added IDAT_FORCE to optionally force minfi IDAT parsing for
       validated mixed-size IDAT inputs.
 
-    o [05-06-2026] Added configurable cross-reactive probe ID detection. 
+    o [05-06-2026] Added configurable cross-reactive probe ID detection.
 
     o [30-05-2026] Added an overview vignette with visual summaries of the main
       dnaEPICO functions.
 
-    o [23-05-2026] Added a Quarto dashboard report workflow for dnamReport(). 
+    o [23-05-2026] Added a Quarto dashboard report workflow for dnamReport().
 
     o [14-04-2026] Introduced a modular and reproducible pipeline for preprocessing
-      Illumina DNA methylation array data (EPICv2, EPIC and 450K). 
+      Illumina DNA methylation array data (EPICv2, EPIC and 450K).
 
     o [18-02-2026] Started development of the dnaEPICO package.

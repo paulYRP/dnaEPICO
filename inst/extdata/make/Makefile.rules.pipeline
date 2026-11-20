@@ -3,6 +3,33 @@
 # ===============================================
 MAKEFLAGS += --output-sync
 
+# Share the total N_CORES limit across the selected analyses.
+N_CORES ?= 1
+NATIVE_THREADS ?= 1
+override export OMP_NUM_THREADS := $(NATIVE_THREADS)
+override export OPENBLAS_NUM_THREADS := $(NATIVE_THREADS)
+override export OPENBLAS_DEFAULT_NUM_THREADS := $(NATIVE_THREADS)
+override export MKL_NUM_THREADS := $(NATIVE_THREADS)
+override export VECLIB_MAXIMUM_THREADS := $(NATIVE_THREADS)
+override export NUMEXPR_NUM_THREADS := $(NATIVE_THREADS)
+DNAEPICO_RESOURCE_PLAN := $(shell "$(RSCRIPT)" -e "source(system.file('extdata','make','pipeline-resources.R',package='dnaEPICO',mustWork=TRUE)); writePipelineResourcePlan(commandArgs(TRUE))" "$(N_CORES)" "$(NATIVE_THREADS)" "$(strip $(MODELS))")
+ifeq ($(strip $(DNAEPICO_RESOURCE_PLAN)),)
+$(error Could not determine the CPU core limit for dnaEPICO. See the R error above)
+endif
+DNAEPICO_CPU_BUDGET := $(word 1,$(DNAEPICO_RESOURCE_PLAN))
+DNAEPICO_WORKER_SLOTS := $(word 2,$(DNAEPICO_RESOURCE_PLAN))
+override MODEL_JOBS := $(word 3,$(DNAEPICO_RESOURCE_PLAN))
+DNAEPICO_MODEL_SHARES := $(wordlist 4,$(words $(DNAEPICO_RESOURCE_PLAN)),$(DNAEPICO_RESOURCE_PLAN))
+DNAEPICO_SELECTED_MODELS := $(foreach share,$(DNAEPICO_MODEL_SHARES),$(word 1,$(subst =, ,$(share))))
+model_workers = $(or $(patsubst $(1)=%,%,$(filter $(1)=%,$(DNAEPICO_MODEL_SHARES))),$(DNAEPICO_WORKER_SLOTS))
+DNAEPICO_MODEL_WORKERS ?= $(DNAEPICO_WORKER_SLOTS)
+
+# Run steps within each analysis in order, including with make -j.
+# Run grouped analyses together, each with a fixed maximum number of R workers.
+ifneq ($(DNAEPICO_MODEL_DISPATCH),1)
+.NOTPARALLEL:
+endif
+
 METHYLATION_SCALE ?= beta
 GENCODE_HUB ?= FALSE
 optional_text_arg = $(if $(filter NULL null,$(strip $(1))),NULL,$(if $(strip $(1)),'$(strip $(1))',NULL))
@@ -93,12 +120,12 @@ LME_OUTPUTS = $(LME_WORKBOOK) $(LME_REPORT_SIDECARS)
 # Run the complete pipeline for all models
 # ===============================================
 models:
-	@echo "Running models in parallel: $(MODELS)"
-	@$(MAKE) -j $(words $(MODELS)) $(addprefix run-, $(MODELS))
+	@echo "Running analyses: $(DNAEPICO_SELECTED_MODELS) ($(MODEL_JOBS) at once; $(DNAEPICO_CPU_BUDGET) CPU cores total)"
+	@$(MAKE) -j $(MODEL_JOBS) $(addprefix run-,$(DNAEPICO_SELECTED_MODELS)) DNAEPICO_MODEL_DISPATCH=1 $(if $(DNAEPICO_SELECTED_MODELS),,$(error MODELS must contain at least one model))
 
 run-%: FORCE
 	@echo ">>> Starting full pipeline for: $*"
-	@$(MAKE) -j1 all MODEL=$*
+	@$(MAKE) -j1 all MODEL=$* DNAEPICO_MODEL_DISPATCH=0 DNAEPICO_MODEL_WORKERS=$(call model_workers,$*)
 	@echo "<<< Finished full pipeline for: $*"
 
 default: all
@@ -123,12 +150,12 @@ f3: report-f3
 # Run f3 (Steps 1 to 3) for all models in parallel
 # ===============================================
 f3_models:
-	@echo "Running f3 (Steps 1-3) in parallel: $(MODELS)"
-	@$(MAKE) -j $(words $(MODELS)) $(addprefix runf3-, $(MODELS))
+	@echo "Running f3 (Steps 1-3): $(DNAEPICO_SELECTED_MODELS) ($(MODEL_JOBS) analyses at once; $(DNAEPICO_CPU_BUDGET) CPU cores total)"
+	@$(MAKE) -j $(MODEL_JOBS) $(addprefix runf3-,$(DNAEPICO_SELECTED_MODELS)) DNAEPICO_MODEL_DISPATCH=1 $(if $(DNAEPICO_SELECTED_MODELS),,$(error MODELS must contain at least one model))
 
 runf3-%: FORCE
 	@echo ">>> Starting f3 for: $*"
-	@$(MAKE) -j1 f3 MODEL=$*
+	@$(MAKE) -j1 f3 MODEL=$* DNAEPICO_MODEL_DISPATCH=0 DNAEPICO_MODEL_WORKERS=$(call model_workers,$*)
 	@echo "<<< Finished f3 for: $*"
 
 # ===============================================
@@ -150,12 +177,12 @@ f4: report-f4
 # Run f4 (Steps 1 to 4) for all models in parallel
 # ===============================================
 f4_models:
-	@echo "Running f4 (Steps 1-4) in parallel: $(MODELS)"
-	@$(MAKE) -j $(words $(MODELS)) $(addprefix runf4-, $(MODELS))
+	@echo "Running f4 (Steps 1-4): $(DNAEPICO_SELECTED_MODELS) ($(MODEL_JOBS) analyses at once; $(DNAEPICO_CPU_BUDGET) CPU cores total)"
+	@$(MAKE) -j $(MODEL_JOBS) $(addprefix runf4-,$(DNAEPICO_SELECTED_MODELS)) DNAEPICO_MODEL_DISPATCH=1 $(if $(DNAEPICO_SELECTED_MODELS),,$(error MODELS must contain at least one model))
 
 runf4-%: FORCE
 	@echo ">>> Starting f4 for: $*"
-	@$(MAKE) -j1 f4 MODEL=$*
+	@$(MAKE) -j1 f4 MODEL=$* DNAEPICO_MODEL_DISPATCH=0 DNAEPICO_MODEL_WORKERS=$(call model_workers,$*)
 	@echo "<<< Finished f4 for: $*"
 
 # ===============================================
@@ -178,16 +205,16 @@ f3lme: report-f3lme
 # ===============================================
 
 f3lme_models:
-	@echo "Running f3lme (Steps 1-3 + LME) in parallel: $(MODELS)"
-	@$(MAKE) -j $(words $(MODELS)) $(addprefix runf3lme-, $(MODELS))
+	@echo "Running f3lme (Steps 1-3 + LME): $(DNAEPICO_SELECTED_MODELS) ($(MODEL_JOBS) analyses at once; $(DNAEPICO_CPU_BUDGET) CPU cores total)"
+	@$(MAKE) -j $(MODEL_JOBS) $(addprefix runf3lme-,$(DNAEPICO_SELECTED_MODELS)) DNAEPICO_MODEL_DISPATCH=1 $(if $(DNAEPICO_SELECTED_MODELS),,$(error MODELS must contain at least one model))
 
 runf3lme-%: FORCE
 	@echo ">>> Starting f3lme for: $*"
-	@$(MAKE) -j1 f3lme MODEL=$*
+	@$(MAKE) -j1 f3lme MODEL=$* DNAEPICO_MODEL_DISPATCH=0 DNAEPICO_MODEL_WORKERS=$(call model_workers,$*)
 	@echo "<<< Finished f3lme for: $*"
 
 # =================================================================================================================================
-# Step 1: Minfi Preprocessing
+# Step 1: Preprocess and filter methylation data
 # =================================================================================================================================
 MODEL_LOG_DIR = $(LOGS_DIR)/$(MODEL)
 STEP1_PRIMARY = $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData
@@ -253,7 +280,7 @@ $(STEP1_DERIVED): $(STEP1_PRIMARY)
 	@"$(RSCRIPT)" -e "target <- commandArgs(trailingOnly = TRUE)[[1L]]; if (!file.exists(target)) stop('Step 1 did not create expected output: ', target, call. = FALSE)" "$@"
 
 # =================================================================================================================================
-# Step 2: Surrogate Variable Analysis
+# Step 2: Estimate surrogate variables (SVA)
 # =================================================================================================================================
 step2:
 	@echo "Running Step 2 for $(MODEL)"
@@ -286,7 +313,7 @@ $(SVA_MARKER): $(PHENO_LC) $(RDATA_DIR)/$(MODEL)/$(STEP1)/$(OBJ_DIR)/RGSet.RData
 	@"$(RSCRIPT)" -e "if (!file.exists('$(PHENO_LC)')) stop('SVA phenotype file is missing.', call. = FALSE); dir.create(dirname('$(SVA_MARKER)'), recursive = TRUE, showWarnings = FALSE); if (!file.create('$(SVA_MARKER)')) stop('Could not create the SVA completion marker.', call. = FALSE)"
 
 # =================================================================================================================================
-# Step 3: Prepare phenotype and methylation data
+# Step 3: Prepare modelling data
 # =================================================================================================================================
 STEP3_PRIMARY = $(if $(COMBINED_PHENO_METHYLATION),$(COMBINED_PHENO_METHYLATION),$(firstword $(TIMEPOINT_PHENO_METHYLATION_TARGETS)))
 STEP3_OUTPUTS = $(sort \
@@ -328,7 +355,7 @@ $(STEP3_DERIVED): $(STEP3_PRIMARY)
 	@"$(RSCRIPT)" -e "target <- commandArgs(trailingOnly = TRUE)[[1L]]; if (!file.exists(target)) stop('Step 3 did not create expected output: ', target, call. = FALSE)" "$@"
 	  
 # =================================================================================================================================
-# Step 4: methylationGLM
+# Step 4: Fit CpG-wise Gaussian GLMs
 # =================================================================================================================================
 .PHONY: validate-glm-config
 validate-glm-config:
@@ -347,7 +374,7 @@ $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION) | validate-glm-config
 	  cpgPrefix = '$(CPG_PREFIX)', \
 	  cpgLimit = $(CPG_LIMIT), \
 	  methylationScale = '$(METHYLATION_SCALE)', \
-	  nCores = $(N_CORES), \
+	  nCores = $(DNAEPICO_MODEL_WORKERS), \
 	  plotWidth = $(TIFF_WIDTH), \
 	  plotHeight = $(TIFF_HEIGHT), \
 	  plotDPI = $(TIFF_RES), \
@@ -380,7 +407,7 @@ $(GLM_OUTPUTS) &: $(GLM_PHENO_METHYLATION) | validate-glm-config
 	  saveOutputs = TRUE )) "
 
 # =================================================================================================================================
-# Step 5: methylationLME
+# Step 5: Fit CpG-wise linear mixed-effects models
 # =================================================================================================================================
 .PHONY: validate-lme-config
 validate-lme-config:
@@ -408,7 +435,7 @@ $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION) | validate-lme-config
 	  cpgPrefix = '$(CPG_PREFIX)', \
 	  cpgLimit = $(CPG_LIMIT), \
 	  methylationScale = '$(METHYLATION_SCALE)', \
-	  nCores = $(N_CORES), \
+	  nCores = $(DNAEPICO_MODEL_WORKERS), \
 	  summaryPval = $(SUMMARY_PVAL), \
 	  plotWidth = $(TIFF_WIDTH), \
 	  plotHeight = $(TIFF_HEIGHT), \
@@ -438,7 +465,7 @@ $(LME_OUTPUTS) &: $(COMBINED_PHENO_METHYLATION) | validate-lme-config
 	  saveOutputs = TRUE ))"
 
 # =================================================================================================================================
-# Step 6: Final Report
+# Step 6: Generate the report
 # =================================================================================================================================
 report-f3: REPORT_MODEL_SECTIONS_ARG = character(0)
 report-f4: REPORT_MODEL_SECTIONS_ARG = 'glm'
@@ -499,6 +526,11 @@ endif
 # =================================================================================================================================
 status:
 	@echo "===== Pipeline Status ====="
+	@echo "CPU cores available to this workflow: $(DNAEPICO_CPU_BUDGET)"
+	@echo "Numerical-library threads per R process: $(NATIVE_THREADS)"
+	@echo "Maximum analyses at once (grouped runs): $(MODEL_JOBS)"
+	@echo "Maximum R workers per grouped analysis: $(DNAEPICO_MODEL_SHARES)"
+	@echo "Maximum R workers for $(MODEL): $(DNAEPICO_MODEL_WORKERS)"
 	@"$(RSCRIPT)" -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 1: preprocessingMinfiEwasWater done\n' else '[MISSING] Step 1: preprocessingMinfiEwasWater output\n')" "$(RDATA_DIR)/$(MODEL)/$(STEP1)/$(METRICS_DIR)/beta_NomFilt_MSetF_Flt_Rxy_Ds_Rc.RData"
 	@"$(RSCRIPT)" -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 2: SVA done\n' else '[MISSING] Step 2: SVA output\n')" "$(SVA_MARKER)" "$(PHENO_LC)"
 	@"$(RSCRIPT)" -e "paths <- commandArgs(trailingOnly = TRUE); cat(if (all(file.exists(paths))) '[OK] Step 3: preprocessingPheno done\n' else '[MISSING] Step 3: preprocessingPheno output\n')" "$(COMBINED_PHENO_TARGET)"

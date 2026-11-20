@@ -50,10 +50,50 @@ can_run_lme <- can_run_glm && requireNamespace("lmerTest", quietly = TRUE)
 
 # Introduction
 
-This vignette describes the file-based `dnaEPICO` workflow. Functions return
-structured objects and write files when `saveOutputs = TRUE`. Use this workflow
-for reproducible directories, Make execution, and resumable analyses on local
-or HPC systems.
+The `dnaEPICO` pipeline prepares Illumina methylation-array data, fits
+CpG-wise statistical models, and produces an analysis report. Each function
+returns an R object. With `saveOutputs = TRUE`, it also saves the files needed
+by later steps. The same steps can be run from R or through GNU Make.
+
+```{r pipeline-step-table, echo=FALSE}
+knitr::kable(data.frame(
+    Step = c(
+        "1. Preprocess and filter", "2. Estimate surrogate variables",
+        "3. Prepare modelling data", "4. Fit Gaussian GLMs",
+        "5. Fit mixed-effects models", "6. Generate the report"
+    ),
+    Function = c(
+        "`preprocessingMinfiEwasWater()`", "`svaEnmix()`",
+        "`preprocessingPheno()`", "`methylationGLM()`", "`methylationLME()`",
+        "`dnamReport()`"
+    ),
+    `Main input` = c(
+        "IDAT files and a sample phenotype table",
+        "Step 1 `RGSet` and `phenoLC.csv`",
+        "Updated phenotype table and methylation matrices",
+        "A table for one timepoint", "A table combining repeated measurements",
+        "Saved phenotype data, figures, workbooks and logs"
+    ),
+    `Main output` = c(
+        "Filtered methylation matrices, QC figures and `phenoLC.csv`",
+        paste("Surrogate variables added to `phenoLC.csv`,",
+            "with SVA results and figures"),
+        paste("Matched phenotype and CpG tables for individual",
+            "or combined timepoints"),
+        "CpG association results, annotated workbook and diagnostic plots",
+        paste("Longitudinal CpG association results,",
+            "annotated workbook and diagnostic plots"),
+        "An HTML report"
+    ),
+    check.names = FALSE
+))
+```
+
+Steps 1-3 prepare the data. Choose Step 4 for a single-timepoint analysis,
+Step 5 for repeated measurements, or both when both analyses are needed.
+The report includes the selected analysis sections. In the models, CpG
+methylation is the response and the phenotype variable is the predictor
+of interest.
 
 # Citation
 
@@ -160,8 +200,8 @@ makefilePath <- extractMake(destDir = tempdir(), overwrite = TRUE)
 basename(makefilePath)
 ```
 
-After extraction, the file should be edited so that the project-specific paths,
-model labels, and cluster settings match the target analysis environment.
+Set the input paths, analysis names and output directories in the exported
+Makefile. On an HPC system, `N_CORES` is also limited by the allocated CPUs.
 
 Arguments:
 
@@ -170,7 +210,7 @@ Arguments:
 - `overwrite = TRUE` allows the template to be replaced if it already exists in
     that temporary location.
 
-# Write preprocessingMinfiEwasWater outputs to disk
+# Step 1: Preprocess and filter methylation data
 
 The file-based route usually starts with `preprocessingMinfiEwasWater()`. This
 step writes the filtered `RGSet`, normalized metric matrices, quality-control
@@ -294,7 +334,7 @@ Arguments:
     methylation objects.
 - `arrayType` and `annotationVersion` define the array manifest and annotation
     used by `minfi`.
-- `baseDataFolder`, `figureBaseDir`, and `lcPhenoDir` define where serialized
+- `baseDataFolder`, `figureBaseDir`, and `lcPhenoDir` define where saved R
     objects, figures, and `phenoLC.csv` are written.
 - `detPThreshold`, `normMethods`, `pvalThreshold`, `chrToRemove`,
     `snpsToRemove`, `mafThreshold`, and `probeExclusionPath` define the main
@@ -308,7 +348,7 @@ Arguments:
 - `saveOutputs = TRUE` is what turns this function into the first file-producing
     step of the pipeline.
 
-# Write SVA outputs to disk
+# Step 2: Estimate surrogate variables (SVA)
 
 The next example shows `svaEnmix()` in file-writing mode. The function still
 returns a structured result object, but the `savedFiles` element now records the
@@ -372,7 +412,7 @@ basename(unlist(svaPipelineResult$savedFiles, use.names = FALSE))
 
 The returned `savedFiles` object records the main paths written by this step.
 `names(svaPipelineResult$savedFiles)` identifies the output groups: `svaRData`
-is the serialized surrogate-variable matrix, `svaCSV` is the CSV version of
+is the saved surrogate-variable matrix, `svaCSV` is the CSV version of
 that matrix, `phenoWithSva` is the same `phenoLC.csv` after the SVA columns are
 appended, and `dataDir` / `rDir` are the parent directories used for the saved
 outputs. The `basename(...)` call shows the file names generated from those
@@ -395,7 +435,7 @@ Arguments:
 - `display = FALSE` and `verbose = FALSE` keep the console output quiet, while
     `logs = TRUE` writes the log files used by the report.
 
-# Write preprocessingPheno outputs to disk
+# Step 3: Prepare modelling data
 
 `preprocessingPheno()` is the step that usually prepares the largest number of
 pipeline-ready files because it writes timepoint-specific tables, combined
@@ -497,7 +537,7 @@ Arguments:
 - `saveOutputs = TRUE` is what makes this step useful in a file-based pipeline,
     because later modeling steps consume these written files.
 
-# Write GLM outputs to disk
+# Step 4: Fit CpG-wise Gaussian GLMs
 
 The modeling function also separates in-memory results from file outputs. The
 next example runs a small GLM analysis and prints the names of the files written
@@ -566,13 +606,14 @@ Arguments:
 
 - `inputPheno` points to the merged phenotype-plus-beta object generated by
     `preprocessingPheno()`.
-- `phenotypes` lists the outcome variables that will be modeled one at a time.
+- `phenotypes` lists the predictors of interest, tested separately against
+    CpG methylation.
 - `covariates` lists the adjustment variables included in every model.
 - `factorVars` identifies the categorical variables that should be treated as
     factors before model fitting.
 - `scaleVars` identifies numeric fixed-effect variables to centre and divide by
     their sample standard deviations before fitting.
-- Numeric CpG columns are passed unchanged to glm2. Native messages, warnings,
+- Numeric CpG columns are passed unchanged to glm2. Messages, warnings,
     or errors are stored in `<Phenotype>_Model.Message`; model attempts without
     a returned p-value are counted in workbook metadata and are not added to the
     annotated result table.
@@ -594,12 +635,12 @@ Arguments:
 - `resumeFromSummary = TRUE` reuses a complete phenotype summary only when it
     was generated from the same input file and model configuration. A phenotype
     without a complete summary restarts from its first CpG.
-- `reportAssetsDir` writes the compressed report table directly into the report
-    project, leaving the annotated workbook directory free of report sidecars.
+- `reportAssetsDir` selects the directory for the compressed report table
+    and its supporting files.
 - `saveOutputs = TRUE` enables the file-based pipeline behaviour expected by
     Makefile and HPC use.
 
-# Write LME outputs to disk
+# Step 5: Fit CpG-wise linear mixed-effects models
 
 The longitudinal modeling step follows the same pattern as the GLM function, but
 the saved outputs now correspond to mixed-effects models, longitudinal summary
@@ -696,7 +737,7 @@ Arguments:
     degrees of freedom. Kenward-Roger testing requires `pbkrtest` and is more
     computationally intensive for an EWAS.
 - Numeric CpG columns are passed unchanged to the selected lmerTest/lme4 or
-    nlme engine. Native conditions are stored in
+    nlme engine. Model messages, warnings and errors are stored in
     `<Phenotype>_Model.Message`; model attempts without a returned coefficient
     or omnibus p-value are counted in workbook metadata and are not added to
     the annotated result table.
@@ -744,7 +785,7 @@ This model uses the fixed effects `Timepoint * Profession` together with
 timepoint contrast differs by profession; the component coefficients are used
 to identify its direction and location.
 
-## Generate the report from the example outputs
+# Step 6: Generate the report
 
 After the file-based examples above have been run, `dnamReport()` can assemble
 the phenotype table, ENmix control figures, quality-control figures, batch
@@ -962,11 +1003,11 @@ project directories containing spaces. A minimal layout is:
 my_project/
     Makefile
     metadata/
-    pheno_model1.csv
+        pheno_model1.csv
     data/
-    preprocessingMinfiEwasWater/
-        idats/
-        <IDAT files>
+        preprocessingMinfiEwasWater/
+            idats/
+                <IDAT files>
 ```
 
 The exported template should then be edited so that at least the model name,
@@ -982,19 +1023,31 @@ RESULTS_DIR = results
 FIGURES_DIR = figures
 ```
 
-A typical command sequence is:
+## Choose an analysis route
+
+In the Makefile, `MODEL` names one analysis configuration: its input files,
+settings and output directory. Each configuration can fit many CpG-wise
+statistical models. Choose a command for the analysis needed:
+
+| Command | Steps | Report sections |
+|---|---|---|
+| `make f3 MODEL=model1` | 1-3 | Preprocessing |
+| `make f4 MODEL=model1` | 1-4 | Preprocessing and GLM |
+| `make f3lme MODEL=model1` | 1-3 and 5 | Preprocessing and LME |
+| `make all MODEL=model1` | 1-5 | Preprocessing, GLM and LME |
+
+For example, run a GLM analysis and check its outputs with:
 
 ```bash
-make step1 MODEL=model1
-make step2 MODEL=model1
-make step3 MODEL=model1
-make f3 MODEL=model1
 make f4 MODEL=model1
-make f3lme MODEL=model1
-make all MODEL=model1
 make status MODEL=model1
-make clean MODEL=model1
 ```
+
+Make runs the required earlier steps when their outputs are missing or out
+of date. To inspect preprocessing one step at a time, use `make step1`,
+`make step2` and `make step3`, with the same `MODEL` value.
+
+## Select the R installation
 
 To use another R installation, override the recorded executable when invoking
 Make. This is useful after loading an R module on a high-performance computing
@@ -1007,24 +1060,10 @@ make f4 MODEL=model1 RSCRIPT=/path/to/Rscript
 Alternatively, regenerate the Makefile with `extractMake()` from the R
 installation that will run the workflow.
 
-The targets run these workflow stages:
+## Run several analyses
 
-- `make step1 MODEL=model1` runs preprocessing only.
-- `make step2 MODEL=model1` runs the SVA step using the files written by Step 1.
-- `make step3 MODEL=model1` runs phenotype preparation after Step 2 appends
-    surrogate-variable columns to `phenoLC.csv`.
-- `make f3 MODEL=model1` runs Steps 1-3 and generates a preprocessing report.
-- `make f4 MODEL=model1` runs Steps 1-4 and generates a report with
-    preprocessing and GLM sections.
-- `make f3lme MODEL=model1` runs Steps 1-3 and LME, then generates a report with
-    preprocessing and LME sections.
-- `make all MODEL=model1` runs Steps 1-5 and generates the complete report.
-- `make status MODEL=model1` reports available outputs.
-- `make clean MODEL=model1` removes outputs for the selected model while
-    preserving shared raw inputs.
-
-If several models are declared in `MODELS`, the grouped multi-model targets can
-be used instead:
+Set `MODELS` to the analysis names to run together, then choose a grouped
+command:
 
 ```bash
 make f3_models
@@ -1033,12 +1072,58 @@ make f3lme_models
 make models
 ```
 
-These targets dispatch every model listed in `MODELS`:
+These targets run each analysis configuration listed in `MODELS`:
 
-- `make f3_models` runs the `f3` route for each declared model.
-- `make f4_models` runs the `f4` route for each declared model.
-- `make f3lme_models` runs the `f3lme` route for each declared model.
-- `make models` runs the full `all` pipeline for each declared model.
+- `make f3_models` runs Steps 1-3 and the preprocessing report for each
+    analysis.
+- `make f4_models` runs the GLM route and report for each analysis.
+- `make f3lme_models` runs the LME route and report for each analysis.
+- `make models` runs both model-fitting steps and the full report for each
+    analysis.
+
+## CPU cores and R workers
+
+`N_CORES` is the total CPU core limit for one Make invocation. The rules use
+available cores up to this limit and, on PBS, up to the job's CPU allocation.
+These cores are shared across the analyses in `MODELS`. A single-analysis
+command, such as `make f4 MODEL=model1`, can use all available cores up to
+`N_CORES`.
+
+An **R worker** is an R process that fits a subset of CpGs. The rules
+choose how many analyses can run at once and the maximum R workers assigned
+to each analysis:
+
+| Cores | Analyses | Analyses at once | Maximum R workers per analysis |
+|---:|---:|---:|---|
+| 64 | 3 | 3 | 22, 21, 21 |
+| 8 | 3 | 3 | 3, 3, 2 |
+| 2 | 5 | 2 | 1; remaining analyses wait |
+
+Analysis names keep the order given in `MODELS`; repeated names are used
+once. The assigned worker limits stay fixed during a run. Fitting may use
+fewer workers for a small CpG set or limited memory. The log reports the
+parallel method (`serial`, `fork` or `psock`), the workers used, and the
+minimum CpG count for automatic parallel fitting. `serial` uses one R process.
+
+Numerical libraries, such as OpenBLAS, can use threads within each R process.
+The shared rules set `NATIVE_THREADS = 1` by default to limit these threads.
+Increasing this value reduces the number of R workers that fit within the
+CPU limit. `MODEL_JOBS` is the automatically calculated number of analyses
+that can run at once. These settings are defined in the shared rules.
+
+`make status` displays the available cores and worker limits. Steps within
+one analysis run in order, including when Make is started with `-j`.
+Separate Make invocations need separate CPU allocations. Memory checks apply
+within each R process; combined memory use depends on all analyses running
+at the same time.
+
+The Make workflow uses workers on one node. PBS CPU detection uses `NCPUS`
+or `PBS_NUM_PPN`, or `qstat -f` for a confirmed single-node allocation.
+
+For direct R calls, `nCores` limits workers in that function call. The Make
+variable `N_CORES` instead applies to the combined workflow.
+
+## Annotation and comparison plots
 
 Model-level Venn output is disabled when its Makefile values are `NULL`. Set
 `VENND_GLM_PHENOTYPES` or `VENND_LME_PHENOTYPES` to comma-separated phenotype
@@ -1066,13 +1151,17 @@ membership tables; it does not alter model p-values or their FDR adjustment.
 
 Set `GENCODE_HUB = TRUE` for a GRCh38 model when GENCODE output is required.
 The R functions retrieve the internal AnnotationHub resource ID, validate its
-assembly and gene-level schema, and derive the release label from the resource
+assembly and required gene annotation columns, and derive the release label
+from the resource
 metadata. Users do not provide a separate release value or local annotation
 file. AnnotationHub uses its normal local cache after the first retrieval.
 `GENCODE_HUB = FALSE` performs no GENCODE retrieval. Models using an hg19 array
 annotation, including the 450K hg19 example, must keep this value `FALSE`.
 
-Status and cleanup targets are available for routine use:
+## Check outputs and remove generated files
+
+`make status` checks the expected output files. Cleanup commands remove
+generated files for one analysis or for all names in `MODELS`:
 
 ```bash
 make status MODEL=model1
@@ -1080,14 +1169,16 @@ make clean MODEL=model1
 make clean_models
 ```
 
-`status` reports available outputs, `clean` removes one model, and
-`clean_models` removes every model listed in `MODELS`. Cleanup removes the
+`clean` removes the selected analysis output directories; `clean_models`
+removes them for every analysis listed in `MODELS`. Cleanup removes the
 corresponding directories under `data`, `rData`, `reports`, `logs`, `figures`,
 and `results`, and removes empty output roots.
 
-Each step writes outputs consumed by downstream targets. Step 2 creates
+## How steps depend on each other
+
+Each step saves files needed by the next step. Step 2 creates
 `data/<model>/svaEnmix/.sva_complete` only after the updated `phenoLC.csv` has
-been validated and installed. Downstream targets depend on both files, so Make
+been validated and saved. Later steps depend on both files, so Make
 reruns SVA when Step 1 replaces `phenoLC.csv` and skips SVA when the completed
 inputs are unchanged.
 
@@ -1114,10 +1205,9 @@ shows section notes that update for the selected figure or workbook sheet. On
 smaller displays the navigation becomes a compact top menu and the notes move
 below the main content.
 
-Figure-bearing tabs display one selected image at a time with previous/next,
-mouse-controlled zoom, scrolling, one card expansion control, and a download
-link outside the image region. Workbook tabs provide a sheet selector without
-loading every sheet into one visible panel. Package-generated plots adapt point
+Figure tabs show one image at a time, with previous/next buttons, zoom,
+scrolling, an expand button and a download link. Workbook tabs show the
+selected worksheet. Package-generated plots adapt point
 density, labels, dimensions, and longitudinal traces to the number of samples
 or CpGs, while minfi, limma, and ENmix plots retain their established plotting
 methods.
@@ -1135,7 +1225,7 @@ above, organised under the Makefile project layout: the phenotype table in
 P-value object in `rData/`, model annotation tables in `data/`, and workflow
 logs in `logs/`.
 
-The generated site is opened from the report target path:
+Open the generated report at:
 
 ```text
 $(STEP6)/$(MODEL)/docs/index.html
@@ -1178,12 +1268,12 @@ choices can be edited without changing the pipeline rules themselves.
 
 ## User configuration
 
-- `MAKEFLAGS += --output-sync` keeps parallel Make output grouped by recipe,
+- `MAKEFLAGS += --output-sync` groups the messages from each Make command,
     which makes logs easier to read.
 - `RSCRIPT` identifies the R installation used by the workflow. Its default is
     recorded by `extractMake()` and can be overridden when Make is invoked.
 
-## Models selection and parallel run
+## Select one or several analyses
 
 - `MODEL` defines a single pipeline configuration to run.
 - `MODELS` defines a set of configurations that can be launched in parallel by
@@ -1193,7 +1283,7 @@ In single-model use, commands such as `make f4 MODEL=model1` run one workflow.
 In multi-model use, commands such as `make f4_models` evaluate the same template
 for each name listed in `MODELS`.
 
-## Per-model overrides
+## Settings for each analysis
 
 - `PHENO_FILE` is reassigned according to the selected `MODEL`.
 
@@ -1205,7 +1295,7 @@ Makefile.
 
 - `LOGS_DIR`, `DATA_DIR`, `RDATA_DIR`, `RESULTS_DIR`, and `FIGURES_DIR` define
     the top-level folder structure.
-- `STEP1` to `STEP6` define the canonical names of the major pipeline stages.
+- `STEP1` to `STEP6` define the folder names for Steps 1-6.
 - `METRICS_DIR`, `IDAT_DIR`, `OBJ_DIR`, `MERGE_DIR`, `MODEL_DIR`, `CPG_DIR`,
     `SUMMARY_DIR`, `ENMIX_DIR`, `SVA_DIR`, and `QC_DIR` define the subdirectory
     names used by the rules file.
@@ -1249,12 +1339,14 @@ These parameters are shared across multiple workflow steps.
 ### Step 4 and Step 5 modeling parameters
 
 - `CPG_PREFIX`: prefix used to identify CpG columns.
-- `CPG_LIMIT`: optional cap on the number of CpGs processed; `NA` uses all.
+- `CPG_LIMIT`: maximum number of CpGs to process; `NA` uses all.
 - `PRS_MAP`: optional mapping from phenotype names to PRS variables; `NULL`
     omits PRS terms from the models.
 - `SUMMARY_PVAL`: optional p-value cutoff for summary tables; `NA` keeps all
     summary rows.
-- `N_CORES`: number of cores used within each R job.
+- `N_CORES`: maximum total CPU cores for one Make workflow, shared across
+    the selected analyses. See **CPU cores and R workers** for the allocation
+    rules.
 - `SAVE_TXT_SUMMARIES`: whether plain-text summaries should be written.
 - `RESUME_FROM_SUMMARY`: whether complete phenotype summaries generated from
     the same input files and model configurations may be reused after a model
@@ -1339,7 +1431,7 @@ M-value, or copy-number inputs and is interpreted case-insensitively.
     compared; `NULL` disables omnibus Venn output.
 - `VENND_GLM_OMNIBUS_LABELS`: optional labels for the selected omnibus sets.
 - Annotated GLM rows require at least one returned coefficient or omnibus
-    p-value. Native glm2 and omnibus-test conditions are written to the
+    p-value. Messages from glm2 and the omnibus test are written to the
     phenotype-specific `Model.Message` column and aggregate availability counts
     are written to metadata.
 
@@ -1355,7 +1447,7 @@ M-value, or copy-number inputs and is interpreted case-insensitively.
     factor.
 - `LME_LIBS`: mixed-effects libraries used by `methylationLME()`.
 - `LME_CORRELATION_STRUCTURE`: residual correlation structure for the `nlme`
-    LME backend; use `none`, `AR1`, or `CAR1`.
+    LME model engine; use `none`, `AR1`, or `CAR1`.
 - `LME_CORRELATION_VAR`: variable used to order repeated observations within
     participant for `AR1` or `CAR1`; required for those structures.
 - `INTERACTION_LME`: optional interaction term used in the longitudinal model;
@@ -1375,7 +1467,7 @@ M-value, or copy-number inputs and is interpreted case-insensitively.
     compared; `NULL` disables omnibus Venn output.
 - `VENND_LME_OMNIBUS_LABELS`: optional labels for the selected omnibus sets.
 - Annotated LME rows require at least one returned coefficient or omnibus
-    p-value. Native lmerTest/lme4 or nlme conditions are written to the
+    p-value. Messages from lmerTest/lme4 or nlme are written to the
     phenotype-specific `Model.Message` column and aggregate availability counts
     are written to metadata.
 
@@ -1387,7 +1479,7 @@ path, mapping, or model term should be absent. `CHUNK_SIZE` uses `NULL` for
 automatic chunking because this disables a user-specified tuning value rather
 than applying a filter.
 
-## Include pipeline from dnaEPICO
+## Load the shared pipeline rules
 
 - `DNAPIPE_MK` resolves the packaged `Makefile.rules.pipeline` file.
 - `include $(DNAPIPE_MK)` imports the actual pipeline rules after the user

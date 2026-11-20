@@ -14,7 +14,7 @@ normalizePathDnamReport <- function(path) {
 #'
 #' @param modelSections Character vector containing any of `'glm'` and `'lme'`.
 #'
-#' @return A unique character vector in canonical report order.
+#' @return A unique character vector in the order used by the report.
 #'
 #' @keywords internal
 #' @noRd
@@ -477,51 +477,17 @@ renderDnamReport <- function(
     invisible(target)
 }
 
-.copyReportFigureFileDnaEpico <- function(
-    srcPath, baseSlug, destinationDir, magickAvailable
+.exportReportFigureFormatsDnaEpico <- function(
+    srcPath, baseSlug, destinationDir, magickAvailable, path, converted
 ) {
-    extension <- tolower(tools::file_ext(srcPath))
-    converted <- FALSE
-    browser_ready <- TRUE
-    if (extension %in% c("tif", "tiff") && magickAvailable) {
-    name <- paste0(baseSlug, ".png")
-    path <- file.path(destinationDir, name)
-    converted <- tryCatch(
-        {
-        image <- magick::image_read(srcPath)
-        magick::image_write(image, path = path, format = "png")
-        TRUE
-        },
-        error = function(error) FALSE
-    )
-    if (converted) {
-        download <- file.path(
-        destinationDir, paste0(baseSlug, "-original.", extension)
-        )
-    } else {
-        name <- paste0(baseSlug, ".", extension)
-        path <- file.path(destinationDir, name)
-        browser_ready <- FALSE
-        download <- path
-    }
-    } else {
-    name <- paste0(baseSlug, ".", extension)
-    path <- file.path(destinationDir, name)
-    browser_ready <- !(extension %in% c("tif", "tiff"))
-    download <- path
-    }
-    copy_source <- if (converted) srcPath else srcPath
-    copy_target <- if (converted) download else path
-    if (!file.copy(copy_source, copy_target, overwrite = TRUE)) {
-    message_type <- if (converted) "original figure" else "figure"
-    stop("Failed to copy ", message_type, ": ", srcPath)
-    }
     formats <- stats::setNames(rep("", 3L), c("png", "jpeg", "tiff"))
     if (magickAvailable && file.info(srcPath)$size > 0) {
         tryCatch({
             image <- magick::image_read(srcPath)[1]
             for (format in names(formats)) {
-                target <- file.path(destinationDir, paste0(baseSlug, ".", format))
+                target <- file.path(
+                    destinationDir, paste0(baseSlug, ".", format)
+                )
                 if (identical(format, "png") && converted) {
                     formats[[format]] <- target
                     next
@@ -530,20 +496,62 @@ renderDnamReport <- function(
                     magick::image_background(image, "white", flatten = TRUE)
                 } else image
                 magick::image_write(export, path = target, format = format,
-                    quality = 95, compression = if (format == "tiff") "LZW" else NULL)
+                    quality = 95,
+                    compression = if (format == "tiff") "LZW" else NULL)
                 formats[[format]] <- target
             }
         }, error = function(error) {
-            warning("Could not create all figure formats for ", basename(srcPath),
+            warning("Could not create all figure formats for ",
+                basename(srcPath),
                 ": ", conditionMessage(error), call. = FALSE)
         })
     }
     for (export_path in unique(c(path, formats[nzchar(formats)]))) {
         .writeReportFigureDownloadDnaEpico(export_path)
     }
+    formats
+}
+
+.copyReportFigureFileDnaEpico <- function(
+    srcPath, baseSlug, destinationDir, magickAvailable
+) {
+    extension <- tolower(tools::file_ext(srcPath))
+    converted <- FALSE
+    browser_ready <- TRUE
+    if (extension %in% c("tif", "tiff") && magickAvailable) {
+        name <- paste0(baseSlug, ".png")
+        path <- file.path(destinationDir, name)
+        converted <- tryCatch({
+            image <- magick::image_read(srcPath)
+            magick::image_write(image, path = path, format = "png")
+            TRUE
+        }, error = function(error) FALSE)
+        if (converted) {
+            download <- file.path(
+                destinationDir, paste0(baseSlug, "-original.", extension)
+            )
+        } else {
+            name <- paste0(baseSlug, ".", extension)
+            path <- file.path(destinationDir, name)
+            browser_ready <- FALSE
+            download <- path
+        }
+    } else {
+        name <- paste0(baseSlug, ".", extension)
+        path <- file.path(destinationDir, name)
+        browser_ready <- !(extension %in% c("tif", "tiff"))
+        download <- path
+    }
+    if (!file.copy(srcPath, download, overwrite = TRUE)) {
+        message_type <- if (converted) "original figure" else "figure"
+        stop("Failed to copy ", message_type, ": ", srcPath)
+    }
+    formats <- .exportReportFigureFormatsDnaEpico(
+        srcPath, baseSlug, destinationDir, magickAvailable, path, converted
+    )
     list(
-    name = name, path = path, download = download,
-    browserReady = browser_ready, converted = converted, formats = formats
+        name = name, path = path, download = download,
+        browserReady = browser_ready, converted = converted, formats = formats
     )
 }
 
@@ -558,10 +566,12 @@ renderDnamReport <- function(
     counts_source <- paste0(tools::file_path_sans_ext(srcPath), "_counts.csv")
     counts_path <- ""
     if (file.exists(counts_source)) {
-        counts_path <- .slashDnamReport(file.path("assets", "figures", assetSubdir,
+        counts_path <- .slashDnamReport(file.path("assets", "figures",
+            assetSubdir,
             paste0(base_slug, "-counts.csv")))
         if (!file.copy(counts_source, file.path(assetsFiguresDir, assetSubdir,
-            basename(counts_path)), overwrite = TRUE)) stop("Failed to copy association counts")
+            basename(counts_path)), overwrite = TRUE)) stop(
+                "Failed to copy association counts")
     }
     data.frame(
     title = .prettyLabelDnamReport(srcPath),
@@ -593,15 +603,18 @@ renderDnamReport <- function(
     objects <- vapply(formats, function(format) {
         path <- items[[paste0(format, "_path")]][index]
         if (!length(path) || is.na(path) || !nzchar(path)) return("")
-        name <- paste0(tools::file_path_sans_ext(items$download_name[index]), ".", format)
+        name <- paste0(tools::file_path_sans_ext(
+            items$download_name[index]), ".", format)
         paste0('{"href":', .dr_js_quote_result_values(path),
             ',"name":', .dr_js_quote_result_values(name),
             ',"label":', .dr_js_quote_result_values(toupper(format)), '}')
     }, character(1))
     counts <- items$counts_path[index]
     if (length(counts) && !is.na(counts) && nzchar(counts)) {
-        objects <- c(objects, paste0('{"href":', .dr_js_quote_result_values(counts),
-            ',"name":', .dr_js_quote_result_values(basename(counts)), ',"label":"Counts (CSV)"}'))
+        objects <- c(objects, paste0('{"href":', .dr_js_quote_result_values(
+            counts),
+            ',"name":', .dr_js_quote_result_values(basename(counts)),
+                ',"label":"Counts (CSV)"}'))
     }
     paste0("[", paste(objects[nzchar(objects)], collapse = ","), "]")
 }
@@ -610,9 +623,11 @@ renderDnamReport <- function(
     if (!nrow(items) || !length(participant)) return(items)
     stem <- tools::file_path_sans_ext(items$original_name)
     variable <- sub("^(hist|bar|distribution)_", "", stem, ignore.case = TRUE)
-    variable <- sub("_(continuous|categorical)$", "", variable, ignore.case = TRUE)
+    variable <- sub("_(continuous|categorical)$", "", variable,
+        ignore.case = TRUE)
     remove <- grepl("^(hist|bar|distribution)_", stem, ignore.case = TRUE) &
-        tolower(variable) %in% tolower(c(participant, safeFigureComponentDnaEpico(participant)))
+        tolower(variable) %in% tolower(c(participant,
+            safeFigureComponentDnaEpico(participant)))
     items[!remove, , drop = FALSE]
 }
 
@@ -1429,7 +1444,8 @@ renderDnamReport <- function(
     if (!length(values)) {
     return("not available")
     }
-    if (highlight) values <- paste0("`", gsub("`", "'", values, fixed = TRUE), "`")
+    if (highlight) values <- paste0("`", gsub("`", "'", values,
+        fixed = TRUE), "`")
     if (length(values) == 1L) {
     return(values[[1]])
     }
@@ -2482,20 +2498,14 @@ renderDnamReport <- function(
     )
 }
 
-.dr_model_figure_title <- function(filename, analysis) {
-    stem <- tools::file_path_sans_ext(basename(filename))
-    if (grepl("^residualSD_.*_byAverageMethylation$", stem, ignore.case = TRUE)) {
-        term <- sub("^residualSD_", "", stem, ignore.case = TRUE)
-        term <- sub("_byAverageMethylation$", "", term, ignore.case = TRUE)
-        term <- gsub("_[0-9]{2}_", ": ", term)
-        return(paste0("Residual SD vs average methylation: ", gsub("_", " ", term)))
-    }
-    cleaned <- gsub("[_.-]+", " ", stem)
-    cleaned <- gsub("\\bGLM\\b|\\bLME\\b", "", cleaned,
-    ignore.case = TRUE
-    )
-    cleaned <- trimws(gsub("\\s+", " ", cleaned))
-    if (grepl("^manhattan", stem, ignore.case = TRUE)) {
+.residualFigureTitleDnaEpico <- function(stem) {
+    term <- sub("^residualSD_", "", stem, ignore.case = TRUE)
+    term <- sub("_byAverageMethylation$", "", term, ignore.case = TRUE)
+    term <- gsub("_[0-9]{2}_", ": ", term)
+    paste0("Residual SD vs average methylation: ", gsub("_", " ", term))
+}
+
+.manhattanFigureTitleDnaEpico <- function(stem) {
     version <- if (grepl("_v1$", stem, ignore.case = TRUE)) {
         "Circular"
     } else {
@@ -2503,7 +2513,22 @@ renderDnamReport <- function(
     }
     test <- sub("^manhattan_", "", stem, ignore.case = TRUE)
     test <- sub("_v[12]$", "", test, ignore.case = TRUE)
-    return(paste(version, "Manhattan Plot for", gsub("_", " ", test)))
+    paste(version, "Manhattan Plot for", gsub("_", " ", test))
+}
+
+.dr_model_figure_title <- function(filename, analysis) {
+    stem <- tools::file_path_sans_ext(basename(filename))
+    if (grepl("^residualSD_.*_byAverageMethylation$", stem,
+        ignore.case = TRUE)) {
+        return(.residualFigureTitleDnaEpico(stem))
+    }
+    cleaned <- gsub("[_.-]+", " ", stem)
+    cleaned <- gsub("\\bGLM\\b|\\bLME\\b", "", cleaned,
+    ignore.case = TRUE
+    )
+    cleaned <- trimws(gsub("\\s+", " ", cleaned))
+    if (grepl("^manhattan", stem, ignore.case = TRUE)) {
+    return(.manhattanFigureTitleDnaEpico(stem))
     }
     if (grepl("^vennD", stem, ignore.case = TRUE)) {
     return(venn_figure_metadata(filename)$title)
@@ -3069,7 +3094,8 @@ renderDnamReport <- function(
         "</div>", content_description_html(browser_notes,
             dynamic_role = "figure-description"),
         "<div class=\"dnaepico-figure-actions\">",
-        "<div data-role=\"figure-download\" aria-label=\"Download figure\"></div>",
+        paste0("<div data-role=\"figure-download\" ",
+            "aria-label=\"Download figure\"></div>"),
         "</div>", paste0("<script type=\"application/json\" data-role=",
             "\"figure-data\">", figure_data, "</script>"), "</div>", "```",
         "", paste0("::: {.card .dnaepico-selected-figure ",
@@ -4598,25 +4624,40 @@ renderDnamReport <- function(
     environment()
 }
 
-.drg_summaries_01DnaEpico <- function() {
-    .installDrHelpers(environment()); lme_items <- if (include_lme) {
-        copy_figure_assets(lme_dir, asset_subdir = "lme-visualisations")
-    } else { data.frame() }
-    log_assets <- list(methylation = copy_log_asset(file.path(logs_dir,
+.collectReportLogAssetsDnaEpico <- function(
+    logsDir, includeGlm, includeLme, copyLogAsset, copyFirstExistingLogAsset
+) {
+    log_assets <- list(methylation = copyLogAsset(file.path(logsDir,
         "log_preprocessingMinfiEwasWater.txt"),
             "preprocessingMinfiEwasWater.txt"),
-        data = copy_log_asset(file.path(logs_dir, "log_preprocessingPheno.txt"),
-            "preprocessingPheno.txt"), batch = copy_log_asset(file.path(
-            logs_dir, "log_svaEnmix.txt"), "svaEnmix.txt"))
-    if (include_glm) {
-        log_assets$glm <- copy_first_existing_log_asset(file.path(logs_dir,
+        data = copyLogAsset(file.path(logsDir, "log_preprocessingPheno.txt"),
+            "preprocessingPheno.txt"), batch = copyLogAsset(file.path(
+            logsDir, "log_svaEnmix.txt"), "svaEnmix.txt"))
+    if (includeGlm) {
+        log_assets$glm <- copyFirstExistingLogAsset(file.path(logsDir,
             "log_methylationGLM.txt"), "methylationGLM.txt")
-    }; if (include_lme) {
-        log_assets$lme <- copy_first_existing_log_asset(file.path(logs_dir,
+    }
+    if (includeLme) {
+        log_assets$lme <- copyFirstExistingLogAsset(file.path(logsDir,
             "log_methylationLME.txt"), "methylationLME.txt")
-    }; data_summary <- summarize_dataset(pheno_file)
-    glm_items <- .excludeParticipantFiguresDnaEpico(glm_items, data_summary$participant_col)
-    lme_items <- .excludeParticipantFiguresDnaEpico(lme_items, data_summary$participant_col)
+    }
+    log_assets
+}
+
+.drg_summaries_01DnaEpico <- function() {
+    .installDrHelpers(environment())
+    lme_items <- if (include_lme) {
+        copy_figure_assets(lme_dir, asset_subdir = "lme-visualisations")
+    } else { data.frame() }
+    log_assets <- .collectReportLogAssetsDnaEpico(
+        logs_dir, include_glm, include_lme,
+        copy_log_asset, copy_first_existing_log_asset
+    )
+    data_summary <- summarize_dataset(pheno_file)
+    glm_items <- .excludeParticipantFiguresDnaEpico(
+        glm_items, data_summary$participant_col)
+    lme_items <- .excludeParticipantFiguresDnaEpico(
+        lme_items, data_summary$participant_col)
     detection_tables <- read_detection_tables(detp_path = detp_path,
         threshold = detPThreshold, cpg_path = cpg_detection_path,
         sample_path = sample_detection_path)
@@ -5578,7 +5619,13 @@ renderDnamReport <- function(
     .drg_render_03DnaEpico
 )
 
-#' Generate a DNA methylation dashboard report
+#' Generate an HTML report from saved pipeline outputs
+#'
+#' @description
+#' Combine phenotype data, quality-control figures, annotated model results
+#' and logs in an HTML report. `modelSections` selects the GLM and LME pages;
+#' `character(0)` produces a preprocessing-only report. The returned object
+#' includes the report path and rendering status.
 #'
 #' @details
 #' The Quarto command-line interface is required to render the website. It is
@@ -5587,14 +5634,11 @@ renderDnamReport <- function(
 #' When `magick` is installed, each readable figure is exported as PNG,
 #' JPEG and TIFF at the source image dimensions. Existing raster images are
 #' not upscaled. Exports are independent of the report's light/dark theme;
-#' JPEG transparency is flattened onto white. Without `magick`, original downloads remain
+#' JPEG transparency is flattened onto white. Without `magick`, original
+#' downloads remain
 #' available, but additional formats cannot be generated.
-#' PNG and JPEG downloads include companion scripts containing the original
-#' image bytes, loaded only when requested, so local reports can save these
-#' formats without navigating to an image preview.
-#' The report uses an 80% presentation scale. Further display adjustments use
-#' the browser's zoom controls; figure zoom and downloaded image resolution
-#' are independent.
+#' The report opens at an 80% presentation scale. Browser zoom changes the
+#' on-screen display; downloaded figures retain their image dimensions.
 #'
 #' @param outputDir Character. Directory where the Quarto project is written.
 #' @param phenoTab Character or `NULL`. CSV file shown in the Data tab.
@@ -5607,12 +5651,12 @@ renderDnamReport <- function(
 #' @param glmTab Character or `NULL`. XLSX workbook shown in the GLM Analysis
 #' tab.
 #'   When `NULL`, the path is inferred from the Makefile output layout. Report
-#'   sidecars produced by `methylationGLM()` are read from this report
+#'   data files produced by `methylationGLM()` are read from this report
 #'   project's `assets/results/glm_results` directory when available.
 #' @param lmeTab Character or `NULL`. XLSX workbook shown in the LME Analysis
 #' tab.
 #'   When `NULL`, the path is inferred from the Makefile output layout. Report
-#'   sidecars produced by `methylationLME()` are read from this report
+#'   data files produced by `methylationLME()` are read from this report
 #'   project's `assets/results/lme_results` directory when available.
 #' @param modelSections Character vector containing any of `'glm'` and `'lme'`.
 #'   The report includes the corresponding model pages, logs, and summary

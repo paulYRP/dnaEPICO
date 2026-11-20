@@ -14,6 +14,24 @@
 #' relative project paths and support project directories containing spaces.
 #' GNU Make and Quarto are not required to install or load `dnaEPICO`.
 #'
+#' `MODEL` selects one analysis configuration: its input files, settings and
+#' output directory. `MODELS` lists configurations for a grouped run.
+#' Each analysis can fit many CpG-wise statistical models.
+#'
+#' `N_CORES` limits the total CPU cores used by one Make workflow. The rules
+#' share the available cores among the analyses in `MODELS`. An R worker is a
+#' R process that fits a subset of CpGs. With 8 available cores and
+#' 3 analyses, the maximum R workers per analysis are 3, 3 and 2. Analyses
+#' wait when all available workers are in use. Steps within each analysis
+#' run in order.
+#'
+#' The shared rules set the OpenMP, OpenBLAS, MKL, Accelerate and NumExpr
+#' thread limits to one before starting R. This limits the threads used by
+#' numerical libraries within each R process. `make status` displays the
+#' available cores and maximum R workers per analysis. Fitting can use fewer
+#' workers for small CpG sets or limited memory. Memory requirements apply
+#' separately to each analysis.
+#'
 #' @param destDir Character. Destination directory for the Makefile.
 #' @param overwrite Logical. Whether to overwrite an existing `Makefile` in
 #'   `destDir`. The default is `FALSE`.

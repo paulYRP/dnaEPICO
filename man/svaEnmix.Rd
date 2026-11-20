@@ -32,8 +32,8 @@ svaEnmix(
 }
 \arguments{
 \item{phenoFile}{Character. Path to the phenotype file with cell-composition
-data. When \code{saveOutputs = TRUE}, the validated PC columns are appended to
-this file using a rollback-safe replacement.}
+data. When \code{saveOutputs = TRUE}, add the surrogate-variable columns to
+this file. The original file is restored if saving the replacement fails.}
 
 \item{rgsetData}{Character. Path to a saved \code{RGChannelSet} object. Both
 \code{.RData} and \code{.rds} files are supported.}
@@ -120,9 +120,10 @@ logging was disabled.}
 See \link[=dnaEPICO_svaEnmix-class]{dnaEPICO_svaEnmix} for a class-level overview.
 }
 \description{
-Estimate surrogate variables from ENmix control probes and analyze their
-association with Sentrix chip and position factors. The function returns a
-structured result and writes files only when \code{saveOutputs = TRUE}.
+Estimate surrogate variables from control probes using ENmix and assess
+their associations with Sentrix chip and position. With \code{saveOutputs = TRUE},
+add the surrogate-variable columns to \code{phenoFile} and save the SVA results
+and figures. The updated phenotype table is used by \code{\link[=preprocessingPheno]{preprocessingPheno()}}.
 }
 \examples{
 tmp <- tempdir()

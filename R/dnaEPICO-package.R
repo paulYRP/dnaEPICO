@@ -11,7 +11,7 @@
 #'   \item interactive use, where functions return structured in-memory result
 #'   objects for inspection and composition; and
 #'   \item file-based pipeline use, where the same functions can write logs,
-#'   plots, tables, and serialized objects when `saveOutputs = TRUE`.
+#'   plots, tables, and saved R objects when `saveOutputs = TRUE`.
 #' }
 #'
 #' The main high-level entry points are:
@@ -34,7 +34,8 @@ utils::globalVariables(c(
     "cumulativePosition", "density", "diagnosticEstimate", "displayCpG",
     "displayLabel", "end", "failed", "group", "intersectionLabel", "label",
     "labelOffset", "lower", "meanDetectionP", "midpoint", "minusLog10P",
-    "observations", "percentage", "proportion", "radius", "sex", "sampleIndex", "Freq",
+    "observations", "percentage", "proportion", "radius", "sex", "sampleIndex",
+    "Freq",
     "significance", "stage", "start", "surrogateVariable",
     "technicalFactor", "threshold", "time", "upper", "variable1",
     "variable2", "x", "xMed", "y", "yMed"

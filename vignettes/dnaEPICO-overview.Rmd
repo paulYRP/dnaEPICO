@@ -301,7 +301,7 @@ svg_to_html <- function(svg_path, title = NULL) {
     cat('</div>\n')
     cat('<div class="overview-svg-frame">\n')
     cat(sprintf(
-        '<img src="%s" alt="%s">\n',
+        '<img src="%s" alt="%s" data-external="1">\n',
         html_escape(svg_path),
         html_escape(title)
     ))

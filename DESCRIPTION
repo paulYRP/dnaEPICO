@@ -42,6 +42,7 @@ Imports:
     GenomicRanges,
     IRanges,
     parallel,
+    parallelly,
     lme4,
     lmerTest,
     nlme,
@@ -80,7 +81,7 @@ Suggests:
 VignetteBuilder: knitr
 SystemRequirements:
     Quarto command-line interface,
-    GNU make
+    GNU make (>= 4.3)
 biocViews:
   Software, 
   Preprocessing,
@@ -92,6 +93,5 @@ biocViews:
   ChipOnChip
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.0.0
 Config/testthat/edition: 3
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

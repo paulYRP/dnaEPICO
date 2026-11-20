@@ -34,8 +34,9 @@ returned summary tables. \code{NA} keeps all rows.}
 \item{padjmethod}{Character. Adjustment method passed to \code{stats::p.adjust()}
 for omnibus p-values across CpGs within each phenotype and tested term.}
 
-\item{nCores}{Integer. Number of worker processes to use while extracting
-summary rows.}
+\item{nCores}{Integer. Maximum number of R worker processes used to extract
+summary rows, limited by available CPU cores. With the \code{serial} setting,
+summarisation uses one process.}
 
 \item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
 to worker processes.}
@@ -60,7 +61,7 @@ A list with class \code{'dnaEPICO_methylationGLM_summaries'}
 containing the optionally filtered summary tables in \code{summaries} and the
 complete CpG-level tables in \code{diagnosticSummaries}. Diagnostics,
 annotation, and report output use the complete tables so \code{summaryPval}
-does not remove CpGs from those outputs. \code{modelMessages} retains native
+does not remove CpGs from those outputs. \code{modelMessages} retains model
 messages, warnings, and errors for every attempted CpG.
 }
 \description{

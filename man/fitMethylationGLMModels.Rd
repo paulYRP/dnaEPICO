@@ -21,9 +21,9 @@ fitMethylationGLMModels(
 \arguments{
 \item{preparedData}{Object returned by \code{prepareMethylationGLMData()}.}
 
-\item{nCores}{Integer. Maximum number of worker processes to use. Automatic
-fitting remains serial below the glm2 crossover and caps workers by
-available CpGs, CPUs, and detected memory.}
+\item{nCores}{Integer. Maximum number of R worker processes for fitting.
+Automatic fitting uses one process for small CpG sets. Multiple workers
+are limited by the CpG count, available CPU cores and detected memory.}
 
 \item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
 to worker processes.}
@@ -32,7 +32,7 @@ to worker processes.}
 check on worker processes. The default is \code{'glm2'}.}
 
 \item{summaryDir}{Character or \code{NULL}. Directory used for one complete
-compact summary per phenotype. \code{NULL} disables disk persistence.}
+compact summary per phenotype. \code{NULL} skips saving summaries.}
 
 \item{omnibusTest}{Logical. If \code{TRUE}, use \code{car::linearHypothesis()} to test
 the complete phenotype-by-interaction term, or the phenotype main effect
@@ -53,12 +53,12 @@ configuration.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationGLM_models'} containing
-compact coefficient matrices, unfiltered target summaries, formulas,
-model conditions, hard errors, and phenotype summary artifacts.
+compact coefficient matrices, complete phenotype summaries, formulas,
+model messages, fitting errors, and saved phenotype summaries.
 }
 \description{
 Fit one Gaussian GLM per CpG for each phenotype requested in the object
-returned by \code{prepareMethylationGLMData()}. Each native fit is reduced to
+returned by \code{prepareMethylationGLMData()}. Each fitted model is reduced to
 compact numerical results and discarded before the next batch is returned.
 }
 \examples{

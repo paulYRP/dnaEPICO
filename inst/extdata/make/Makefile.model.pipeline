@@ -4,15 +4,15 @@
 MAKEFLAGS += --output-sync
 
 # ===============================================
-# MODEL SELECTION
+# ANALYSIS SELECTION
 # ===============================================
-# Single model
+# Analysis name for a single run
 MODEL ?= model1
-# Multiple models for parallel runs
+# Analysis names for grouped runs
 MODELS = modelA modelB modelC
 
 # ===============================================
-# PER-MODEL OVERRIDES
+# SETTINGS FOR EACH ANALYSIS
 # ===============================================
 ifeq ($(MODEL), modelA)
   PHENO_FILE = $(DATA_DIR)/$(STEP1)/phenoA.csv
@@ -83,6 +83,7 @@ CPG_PREFIX = cg
 CPG_LIMIT = NA
 PRS_MAP = NULL
 SUMMARY_PVAL = NA
+# Total CPU core limit, shared automatically across grouped analyses
 N_CORES = 64
 SAVE_TXT_SUMMARIES = TRUE
 RESUME_FROM_SUMMARY = TRUE

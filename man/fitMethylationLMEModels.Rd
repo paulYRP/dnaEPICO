@@ -24,9 +24,9 @@ fitMethylationLMEModels(
 \arguments{
 \item{preparedData}{Object returned by \code{prepareMethylationLMEData()}.}
 
-\item{nCores}{Integer. Maximum number of worker processes to use. Automatic
-fitting uses the lme4 or nlme crossover and caps workers by available CpGs,
-CPUs, and detected memory.}
+\item{nCores}{Integer. Maximum number of R worker processes for fitting.
+Automatic fitting uses one process for small CpG sets. Multiple workers
+are limited by the CpG count, available CPU cores and detected memory.}
 
 \item{libPath}{Character vector or \code{NULL}. Optional library paths forwarded
 to worker processes.}
@@ -49,7 +49,7 @@ when no interaction is requested.}
 \code{lmerTest::contestMD()}: \code{'Satterthwaite'} or \code{'Kenward-Roger'}.}
 
 \item{summaryDir}{Character or \code{NULL}. Directory used for one complete
-compact summary per phenotype. \code{NULL} disables disk persistence.}
+compact summary per phenotype. \code{NULL} skips saving summaries.}
 
 \item{resumeFromSummary}{Logical. If \code{TRUE}, reuse a complete summary in
 \code{summaryDir} when it was generated from the same input file and model
@@ -66,13 +66,13 @@ configuration.}
 }
 \value{
 A list with class \code{'dnaEPICO_methylationLME_models'}
-containing compact coefficient matrices, unfiltered target summaries,
-formulas, model conditions, omnibus results, hard errors, and phenotype
-summary artifacts.
+containing compact coefficient matrices, complete phenotype summaries,
+formulas, model messages, omnibus results, fitting errors, and phenotype
+saved summaries.
 }
 \description{
 Fit one linear mixed-effects model per CpG for each phenotype requested in
-the object returned by \code{prepareMethylationLMEData()}. Each native fit is
+the object returned by \code{prepareMethylationLMEData()}. Each fitted model is
 reduced to compact numerical results and discarded before the next batch is
 returned.
 }

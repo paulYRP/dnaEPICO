@@ -37,7 +37,7 @@ glmModelLogLinesDnaEpico <- function(config) {
         paste("CpG limit:                 ",
             if (is.na(config$cpgLimit)) "All" else config$cpgLimit
         ),
-        paste("Number of cores:           ", as.integer(config$nCores)),
+        paste("Maximum R workers:         ", as.integer(config$nCores)),
         paste("Interaction term:          ",
             if (is.null(config$interactionTerm)) {
                 "None"
@@ -296,8 +296,8 @@ normalizeMethylationGLMConfigDnaEpico <- function(config) {
 #' @param outputRData Character. Directory used for compact, resumable
 #'   phenotype summaries.
 #' @param outputPlots Character. Directory used for optional TIFF plots.
-#' @param phenotypes Character vector or comma-separated phenotype variables to
-#'   model.
+#' @param phenotypes Character vector or comma-separated phenotype variables
+#'   used as predictors of interest in separate CpG-wise models.
 #' @param covariates Character. Comma-separated covariate variables included in
 #'   each GLM.
 #' @param factorVars Character. Comma-separated variables to convert to factors
@@ -313,9 +313,9 @@ normalizeMethylationGLMConfigDnaEpico <- function(config) {
 #' @param methylationScale Character. Methylation metric represented by the CpG
 #'   columns. One of `'Beta'`, `'M'`, or `'CN'`, in any combination of
 #'   upper- and lower-case letters. The default is `'beta'`.
-#' @param nCores Integer. Maximum number of worker processes to use while
-#'   fitting models. Automatic fitting remains serial below the glm2 crossover
-#'   and caps workers by the CpG workload, available CPUs, and detected memory.
+#' @param nCores Integer. Maximum number of R worker processes for fitting.
+#'   Automatic fitting uses one process for small CpG sets. Multiple workers
+#'   are limited by the CpG count, available CPU cores and detected memory.
 #' @param plotWidth Integer. TIFF width in pixels when plots are written to
 #' disk.
 #' @param plotHeight Integer. TIFF height in pixels when plots are written to
@@ -381,7 +381,7 @@ normalizeMethylationGLMConfigDnaEpico <- function(config) {
 #' @param annotatedGLMOut Character. Directory used for the optional annotated
 #'   GLM summary XLSX workbook.
 #' @param reportAssetsDir Character or `NULL`. Report results directory used for
-#'   the compressed TSV table and its compact metadata sidecars. `NULL` writes
+#'   the compressed TSV table and its compact metadata files. `NULL` writes
 #'   only the model outputs and annotated workbook.
 #' @param display Logical. If `TRUE`, draw exploratory and diagnostic plots on
 #'   the active graphics device.
@@ -439,8 +439,11 @@ normalizeMethylationGLMConfigDnaEpico <- function(config) {
 #' Gaussian GLM per CpG and phenotype, summarizes and annotates the results, and
 #' creates optional coefficient tables and diagnostic plots. It writes outputs
 #' only when `saveOutputs = TRUE`.
+#' CpG methylation is the response; each variable in `phenotypes` is a
+#' predictor of interest. Saved workbooks, figures and logs can be included
+#' in a report with [dnamReport()].
 #' Numeric CpG columns are passed to `glm2::glm2()` without a separate
-#' methylation-domain filter. Native model messages, warnings, and errors are
+#' methylation-domain filter. Model messages, warnings, and errors are
 #' recorded in one phenotype-specific `Model.Message` field. Annotated outputs
 #' contain CpGs with at least one returned coefficient or omnibus p-value;
 #' aggregate availability and condition counts are recorded in workbook

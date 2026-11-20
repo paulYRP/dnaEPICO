@@ -318,12 +318,15 @@ createDiagnosticMeanPlotDnaEpico <- function(data, meanInfo, yLabel) {
     ) + ggplot2::labs(title = NULL, x = meanInfo$label, y = yLabel) +
         dnaEpicoModelPlotTheme() + ggplot2::theme(legend.position = "none")
     # A binned median uses all CpGs and remains practical for array-sized data.
-    finite <- data[is.finite(data$meanMethylation) & is.finite(data$diagnosticY), , drop = FALSE]
+    finite <- data[is.finite(data$meanMethylation) & is.finite(
+        data$diagnosticY), , drop = FALSE]
     if (nrow(finite) >= 30L && length(unique(finite$meanMethylation)) > 1L) {
-        group <- cut(finite$meanMethylation, breaks = 40L, include.lowest = TRUE)
+        group <- cut(finite$meanMethylation, breaks = 40L,
+            include.lowest = TRUE)
         trend <- stats::aggregate(finite[c("meanMethylation", "diagnosticY")],
             list(bin = group), stats::median)
-        plot <- plot + ggplot2::geom_line(data = trend, colour = "#B42318", linewidth = 0.8) +
+        plot <- plot + ggplot2::geom_line(data = trend, colour = "#B42318",
+            linewidth = 0.8) +
             ggplot2::labs(subtitle = "Red line: median within methylation bins")
     }
 
@@ -1173,24 +1176,9 @@ parallelCrossoverMethylationModels <- function(engine) {
     unname(defaults[[engine]])
 }
 
+# Return the CPU worker limit, including DNAEPICO_MAX_WORKERS when set.
 availableWorkersMethylationModels <- function() {
-    detect_cores <- function(logical) {
-    tryCatch(parallel::detectCores(logical = logical),
-        warning = function(condition) NA_integer_,
-        error = function(condition) NA_integer_
-    )
-    }
-    physical_cores <- detect_cores(FALSE)
-    logical_cores <- detect_cores(TRUE)
-    available <- if (length(physical_cores) == 1L &&
-    is.finite(physical_cores)) {
-    physical_cores
-    } else if (length(logical_cores) == 1L && is.finite(logical_cores)) {
-    logical_cores
-    } else {
-    1L
-    }
-
+    available <- parallelly::availableCores()
     configured_cap <- Sys.getenv("DNAEPICO_MAX_WORKERS", unset = "")
     if (nzchar(configured_cap)) {
     available <- min(available, validatePositiveIntegerMethylationModels(
@@ -1198,22 +1186,18 @@ availableWorkersMethylationModels <- function() {
         "DNAEPICO_MAX_WORKERS"
     ))
     }
-    scheduler_values <- Sys.getenv(c(
-    "SLURM_CPUS_PER_TASK", "NSLOTS", "PBS_NP"
-    ), unset = "")
-    scheduler_values <- vapply(
-    scheduler_values,
-    parseFiniteNumericMethylationModels,
-    numeric(1)
-    )
-    scheduler_values <- scheduler_values[
-    is.finite(scheduler_values) & scheduler_values >= 1
-    ]
-    if (length(scheduler_values) > 0L) {
-    available <- min(available, scheduler_values)
-    }
-
     max(1L, as.integer(available))
+}
+
+# Limit summary workers by CPU availability, task count and backend selection.
+summaryWorkersMethylationModels <- function(nCores, nTasks) {
+    requested <- validatePositiveIntegerMethylationModels(nCores, "nCores")
+    if (identical(tolower(Sys.getenv("DNAEPICO_PARALLEL_BACKEND", "auto")),
+        "serial")) {
+        return(1L)
+    }
+    as.integer(min(requested, availableWorkersMethylationModels(),
+        max(1L, nTasks)))
 }
 
 resolveParallelPlanMethylationModels <- function(engine, nCores, nCpGs,
@@ -1228,10 +1212,9 @@ resolveParallelPlanMethylationModels <- function(engine, nCores, nCpGs,
     crossover <- parallelCrossoverMethylationModels(engine)
     resource_cap <- availableWorkersMethylationModels()
     worker_count <- min(requested_cores, resource_cap, max(1L, n_cpgs))
-    memory_plan <- list(cap = worker_count, availableMB = NA_real_, reserveMB =
-        NA_real_,
-        estimatedWorkerMB = NA_real_, reason =
-            "memory estimation was not requested")
+    memory_plan <- list(cap = worker_count, availableMB = NA_real_,
+        reserveMB = NA_real_, estimatedWorkerMB = NA_real_,
+        reason = "memory estimation was not requested")
     if (!is.null(analysisData) && !is.null(modelData)) {
         memory_plan <- memoryWorkerCapMethylationModels(engine = engine,
             analysisData = analysisData, modelData = modelData,
@@ -1240,21 +1223,22 @@ resolveParallelPlanMethylationModels <- function(engine, nCores, nCpGs,
     }
     if (requested_cores <= 1L || worker_count <= 1L) {
         backend <- "serial"
-        reason <- "one effective worker" }
+        reason <- "one R worker selected" }
     else if (identical(requested_backend, "serial")) {
         backend <- "serial"; worker_count <- 1L
-        reason <- "serial backend requested"
+        reason <- "serial processing requested"
     }
     else if (identical(requested_backend, "auto") && n_cpgs < crossover) {
         backend <- "serial"
         worker_count <- 1L
-        reason <- paste0("workload below the ", engine, " crossover of ",
+        reason <- paste0("CpG count below the ", engine,
+            " parallel threshold of ",
             crossover, " CpGs") } else {
         backend <- resolveParallelBackendMethylationModels(worker_count)
         reason <- if (identical(requested_backend, "auto")) {
-            paste0("workload reached the ", engine, " crossover")
+            paste0("CpG count reached the ", engine, " parallel threshold")
         } else {
-            paste0(requested_backend, " backend requested")
+            paste0(requested_backend, " parallel method requested")
         } }
     list(engine = tolower(as.character(engine[[1L]])), backend = backend,
         requestedCores = requested_cores, workerCount = worker_count,
@@ -2352,7 +2336,7 @@ resolveReportTableSidecarDnaEpico <- function(workbookFile,
     }
     if (!file.exists(paths$table) || !file.exists(paths$metadata) ||
         !file.exists(paths$dictionary)) {
-        return(unavailable("A report table sidecar was not found."))
+        return(unavailable("A report data file was not found."))
     }
     metadata <- tryCatch(utils::read.delim(paths$metadata,
         check.names = FALSE, stringsAsFactors = FALSE,
@@ -2360,7 +2344,7 @@ resolveReportTableSidecarDnaEpico <- function(workbookFile,
         error = function(error) error)
     if (inherits(metadata, "error") || !all(c("Key",
         "Value") %in% names(metadata))) {
-        return(unavailable("The report table sidecar metadata is invalid."))
+        return(unavailable("The report data file metadata is invalid."))
     }
     values <- as.character(metadata$Value)
     names(values) <- as.character(metadata$Key)
@@ -2368,20 +2352,20 @@ resolveReportTableSidecarDnaEpico <- function(workbookFile,
         "workbook_md5", "rows", "columns",
         "id_column", "sorted_by_id")
     if (!all(required %in% names(values))) {
-        return(unavailable("The report table sidecar metadata is incomplete."))
+        return(unavailable("The report data file metadata is incomplete."))
     }
     if (!identical(values[["format_version"]],
         "1") || !identical(values[["sheet"]],
         sheet) || !identical(values[["sorted_by_id"]],
         "TRUE")) {
         return(unavailable(
-            "The report table sidecar metadata is incompatible."))
+            "The report data file metadata is incompatible."))
     }
     workbook_md5 <- unname(tools::md5sum(workbookFile))
     if (!identical(values[["workbook_md5"]],
         workbook_md5)) {
         return(unavailable(
-            "The report table sidecar does not match the workbook."))
+            "The report data file does not match the workbook."))
     }
     list(ok = TRUE, reason = NULL, table = paths$table,
         metadata = paths$metadata, dictionary = paths$dictionary,
@@ -2403,14 +2387,14 @@ streamReportTableDnaEpico <- function(tableFile, chunkSize = 5000L,
     on.exit(close(connection), add = TRUE)
     header_line <- readLines(connection, n = 1L, warn = FALSE)
     if (length(header_line) == 0L) {
-        stop("The report table sidecar is empty.", call. = FALSE)
+        stop("The report data file is empty.", call. = FALSE)
     }
     columns <- names(utils::read.delim(text = header_line,
         nrows = 0L, check.names = FALSE, quote = "\"",
         comment.char = ""))
     if (!is.null(expectedColumns) && !identical(length(columns),
         as.integer(expectedColumns))) {
-        stop("The report table sidecar columns do not match its metadata.",
+        stop("The report data file columns do not match its metadata.",
             call. = FALSE)
     }
     n_rows <- 0L
@@ -2435,7 +2419,7 @@ streamReportTableDnaEpico <- function(tableFile, chunkSize = 5000L,
     on.exit(NULL, add = FALSE)
     if (!is.null(expectedRows) && !identical(as.integer(n_rows),
         as.integer(expectedRows))) {
-        stop("The report table sidecar row count does not match its metadata.",
+        stop("The report data file row count does not match its metadata.",
             call. = FALSE)
     }
     list(columns = columns, nRows = n_rows, nChunks = chunk_number -
@@ -2741,8 +2725,8 @@ newMethylationGLMDataDnaEpico <- function(
 #' @param inputPheno Character. Path to the merged phenotype-plus-methylation
 #' object
 #'   created by `preprocessingPheno()`.
-#' @param phenotypes Character vector or comma-separated string of phenotype
-#'   variables to model.
+#' @param phenotypes Character vector or comma-separated phenotype variables
+#'   used as predictors of interest in separate CpG-wise models.
 #' @param covariates Character vector or comma-separated string of covariate
 #'   variables to adjust for.
 #' @param factorVars Character vector or comma-separated string of variables
@@ -2903,31 +2887,23 @@ plotMethylationGLMDistributions <- function(preparedData,
     data <- preparedData$data
     participant <- participantColumnDnaEpico(preparedData)
     data <- data[, setdiff(colnames(data), participant), drop = FALSE]
-    factor_vars <- setdiff(intersect(preparedData$factorVars,
-        colnames(data)), preparedData$phenotypes)
-    numeric_vars <- setdiff(preparedData$covariates, c(preparedData$factorVars,
-        preparedData$phenotypes))
-    numeric_vars <- intersect(numeric_vars, colnames(data))
-    interaction_vars <- preparedData$interactionTerm
-    interaction_vars <- interaction_vars[!is.na(interaction_vars) &
-        nzchar(interaction_vars)]
-    interaction_vars <- setdiff(intersect(interaction_vars,
-        colnames(data)), c(preparedData$phenotypes, factor_vars,
-        numeric_vars))
+    variables <- distributionVariablesMethylationGLM(preparedData, data)
     common <- list(data = data, outputDir = outputDir, display = display,
         width = plotWidth, height = plotHeight, resolution = plotDPI)
     phenotype <- do.call(plotGlmDistributionVariablesDnaEpico,
-        c(list(variables = intersect(preparedData$phenotypes,
-            colnames(data)), type = "auto", fill = "steelblue"),
+        c(list(variables = variables$phenotypes,
+            type = "auto", fill = "steelblue"),
             common))
     factor <- do.call(plotGlmDistributionVariablesDnaEpico,
-        c(list(variables = factor_vars, type = "bar", fill = "darkorange"),
+        c(list(variables = variables$factors, type = "bar",
+            fill = "darkorange"),
             common))
     numeric <- do.call(plotGlmDistributionVariablesDnaEpico,
-        c(list(variables = numeric_vars, type = "hist", fill = "darkgreen"),
+        c(list(variables = variables$numeric, type = "hist",
+            fill = "darkgreen"),
             common))
     interaction <- do.call(plotGlmDistributionVariablesDnaEpico,
-        c(list(variables = interaction_vars, type = "auto",
+        c(list(variables = variables$interaction, type = "auto",
             fill = "#7A5195"), common))
     covariate_plots <- c(numeric$plots, interaction$plots)
     covariate_files <- c(numeric$files, interaction$files)
@@ -2946,6 +2922,22 @@ plotMethylationGLMDistributions <- function(preparedData,
         covariates = covariate_plots, files = list(phenotypes = phenotype$files,
             factors = factor$files, covariates = covariate_files)),
         class = "dnaEPICO_methylationGLM_distribution_plots") }
+
+distributionVariablesMethylationGLM <- function(preparedData, data) {
+    factor_vars <- setdiff(intersect(preparedData$factorVars,
+        colnames(data)), preparedData$phenotypes)
+    numeric_vars <- setdiff(preparedData$covariates, c(preparedData$factorVars,
+        preparedData$phenotypes))
+    numeric_vars <- intersect(numeric_vars, colnames(data))
+    interaction_vars <- preparedData$interactionTerm
+    interaction_vars <- interaction_vars[!is.na(interaction_vars) &
+        nzchar(interaction_vars)]
+    interaction_vars <- setdiff(intersect(interaction_vars,
+        colnames(data)), c(preparedData$phenotypes, factor_vars, numeric_vars))
+    list(phenotypes = intersect(preparedData$phenotypes, colnames(data)),
+        factors = factor_vars, numeric = numeric_vars,
+        interaction = interaction_vars)
+}
 
 normalizeGlmFitConfigDnaEpico <- function(config) {
     config$resumeFromSummary <- validateLogicalScalarDnaEpico(
@@ -3447,10 +3439,10 @@ storeFittedGlmPhenotypeDnaEpico <- function(
 glmFitResourceLogLinesDnaEpico <- function(state) {
     plan <- state$parallelPlan
     c(
-    paste("Parallel backend:            ", state$backend),
-    paste("Effective workers:           ", state$workerCount),
-    paste("Parallel crossover CpGs:     ", plan$crossoverCpGs),
-    paste("Parallel selection:          ", plan$reason),
+    paste("Parallel method:             ", state$backend),
+    paste("R workers used:              ", state$workerCount),
+    paste("Automatic parallel threshold (CpGs): ", plan$crossoverCpGs),
+    paste("Reason for worker count:     ", plan$reason),
     paste(
         "Available memory (MB):       ",
         if (is.finite(plan$availableMemoryMB)) {
@@ -3645,9 +3637,9 @@ fitAllGlmPhenotypesDnaEpico <- function(
 #' Fit CpG-wise Gaussian GLMs for one-timepoint methylation analyses
 #'
 #' @param preparedData Object returned by `prepareMethylationGLMData()`.
-#' @param nCores Integer. Maximum number of worker processes to use. Automatic
-#'   fitting remains serial below the glm2 crossover and caps workers by
-#'   available CpGs, CPUs, and detected memory.
+#' @param nCores Integer. Maximum number of R worker processes for fitting.
+#'   Automatic fitting uses one process for small CpG sets. Multiple workers
+#'   are limited by the CpG count, available CPU cores and detected memory.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded
 #'   to worker processes.
 #' @param glmLibs Character vector or comma-separated string of package names to
@@ -3656,7 +3648,7 @@ fitAllGlmPhenotypesDnaEpico <- function(
 #'   the complete phenotype-by-interaction term, or the phenotype main effect
 #'   when no interaction is specified, once per CpG.
 #' @param summaryDir Character or `NULL`. Directory used for one complete
-#'   compact summary per phenotype. `NULL` disables disk persistence.
+#'   compact summary per phenotype. `NULL` skips saving summaries.
 #' @param resumeFromSummary Logical. If `TRUE`, reuse a complete summary in
 #'   `summaryDir` when it was generated from the same input file and model
 #'   configuration.
@@ -3667,12 +3659,12 @@ fitAllGlmPhenotypesDnaEpico <- function(
 #' @param log_file Character. File name used when `logs = TRUE`.
 #'
 #' @return A list with class `'dnaEPICO_methylationGLM_models'` containing
-#'   compact coefficient matrices, unfiltered target summaries, formulas,
-#'   model conditions, hard errors, and phenotype summary artifacts.
+#'   compact coefficient matrices, complete phenotype summaries, formulas,
+#'   model messages, fitting errors, and saved phenotype summaries.
 #'
 #' @description
 #' Fit one Gaussian GLM per CpG for each phenotype requested in the object
-#' returned by `prepareMethylationGLMData()`. Each native fit is reduced to
+#' returned by `prepareMethylationGLMData()`. Each fitted model is reduced to
 #' compact numerical results and discarded before the next batch is returned.
 #'
 #' @examples
@@ -3794,6 +3786,7 @@ summarizeGlmChunkDnaEpico <- function(
 runGlmSummaryChunksDnaEpico <- function(fits, phenotype, interactionTerm,
     includeResidualSD, nCores, chunkSize, libPath, packages) {
     cpg_names <- names(fits)
+    nCores <- summaryWorkersMethylationModels(nCores, length(cpg_names))
     local_size <- chunkSize
     if (is.null(local_size)) {
         local_size <- max(10L, floor(length(cpg_names)/max(nCores *
@@ -3934,8 +3927,9 @@ newMethylationGLMSummariesDnaEpico <- function(
 #'   returned summary tables. `NA` keeps all rows.
 #' @param padjmethod Character. Adjustment method passed to `stats::p.adjust()`
 #'   for omnibus p-values across CpGs within each phenotype and tested term.
-#' @param nCores Integer. Number of worker processes to use while extracting
-#'   summary rows.
+#' @param nCores Integer. Maximum number of R worker processes used to extract
+#'   summary rows, limited by available CPU cores. With the `serial` setting,
+#'   summarisation uses one process.
 #' @param libPath Character vector or `NULL`. Optional library paths forwarded
 #'   to worker processes.
 #' @param glmLibs Character vector or comma-separated string of package names to
@@ -3952,7 +3946,7 @@ newMethylationGLMSummariesDnaEpico <- function(
 #'   containing the optionally filtered summary tables in `summaries` and the
 #'   complete CpG-level tables in `diagnosticSummaries`. Diagnostics,
 #'   annotation, and report output use the complete tables so `summaryPval`
-#'   does not remove CpGs from those outputs. `modelMessages` retains native
+#'   does not remove CpGs from those outputs. `modelMessages` retains model
 #'   messages, warnings, and errors for every attempted CpG.
 #'
 #' @description
@@ -4888,9 +4882,9 @@ logGlmOutputFilesDnaEpico <- function(
     verbose, logPath
 ) {
     sidecar_line <- if (is.null(workbook$sidecar$table)) {
-    "Report table sidecar:          not requested"
+    "Report data file:             not requested"
     } else {
-    paste("Report table sidecar:         ", workbook$sidecar$table)
+    paste("Report data file:            ", workbook$sidecar$table)
     }
     text_count <- if (isTRUE(saveTxtSummaries)) length(textFiles) else 0L
     significant_count <- if (isTRUE(saveSignificantCpGs)) {
@@ -4927,7 +4921,7 @@ logGlmOutputFilesDnaEpico <- function(
 #' @param annotatedGLMOut Character. Directory used for the annotated summary
 #'   XLSX workbook.
 #' @param reportAssetsDir Character or `NULL`. Report results directory used for
-#'   the compressed TSV table and compact metadata sidecars.
+#'   the compressed TSV table and compact metadata files.
 #' @param vennDResults Optional model-level Venn result. Its configuration
 #'   metadata and threshold tables are added before the workbook dictionary.
 #' @param saveTxtSummaries Logical. If `TRUE`, write tab-delimited summary
@@ -4942,7 +4936,7 @@ logGlmOutputFilesDnaEpico <- function(
 #'
 #' @return A list with class `'dnaEPICO_methylationGLM_paths'` containing
 #'   the paths of the files written to disk, including the annotated workbook
-#'   and any requested report-table sidecars.
+#'   and any requested report data files.
 #'
 #' @description
 #' Write compact phenotype summaries, optional text and significant-CpG tables,

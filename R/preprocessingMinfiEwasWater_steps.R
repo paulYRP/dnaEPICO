@@ -2050,13 +2050,19 @@ sampleDetectionBarPlotDnaEpico <- function(assessment) {
     values <- assessment$meanDetP
     samples <- names(values)
     if (is.null(samples)) samples <- paste0("Sample ", seq_along(values))
-    data <- data.frame(sampleIndex = seq_along(values), meanDetectionP = as.numeric(values))
-    ggplot2::ggplot(data, ggplot2::aes(x = factor(sampleIndex), y = meanDetectionP)) +
-        ggplot2::geom_col(fill = "#BDBDBD", colour = "#555555", linewidth = 0.25, width = 0.82) +
+    data <- data.frame(sampleIndex = seq_along(values),
+        meanDetectionP = as.numeric(values))
+    ggplot2::ggplot(data, ggplot2::aes(x = factor(sampleIndex),
+        y = meanDetectionP)) +
+        ggplot2::geom_col(fill = "#BDBDBD", colour = "#555555",
+            linewidth = 0.25, width = 0.82) +
         ggplot2::scale_x_discrete(labels = samples) +
-        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.08))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0,
+            0.08))) +
         ggplot2::labs(x = "Sample", y = "Mean detection p-value") +
         ggplot2::theme_classic(base_size = 11) +
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5),
-            plot.background = ggplot2::element_rect(fill = "white", colour = NA))
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90,
+            hjust = 1, vjust = 0.5),
+            plot.background = ggplot2::element_rect(fill = "white",
+                colour = NA))
 }
