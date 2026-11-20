@@ -69,8 +69,11 @@ test_that("PBS allocation uses CPUs rather than MPI slots", {
 test_that("recursive Make queues models and passes worker and thread limits", {
     make_command <- unname(Sys.which("make"))
     skip_if(!nzchar(make_command), "GNU Make is not available")
-    withr::local_envvar(c(MAKE = make_command, OMP_NUM_THREADS = "8",
-        OPENBLAS_NUM_THREADS = "8", MKL_NUM_THREADS = "8"))
+    thread_names <- c("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS",
+        "OPENBLAS_DEFAULT_NUM_THREADS", "MKL_NUM_THREADS",
+        "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS")
+    withr::local_envvar(c(MAKE = make_command,
+        stats::setNames(rep("8", length(thread_names)), thread_names)))
     tmp <- file.path(withr::local_tempdir(), "pipeline with spaces")
     dir.create(tmp)
     withr::local_dir(tmp)
@@ -93,20 +96,26 @@ test_that("recursive Make queues models and passes worker and thread limits", {
         '\t@echo PLAN $(DNAEPICO_CPU_BUDGET) $(MODEL_JOBS) $(DNAEPICO_MODEL_SHARES)'),
         "Makefile")
     writeLines(c("args <- commandArgs(TRUE)",
-        "threads <- Sys.getenv(c('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS',",
-        "  'OPENBLAS_DEFAULT_NUM_THREADS','MKL_NUM_THREADS',",
-        "  'VECLIB_MAXIMUM_THREADS','NUMEXPR_NUM_THREADS'))",
+        paste0("threads <- Sys.getenv(",
+            paste(deparse(thread_names), collapse = " "), ")"),
         "writeLines(c(args[[2L]], threads), paste0(args[[1L]], '.txt'))"),
         "probe.R")
-    output <- suppressWarnings(system2(make_command,
-        c("--no-print-directory", "f4_models"), stdout = TRUE, stderr = TRUE))
-    status <- attr(output, "status")
-    expect_true(is.null(status) || identical(as.integer(status), 0L),
-        info = paste(output, collapse = "\n"))
-    expect_setequal(list.files(pattern = "[.]txt$"),
-        c("second.txt", "first.txt", "third.txt"))
-    for (model in c("second", "first", "third")) {
-        expect_identical(readLines(paste0(model, ".txt")), rep("1", 7L))
+    for (threads in c(1L, 2L)) {
+        args <- if (threads == 1L) character() else
+            c("NATIVE_THREADS=2", paste0(thread_names, "=8"))
+        output <- suppressWarnings(system2(make_command,
+            c("--no-print-directory", "f4_models", args),
+            stdout = TRUE, stderr = TRUE))
+        status <- attr(output, "status")
+        expect_true(is.null(status) || identical(as.integer(status), 0L),
+            info = paste(output, collapse = "\n"))
+        expect_setequal(list.files(pattern = "[.]txt$"),
+            c("second.txt", "first.txt", "third.txt"))
+        for (model in c("second", "first", "third")) {
+            expect_identical(readLines(paste0(model, ".txt")),
+                c("1", rep(as.character(threads), length(thread_names))),
+                info = paste(model, "with", threads, "native threads"))
+        }
     }
     output <- system2(make_command, c("--no-print-directory", "probe"),
         stdout = TRUE, stderr = TRUE)

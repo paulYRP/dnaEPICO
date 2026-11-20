@@ -1,3 +1,10 @@
+CHANGES IN VERSION 0.99.40
+--------------------------
+
+    o [20-11-2026] Shared Make rules export numerical-library thread limits
+      with separate assignment and export directives. Recursive workflows
+      apply NATIVE_THREADS to inherited and command-line thread settings.
+
 CHANGES IN VERSION 0.99.39
 --------------------------
 

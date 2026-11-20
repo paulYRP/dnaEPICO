@@ -1,6 +1,6 @@
 Package: dnaEPICO
 Title: dnaEPICO: Analysis Pipeline for Illumina DNA Methylation Array Data
-Version: 0.99.39
+Version: 0.99.40
 Date: 2026-08-18
 Authors@R: person("Paul", "Ruiz Pinto", role = c("aut", "cre"),
             email = "ruizpint@qut.edu.au",

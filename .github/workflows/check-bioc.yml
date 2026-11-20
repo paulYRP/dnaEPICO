@@ -139,6 +139,10 @@ jobs:
       - name: Install macOS system dependencies
         if: matrix.config.os == 'macOS-latest'
         run: |
+          ## Use the GNU Make version required by the exported workflows.
+          brew install make
+          echo "$(brew --prefix make)/libexec/gnubin" >> "$GITHUB_PATH"
+
           ## Enable installing XML from source if needed
           brew install libxml2
           echo "XML_CONFIG=/usr/local/opt/libxml2/bin/xml2-config" >> $GITHUB_ENV
@@ -166,6 +170,24 @@ jobs:
         run: |
           message(paste('****', Sys.time(), 'installing BiocManager ****'))
           remotes::install_cran("BiocManager")
+        shell: Rscript {0}
+
+      - name: Check GNU Make
+        run: |
+          make <- unname(Sys.which("make"))
+          if (!nzchar(make)) {
+            stop("GNU Make 4.3 or later is required for pipeline tests.")
+          }
+          version <- system2(make, "--version", stdout = TRUE, stderr = TRUE)
+          message("Make executable: ", make)
+          message(paste(version, collapse = "\n"))
+          if (!length(version) || !grepl("^GNU Make ", version[[1L]])) {
+            stop("The selected make executable is not GNU Make.")
+          }
+          number <- sub("^GNU Make[[:space:]]+", "", version[[1L]])
+          if (utils::compareVersion(number, "4.3") < 0L) {
+            stop("GNU Make 4.3 or later is required; found ", number, ".")
+          }
         shell: Rscript {0}
 
       - name: Set BiocVersion

@@ -6,12 +6,14 @@ MAKEFLAGS += --output-sync
 # Share the total N_CORES limit across the selected analyses.
 N_CORES ?= 1
 NATIVE_THREADS ?= 1
-override export OMP_NUM_THREADS := $(NATIVE_THREADS)
-override export OPENBLAS_NUM_THREADS := $(NATIVE_THREADS)
-override export OPENBLAS_DEFAULT_NUM_THREADS := $(NATIVE_THREADS)
-override export MKL_NUM_THREADS := $(NATIVE_THREADS)
-override export VECLIB_MAXIMUM_THREADS := $(NATIVE_THREADS)
-override export NUMEXPR_NUM_THREADS := $(NATIVE_THREADS)
+override OMP_NUM_THREADS := $(NATIVE_THREADS)
+override OPENBLAS_NUM_THREADS := $(NATIVE_THREADS)
+override OPENBLAS_DEFAULT_NUM_THREADS := $(NATIVE_THREADS)
+override MKL_NUM_THREADS := $(NATIVE_THREADS)
+override VECLIB_MAXIMUM_THREADS := $(NATIVE_THREADS)
+override NUMEXPR_NUM_THREADS := $(NATIVE_THREADS)
+export OMP_NUM_THREADS OPENBLAS_NUM_THREADS OPENBLAS_DEFAULT_NUM_THREADS
+export MKL_NUM_THREADS VECLIB_MAXIMUM_THREADS NUMEXPR_NUM_THREADS
 DNAEPICO_RESOURCE_PLAN := $(shell "$(RSCRIPT)" -e "source(system.file('extdata','make','pipeline-resources.R',package='dnaEPICO',mustWork=TRUE)); writePipelineResourcePlan(commandArgs(TRUE))" "$(N_CORES)" "$(NATIVE_THREADS)" "$(strip $(MODELS))")
 ifeq ($(strip $(DNAEPICO_RESOURCE_PLAN)),)
 $(error Could not determine the CPU core limit for dnaEPICO. See the R error above)
